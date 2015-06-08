@@ -1,7 +1,5 @@
 (** * SfLib: Software Foundations Library *)
 
-(* $Date: 2011-03-14 20:08:53 -0400 (Mon, 14 Mar 2011) $ *)
-
 (** Here we collect together several useful definitions and theorems
     from Basics.v, List.v, Poly.v, Ind.v, and Logic.v that are not
     already in the Coq standard library.  From now on we can [Import]
@@ -13,6 +11,7 @@
 Require Omega.   (* needed for using the [omega] tactic *)
 Require Export Bool.
 Require Export List.
+Export ListNotations.
 Require Export Arith.
 Require Export Arith.EqNat.  (* Contains [beq_nat], among other things *)
 
@@ -78,13 +77,6 @@ Theorem beq_nat_sym : forall (n m : nat),
 (* An exercise in Lists.v *)
 Admitted.
 
-(* From Poly.v *)
-
-Notation "[ ]" := nil.
-Notation "[ x , .. , y ]" := (cons x .. (cons y []) ..).
-Notation "x ++ y" := (app x y) 
-                     (at level 60, right associativity).
-
 (** * From Props.v *)
 
 Inductive ev : nat -> Prop :=
@@ -103,7 +95,7 @@ Proof.
       inversion H.
     inversion H.  Qed.
 
-Theorem not_eq_beq_false : forall n n' : nat,
+Theorem false_beq_nat: forall n n' : nat,
      n <> n' ->
      beq_nat n n' = false.
 Proof. 
@@ -136,12 +128,6 @@ Inductive appears_in (n : nat) : list nat -> Prop :=
 | ai_here : forall l, appears_in n (n::l)
 | ai_later : forall m l, appears_in n l -> appears_in n (m::l).
 
-
-Definition relation (X:Type) := X -> X -> Prop.
-
-Definition partial_function {X: Type} (R: relation X) :=
-  forall x y1 y2 : X, R x y1 -> R x y2 -> y1 = y2. 
-
 Inductive next_nat (n:nat) : nat -> Prop :=
   | nn : next_nat n (S n).
 
@@ -150,106 +136,99 @@ Inductive total_relation : nat -> nat -> Prop :=
 
 Inductive empty_relation : nat -> nat -> Prop := .
 
-Inductive refl_step_closure (X:Type) (R: relation X) 
+(** * From Later Files *)
+
+Definition relation (X:Type) := X -> X -> Prop.
+
+Definition deterministic {X: Type} (R: relation X) :=
+  forall x y1 y2 : X, R x y1 -> R x y2 -> y1 = y2. 
+
+Inductive multi (X:Type) (R: relation X) 
                             : X -> X -> Prop :=
-  | rsc_refl  : forall (x : X),
-                 refl_step_closure X R x x
-  | rsc_step : forall (x y z : X),
+  | multi_refl  : forall (x : X),
+                 multi X R x x
+  | multi_step : forall (x y z : X),
                     R x y ->
-                    refl_step_closure X R y z ->
-                    refl_step_closure X R x z.
-Implicit Arguments refl_step_closure [[X]]. 
+                    multi X R y z ->
+                    multi X R x z.
+Implicit Arguments multi [[X]]. 
 
-Tactic Notation "rsc_cases" tactic(first) ident(c) :=
+Tactic Notation "multi_cases" tactic(first) ident(c) :=
   first;
-  [ Case_aux c "rsc_refl" | Case_aux c "rsc_step" ].
+  [ Case_aux c "multi_refl" | Case_aux c "multi_step" ].
 
-Theorem rsc_R : forall (X:Type) (R:relation X) (x y : X),
-       R x y -> refl_step_closure R x y.
+Theorem multi_R : forall (X:Type) (R:relation X) (x y : X),
+       R x y -> multi R x y.
 Proof.
   intros X R x y r.
-  apply rsc_step with y. apply r. apply rsc_refl.   Qed.
+  apply multi_step with y. apply r. apply multi_refl.   Qed.
 
-Theorem rsc_trans :
+Theorem multi_trans :
   forall (X:Type) (R: relation X) (x y z : X),
-      refl_step_closure R x y  ->
-      refl_step_closure R y z ->
-      refl_step_closure R x z.
+      multi R x y  ->
+      multi R y z ->
+      multi R x z.
 Proof.
   (* FILL IN HERE *) Admitted.
 
+(**  Identifiers and polymorphic partial maps. *)
 
-(* Identifiers and polymorphic partial maps. *)
 Inductive id : Type := 
   Id : nat -> id.
 
-Definition beq_id id1 id2 :=
-  match (id1, id2) with
-    (Id n1, Id n2) => beq_nat n1 n2
-  end.
-
-Theorem beq_id_refl : forall i,
-  true = beq_id i i.
+Theorem eq_id_dec : forall id1 id2 : id, {id1 = id2} + {id1 <> id2}.
 Proof.
-  intros. destruct i.
-  apply beq_nat_refl.  Qed.
+   intros id1 id2.
+   destruct id1 as [n1]. destruct id2 as [n2].
+   destruct (eq_nat_dec n1 n2) as [Heq | Hneq].
+   Case "n1 = n2".
+     left. rewrite Heq. reflexivity.
+   Case "n1 <> n2".
+     right. intros contra. inversion contra. apply Hneq. apply H0.
+Defined. 
 
-Theorem beq_id_eq : forall i1 i2,
-  true = beq_id i1 i2 -> i1 = i2.
+Lemma eq_id : forall (T:Type) x (p q:T), 
+              (if eq_id_dec x x then p else q) = p. 
 Proof.
-  intros i1 i2 H.
-  destruct i1. destruct i2.
-  apply beq_nat_eq in H. subst.
-  reflexivity.  Qed.
+  intros. 
+  destruct (eq_id_dec x x); try reflexivity. 
+  apply ex_falso_quodlibet; auto.
+Qed.
 
-Theorem beq_id_false_not_eq : forall i1 i2,
-  beq_id i1 i2 = false -> i1 <> i2.
+Lemma neq_id : forall (T:Type) x y (p q:T), x <> y -> 
+               (if eq_id_dec x y then p else q) = q. 
 Proof.
-  intros i1 i2 H.
-  destruct i1. destruct i2.
-  apply beq_nat_false in H.
-  intros C. apply H. inversion C. reflexivity.  Qed.
-
-Theorem not_eq_beq_id_false : forall i1 i2,
-  i1 <> i2 -> beq_id i1 i2 = false.
-Proof.
-  intros i1 i2 H.
-  destruct i1. destruct i2.
-  assert (n <> n0).
-    intros C. subst. apply H. reflexivity.
-  apply not_eq_beq_false. assumption.  Qed.
-
-Theorem beq_id_sym: forall i1 i2,
-  beq_id i1 i2 = beq_id i2 i1.
-Proof.
-  intros i1 i2. destruct i1. destruct i2. apply beq_nat_sym. Qed.
-
+  (* FILL IN HERE *) Admitted.
 
 Definition partial_map (A:Type) := id -> option A.
 
 Definition empty {A:Type} : partial_map A := (fun _ => None). 
 
+Notation "'\empty'" := empty.
+
 Definition extend {A:Type} (Gamma : partial_map A) (x:id) (T : A) :=
-  fun x' => if beq_id x x' then Some T else Gamma x'.
+  fun x' => if eq_id_dec x x' then Some T else Gamma x'.
 
 Lemma extend_eq : forall A (ctxt: partial_map A) x T,
   (extend ctxt x T) x = Some T.
 Proof.
-  intros. unfold extend. rewrite <- beq_id_refl. auto.
+  intros. unfold extend. rewrite eq_id; auto. 
 Qed.
 
 Lemma extend_neq : forall A (ctxt: partial_map A) x1 T x2,
-  beq_id x2 x1 = false ->
+  x2 <> x1 ->
   (extend ctxt x2 T) x1 = ctxt x1.
 Proof.
-  intros. unfold extend. rewrite H. auto.
+  intros. unfold extend. rewrite neq_id; auto. 
 Qed.
 
 Lemma extend_shadow : forall A (ctxt: partial_map A) t1 t2 x1 x2,
   extend (extend ctxt x2 t1) x2 t2 x1 = extend ctxt x2 t2 x1.
 Proof with auto.
-  intros. unfold extend. destruct (beq_id x2 x1)...
+  intros. unfold extend. destruct (eq_id_dec x2 x1)...
 Qed.
+
+(** -------------------- *)
 
 (** * Some useful tactics *)
 
@@ -267,4 +246,6 @@ Tactic Notation "solve" "by" "inversion" "3" :=
   solve_by_inversion_step (solve by inversion 2).
 Tactic Notation "solve" "by" "inversion" :=
   solve by inversion 1.
+
+(** $Date: 2014-12-31 12:04:02 -0500 (Wed, 31 Dec 2014) $ *)
 

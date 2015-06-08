@@ -1,14 +1,13 @@
 (** * Norm: Normalization of STLC *)
 
-(* $Date: 2011-04-13 14:34:47 -0400 (Wed, 13 Apr 2011) $ *)
 (* Chapter maintained by Andrew Tolmach *)
 
 (* (Based on TAPL Ch. 12.) *)
 
-Require Import Stlc_J.
-Require Import Relations.
+Require Export Smallstep_J.
+Hint Constructors multi.  
 
-(**
+(** 
 (This chapter is optional.)
 
 In this chapter, we consider another fundamental theoretical property
@@ -42,7 +41,7 @@ extension to the boolean operators and pairs to the reader.  Even for
 the base calculus, normalization is not entirely trivial to prove,
 since each reduction of a term can duplicate redexes in subterms. *)
 
-(** **** Exercise: 1 star *)
+(** **** Exercise: 1 star  *)
 (** Where do we fail if we attempt to prove normalization by a
 straightforward induction on the size of a well-typed term? *)
 
@@ -62,35 +61,35 @@ section... *)
 (** *** Syntax and Operational Semantics *)
 
 Inductive ty : Type :=
-  | ty_Bool : ty
-  | ty_arrow : ty -> ty -> ty
-  | ty_prod  : ty -> ty -> ty
+  | TBool : ty
+  | TArrow : ty -> ty -> ty
+  | TProd  : ty -> ty -> ty
 .
 
-Tactic Notation "ty_cases" tactic(first) ident(c) :=
+Tactic Notation "T_cases" tactic(first) ident(c) :=
   first;
-  [ Case_aux c "ty_Bool" | Case_aux c "ty_arrow" | Case_aux c "ty_prod" ].
+  [ Case_aux c "TBool" | Case_aux c "TArrow" | Case_aux c "TProd" ]. 
 
 Inductive tm : Type :=
     (* pure STLC *)
-  | tm_var : id -> tm
-  | tm_app : tm -> tm -> tm
-  | tm_abs : id -> ty -> tm -> tm
+  | tvar : id -> tm
+  | tapp : tm -> tm -> tm
+  | tabs : id -> ty -> tm -> tm
     (* pairs *)
-  | tm_pair : tm -> tm -> tm
-  | tm_fst : tm -> tm
-  | tm_snd : tm -> tm
+  | tpair : tm -> tm -> tm
+  | tfst : tm -> tm
+  | tsnd : tm -> tm
     (* booleans *)
-  | tm_true : tm
-  | tm_false : tm
-  | tm_if : tm -> tm -> tm -> tm.
+  | ttrue : tm
+  | tfalse : tm
+  | tif : tm -> tm -> tm -> tm.  
           (* i.e., [if t0 then t1 else t2] *)
 
-Tactic Notation "tm_cases" tactic(first) ident(c) :=
+Tactic Notation "t_cases" tactic(first) ident(c) :=
   first;
-  [ Case_aux c "tm_var" | Case_aux c "tm_app" | Case_aux c "tm_abs"
-  | Case_aux c "tm_pair" | Case_aux c "tm_fst" | Case_aux c "tm_snd"
-  | Case_aux c "tm_true" | Case_aux c "tm_false" | Case_aux c "tm_if" ].
+  [ Case_aux c "tvar" | Case_aux c "tapp" | Case_aux c "tabs"
+  | Case_aux c "tpair" | Case_aux c "tfst" | Case_aux c "tsnd"
+  | Case_aux c "ttrue" | Case_aux c "tfalse" | Case_aux c "tif" ].
 
 
 (* ###################################################################### *)
@@ -98,29 +97,31 @@ Tactic Notation "tm_cases" tactic(first) ident(c) :=
 
 Fixpoint subst (x:id) (s:tm) (t:tm) : tm :=
   match t with
-  | tm_var y => if beq_id x y then s else t
-  | tm_abs y T t1 =>  tm_abs y T (if beq_id x y then t1 else (subst x s t1))
-  | tm_app t1 t2 => tm_app (subst x s t1) (subst x s t2)
-  | tm_pair t1 t2 => tm_pair (subst x s t1) (subst x s t2)
-  | tm_fst t1 => tm_fst (subst x s t1)
-  | tm_snd t1 => tm_snd (subst x s t1)
-  | tm_true => tm_true
-  | tm_false => tm_false
-  | tm_if t0 t1 t2 => tm_if (subst x s t0) (subst x s t1) (subst x s t2)
+  | tvar y => if eq_id_dec x y then s else t
+  | tabs y T t1 =>  tabs y T (if eq_id_dec x y then t1 else (subst x s t1))
+  | tapp t1 t2 => tapp (subst x s t1) (subst x s t2)
+  | tpair t1 t2 => tpair (subst x s t1) (subst x s t2)
+  | tfst t1 => tfst (subst x s t1)
+  | tsnd t1 => tsnd (subst x s t1)
+  | ttrue => ttrue
+  | tfalse => tfalse
+  | tif t0 t1 t2 => tif (subst x s t0) (subst x s t1) (subst x s t2) 
   end.
+
+Notation "'[' x ':=' s ']' t" := (subst x s t) (at level 20).
 
 (* ###################################################################### *)
 (** *** Reduction *)
 
 Inductive value : tm -> Prop :=
   | v_abs : forall x T11 t12,
-      value (tm_abs x T11 t12)
+      value (tabs x T11 t12)
   | v_pair : forall v1 v2,
       value v1 ->
       value v2 ->
-      value (tm_pair v1 v2)
-  | v_true : value tm_true
-  | v_false : value tm_false
+      value (tpair v1 v2)
+  | v_true : value ttrue
+  | v_false : value tfalse
 .
 
 Hint Constructors value.
@@ -130,44 +131,44 @@ Reserved Notation "t1 '==>' t2" (at level 40).
 Inductive step : tm -> tm -> Prop :=
   | ST_AppAbs : forall x T11 t12 v2,
          value v2 ->
-         (tm_app (tm_abs x T11 t12) v2) ==> (subst x v2 t12)
+         (tapp (tabs x T11 t12) v2) ==> [x:=v2]t12
   | ST_App1 : forall t1 t1' t2,
          t1 ==> t1' ->
-         (tm_app t1 t2) ==> (tm_app t1' t2)
+         (tapp t1 t2) ==> (tapp t1' t2)
   | ST_App2 : forall v1 t2 t2',
          value v1 ->
          t2 ==> t2' ->
-         (tm_app v1 t2) ==> (tm_app v1 t2')
+         (tapp v1 t2) ==> (tapp v1 t2')
   (* pairs *)
   | ST_Pair1 : forall t1 t1' t2,
         t1 ==> t1' ->
-        (tm_pair t1 t2) ==> (tm_pair t1' t2)
+        (tpair t1 t2) ==> (tpair t1' t2)
   | ST_Pair2 : forall v1 t2 t2',
         value v1 ->
         t2 ==> t2' ->
-        (tm_pair v1 t2) ==> (tm_pair v1 t2')
+        (tpair v1 t2) ==> (tpair v1 t2')
   | ST_Fst : forall t1 t1',
         t1 ==> t1' ->
-        (tm_fst t1) ==> (tm_fst t1')
+        (tfst t1) ==> (tfst t1')
   | ST_FstPair : forall v1 v2,
         value v1 ->
         value v2 ->
-        (tm_fst (tm_pair v1 v2)) ==> v1
+        (tfst (tpair v1 v2)) ==> v1
   | ST_Snd : forall t1 t1',
         t1 ==> t1' ->
-        (tm_snd t1) ==> (tm_snd t1')
+        (tsnd t1) ==> (tsnd t1')
   | ST_SndPair : forall v1 v2,
         value v1 ->
         value v2 ->
-        (tm_snd (tm_pair v1 v2)) ==> v2
+        (tsnd (tpair v1 v2)) ==> v2
   (* booleans *)
   | ST_IfTrue : forall t1 t2,
-        (tm_if tm_true t1 t2) ==> t1
+        (tif ttrue t1 t2) ==> t1
   | ST_IfFalse : forall t1 t2,
-        (tm_if tm_false t1 t2) ==> t2
+        (tif tfalse t1 t2) ==> t2
   | ST_If : forall t0 t0' t1 t2,
         t0 ==> t0' ->
-        (tm_if t0 t1 t2) ==> (tm_if t0' t1 t2)
+        (tif t0 t1 t2) ==> (tif t0' t1 t2)
 
 where "t1 '==>' t2" := (step t1 t2).
 
@@ -179,8 +180,8 @@ Tactic Notation "step_cases" tactic(first) ident(c) :=
     | Case_aux c "ST_Snd" | Case_aux c "ST_SndPair"
   | Case_aux c "ST_IfTrue" | Case_aux c "ST_IfFalse" | Case_aux c "ST_If" ].
 
-Notation stepmany := (refl_step_closure step).
-Notation "t1 '==>*' t2" := (stepmany t1 t2) (at level 40).
+Notation multistep := (multi step).
+Notation "t1 '==>*' t2" := (multistep t1 t2) (at level 40).
 
 Hint Constructors step.
 
@@ -188,7 +189,7 @@ Notation step_normal_form := (normal_form step).
 
 Lemma value__normal : forall t, value t -> step_normal_form t.
 Proof with eauto.
-  intros t H; induction H; intros [t' ST]; inversion ST...
+  intros t H; induction H; intros [t' ST]; inversion ST... 
 Qed.
 
 
@@ -201,46 +202,46 @@ Inductive has_type : context -> tm -> ty -> Prop :=
   (* Typing rules for proper terms *)
   | T_Var : forall Gamma x T,
       Gamma x = Some T ->
-      has_type Gamma (tm_var x) T
+      has_type Gamma (tvar x) T
   | T_Abs : forall Gamma x T11 T12 t12,
-      has_type (extend Gamma x T11) t12 T12 ->
-      has_type Gamma (tm_abs x T11 t12) (ty_arrow T11 T12)
+      has_type (extend Gamma x T11) t12 T12 -> 
+      has_type Gamma (tabs x T11 t12) (TArrow T11 T12)
   | T_App : forall T1 T2 Gamma t1 t2,
-      has_type Gamma t1 (ty_arrow T1 T2) ->
-      has_type Gamma t2 T1 ->
-      has_type Gamma (tm_app t1 t2) T2
+      has_type Gamma t1 (TArrow T1 T2) -> 
+      has_type Gamma t2 T1 -> 
+      has_type Gamma (tapp t1 t2) T2
   (* pairs *)
   | T_Pair : forall Gamma t1 t2 T1 T2,
       has_type Gamma t1 T1 ->
       has_type Gamma t2 T2 ->
-      has_type Gamma (tm_pair t1 t2) (ty_prod T1 T2)
+      has_type Gamma (tpair t1 t2) (TProd T1 T2)
   | T_Fst : forall Gamma t T1 T2,
-      has_type Gamma t (ty_prod T1 T2) ->
-      has_type Gamma (tm_fst t) T1
+      has_type Gamma t (TProd T1 T2) ->
+      has_type Gamma (tfst t) T1
   | T_Snd : forall Gamma t T1 T2,
-      has_type Gamma t (ty_prod T1 T2) ->
-      has_type Gamma (tm_snd t) T2
+      has_type Gamma t (TProd T1 T2) ->
+      has_type Gamma (tsnd t) T2
   (* booleans *)
   | T_True : forall Gamma,
-      has_type Gamma tm_true ty_Bool
+      has_type Gamma ttrue TBool 
   | T_False : forall Gamma,
-      has_type Gamma tm_false ty_Bool
+      has_type Gamma tfalse TBool
   | T_If : forall Gamma t0 t1 t2 T,
-      has_type Gamma t0 ty_Bool ->
+      has_type Gamma t0 TBool -> 
       has_type Gamma t1 T ->
-      has_type Gamma t2 T ->
-      has_type Gamma (tm_if t0 t1 t2) T
+      has_type Gamma t2 T -> 
+      has_type Gamma (tif t0 t1 t2) T
 .
 
 Hint Constructors has_type.
 
 Tactic Notation "has_type_cases" tactic(first) ident(c) :=
   first;
-  [ Case_aux c "T_Var" | Case_aux c "T_Abs" | Case_aux c "T_App"
-  | Case_aux c "T_Pair" | Case_aux c "T_Fst" | Case_aux c "T_Snd"
+  [ Case_aux c "T_Var" | Case_aux c "T_Abs" | Case_aux c "T_App" 
+  | Case_aux c "T_Pair" | Case_aux c "T_Fst" | Case_aux c "T_Snd" 
   | Case_aux c "T_True" | Case_aux c "T_False" | Case_aux c "T_If" ].
 
-Hint Extern 2 (has_type _ (tm_app _ _) _) => eapply T_App; auto.
+Hint Extern 2 (has_type _ (tapp _ _) _) => eapply T_App; auto.
 Hint Extern 2 (_ = _) => compute; reflexivity.
 
 (* ###################################################################### *)
@@ -248,38 +249,38 @@ Hint Extern 2 (_ = _) => compute; reflexivity.
 
 Inductive appears_free_in : id -> tm -> Prop :=
   | afi_var : forall x,
-      appears_free_in x (tm_var x)
+      appears_free_in x (tvar x)
   | afi_app1 : forall x t1 t2,
-      appears_free_in x t1 -> appears_free_in x (tm_app t1 t2)
+      appears_free_in x t1 -> appears_free_in x (tapp t1 t2)
   | afi_app2 : forall x t1 t2,
-      appears_free_in x t2 -> appears_free_in x (tm_app t1 t2)
+      appears_free_in x t2 -> appears_free_in x (tapp t1 t2)
   | afi_abs : forall x y T11 t12,
         y <> x  ->
         appears_free_in x t12 ->
-        appears_free_in x (tm_abs y T11 t12)
+        appears_free_in x (tabs y T11 t12)
   (* pairs *)
   | afi_pair1 : forall x t1 t2,
       appears_free_in x t1 ->
-      appears_free_in x (tm_pair t1 t2)
+      appears_free_in x (tpair t1 t2)
   | afi_pair2 : forall x t1 t2,
       appears_free_in x t2 ->
-      appears_free_in x (tm_pair t1 t2)
+      appears_free_in x (tpair t1 t2)
   | afi_fst : forall x t,
       appears_free_in x t ->
-      appears_free_in x (tm_fst t)
+      appears_free_in x (tfst t)
   | afi_snd : forall x t,
       appears_free_in x t ->
-      appears_free_in x (tm_snd t)
+      appears_free_in x (tsnd t)
   (* booleans *)
   | afi_if0 : forall x t0 t1 t2,
       appears_free_in x t0 ->
-      appears_free_in x (tm_if t0 t1 t2)
+      appears_free_in x (tif t0 t1 t2)
   | afi_if1 : forall x t0 t1 t2,
       appears_free_in x t1 ->
-      appears_free_in x (tm_if t0 t1 t2)
+      appears_free_in x (tif t0 t1 t2)
   | afi_if2 : forall x t0 t1 t2,
       appears_free_in x t2 ->
-      appears_free_in x (tm_if t0 t1 t2)
+      appears_free_in x (tif t0 t1 t2)
 .
 
 Hint Constructors appears_free_in.
@@ -293,18 +294,17 @@ Lemma context_invariance : forall Gamma Gamma' t S,
      has_type Gamma' t S.
 Proof with eauto.
   intros. generalize dependent Gamma'.
-  has_type_cases (induction H) Case;
+  has_type_cases (induction H) Case; 
     intros Gamma' Heqv...
   Case "T_Var".
     apply T_Var... rewrite <- Heqv...
   Case "T_Abs".
     apply T_Abs... apply IHhas_type. intros y Hafi.
-    unfold extend. remember (beq_id x y) as e.
-    destruct e...
+    unfold extend. destruct (eq_id_dec x y)...
   Case "T_Pair".
     apply T_Pair...
   Case "T_If".
-    eapply T_If...
+    eapply T_If... 
 Qed.
 
 Lemma free_in_context : forall x t T Gamma,
@@ -316,11 +316,11 @@ Proof with eauto.
   has_type_cases (induction Htyp) Case; inversion Hafi; subst...
   Case "T_Abs".
     destruct IHHtyp as [T' Hctx]... exists T'.
-    unfold extend in Hctx.
-    apply not_eq_beq_id_false in H2. rewrite H2 in Hctx...
+    unfold extend in Hctx. 
+    rewrite neq_id in Hctx... 
 Qed.
 
-Corollary typable_empty__closed : forall t T,
+Corollary typable_empty__closed : forall t T, 
     has_type empty t T  ->
     closed t.
 Proof.
@@ -334,35 +334,35 @@ Proof.
 Lemma substitution_preserves_typing : forall Gamma x U v t S,
      has_type (extend Gamma x U) t S  ->
      has_type empty v U   ->
-     has_type Gamma (subst x v t) S.
+     has_type Gamma ([x:=v]t) S.
 Proof with eauto.
-  (* Theorem: If Gamma,x:U |- t : S and empty |- v : U, then
-     Gamma |- (subst x v t) S. *)
-  intros Gamma x U v t S Htypt Htypv.
+  (* Theorem: If Gamma,x:U |- t : S and empty |- v : U, then 
+     Gamma |- ([x:=v]t) S. *)
+  intros Gamma x U v t S Htypt Htypv. 
   generalize dependent Gamma. generalize dependent S.
   (* Proof: By induction on the term t.  Most cases follow directly
-     from the IH, with the exception of tm_var and tm_abs.
+     from the IH, with the exception of tvar and tabs.
      The former aren't automatic because we must reason about how the
      variables interact. *)
-  tm_cases (induction t) Case;
+  t_cases (induction t) Case;
     intros S Gamma Htypt; simpl; inversion Htypt; subst...
-  Case "tm_var".
+  Case "tvar".
     simpl. rename i into y.
     (* If t = y, we know that
          [empty |- v : U] and
          [Gamma,x:U |- y : S]
        and, by inversion, [extend Gamma x U y = Some S].  We want to
-       show that [Gamma |- subst x v y : S].
+       show that [Gamma |- [x:=v]y : S].
 
        There are two cases to consider: either [x=y] or [x<>y]. *)
-    remember (beq_id x y) as e. destruct e.
+    destruct (eq_id_dec x y).
     SCase "x=y".
-    (* If [x = y], then we know that [U = S], and that [subst x v y = v].
+    (* If [x = y], then we know that [U = S], and that [[x:=v]y = v].
        So what we really must show is that if [empty |- v : U] then
        [Gamma |- v : U].  We have already proven a more general version
        of this theorem, called context invariance. *)
-      apply beq_id_eq in Heqe. subst.
-      unfold extend in H1. rewrite <- beq_id_refl in H1.
+      subst. 
+      unfold extend in H1. rewrite eq_id in H1. 
       inversion H1; subst. clear H1.
       eapply context_invariance...
       intros x Hcontra.
@@ -371,46 +371,43 @@ Proof with eauto.
     SCase "x<>y".
     (* If [x <> y], then [Gamma y = Some S] and the substitution has no
        effect.  We can show that [Gamma |- y : S] by [T_Var]. *)
-      apply T_Var... unfold extend in H1. rewrite <- Heqe in H1...
-  Case "tm_abs".
+      apply T_Var... unfold extend in H1. rewrite neq_id in H1... 
+  Case "tabs".
     rename i into y. rename t into T11.
-    (* If [t = tm_abs y T11 t0], then we know that
-         [Gamma,x:U |- tm_abs y T11 t0 : T11->T12]
+    (* If [t = tabs y T11 t0], then we know that
+         [Gamma,x:U |- tabs y T11 t0 : T11->T12]
          [Gamma,x:U,y:T11 |- t0 : T12]
          [empty |- v : U]
-       As our IH, we know that forall S Gamma,
-         [Gamma,x:U |- t0 : S -> Gamma |- subst x v t0 S].
-
-       We can calculate that
-         subst x v t = tm_abs y T11 (if beq_id x y
-                                      then t0
-                                      else subst x v t0)
-       And we must show that [Gamma |- subst x v t : T11->T12].  We know
+       As our IH, we know that forall S Gamma, 
+         [Gamma,x:U |- t0 : S -> Gamma |- [x:=v]t0 S].
+    
+       We can calculate that 
+         [x:=v]t = tabs y T11 (if beq_id x y then t0 else [x:=v]t0)
+       And we must show that [Gamma |- [x:=v]t : T11->T12].  We know
        we will do so using [T_Abs], so it remains to be shown that:
-         [Gamma,y:T11 |- if beq_id x y then t0 else subst x v t0 : T12]
+         [Gamma,y:T11 |- if beq_id x y then t0 else [x:=v]t0 : T12]
        We consider two cases: [x = y] and [x <> y].
     *)
     apply T_Abs...
-    remember (beq_id x y) as e. destruct e.
+    destruct (eq_id_dec x y). 
     SCase "x=y".
     (* If [x = y], then the substitution has no effect.  Context
        invariance shows that [Gamma,y:U,y:T11] and [Gamma,y:T11] are
        equivalent.  Since the former context shows that [t0 : T12], so
        does the latter. *)
       eapply context_invariance...
-      apply beq_id_eq in Heqe. subst.
+      subst. 
       intros x Hafi. unfold extend.
-      destruct (beq_id y x)...
+      destruct (eq_id_dec y x)...
     SCase "x<>y".
     (* If [x <> y], then the IH and context invariance allow us to show that
          [Gamma,x:U,y:T11 |- t0 : T12]       =>
          [Gamma,y:T11,x:U |- t0 : T12]       =>
-         [Gamma,y:T11 |- subst x v t0 : T12] *)
+         [Gamma,y:T11 |- [x:=v]t0 : T12] *)
       apply IHt. eapply context_invariance...
       intros z Hafi. unfold extend.
-      remember (beq_id y z) as e0. destruct e0...
-      apply beq_id_eq in Heqe0. subst.
-      rewrite <- Heqe...
+      destruct (eq_id_dec y z)... 
+      subst. rewrite neq_id...    
 Qed.
 
 Theorem preservation : forall t t' T,
@@ -424,25 +421,25 @@ Proof with eauto.
   generalize dependent t'.
   (* Proof: By induction on the given typing derivation.  Many cases are
      contradictory ([T_Var], [T_Abs]).  We show just the interesting ones. *)
-  has_type_cases (induction HT) Case;
+  has_type_cases (induction HT) Case; 
     intros t' HeqGamma HE; subst; inversion HE; subst...
   Case "T_App".
     (* If the last rule used was [T_App], then [t = t1 t2], and three rules
-       could have been used to show [t ==> t']: [ST_App1], [ST_App2], and
-       [ST_AppAbs]. In the first two cases, the result follows directly from
+       could have been used to show [t ==> t']: [ST_App1], [ST_App2], and 
+       [ST_AppAbs]. In the first two cases, the result follows directly from 
        the IH. *)
     inversion HE; subst...
     SCase "ST_AppAbs".
-      (* For the third case, suppose
-           [t1 = tm_abs x T11 t12]
+      (* For the third case, suppose 
+           [t1 = tabs x T11 t12]
          and
-           [t2 = v2].
-         We must show that [empty |- subst x v2 t12 : T2].
+           [t2 = v2].  
+         We must show that [empty |- [x:=v2]t12 : T2]. 
          We know by assumption that
-             [empty |- tm_abs x T11 t12 : T1->T2]
+             [empty |- tabs x T11 t12 : T1->T2]
          and by inversion
              [x:T1 |- t12 : T2]
-         We have already proven that substitution_preserves_typing and
+         We have already proven that substitution_preserves_typing and 
              [empty |- v2 : T1]
          by assumption, so we are done. *)
       apply substitution_preserves_typing with T1...
@@ -459,15 +456,15 @@ Qed.
 (** *** Determinism *)
 
 Lemma step_deterministic :
-   partial_function step.
-Proof with eauto.
-   unfold partial_function.
+   deterministic step. 
+Proof with eauto.   
+   unfold deterministic.
    (* FILL IN HERE *) Admitted.
 
 (* ###################################################################### *)
 (** * Normalization *)
 
-(** Now for the actual normalization proof.
+(** Now for the actual normalization proof. 
 
     Our goal is to prove that every well-typed term evaluates to a
     normal form.  In fact, it turns out to be convenient to prove
@@ -479,14 +476,14 @@ Proof with eauto.
     Here's the key definition: *)
 
 Definition halts  (t:tm) : Prop :=  exists t', t ==>* t' /\  value t'.
-
+    
 (** A trivial fact: *)
 
-Lemma value_halts : forall v, value v -> halts v.
-Proof.
+Lemma value_halts : forall v, value v -> halts v. 
+Proof. 
   intros v H. unfold halts.
   exists v. split.
-  apply rsc_refl.
+  apply multi_refl.
   assumption.
 Qed.
 
@@ -533,22 +530,20 @@ When we come to formalize the definition of [R] in Coq, we hit a
 problem.  The most obvious formulation would be as a parameterized
 Inductive proposition like this:
 
-[[
 Inductive R : ty -> tm -> Prop :=
-| R_bool : forall b t, has_type empty t ty_Bool ->
-                halts t ->
-                R ty_Bool t
-| R_arrow : forall T1 T2 t, has_type empty t (ty_arrow T1 T2) ->
-                halts t ->
-                (forall s, R T1 s -> R T2 (tm_app t s)) ->
-                R (ty_arrow T1 T2) t.
-]]
+| R_bool : forall b t, has_type empty t TBool -> 
+                halts t -> 
+                R TBool t
+| R_arrow : forall T1 T2 t, has_type empty t (TArrow T1 T2) -> 
+                halts t -> 
+                (forall s, R T1 s -> R T2 (tapp t s)) -> 
+                R (TArrow T1 T2) t. 
 
 Unfortunately, Coq rejects this definition because it violates the
 _strict positivity requirement_ for inductive definitions, which says
 that the type being defined must not occur to the left of an arrow in
 the type of a constructor argument. Here, it is the third argument to
-[R_arrow], namely [(forall s, R T1 s -> R TS (tm_app t s))], and
+[R_arrow], namely [(forall s, R T1 s -> R TS (tapp t s))], and
 specifically the [R T1 s] part, that violates this rule.  (The
 outermost arrows separating the constructor arguments don't count when
 applying this rule; otherwise we could never have genuinely inductive
@@ -565,25 +560,25 @@ Fortunately, it turns out that we _can_ define [R] using a
 Fixpoint R (T:ty) (t:tm) {struct T} : Prop :=
   has_type empty t T /\ halts t /\
   (match T with
-   | ty_Bool  => True
-   | ty_arrow T1 T2 => (forall s, R T1 s -> R T2 (tm_app t s))
+   | TBool  => True
+   | TArrow T1 T2 => (forall s, R T1 s -> R T2 (tapp t s))
 (* FILL IN HERE *)
-   | ty_prod T1 T2 => False (* ... and delete this line *)
+   | TProd T1 T2 => False (* ... and delete this line *)
    end).
 
 (** As immediate consequences of this definition, we have that every
 element of every set [R_T] halts in a value and is closed with type
 [t] :*)
 
-Lemma R_halts : forall {T} {t}, R T t -> halts t.
+Lemma R_halts : forall {T} {t}, R T t -> halts t. 
 Proof.
   intros. destruct T; unfold R in H; inversion H; inversion H1;  assumption.
 Qed.
 
 
 Lemma R_typable_empty : forall {T} {t}, R T t -> has_type empty t T.
-Proof.
-  intros. destruct T; unfold R in H; inversion H; inversion H1; assumption.
+Proof. 
+  intros. destruct T; unfold R in H; inversion H; inversion H1; assumption. 
 Qed.
 
 (** Now we proceed to show the main result, which is that every
@@ -607,52 +602,52 @@ direction the proof depends on the fact that our language is
 determinstic. This lemma might still be true for non-deterministic
 languages, but the proof would be harder! *)
 
-Lemma step_preserves_halting : forall t t', (t ==> t') -> (halts t <-> halts t').
+Lemma step_preserves_halting : forall t t', (t ==> t') -> (halts t <-> halts t'). 
 Proof.
- intros t t' ST.  unfold halts.
- split.
- Case "->".
-  intros [t'' [STM V]].
-  inversion STM; subst.
-   apply ex_falso_quodlibet.  apply value__normal in V. unfold normal_form in V. apply V. exists t'. auto.
+ intros t t' ST.  unfold halts. 
+ split. 
+ Case "->". 
+  intros [t'' [STM V]]. 
+  inversion STM; subst. 
+   apply ex_falso_quodlibet.  apply value__normal in V. unfold normal_form in V. apply V. exists t'. auto. 
    rewrite (step_deterministic _ _ _ ST H). exists t''. split; assumption.
  Case "<-".
-  intros [t'0 [STM V]].
-  exists t'0. split; eauto.
-Qed.
+  intros [t'0 [STM V]]. 
+  exists t'0. split; eauto. 
+Qed.    
 
 (** Now the main lemma, which comes in two parts, one for each
    direction.  Each proceeds by induction on the structure of the type
-   [T].  In fact, this is where we make fundamental use of the
-   finiteness of types.
+   [T]. In fact, this is where we make fundamental use of the
+   structure of types. 
 
    One requirement for staying in [R_T] is to stay in type [T]. In the
    forward direction, we get this from ordinary type Preservation. *)
 
-Lemma step_preserves_R : forall T t t', (t ==> t') -> R T t -> R T t'.
+Lemma step_preserves_R : forall T t t', (t ==> t') -> R T t -> R T t'. 
 Proof.
- induction T;  intros t t' E Rt; unfold R; fold R; unfold R in Rt; fold R in Rt;
+ induction T;  intros t t' E Rt; unfold R; fold R; unfold R in Rt; fold R in Rt; 
                destruct Rt as [typable_empty_t [halts_t RRt]].
-  (* ty_Bool *)
-  split. eapply preservation; eauto.
+  (* TBool *)
+  split. eapply preservation; eauto. 
   split. apply (step_preserves_halting _ _ E); eauto.
-  auto.
-  (* ty_arrow *)
-  split. eapply preservation; eauto.
-  split. apply (step_preserves_halting _ _ E); eauto.
-  intros.
-  eapply IHT2.
-  apply  ST_App1. apply E.
-  apply RRt; auto.
+  auto. 
+  (* TArrow *)
+  split. eapply preservation; eauto.   
+  split. apply (step_preserves_halting _ _ E); eauto. 
+  intros. 
+  eapply IHT2. 
+  apply  ST_App1. apply E. 
+  apply RRt; auto. 
   (* FILL IN HERE *) Admitted.
 
 
 (** The generalization to multiple steps is trivial: *)
 
-Lemma stepmany_preserves_R : forall T t t',
+Lemma multistep_preserves_R : forall T t t', 
   (t ==>* t') -> R T t -> R T t'.
-Proof.
-  intros T t t' STM; induction STM; intros.
+Proof. 
+  intros T t t' STM; induction STM; intros. 
   assumption.
   apply IHSTM. eapply step_preserves_R. apply H. assumption.
 Qed.
@@ -660,19 +655,19 @@ Qed.
 (** In the reverse direction, we must add the fact that [t] has type
    [T] before stepping as an additional hypothesis. *)
 
-Lemma step_preserves_R' : forall T t t',
-  has_type empty t T -> (t ==> t') -> R T t' -> R T t.
+Lemma step_preserves_R' : forall T t t', 
+  has_type empty t T -> (t ==> t') -> R T t' -> R T t. 
 Proof.
   (* FILL IN HERE *) Admitted.
 
-Lemma stepmany_preserves_R' : forall T t t',
+Lemma multistep_preserves_R' : forall T t t', 
   has_type empty t T -> (t ==>* t') -> R T t' -> R T t.
-Proof.
-  intros T t t' HT STM.
-  induction STM; intros.
+Proof. 
+  intros T t t' HT STM. 
+  induction STM; intros. 
     assumption.
-    eapply step_preserves_R'.  assumption. apply H. apply IHSTM.
-    eapply preservation;  eauto. auto.
+    eapply step_preserves_R'.  assumption. apply H. apply IHSTM. 
+    eapply preservation;  eauto. auto. 
 Qed.
 
 (* ###################################################################### *)
@@ -684,7 +679,7 @@ surprising to see a proof about well-typed terms that did not
 somewhere involve induction on typing derivations!).  The only
 technical difficulty here is in dealing with the abstraction case.
 Since we are arguing by induction, the demonstration that a term
-[tm_abs x T1 t2] belongs to [R_(T1->T2)] should involve applying the
+[tabs x T1 t2] belongs to [R_(T1->T2)] should involve applying the
 induction hypothesis to show that [t2] belongs to [R_(T2)].  But
 [R_(T2)] is defined to be a set of _closed_ terms, while [t2] may
 contain [x] free, so this does not make sense.
@@ -695,8 +690,9 @@ involving a closed term, we generalize it to cover all closed
 _instances_ of an open term [t].  Informally, the statement of the
 lemma will look like this:
 
-If [x1:T1,..xn:Tn |- t : T] and [v1,...,vn] are values such that
-[R T1 v1], [R T2 v2], ..., [R Tn vn], then [R T ([v1/x1][v2/x2]...[vn/xn]t)].
+If [x1:T1,..xn:Tn |- t : T] and [v1,...,vn] are values such that 
+[R T1 v1], [R T2 v2], ..., [R Tn vn], then
+[R T ([x1:=v1][x2:=v2]...[xn:=vn]t)].
 
 The proof will proceed by induction on the typing derivation
 [x1:T1,..xn:Tn |- t : T]; the most interesting case will be the one
@@ -723,31 +719,31 @@ To make everything precise, we will assume that environments are
 extended from left to right, and multiple substitutions are performed
 from right to left.  To see that this is consistent, suppose we have
 an environment written as [...,y:bool,...,y:nat,...]  and a
-corresponding term substitution written as [...[(tm_bool
-true)/y]...[(tm_nat 3)/y]...t].  Since environments are extended from
+corresponding term substitution written as [...[y:=(tbool
+true)]...[y:=(tnat 3)]...t].  Since environments are extended from
 left to right, the binding [y:nat] hides the binding [y:bool]; since
 substitutions are performed right to left, we do the substitution
-[(tm_nat 3)/y] first, so that the substitution [(tm_bool true)/y] has
+[y:=(tnat 3)] first, so that the substitution [y:=(tbool true)] has
 no effect. Substitution thus correctly preserves the type of the term.
 
-With these points in mind, the following definitions should make sense.
+With these points in mind, the following definitions should make sense. 
 
 A _multisubstitution_ is the result of applying a list of
 substitutions, which we call an _environment_. *)
 
-Definition env := list (id * tm).
+Definition env := list (id * tm). 
 
 Fixpoint msubst (ss:env) (t:tm) {struct ss} : tm :=
 match ss with
 | nil => t
-| ((x,s)::ss') => msubst ss' (subst x s t)
+| ((x,s)::ss') => msubst ss' ([x:=s]t)
 end.
 
 (** We need similar machinery to talk about repeated extension of a
     typing context using a list of (identifier, type) pairs, which we
     call a _type assignment_. *)
 
-Definition tass := list (id * ty).
+Definition tass := list (id * ty). 
 
 Fixpoint mextend (Gamma : context) (xts : tass) :=
   match xts with
@@ -762,13 +758,13 @@ Fixpoint lookup {X:Set} (k : id) (l : list (id * X)) {struct l} : option X :=
   match l with
     | nil => None
     | (j,x) :: l' =>
-      if beq_id j k then Some x else lookup k l'
+      if eq_id_dec j k then Some x else lookup k l'
   end.
 
 Fixpoint drop {X:Set} (n:id) (nxs:list (id * X)) {struct nxs} : list (id * X) :=
   match nxs with
     | nil => nil
-    | ((n',x)::nxs') => if beq_id n' n then drop n nxs' else (n',x)::(drop n nxs')
+    | ((n',x)::nxs') => if eq_id_dec n' n then drop n nxs' else (n',x)::(drop n nxs')
   end.
 
 (** An _instantiation_ combines a type assignment and a value
@@ -776,7 +772,7 @@ Fixpoint drop {X:Set} (n:id) (nxs:list (id * X)) {struct nxs} : list (id * X) :=
    in R *)
 
 Inductive instantiation :  tass -> env -> Prop :=
-| V_nil : instantiation nil nil
+| V_nil : instantiation nil nil 
 | V_cons : forall x T v c e, value v -> R T v -> instantiation c e -> instantiation ((x,T)::c) ((x,v)::e).
 
 
@@ -787,73 +783,70 @@ Inductive instantiation :  tass -> env -> Prop :=
 
 (** First we need some additional lemmas on (ordinary) substitution. *)
 
-Lemma vacuous_substitution : forall  t x,
+Lemma vacuous_substitution : forall  t x, 
      ~ appears_free_in x t  ->
-     forall t', subst x t' t = t.
+     forall t', [x:=t']t = t.
 Proof with eauto.
   (* FILL IN HERE *) Admitted.
 
-Lemma subst_closed: forall t,
+Lemma subst_closed: forall t, 
      closed t  ->
-     forall x t', subst x t' t = t.
+     forall x t', [x:=t']t = t.
 Proof.
   intros. apply vacuous_substitution. apply H.  Qed.
 
 
-Lemma subst_not_afi : forall t x v, closed v ->  ~ appears_free_in x (subst x v t).
+Lemma subst_not_afi : forall t x v, closed v ->  ~ appears_free_in x ([x:=v]t).
 Proof with eauto.  (* rather slow this way *)
-  unfold closed, not.
-  tm_cases (induction t) Case; intros x v P A; simpl in A.
-    Case "tm_var".
-     remember (beq_id x i) as e; destruct e...
-       inversion A; subst. rewrite <- beq_id_refl in Heqe; inversion Heqe.
-    Case "tm_app".
+  unfold closed, not. 
+  t_cases (induction t) Case; intros x v P A; simpl in A. 
+    Case "tvar". 
+     destruct (eq_id_dec x i)...
+       inversion A; subst. auto. 
+    Case "tapp". 
+     inversion A; subst... 
+    Case "tabs". 
+     destruct (eq_id_dec x i)...
+       inversion A; subst...  
+       inversion A; subst... 
+    Case "tpair".
      inversion A; subst...
-    Case "tm_abs".
-     remember (beq_id x i) as e; destruct e...
-       apply beq_id_eq in Heqe; subst. inversion A; subst...
-       inversion A; subst...
-    Case "tm_pair".
+    Case "tfst".
      inversion A; subst...
-    Case "tm_fst".
+    Case "tsnd".
      inversion A; subst...
-    Case "tm_snd".
-     inversion A; subst...
-    Case "tm_true".
+    Case "ttrue". 
+     inversion A. 
+    Case "tfalse".
      inversion A.
-    Case "tm_false".
-     inversion A.
-    Case "tm_if".
+    Case "tif".
      inversion A; subst...
 Qed.
 
-
-Lemma duplicate_subst : forall t' x t v,
-  closed v -> subst x t (subst x v t') = subst x v t'.
+       
+Lemma duplicate_subst : forall t' x t v, 
+  closed v -> [x:=t]([x:=v]t') = [x:=v]t'.
 Proof.
   intros. eapply vacuous_substitution. apply subst_not_afi.  auto.
 Qed.
 
-Lemma swap_subst : forall t x x1 v v1, x <> x1 -> closed v -> closed v1 ->
-                   subst x1 v1 (subst x v t) = subst x v (subst x1 v1 t).
+Lemma swap_subst : forall t x x1 v v1, x <> x1 -> closed v -> closed v1 -> 
+                   [x1:=v1]([x:=v]t) = [x:=v]([x1:=v1]t).
 Proof with eauto.
- tm_cases (induction t) Case; intros; simpl.
-  Case "tm_var".
-   remember (beq_id x i) as e; destruct e; remember (beq_id x1 i) as e; destruct e.
-      apply  beq_id_eq in Heqe. apply beq_id_eq in Heqe0. subst.
-         apply ex_falso_quodlibet...
-      apply beq_id_eq in Heqe; subst.  simpl.
-         rewrite <- beq_id_refl.  apply subst_closed...
-      apply beq_id_eq in Heqe0; subst.  simpl.
-         rewrite <- beq_id_refl. rewrite subst_closed...
-      simpl. rewrite <- Heqe. rewrite <- Heqe0...
+ t_cases (induction t) Case; intros; simpl.
+  Case "tvar". 
+   destruct (eq_id_dec x i); destruct (eq_id_dec x1 i). 
+      subst. apply ex_falso_quodlibet...
+      subst. simpl. rewrite eq_id. apply subst_closed...
+      subst. simpl. rewrite eq_id. rewrite subst_closed...
+      simpl. rewrite neq_id... rewrite neq_id... 
   (* FILL IN HERE *) Admitted.
 
 (* ###################################################################### *)
 (** *** Properties of multi-substitutions *)
 
 Lemma msubst_closed: forall t, closed t -> forall ss, msubst ss t = t.
-Proof.
+Proof. 
   induction ss.
     reflexivity.
     destruct a. simpl. rewrite subst_closed; assumption.
@@ -871,50 +864,48 @@ end.
     distributes over [subst] and over each term form *)
 
 Lemma subst_msubst: forall env x v t, closed v -> closed_env env ->
-  msubst env (subst x v t) = subst x v (msubst (drop x env) t).
-Proof.
-  induction env0; intros.
-    auto.
-    destruct a. simpl.
+  msubst env ([x:=v]t) = [x:=v](msubst (drop x env) t).
+Proof. 
+  induction env0; intros. 
+    auto. 
+    destruct a. simpl. 
     inversion H0. fold closed_env in H2.
-    remember (beq_id i x) as e; destruct e.
-      apply  beq_id_eq in Heqe; subst.
-        rewrite duplicate_subst; auto.
-      symmetry in Heqe. apply beq_id_false_not_eq in Heqe.
-      simpl. rewrite swap_subst; eauto.
+    destruct (eq_id_dec i x).
+      subst. rewrite duplicate_subst; auto. 
+      simpl. rewrite swap_subst; eauto. 
 Qed.
 
 
-Lemma msubst_var:  forall ss x, closed_env ss ->
-   msubst ss (tm_var x) =
+Lemma msubst_var:  forall ss x, closed_env ss -> 
+   msubst ss (tvar x) = 
    match lookup x ss with
    | Some t => t
-   | None => tm_var x
+   | None => tvar x
   end.
+Proof. 
+  induction ss; intros. 
+    reflexivity.
+    destruct a. 
+     simpl. destruct (eq_id_dec i x).
+      apply msubst_closed. inversion H; auto. 
+      apply IHss. inversion H; auto. 
+Qed. 
+
+Lemma msubst_abs: forall ss x T t,  
+  msubst ss (tabs x T t) = tabs x T (msubst (drop x ss) t).
 Proof.
   induction ss; intros.
-    reflexivity.
-    destruct a.
-     simpl. destruct (beq_id i x).
-      apply msubst_closed. inversion H; auto.
-      apply IHss. inversion H; auto.
+    reflexivity. 
+    destruct a. 
+      simpl. destruct (eq_id_dec i x); simpl; auto.
 Qed.
 
-Lemma msubst_abs: forall ss x T t,
-  msubst ss (tm_abs x T t) = tm_abs x T (msubst (drop x ss) t).
-Proof.
-  induction ss; intros.
-    reflexivity.
-    destruct a.
-      simpl. destruct (beq_id i x); simpl; auto.
-Qed.
-
-Lemma msubst_app : forall ss t1 t2, msubst ss (tm_app t1 t2) = tm_app (msubst ss t1) (msubst ss t2).
+Lemma msubst_app : forall ss t1 t2, msubst ss (tapp t1 t2) = tapp (msubst ss t1) (msubst ss t2).
 Proof.
  induction ss; intros.
    reflexivity.
-   destruct a.
-    simpl. rewrite <- IHss. auto.
+   destruct a.  
+    simpl. rewrite <- IHss. auto. 
 Qed.
 
 (** You'll need similar functions for the other term constructors. *)
@@ -924,30 +915,30 @@ Qed.
 (* ###################################################################### *)
 (** *** Properties of multi-extensions *)
 
-(** We need to connect the behavior of type assignments with that of their
+(** We need to connect the behavior of type assignments with that of their 
    corresponding contexts. *)
 
-Lemma mextend_lookup : forall (c : tass) (x:id), lookup x c = (mextend empty c) x.
+Lemma mextend_lookup : forall (c : tass) (x:id), lookup x c = (mextend empty c) x. 
 Proof.
-  induction c; intros.
+  induction c; intros. 
     auto.
-    destruct a. unfold lookup, mextend, extend. destruct (beq_id i x); auto.
+    destruct a. unfold lookup, mextend, extend. destruct (eq_id_dec i x); auto.  
 Qed.
 
-Lemma mextend_drop : forall (c: tass) Gamma x x',
-       mextend Gamma (drop x c) x' = if beq_id x x' then Gamma x' else mextend Gamma c x'.
-   induction c; intros.
-      destruct (beq_id x x'); auto.
+Lemma mextend_drop : forall (c: tass) Gamma x x', 
+       mextend Gamma (drop x c) x' = if eq_id_dec x x' then Gamma x' else mextend Gamma c x'.
+   induction c; intros. 
+      destruct (eq_id_dec x x'); auto. 
       destruct a. simpl.
-      remember (beq_id i x) as e; destruct e.
-        apply beq_id_eq in Heqe; subst. rewrite IHc.
-            remember (beq_id x x') as e; destruct e.  auto. unfold extend. rewrite <- Heqe. auto.
-        simpl.  unfold extend.  remember (beq_id i x') as e; destruct e.
-            apply beq_id_eq in Heqe0; subst.
-                              remember (beq_id x x') as e; destruct e.
-                  apply beq_id_eq in Heqe0; subst.  rewrite <- beq_id_refl in Heqe.  inversion Heqe.
-                  auto.
-            auto.
+      destruct (eq_id_dec i x).
+         subst. rewrite IHc. 
+            destruct (eq_id_dec x x').  auto. unfold extend. rewrite neq_id; auto. 
+         simpl. unfold extend.  destruct (eq_id_dec i x').
+            subst.
+               destruct (eq_id_dec x x'). 
+                  subst. exfalso. auto. 
+                  auto. 
+           auto. 
 Qed.
 
 
@@ -956,55 +947,55 @@ Qed.
 
 (** These are strightforward. *)
 
-Lemma instantiation_domains_match: forall {c} {e},
+Lemma instantiation_domains_match: forall {c} {e}, 
   instantiation c e -> forall {x} {T}, lookup x c = Some T -> exists t, lookup x e = Some t.
 Proof.
   intros c e V. induction V; intros x0 T0 C.
-    solve by inversion .
+    solve by inversion . 
     simpl in *.
-    destruct (beq_id x x0); eauto.
+    destruct (eq_id_dec x x0); eauto. 
 Qed.
 
 Lemma instantiation_env_closed : forall c e,  instantiation c e -> closed_env e.
 Proof.
-  intros c e V; induction V; intros.
-    econstructor.
-    unfold closed_env. fold closed_env.
-    split.  eapply typable_empty__closed. eapply R_typable_empty. eauto.
+  intros c e V; induction V; intros. 
+    econstructor. 
+    unfold closed_env. fold closed_env. 
+    split.  eapply typable_empty__closed. eapply R_typable_empty. eauto.   
         auto.
 Qed.
 
-Lemma instantiation_R : forall c e, instantiation c e ->
-                        forall x t T, lookup x c = Some T ->
+Lemma instantiation_R : forall c e, instantiation c e -> 
+                        forall x t T, lookup x c = Some T -> 
                                       lookup x e = Some t -> R T t.
 Proof.
-  intros c e V. induction V; intros x' t' T' G E.
-    solve by inversion.
-    unfold lookup in *.  destruct (beq_id x x').
+  intros c e V. induction V; intros x' t' T' G E. 
+    solve by inversion. 
+    unfold lookup in *.  destruct (eq_id_dec x x'). 
       inversion G; inversion E; subst.  auto.
-      eauto.
+      eauto. 
 Qed.
 
-Lemma instantiation_drop : forall c env,
+Lemma instantiation_drop : forall c env, 
   instantiation c env -> forall x, instantiation (drop x c) (drop x env).
 Proof.
-  intros c e V. induction V.
-    intros.  simpl.  constructor.
-    intros. unfold drop. destruct (beq_id x x0); auto. constructor; eauto.
+  intros c e V. induction V.  
+    intros.  simpl.  constructor.  
+    intros. unfold drop. destruct (eq_id_dec x x0); auto. constructor; eauto. 
 Qed.
 
 
 (* ###################################################################### *)
-(** *** Congruence lemmas on stepmany *)
+(** *** Congruence lemmas on multistep *)
 
 (** We'll need just a few of these; add them as the demand arises. *)
 
-Lemma stepmany_App2 : forall v t t',
-  value v -> (t ==>* t') -> (tm_app v t) ==>* (tm_app v t').
+Lemma multistep_App2 : forall v t t', 
+  value v -> (t ==>* t') -> (tapp v t) ==>* (tapp v t').
 Proof.
-  intros v t t' V STM. induction STM.
-   apply rsc_refl.
-   eapply rsc_step.
+  intros v t t' V STM. induction STM. 
+   apply multi_refl.
+   eapply multi_step.
      apply ST_App2; eauto.  auto.
 Qed.
 
@@ -1019,75 +1010,75 @@ Qed.
     be lifted to multi-substitutions: *)
 
 Lemma msubst_preserves_typing : forall c e,
-     instantiation c e ->
-     forall Gamma t S, has_type (mextend Gamma c) t S ->
+     instantiation c e -> 
+     forall Gamma t S, has_type (mextend Gamma c) t S -> 
      has_type Gamma (msubst e t) S.
 Proof.
-  induction 1; intros.
-    simpl in H. simpl. auto.
-    simpl in H2.  simpl.
+  induction 1; intros.  
+    simpl in H. simpl. auto. 
+    simpl in H2.  simpl. 
     apply IHinstantiation.
-    eapply substitution_preserves_typing; eauto.
-    apply (R_typable_empty H0).
+    eapply substitution_preserves_typing; eauto. 
+    apply (R_typable_empty H0).  
 Qed.
 
 (** And at long last, the main lemma. *)
 
-Lemma msubst_R : forall c env t T,
+Lemma msubst_R : forall c env t T, 
   has_type (mextend empty c) t T -> instantiation c env -> R T (msubst env t).
-Proof.
+Proof. 
   intros c env0 t T HT V.
   generalize dependent env0.
   (* We need to generalize the hypothesis a bit before setting up the induction. *)
-  remember (mextend empty c) as Gamma.
-  assert (forall x, Gamma x = lookup x c).
-    intros. rewrite HeqGamma. rewrite mextend_lookup. auto.
-  clear HeqGamma.
-  generalize dependent c.
-  has_type_cases (induction HT) Case; intros.
+  remember (mextend empty c) as Gamma. 
+  assert (forall x, Gamma x = lookup x c). 
+    intros. rewrite HeqGamma. rewrite mextend_lookup. auto. 
+  clear HeqGamma.  
+  generalize dependent c. 
+  has_type_cases (induction HT) Case; intros. 
 
-  Case "T_Var".
+  Case "T_Var". 
    rewrite H0 in H. destruct (instantiation_domains_match V H) as [t P].
-   eapply instantiation_R; eauto.
-   rewrite msubst_var.  rewrite P. auto. eapply instantiation_env_closed; eauto.
+   eapply instantiation_R; eauto. 
+   rewrite msubst_var.  rewrite P. auto. eapply instantiation_env_closed; eauto. 
 
-  Case "T_Abs".
-    rewrite msubst_abs.
+  Case "T_Abs". 
+    rewrite msubst_abs. 
     (* We'll need variants of the following fact several times, so its simplest to
        establish it just once. *)
-    assert (WT: has_type empty (tm_abs x T11 (msubst (drop x env0) t12)) (ty_arrow T11 T12)).
-     eapply T_Abs. eapply msubst_preserves_typing.  eapply instantiation_drop; eauto.
-      eapply context_invariance.  apply HT.
-      intros.
-      unfold extend. rewrite mextend_drop. remember (beq_id x x0) as e; destruct e.  auto.
-        rewrite H.
-          clear - c Heqe. induction c.
-              simpl.  rewrite <- Heqe.  auto.
-              simpl. destruct a.  unfold extend. destruct (beq_id i x0); auto.
-    unfold R. fold R. split.
-       auto.
+    assert (WT: has_type empty (tabs x T11 (msubst (drop x env0) t12)) (TArrow T11 T12)).
+     eapply T_Abs. eapply msubst_preserves_typing.  eapply instantiation_drop; eauto.  
+      eapply context_invariance.  apply HT.  
+      intros. 
+      unfold extend. rewrite mextend_drop. destruct (eq_id_dec x x0). auto.
+        rewrite H.  
+          clear - c n. induction c. 
+              simpl.  rewrite neq_id; auto. 
+              simpl. destruct a.  unfold extend. destruct (eq_id_dec i x0); auto. 
+    unfold R. fold R. split. 
+       auto. 
      split. apply value_halts. apply v_abs.
      intros.
      destruct (R_halts H0) as [v [P Q]].
-     pose proof (stepmany_preserves_R _ _ _ P H0).
-     apply stepmany_preserves_R' with (msubst ((x,v)::env0) t12).
-       eapply T_App. eauto.
-       apply R_typable_empty; auto.
-       eapply rsc_trans.  eapply stepmany_App2; eauto.
-       eapply rsc_R.
-       simpl.  rewrite subst_msubst.
-       eapply ST_AppAbs; eauto.
+     pose proof (multistep_preserves_R _ _ _ P H0).
+     apply multistep_preserves_R' with (msubst ((x,v)::env0) t12).
+       eapply T_App. eauto. 
+       apply R_typable_empty; auto. 
+       eapply multi_trans.  eapply multistep_App2; eauto. 
+       eapply multi_R.
+       simpl.  rewrite subst_msubst. 
+       eapply ST_AppAbs; eauto. 
        eapply typable_empty__closed.
-       apply (R_typable_empty H1).
-       eapply instantiation_env_closed; eauto.
-       eapply (IHHT ((x,T11)::c)).
-          intros. unfold extend, lookup. destruct (beq_id x x0); auto.
-       constructor; auto.
+       apply (R_typable_empty H1). 
+       eapply instantiation_env_closed; eauto. 
+       eapply (IHHT ((x,T11)::c)).  
+          intros. unfold extend, lookup. destruct (eq_id_dec x x0); auto. 
+       constructor; auto. 
 
   Case "T_App".
-    rewrite msubst_app.
-    destruct (IHHT1 c H env0 V) as [_ [_ P1]].
-    pose proof (IHHT2 c H env0 V) as P2.  fold R in P1.  auto.
+    rewrite msubst_app.  
+    destruct (IHHT1 c H env0 V) as [_ [_ P1]]. 
+    pose proof (IHHT2 c H env0 V) as P2.  fold R in P1.  auto. 
 
   (* FILL IN HERE *) Admitted.
 
@@ -1097,10 +1088,10 @@ Proof.
 Theorem normalization : forall t T, has_type empty t T -> halts t.
 Proof.
   intros.
-  replace t with (msubst nil t).
-  eapply R_halts.
-  eapply msubst_R; eauto. instantiate (2:= nil). eauto.
+  replace t with (msubst nil t) by reflexivity.
+  apply (@R_halts T). 
+  apply (msubst_R nil); eauto.
   eapply V_nil.
-  auto.
 Qed.
 
+(** $Date: 2014-12-31 11:17:56 -0500 (Wed, 31 Dec 2014) $ *)
