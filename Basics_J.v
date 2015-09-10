@@ -42,7 +42,7 @@ Definition admit {T: Type} : T.  Admitted.
 *)
 
 (* ###################################################################### *)
-(** * Enumerated Types *)
+(* * Enumerated Types *)
 (** * 列挙型 *)
 
 (* One unusual aspect of Coq is that its set of built-in
@@ -62,7 +62,19 @@ Definition admit {T: Type} : T.  Admitted.
 
     To see how this mechanism works, let's start with a very simple
     example. *)
-(** プログラミング言語Coqには、ほとんど何も（ブール型や数値型すら）ビルトインされていません。その代わりCoqには、新しい型やそれを処理するための強力なツールが用意されています。 *)
+(** プログラミング言語Coqには、ほとんど何もビルトインされていません。ブール値や自然数、文字列といったデータ型を提供する代わりに、Coqには新しい型やそれを処理するための強力なツールが用意されています。
+    これはとても強力で、よくあるデータ型は全てその仕組みで定義することができます。
+
+    Naturally, the Coq distribution comes with an extensive standard
+    library providing definitions of booleans, numbers, and many
+    common data structures like lists and hash tables.  But there is
+    nothing magic or primitive about these library definitions: they
+    are ordinary user code.  To illustrate this, we will explicitly
+    recapitulate all the definitions we need in this course, rather
+    than just getting them implicitly from the library.
+
+    To see how this mechanism works, let's start with a very simple
+    example. *)
 
 (* ###################################################################### *)
 (* ** Days of the Week *)
@@ -118,7 +130,9 @@ Definition next_weekday (d:day) : day :=
 
     First, we can use the command [Eval compute] to evaluate a
     compound expression involving [next_weekday].  *)
-(** 関数の定義ができたら、いくつかの例を挙げてそれが正しいものであることをチェックしなければなりません。それを実現するために、Coqには三つの方法が用意されています。一つ目は「[Eval Simpl]」コマンドを使って、関数[next_weekday]を含んだ式を評価させることです。次のコマンドをよく見て、何をしているかを考えてみてください。 *)(** 関数の定義ができたら、いくつかの例を挙げてそれが正しいものであることをチェックしなければなりません。それを実現するために、Coqには三つの方法が用意されています。一つ目は「[Eval Simpl]」コマンドを使って、関数[next_weekday]を含んだ式を評価させることです。次のコマンドをよく見て、何をしているかを考えてみてください。 *)
+(** 関数の定義ができたら、いくつかの例を挙げてそれが正しいものであることをチェックしなければなりません。それを実現するために、Coqには三つの方法が用意されています。
+
+    一つ目は [Eval compute] コマンドを使って、関数[next_weekday]を含んだ式を評価させることです。次のコマンドをよく見て、何をしているかを考えてみてください。 *)
 
 Eval compute in (next_weekday friday).
    (* ==> monday : day *)
@@ -131,13 +145,13 @@ Eval compute in (next_weekday (next_weekday saturday)).
     this file ([Basics.v]) from the book's accompanying Coq sources,
     find the above example, submit it to Coq, and observe the
     result. *)
-(** もし今手元にコンピュータがあるなら、CoqのIDEのうち好きなもの（CoqIDEやProofGeneralなどから）を選んで起動し、実際に上のコマンドを入力し動かしてみるといいでしょう。付録の「[Basic.v]」ファイルから上のサンプルを探してCoqに読み込ませ、結果を観察してください。 *)
+(** もし今手元にコンピュータがあるなら、CoqのIDEのうち好きなもの（CoqIDEやProofGeneralなどから）を選んで起動し、実際に上のコマンドを入力し動かしてみるといいでしょう。このファイル（[Basic_J.v]）から上のサンプルを探してCoqに読み込ませ、結果を観察してください。 *)
 
 (* The keyword [compute] tells Coq precisely how to
     evaluate the expression we give it.  For the moment, [compute] is
     the only one we'll need; later on we'll see some alternatives that
     are sometimes useful. *)
-(** 「[simpl]（simplify）」というキーワードは、Coqに対して「我々が与えた式を正確に評価せよ」という命令です。しばらくの間、「[simpl]」コマンドは我々にとって必要な唯一のコマンドになるでしょう。この後でもう少し使い出のある別のコマンドを覚えるまでの間ですが。 *)
+(** [compute] というキーワードは、Coqに与えた式を評価する方法を指示します。しばらくの間、[compute]コマンドは我々にとって必要な唯一のコマンドになるでしょう。この後でもう少し使い出のある別のコマンドを覚えるまでの間ですが。 *)
 
 (* Second, we can record what we _expect_ the result to be in
     the form of a Coq example: *)
@@ -150,10 +164,10 @@ Example test_next_weekday:
     assertion (that the second weekday after [saturday] is [tuesday]),
     and it gives the assertion a name that can be used to refer to it
     later. *)
+(** この宣言は二つのことを行っています。ひとつは、[saturday]の次の次にあたる平日が、[tuesday]であるということを確認する必要があるということを示すこと。もう一つは、後で参照しやすいように、その確認事項に[test_next_weekday]という名前を与えていることです。 *)
 (* Having made the assertion, we can also ask Coq to verify it,
     like this: *)
-(** この宣言は二つのことを行っています。ひとつは、[saturday]の次の次にあたる平日が、[tuesday]であるということを確認する必要があるということを示すこと。もう一つは、後で参照しやすいように、その確認事項に[test_next_weekday]という名前を与えていることです。
-    この確認事項を定義すれば、次のようなコマンドを流すだけで、Coqによって正しさを検証できます。 *)
+(** この確認事項を定義すれば、次のようなコマンドを流すだけで、Coqによって正しさを検証できます。 *)
 
 Proof. simpl. reflexivity.  Qed.
 
