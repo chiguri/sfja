@@ -1,4 +1,5 @@
-(** * Prop: Propositions and Evidence *)
+(** * Prop_J: 命題と根拠 *)
+(* * Prop: Propositions and Evidence *)
 
 Require Export Logic_J.
 
@@ -332,6 +333,7 @@ Proof.
    induction H.
    (* FILL IN HERE *) Admitted.
 (** [] *)
+(* [] *)
 
 
 
@@ -348,19 +350,24 @@ Proof.
     unfold even. apply IHE'.  
 Qed.
 
-(** **** Exercise: 1 star (ev__even)  *) 
-(** Could this proof also be carried out by induction on [n] instead
+(* **** Exercise: 1 star (ev__even)  *) 
+(** **** 練習問題: ★ (ev__even)  *)
+(* Could this proof also be carried out by induction on [n] instead
     of [E]?  If not, why not? *)
+(** この証明を [E] でなく [n] に対する帰納法によって完成できますか？もしできないとしたら、それはなぜですか？ *)
 
 (* FILL IN HERE *)
 (** [] *)
+(* [] *)
 
-(** Intuitively, the induction principle [ev n] evidence [ev n] is
+(* Intuitively, the induction principle [ev n] evidence [ev n] is
     similar to induction on [n], but restricts our attention to only
     those numbers for which evidence [ev n] could be generated. *)
+(** 直観的には、根拠 [ev n] に対する帰納法は [n] に対する帰納法に似ていますが、 [ev n] が成立する数についてのみ着目することができるということです。 *)
 
-(** **** Exercise: 1 star (l_fails)  *)
-(** The following proof attempt will not succeed.
+(* **** Exercise: 1 star (l_fails)  *)
+(** **** 練習問題: ★ (l_fails)  *)
+(* The following proof attempt will not succeed.
      Theorem l : forall n,
        ev n.
      Proof.
@@ -373,17 +380,31 @@ Qed.
 
 (* FILL IN HERE *)
 *)
+(** 次の証明はうまくいきません。
+
+     Theorem l : forall n,
+       ev n.
+     Proof.
+       intros n. induction n.
+         Case "O". simpl. apply ev_0.
+         Case "S".
+           ...
+  直観的には、全ての数が偶数でないことが原因でこの証明は失敗します。では実際には何が原因で失敗しているでしょうか。
+
+(* FILL IN HERE *)
+*)
 (** [] *)
 
-(** Here's another exercise requiring induction on evidence. *)
-(** **** Exercise: 2 stars (ev_sum)  *)
+(* Here's another exercise requiring induction on evidence. *)
+(** 根拠に関する帰納法が必要な別の練習問題をやってみましょう。 *)
+(* **** Exercise: 2 stars (ev_sum)  *)
+(** **** 練習問題: ★★ (ev_sum)  *)
 
 Theorem ev_sum : forall n m,
    ev n -> ev m -> ev (n+m).
 Proof. 
   (* FILL IN HERE *) Admitted.
 (** [] *)
-
 
 
 (* ####################################################### *)
@@ -424,7 +445,7 @@ Proof.
 
 (** ** The Inversion Tactic Revisited *)
 
-(** These uses of [inversion] may seem a bit mysterious at first.
+(* These uses of [inversion] may seem a bit mysterious at first.
     Until now, we've only used [inversion] on equality
     propositions, to utilize injectivity of constructors or to
     discriminate between different constructors.  But we see here
@@ -454,16 +475,31 @@ Proof.
     produced an auxiliary equality, which happens to be useless here.)
     We'll begin exploring this more general behavior of inversion in
     what follows. *)
+(** これらのような [inversion] の使い方は最初はちょっと謎めいて思えるかもしれません。
+    これまでは、 [inversion] は等号に関する命題に対して使い、コンストラクタから元のデータを取り出すためか、別のコンストラクタを区別するためににしか使っていませんでした。
+    しかし、ここでは [inversion] が 帰納的に定義された命題に対する根拠を分析するためにも使えることを紹介しました。
 
+    ここで、[inversion] が一般にはどのように動作するかを説明します。 
+    [I] が現在のコンテキストにおいて帰納的に宣言された仮定 [P] を参照しているとします。
+    ここで、[inversion I] は、[P]のコンストラクタごとにサブゴールを生成します。 各サブゴールにおいて、 コンストラクタが [P] を証明するのに必要な条件によって [I] が置き換えられます。
+    サブゴールのうちいくつかは矛盾が存在するので、 [inversion] はそれらを除外します。 
+    残っているのは、元のゴールが成り立つことを示すのに必要なサブゴールです。
 
-(** **** Exercise: 1 star (inversion_practice)  *)
+    先ほどの例で、 [inversion] は [ev (S (S n))] の分析に用いられ、 これはコンストラクタ [ev_SS] を使って構築されていることを判定し、そのコンストラクタの引数を仮定に追加した新しいサブゴールを生成しました。(今回は使いませんでしたが、補助的な等式も生成しています。)
+    このあとの例では、inversion のより一般的な振る舞いについて調べていきましょう。
+*)
+
+(* **** Exercise: 1 star (inversion_practice)  *)
+(** **** 練習問題: ★ (inversion_practice)  *)
 Theorem SSSSev__even : forall n,
   ev (S (S (S (S n)))) -> ev n.
 Proof.
   (* FILL IN HERE *) Admitted.
 
-(** The [inversion] tactic can also be used to derive goals by showing
+(* The [inversion] tactic can also be used to derive goals by showing
     the absurdity of a hypothesis. *)
+(** [inversion] タクティックは、仮定が矛盾していることを示し、ゴールを達成するためにも使えます。
+ *)
 
 Theorem even5_nonsense : 
   ev 5 -> 2 + 2 = 9.
@@ -471,9 +507,11 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** **** Exercise: 3 stars, advanced (ev_ev__ev)  *)
-(** Finding the appropriate thing to do induction on is a
+(* **** Exercise: 3 stars, advanced (ev_ev__ev)  *)
+(** **** 練習問題: ★★★, advanced (ev_ev__ev)  *)
+(* Finding the appropriate thing to do induction on is a
     bit tricky here: *)
+(** 何に対して帰納法を行えばいいかを探しなさい。(ちょっとトリッキーですが) *)
 
 Theorem ev_ev__ev : forall n m,
   ev (n+m) -> ev n -> ev m.
@@ -481,10 +519,13 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** **** Exercise: 3 stars, optional (ev_plus_plus)  *)
-(** Here's an exercise that just requires applying existing lemmas.  No
+(* **** Exercise: 3 stars, optional (ev_plus_plus)  *)
+(** **** 練習問題: ★★★, optional (ev_plus_plus)  *)
+(* Here's an exercise that just requires applying existing lemmas.  No
     induction or even case analysis is needed, but some of the rewriting
     may be tedious. *)
+(** 既存の補題を適用する必要のある練習問題です。
+    帰納法も場合分けも不要ですが、書き換えのうちいくつかはちょっと大変です。 *)
 
 Theorem ev_plus_plus : forall n m p,
   ev (n+m) -> ev (n+p) -> ev (m+p).

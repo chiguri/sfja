@@ -1,4 +1,5 @@
-(** * Basics: Functional Programming in Coq *)
+(** * Basics_J: 関数プログラミングとプログラムの証明 *)
+(* * Basics: Functional Programming in Coq *)
  
 (*
    [Admitted] is Coq's "escape hatch" that says accept this definition
@@ -42,8 +43,9 @@ Definition admit {T: Type} : T.  Admitted.
 
 (* ###################################################################### *)
 (** * Enumerated Types *)
+(** * 列挙型 *)
 
-(** One unusual aspect of Coq is that its set of built-in
+(* One unusual aspect of Coq is that its set of built-in
     features is _extremely_ small.  For example, instead of providing
     the usual palette of atomic data types (booleans, integers,
     strings, etc.), Coq offers an extremely powerful mechanism for
@@ -60,12 +62,17 @@ Definition admit {T: Type} : T.  Admitted.
 
     To see how this mechanism works, let's start with a very simple
     example. *)
+(** プログラミング言語Coqには、ほとんど何も（ブール型や数値型すら）ビルトインされていません。その代わりCoqには、新しい型やそれを処理するための強力なツールが用意されています。 *)
 
 (* ###################################################################### *)
-(** ** Days of the Week *)
+(* ** Days of the Week *)
+(** ** 曜日の表し方 *)
 
-(** The following declaration tells Coq that we are defining
+(* The following declaration tells Coq that we are defining
     a new set of data values -- a _type_. *)
+(** まず最初はとても簡単なサンプルから始めましょう。次の定義は、Coqに対して、新しいデータ型のセット（集合）である'型'を定義しています。
+ *)
+
 
 Inductive day : Type :=
   | monday : day
@@ -76,12 +83,15 @@ Inductive day : Type :=
   | saturday : day
   | sunday : day.
 
-(** The type is called [day], and its members are [monday],
+(* The type is called [day], and its members are [monday],
     [tuesday], etc.  The second and following lines of the definition
     can be read "[monday] is a [day], [tuesday] is a [day], etc."
 
     Having defined [day], we can write functions that operate on
     days. *)
+(** 型の名前は[day]で、要素は[monday]、[tuesday]...などです。それ以降の各行は次のようにも読めます。"[monday]は[day]。[tuesday]は[day]"といった具合です。
+
+ "[day]"が何かを定義できれば、それを利用して関数を書くこともできるでしょう。 *)
 
 Definition next_weekday (d:day) : day :=
   match d with
@@ -94,58 +104,66 @@ Definition next_weekday (d:day) : day :=
   | sunday    => monday
   end.
 
-(** One thing to note is that the argument and return types of
+(* One thing to note is that the argument and return types of
     this function are explicitly declared.  Like most functional
     programming languages, Coq can often figure out these types for
     itself when they are not given explicitly -- i.e., it performs
     some _type inference_ -- but we'll always include them to make
     reading easier. *)
+(** 一つ注意しておかなければならないことがあります。この関数の定義では、引数の型と戻り値の型が明示されていることです。他の多くの関数型プログラミング言語と同様、Coqはこのように型を明示的に書かずともちゃんと動くようになっています。それはいわゆる「型推論」という機構によって実現されていますが、型を明示した方がプログラムを読みやすくできると判断するなら、いつでもそうしてかまいません。 *)
 
-(** Having defined a function, we should check that it works on
+(* Having defined a function, we should check that it works on
     some examples.  There are actually three different ways to do this
     in Coq.  
 
     First, we can use the command [Eval compute] to evaluate a
     compound expression involving [next_weekday].  *)
+(** 関数の定義ができたら、いくつかの例を挙げてそれが正しいものであることをチェックしなければなりません。それを実現するために、Coqには三つの方法が用意されています。一つ目は「[Eval Simpl]」コマンドを使って、関数[next_weekday]を含んだ式を評価させることです。次のコマンドをよく見て、何をしているかを考えてみてください。 *)(** 関数の定義ができたら、いくつかの例を挙げてそれが正しいものであることをチェックしなければなりません。それを実現するために、Coqには三つの方法が用意されています。一つ目は「[Eval Simpl]」コマンドを使って、関数[next_weekday]を含んだ式を評価させることです。次のコマンドをよく見て、何をしているかを考えてみてください。 *)
 
 Eval compute in (next_weekday friday).
    (* ==> monday : day *)
 Eval compute in (next_weekday (next_weekday saturday)).
    (* ==> tuesday : day *)
 
-(** If you have a computer handy, this would be an excellent
+(* If you have a computer handy, this would be an excellent
     moment to fire up the Coq interpreter under your favorite IDE --
     either CoqIde or Proof General -- and try this for yourself.  Load
     this file ([Basics.v]) from the book's accompanying Coq sources,
     find the above example, submit it to Coq, and observe the
     result. *)
+(** もし今手元にコンピュータがあるなら、CoqのIDEのうち好きなもの（CoqIDEやProofGeneralなどから）を選んで起動し、実際に上のコマンドを入力し動かしてみるといいでしょう。付録の「[Basic.v]」ファイルから上のサンプルを探してCoqに読み込ませ、結果を観察してください。 *)
 
-(** The keyword [compute] tells Coq precisely how to
+(* The keyword [compute] tells Coq precisely how to
     evaluate the expression we give it.  For the moment, [compute] is
     the only one we'll need; later on we'll see some alternatives that
     are sometimes useful. *)
+(** 「[simpl]（simplify）」というキーワードは、Coqに対して「我々が与えた式を正確に評価せよ」という命令です。しばらくの間、「[simpl]」コマンドは我々にとって必要な唯一のコマンドになるでしょう。この後でもう少し使い出のある別のコマンドを覚えるまでの間ですが。 *)
 
-(** Second, we can record what we _expect_ the result to be in
+(* Second, we can record what we _expect_ the result to be in
     the form of a Coq example: *)
+(** 二番目の方法は、評価の結果として我々が期待しているものをCoqに対してあらかじめ以下のような形で例示しておくというものです。 *)
 
 Example test_next_weekday:
   (next_weekday (next_weekday saturday)) = tuesday.
 
-(** This declaration does two things: it makes an
+(* This declaration does two things: it makes an
     assertion (that the second weekday after [saturday] is [tuesday]),
     and it gives the assertion a name that can be used to refer to it
     later. *)
-(** Having made the assertion, we can also ask Coq to verify it,
+(* Having made the assertion, we can also ask Coq to verify it,
     like this: *)
+(** この宣言は二つのことを行っています。ひとつは、[saturday]の次の次にあたる平日が、[tuesday]であるということを確認する必要があるということを示すこと。もう一つは、後で参照しやすいように、その確認事項に[test_next_weekday]という名前を与えていることです。
+    この確認事項を定義すれば、次のようなコマンドを流すだけで、Coqによって正しさを検証できます。 *)
 
 Proof. simpl. reflexivity.  Qed.
 
-(** The details are not important for now (we'll come back to
+(* The details are not important for now (we'll come back to
     them in a bit), but essentially this can be read as "The assertion
     we've just made can be proved by observing that both sides of the
     equality evaluate to the same thing, after some simplification." *)
+(** この文について細かいことは今は置いておきますが（じきに戻ってきます）、本質的には以下のような意味になります「我々が作成した確認事項は簡約後の同値チェックによって証明されました。」 *)
 
-(** Third, we can ask Coq to _extract_, from our [Definition], a
+(* Third, we can ask Coq to _extract_, from our [Definition], a
     program in some other, more conventional, programming
     language (OCaml, Scheme, or Haskell) with a high-performance
     compiler.  This facility is very interesting, since it gives us a
@@ -154,19 +172,22 @@ Proof. simpl. reflexivity.  Qed.
     developed.  We'll come back to this topic in later chapters.  More
     information can also be found in the Coq'Art book by Bertot and
     Casteran, as well as the Coq reference manual. *)
+(** 三番目の方法は、Coqで[定義]したものから、他のより一般的な言語（OcamlやScheme、Haskellといった）のプログラムを抽出してしまうことです。この機能は今主流の言語で完全に確認されたプログラムを実現できる道を開いたという意味でとても興味深いものです。ここではこの件について深入りすることはしませんが、もしより深く知りたいという場合はCoq'Art book（Bertot and Casteran著）か、Coqリファレンスマニュアルを参照してください。 *)
 
 
 (* ###################################################################### *)
-(** ** Booleans *)
+(* ** Booleans *)
+(** ** ブール型 *)
 
-(** In a similar way, we can define the standard type [bool] of
+(* In a similar way, we can define the standard type [bool] of
     booleans, with members [true] and [false]. *)
+(** 同様にして、[true]と[false]を値としてとる「[bool型]」を定義することができます。 *)
 
 Inductive bool : Type :=
   | true : bool
   | false : bool.
 
-(** Although we are rolling our own booleans here for the sake
+(* Although we are rolling our own booleans here for the sake
     of building up everything from scratch, Coq does, of course,
     provide a default implementation of the booleans in its standard
     library, together with a multitude of useful functions and
@@ -174,33 +195,37 @@ Inductive bool : Type :=
     documentation if you're interested.)  Whenever possible, we'll
     name our own definitions and theorems so that they exactly
     coincide with the ones in the standard library. *)
+(** このようにして、我々は独自のbool型を一から作りあげることもできるのですが、もちろんCoqには標準ライブラリとしてbool型が多くの有用な関数、補助定理と一緒に用意されています。（もし興味があるなら、CoqライブラリドキュメントのCoq.Init.Datatypesを参照してください。）ここでは可能な限り標準ライブラリと正確に同じ機能を、我々独自の名前で定義していくことにしましょう。 *)
 
-(** Functions over booleans can be defined in the same way as
+(* Functions over booleans can be defined in the same way as
     above: *)
+(** ブール型を使用する関数は、Day型と同じように定義することができます。 *)
 
-Definition negb (b:bool) : bool := 
+Definition negb (b:bool) : bool :=
   match b with
   | true => false
   | false => true
   end.
 
-Definition andb (b1:bool) (b2:bool) : bool := 
-  match b1 with 
-  | true => b2 
+Definition andb (b1:bool) (b2:bool) : bool :=
+  match b1 with
+  | true => b2
   | false => false
   end.
 
-Definition orb (b1:bool) (b2:bool) : bool := 
-  match b1 with 
+Definition orb (b1:bool) (b2:bool) : bool :=
+  match b1 with
   | true => true
   | false => b2
   end.
 
-(** The last two illustrate the syntax for multi-argument
+(* The last two illustrate the syntax for multi-argument
     function definitions. *)
+(** 後半の二つは、引数を複数持つ関数を定義する方法を示しています。 *)
 
-(** The following four "unit tests" constitute a complete
+(* The following four "unit tests" constitute a complete
     specification -- a truth table -- for the [orb] function: *)
+(** 次の四つの単体テストは、関数[orb]が取り得るすべての引数についての完全な仕様（真理値表）となっています。 *)
 
 Example test_orb1:  (orb true  false) = true. 
 Proof. reflexivity.  Qed.
@@ -215,30 +240,36 @@ Proof. reflexivity.  Qed.
     actually needed because [reflexivity] automatically performs
     simplification.) *)
 
-(** _A note on notation_: In .v files, we use square brackets to
+(* _A note on notation_: In .v files, we use square brackets to
     delimit fragments of Coq code within comments; this convention,
     also used by the [coqdoc] documentation tool, keeps them visually
     separate from the surrounding text.  In the html version of the
     files, these pieces of text appear in a [different font]. *)
+(** 記述方法について: .v ファイルのコメントの中に Coqのコード片を含める場合には、角括弧を使用してコメントと区切ります。この慣習は[coqdoc]というドキュメント作成ツールでも利用されているのですが、コード片を周囲のコメントから視覚的に分離することができます。CoqソースのHTML版では、ソースはコメントとは[別のフォント]で表示されます。 *)
 
-(** The values [Admitted] and [admit] can be used to fill
+(* The values [Admitted] and [admit] can be used to fill
     a hole in an incomplete definition or proof.  We'll use them in the
     following exercises.  In general, your job in the exercises is 
     to replace [admit] or [Admitted] with real definitions or proofs. *)
+(** 次にCoqでのちょっとトリッキーな定義（[admit]）を紹介しましょう。この[admit]は、定義や証明にある不完全な部分を「とりあえず今は無いこと」にしてくれるものです。これを次の[nandb]での練習問題に使ってみることにしましょう。ここからしばらく、練習問題を解くということは[admit]や[Admitted]と書かれた部分をちゃんとした定義や証明に書き直す作業になります。 *)
 
-(** **** Exercise: 1 star (nandb)  *)
-(** Complete the definition of the following function, then make
+(* **** Exercise: 1 star (nandb)  *)
+(** **** 練習問題: ★ (nandb) *)
+(* Complete the definition of the following function, then make
     sure that the [Example] assertions below can each be verified by
     Coq.  *)
+(** 次の定義を完成させ、[Example]で記述された確認内容がCoqのチェックをすべて通過することを確認しなさい。  *)
 
-(** This function should return [true] if either or both of
+(* This function should return [true] if either or both of
     its inputs are [false]. *)
+(** この関数はどちらか、もしくは両方が[false]になったときに[true]を返すものである。 *)
 
 Definition nandb (b1:bool) (b2:bool) : bool :=
   (* FILL IN HERE *) admit.
 
-(** Remove "[Admitted.]" and fill in each proof with 
+(* Remove "[Admitted.]" and fill in each proof with 
     "[Proof. reflexivity. Qed.]" *)
+(** 下の定義から[Admitted.]を取り去り、代わりに"[Proof. reflexivity. Qed.]"で検証できるようなコードを記述しなさい。 *)
 
 Example test_nandb1:               (nandb true false) = true.
 (* FILL IN HERE *) Admitted.
@@ -250,13 +281,14 @@ Example test_nandb4:               (nandb true true) = false.
 (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** **** Exercise: 1 star (andb3)  *)
+(* **** Exercise: 1 star (andb3)  *)
+(** **** 練習問題: ★ (andb3) *)
 (** Do the same for the [andb3] function below. This function should
     return [true] when all of its inputs are [true], and [false]
     otherwise. *)
 
 Definition andb3 (b1:bool) (b2:bool) (b3:bool) : bool :=
-  (* FILL IN HERE *) admit.
+  (* ここを埋めなさい *) admit.
 
 Example test_andb31:                 (andb3 true true true) = true.
 (* FILL IN HERE *) Admitted.
@@ -269,34 +301,39 @@ Example test_andb34:                 (andb3 true true false) = false.
 (** [] *)
 
 (* ###################################################################### *)
-(** ** Function Types *)
+(* ** Function Types *)
+(** ** 関数の型 *)
 
-(** The [Check] command causes Coq to print the type of an
+(* The [Check] command causes Coq to print the type of an
     expression.  For example, the type of [negb true] is [bool]. *)
+(** [Check]コマンドを使うと、Coqに、指定した式の型を表示させることができます。例えば、（[negb true]）という式の全体の型は[bool]である、という具合です。 *)
 
 Check true.
 (* ===> true : bool *)
 Check (negb true).
 (* ===> negb true : bool *)
 
-(** Functions like [negb] itself are also data values, just like
+(* Functions like [negb] itself are also data values, just like
     [true] and [false].  Their types are called _function types_, and
     they are written with arrows. *)
+(** [negb]のような関数は、それ自身が[true]や[false]と同じように値であると考えることもできます。そのようにとらえた場合の値の型を「関数型」と呼び、以下のように矢印を使った型として表します。 *)
 
 Check negb.
 (* ===> negb : bool -> bool *)
 
-(** The type of [negb], written [bool -> bool] and pronounced
+(* The type of [negb], written [bool -> bool] and pronounced
     "[bool] arrow [bool]," can be read, "Given an input of type
     [bool], this function produces an output of type [bool]."
     Similarly, the type of [andb], written [bool -> bool -> bool], can
     be read, "Given two inputs, both of type [bool], this function
     produces an output of type [bool]." *)
+(** [negb]の型は[bool->bool]と書き、「[bool]から[bool]」と読み、[bool]型の引数をとって[bool]型の戻り値を返す関数と理解することができます。同様に、[andb]の型は[bool -> bool -> bool]と書き、「二つの[bool]型の値を引数として[bool]型の値を作成して戻す」と解釈します。 *)
 
 (* ###################################################################### *)
-(** ** Numbers *)
+(* ** Numbers *)
+(** ** 数値 *)
 
-(** _Technical digression_: Coq provides a fairly sophisticated
+(* _Technical digression_: Coq provides a fairly sophisticated
     _module system_, to aid in organizing large developments.  In this
     course we won't need most of its features, but one is useful: If
     we enclose a collection of declarations between [Module X] and
@@ -305,20 +342,22 @@ Check negb.
     instead of just [foo].  Here, we use this feature to introduce the
     definition of the type [nat] in an inner module so that it does
     not shadow the one from the standard library. *)
+(** ちょっと技術的な話：Coqは大規模な開発を支援するためにちょっと大げさにも見えるモジュールシステムを提供しています。このコースではこれらはほとんど必要のないものですが、一つだけ有用なものがあります。プログラムの中のいくつかの要素を[Module X]と[End X]で囲んでおくと、[End X]以降の部分から、囲まれた中の定義を[X.foo]という風に呼び出すことができます。このことは、新しく[foo]という名前で関数を定義しても問題ないということです。逆に、同じスコープの中では、同じ名前での定義はエラーとなります。という訳で、今回我々はこの機能を使って[nat]という型を内部モジュールとして定義します。そうすることで、標準ライブラリの同じ名前の定義を覆い隠してしまわずに済みます。 *)
 
 Module Playground1.
 
-(** The types we have defined so far are examples of "enumerated
+(* The types we have defined so far are examples of "enumerated
     types": their definitions explicitly enumerate a finite set of
     elements.  A more interesting way of defining a type is to give a
     collection of "inductive rules" describing its elements.  For
     example, we can define the natural numbers as follows: *)
+(** 我々がここまでで定義してきた型は「列挙型」の型定義でした。このような型は、有限の要素をすべて列挙することによって定義されます。型を定義するもう一つの方法は、「帰納的な記述」を並べることで要素を記述する方法です。例えば、自然数は（全て並べるわけにはいきませんが）以下のような方法で定義できます。 *)
 
 Inductive nat : Type :=
   | O : nat
   | S : nat -> nat.
 
-(** The clauses of this definition can be read: 
+(* The clauses of this definition can be read: 
       - [O] is a natural number (note that this is the letter "[O]," not
         the numeral "[0]").
       - [S] is a "constructor" that takes a natural number and yields
@@ -341,8 +380,19 @@ Inductive nat : Type :=
     annotations we used for their constructors are analogous to the
     one for the [O] constructor, and indicate that each of those
     constructors doesn't take any arguments. *)
+(** この定義の各句は、以下のように解釈できます。
+      - [O]は自然数である（[0]（ゼロ）ではなく"[O]"（オー）であることに注意）
+      - [S]は自然数を引数にとり、別の自然数を生成する「コンストラクタ」である。このことは、[n]が自然数なら[S n]も自然数であることを示している。
 
-(** These three conditions are the precise force of the
+    この定義にして、もう少し詳しく見ていきましょう。
+
+    これまでに定義してきた帰納的な型（[weekday]、[nat]、[bool]など）は、実際には式の集合とでも言うべきものです。[nat]の定義は、[nat]の要素となる式がどのように構築されるかを表しています。
+
+    - 式[O]（オー）は、[nat]に属する。
+    - もし[n]が[nat]に属するならば、[S n]もまた[nat]に属する。
+    - これら二つの方法で表された式のみが[nat]に属するものの全てである。*)
+
+(* These three conditions are the precise force of the
     [Inductive] declaration.  They imply that the expression [O], the
     expression [S O], the expression [S (S O)], the expression
     [S (S (S O))], and so on all belong to the set [nat], while other
@@ -352,6 +402,10 @@ Inductive nat : Type :=
     We can write simple functions that pattern match on natural
     numbers just as we did above -- for example, the predecessor
     function: *)
+(** これら三つの条件によって、[nat]が帰納的([Inductive])な方法で厳格に定義されています。この定義によって、式 [O]、式 [S O]、式  [S (S O)]、式 [S (S (S O))]...が全て[nat]に属する式であることが表されています。また同時に、[true]や[andb true false]、[S (S false)]が[nat]に属さないことも明確にされています。
+
+    こうして定義された自然数[nat]をマターンマッチにかけることで、簡単な関数を書いてみましょう。例えば、一つ前の[nat]を返す関数は以下のよう書けます。
+ *)
 
 Definition pred (n : nat) : nat :=
   match n with
@@ -359,8 +413,9 @@ Definition pred (n : nat) : nat :=
     | S n' => n'
   end.
 
-(** The second branch can be read: "if [n] has the form [S n']
+(* The second branch can be read: "if [n] has the form [S n']
     for some [n'], then return [n']."  *)
+(** この２番目の句は「もし[n]が何らかの[n']を用いて[S n']と表せるなら、[n']を返す」と読めます。 *)
 
 End Playground1.
 
@@ -371,35 +426,39 @@ Definition minustwo (n : nat) : nat :=
     | S (S n') => n'
   end.
 
-(** Because natural numbers are such a pervasive form of data,
+(* Because natural numbers are such a pervasive form of data,
     Coq provides a tiny bit of built-in magic for parsing and printing
     them: ordinary arabic numerals can be used as an alternative to
     the "unary" notation defined by the constructors [S] and [O].  Coq
     prints numbers in arabic form by default: *)
+(** 自然数というのは非常に一般的な型なので、Coqは自然数を扱ったり表したりするときに若干特別な扱いをします。[S]や[O]を使った式の代わりに一般的に使われるアラビア数字を使うことができます。実際、Coqは数値を表示する際、デフォルトではアラビア数字を用います。 *)
 
 Check (S (S (S (S O)))).
 Eval compute in (minustwo 4).
 
 (** The constructor [S] has the type [nat -> nat], just like the
     functions [minustwo] and [pred]: *)
+(* [nat]のコンストラクタ[S]は、[nat -> nat]型の関数で[minustwo]や[pred]も同様です。 *)
 
 Check S.
 Check pred.
 Check minustwo.
 
-(** These are all things that can be applied to a number to yield a
+(* These are all things that can be applied to a number to yield a
     number.  However, there is a fundamental difference: functions
     like [pred] and [minustwo] come with _computation rules_ -- e.g.,
     the definition of [pred] says that [pred 2] can be simplified to
     [1] -- while the definition of [S] has no such behavior attached.
     Although it is like a function in the sense that it can be applied
     to an argument, it does not _do_ anything at all! *)
+(** これらが表しているのは、いずれの関数も数を引数にとって数を生成できる、ということです。しかしながらこれらの関数には根本的な違いがあります。[pred]や[minustwo]といった関数には「計算ルール」というものが定義されています。[pred]の定義は、[pred n]が[match n with | O => O | S m' => m' end]のように簡約されることを記述したものですが、一方[S]にはそのような定義がありません。しかし両方とも関数には違いなく、引数を元に評価されるということについては同じで、それ以上のものではないのです。 *)
 
-(** For most function definitions over numbers, pure pattern
+(* For most function definitions over numbers, pure pattern
     matching is not enough: we also need recursion.  For example, to
     check that a number [n] is even, we may need to recursively check
     whether [n-2] is even.  To write such functions, we use the
     keyword [Fixpoint]. *)
+(** 数値を扱う多くの関数は、単なるパターンマッチだけでは記述できず、再帰的な定義が必要になってきます。例えば、[n]が偶数かどうかを調べて返す関数[evenb]は、[n-2]が偶数であるかどうかを調べる、という再帰的な定義を必要とします。そういう関数を定義する場合、[Fixpoint]というキーワードを使用します。 *)
 
 Fixpoint evenb (n:nat) : bool :=
   match n with
@@ -408,8 +467,10 @@ Fixpoint evenb (n:nat) : bool :=
   | S (S n') => evenb n'
   end.
 
-(** We can define [oddb] by a similar [Fixpoint] declaration, but here
+(** Coqがこの定義をチェックする際、[evenb]が再帰的に呼ばれるとき、最初の引数が減少しているかに注目します。これは、ここでいう再帰が[n]について構造的再帰（もしくは原始的再帰）であること、つまり[n]について常により少ない値で再帰呼び出しを行っているか、ということです。これは[evenb]が最終的に停止するということを意味しています。Coqは[Fixpoint]キーワードで定義される関数が常にこの「減少性」を持つことを要求します。 *)
+(* We can define [oddb] by a similar [Fixpoint] declaration, but here
     is a simpler definition that will be a bit easier to work with: *)
+(** 同じように[Fixpoint]を使って関数[oddb]を定義することもできますが、ここでは次のようにもっとシンプルな用法で簡単に作ってみましょう。 *)
 
 Definition oddb (n:nat) : bool   :=   negb (evenb n).
 
@@ -418,9 +479,11 @@ Proof. reflexivity.  Qed.
 Example test_oddb2:    (oddb (S (S (S (S O))))) = false.
 Proof. reflexivity.  Qed.
 
-(** Naturally, we can also define multi-argument functions by
+(* Naturally, we can also define multi-argument functions by
     recursion.  (Once again, we use a module to avoid polluting the
     namespace.) *)
+(** 当然ながら、引数を複数持つ関数も再帰的に定義することができます。 *)
+(** ネームスペースを汚さないようにするため、別のモジュールに定義することにしましょう。*)
 
 Module Playground2.
 
@@ -430,12 +493,14 @@ Fixpoint plus (n : nat) (m : nat) : nat :=
     | S n' => S (plus n' m)
   end.
 
-(** Adding three to two now gives us five, as we'd expect. *)
+(* Adding three to two now gives us five, as we'd expect. *)
+(** 3に2を加えた結果は、5になるべきですね。 *)
 
 Eval compute in (plus (S (S (S O))) (S (S O))).
 
-(** The simplification that Coq performs to reach this conclusion can
+(* The simplification that Coq performs to reach this conclusion can
     be visualized as follows: *)
+(** Coqがこの計算をどう進めて（簡約して）結論を導くかは以下のように表現できます。 *)
 
 (*  [plus (S (S (S O))) (S (S O))]    
 ==> [S (plus (S (S O)) (S (S O)))] by the second clause of the [match]
@@ -444,10 +509,11 @@ Eval compute in (plus (S (S (S O))) (S (S O))).
 ==> [S (S (S (S (S O))))]          by the first clause of the [match]
 *)
 
-(** As a notational convenience, if two or more arguments have
+(* As a notational convenience, if two or more arguments have
     the same type, they can be written together.  In the following
     definition, [(n m : nat)] means just the same as if we had written
     [(n : nat) (m : nat)]. *)
+(** 表記を簡便にするため、複数の引数が同じ型を持つときは、型の記述をまとめることができます。 [(n m : nat)]は[(n : nat) (m : nat)]と書いたのとまったく同じ意味になります。 *)
 
 Fixpoint mult (n m : nat) : nat :=
   match n with
@@ -458,8 +524,9 @@ Fixpoint mult (n m : nat) : nat :=
 Example test_mult1: (mult 3 3) = 9.
 Proof. reflexivity.  Qed.
 
-(** You can match two expressions at once by putting a comma
+(* You can match two expressions at once by putting a comma
     between them: *)
+(** matchに引数を与える際、複数の引数を次のようにカンマで区切って一度に渡すことができます。 *)
 
 Fixpoint minus (n m:nat) : nat :=
   match n, m with
@@ -468,10 +535,11 @@ Fixpoint minus (n m:nat) : nat :=
   | S n', S m' => minus n' m'
   end.
 
-(** The _ in the first line is a _wildcard pattern_.  Writing _ in a
+(* The _ in the first line is a _wildcard pattern_.  Writing _ in a
     pattern is the same as writing some variable that doesn't get used
     on the right-hand side.  This avoids the need to invent a bogus
     variable name. *)
+(** [minus]の[match]の行に現れる( _ )は、ワイルドカードパターンと呼ばれるものです。パターンの中に _ を書くと、それはその部分が何であってもマッチし、その値が使用されないことを意味します。この _ は、このような場合に無意味な名前をつける必要をなくしてくれます。 *)
 
 End Playground2.
 
@@ -481,13 +549,20 @@ Fixpoint exp (base power : nat) : nat :=
     | S p => mult base (exp base p)
   end.
 
-(** **** Exercise: 1 star (factorial)  *)
-(** Recall the standard factorial function:
+(* **** Exercise: 1 star (factorial)  *)
+(** **** 演習問題: ★ (factorial) *)
+(* Recall the standard factorial function:
 <<
-    factorial(0)  =  1 
+    factorial(0)  =  1
     factorial(n)  =  n * factorial(n-1)     (if n>0)
 >>
     Translate this into Coq. *)
+(** 再帰を使用した、一般的なfactorical（階乗）の定義を思い出してください :
+<<
+    factorial(0)  =  1
+    factorial(n)  =  n * factorial(n-1)     (if n>0)
+>>
+    これをCoqでの定義に書き直しなさい。 *)
 
 Fixpoint factorial (n:nat) : nat := 
 (* FILL IN HERE *) admit.
@@ -499,9 +574,10 @@ Example test_factorial2:          (factorial 5) = (mult 10 12).
 
 (** [] *)
 
-(** We can make numerical expressions a little easier to read and
+(* We can make numerical expressions a little easier to read and
     write by introducing "notations" for addition, multiplication, and
     subtraction. *)
+(** ここで紹介する"notation"（表記法）という機能を使うことで、加算、減算、乗算のような数値を扱う式をずっと読みやすく、書きやすくすることができます。 *)
 
 Notation "x + y" := (plus x y)  
                        (at level 50, left associativity) 
@@ -521,17 +597,24 @@ Check ((0 + 1) + 1).
    "More on Notation" subsection in the "Advanced Material" section at
    the end of this chapter.) *)
 
-(** Note that these do not change the definitions we've already
+(* Note that these do not change the definitions we've already
     made: they are simply instructions to the Coq parser to accept [x
     + y] in place of [plus x y] and, conversely, to the Coq
     pretty-printer to display [plus x y] as [x + y]. *)
+(** これらは、これまで我々が定義してきたものを何ら変えるわけではありません。NotationはCoqのパーサに対して[x + y]を[plus x y]と解釈させたり、逆に[plus x y]を[x + y]と表記させたりするためのものです。
 
-(** When we say that Coq comes with nothing built-in, we really
+    各表記法のシンボルは、表記法のスコープ内でのみ有効です。Coqはどのスコープであるかを推測しようとします。[S(O*O)]と書かれていた場合は、それを[nat_scope]であると推測しますし、ソースにデカルト積（タプル）型[bool*bool]と書かれていたら、[type_scope]であると推測します。時には[(x*y)%nat]といった風に、%表記を使ってスコープを明示する必要があるでしょうし、どの表記スコープで解釈したかが[%nat]というような形でCoqからフィードバックされてくることもあります。
+
+    表記のスコープは、多くの場合数値に適用されます。ですので[0%nat]という表記を[O]（オー）や[0%Z]（数値のゼロ）という意味で見ることがあります。 *)
+
+(* When we say that Coq comes with nothing built-in, we really
     mean it: even equality testing for numbers is a user-defined
     operation! *)
-(** The [beq_nat] function tests [nat]ural numbers for [eq]uality,
+(** 最初の方で、Coqにはほとんど何も用意されていない、という話をしましたが、本当のところ、数値を比較する関数すら自分で作らなければならないのです！! *)
+(* The [beq_nat] function tests [nat]ural numbers for [eq]uality,
     yielding a [b]oolean.  Note the use of nested [match]es (we could
     also have used a simultaneous match, as we did in [minus].)  *)
+(** [beq_nat]関数は自然数を比較してbool値を返すものです。入れ子になった[match]に気をつけて、以下のソースを読んでください。（二つの変数を一度に[match]させる場合の書き方は、[minus]のところですでに登場しています） *)
 
 Fixpoint beq_nat (n m : nat) : bool :=
   match n with
@@ -545,8 +628,9 @@ Fixpoint beq_nat (n m : nat) : bool :=
             end
   end.
 
-(** Similarly, the [ble_nat] function tests [nat]ural numbers for
+(* Similarly, the [ble_nat] function tests [nat]ural numbers for
     [l]ess-or-[e]qual, yielding a [b]oolean. *)
+(** 同様に、[ble_nat]関数は自然数を比較して小さいか等しい、ということを調べてbool値を生成し返します。 *)
 
 Fixpoint ble_nat (n m : nat) : bool :=
   match n with
@@ -565,10 +649,14 @@ Proof. reflexivity.  Qed.
 Example test_ble_nat3:             (ble_nat 4 2) = false.
 Proof. reflexivity.  Qed.
 
-(** **** Exercise: 2 stars (blt_nat)  *)
-(** The [blt_nat] function tests [nat]ural numbers for [l]ess-[t]han,
+(* **** Exercise: 2 stars (blt_nat)  *)
+(** **** 練習問題: ★★ (blt_nat) *)
+(* The [blt_nat] function tests [nat]ural numbers for [l]ess-[t]han,
     yielding a [b]oolean.  Instead of making up a new [Fixpoint] for
     this one, define it in terms of a previously defined function. *)
+(** [blt_nat]関数は、自然数を比較して小さい、ということを調べてbool値を生成します（ [nat]ural numbers for [l]ess-[t]han）。[Fixpoint]を使用して１から作成するのではなく、すでにこれまで定義した関数を利用して定義しなさい。
+
+注：[simpl]タクティックを使ってうまくいかない場合は、代わりに[compute]を試してください。それはよりうまく作られた[simpl]と言えるものですが、そもそもシンプルでエレガントな解が書けていれば、[simpl]で十分に評価できるはずです。 *)
 
 Definition blt_nat (n m : nat) : bool :=
   (* FILL IN HERE *) admit.
@@ -582,10 +670,12 @@ Example test_blt_nat3:             (blt_nat 4 2) = false.
 
 (** [] *)
 
-(* ###################################################################### *)
-(** * Proof by Simplification *)
+(* * Proof by Simplification *)
+(** * 簡約を用いた証明 *)
 
-(** Now that we've defined a few datatypes and functions, let's
+(* ###################################################################### *)
+
+(* Now that we've defined a few datatypes and functions, let's
     turn to the question of how to state and prove properties of their
     behavior.  Actually, in a sense, we've already started doing this:
     each [Example] in the previous sections makes a precise claim
@@ -608,11 +698,15 @@ Example test_blt_nat3:             (blt_nat 4 2) = false.
     [0] is a "neutral element" for [+] on the left can be proved
     just by observing that [0 + n] reduces to [n] no matter what
     [n] is, a fact that can be read directly off the definition of [plus].*)
+(** ここまでに、いくつかの型や関数を定義してきました。が、ここからは少し目先を変えて、こういった型や関数の特性や振る舞いをどうやって知り、証明していくかを考えてみることにしましょう。実際には、すでにこれまでやってきたことでも、その一部に触れています。。例えば、前のセクションの[Example]は、ある関数にある特定の値を入力した時の振る舞いについて、あらかじめ想定していたものと正確に一致していると主張してくれます。それらの主張が証明しているものは、以下のものと同じです。
+
+[=]の両側の式を定義に基づいて簡約した結果は、一致している。
+
+このような「簡約を用いた証明」は、関数のさらに興味深い性質をうまく証明することができます。例えば、[0]が自然数の加算における左単位元（[0]が、左から加えても値が変わらない値であること）であることの証明は、[n]が何であっても[0 + n]を注意深く縮小(簡約)したものが[n]になることを、[+]という関数が「最初の引数を引き継いで再帰的に定義されている」ということを考慮した上で示せればいいということです。 *)
 
 Theorem plus_O_n : forall n : nat, 0 + n = n.
 Proof.
   intros n. reflexivity.  Qed.
-
 
 (** (_Note_: You may notice that the above statement looks
     different in the original source file and the final html output. In Coq
@@ -620,7 +714,7 @@ Proof.
     "_forall_" reserved identifier. This gets printed as an
     upside-down "A", the familiar symbol used in logic.)  *)
 
-(** The form of this theorem and proof are almost exactly the
+(* The form of this theorem and proof are almost exactly the
     same as the examples above; there are just a few differences.
 
     First, we've used the keyword [Theorem] instead of
@@ -642,6 +736,9 @@ Proof.
     [Qed] to tell Coq how it should check the correctness of some
     claim we are making.  We will see several more tactics in the rest
     of this lecture, and yet more in future lectures. *)
+(** この定理と証明の様式は、以前示した例とほとんど同じですが、唯一の違いは、量化子が加えられている（[forall n:nat]）ことと、[Example]の代わりに[Theorem]キーワードが使用されていることです。後者の違いは単なるスタイルの違いで、[Example]と[Theorem]（他にも[Lemma]、[Fact]、[Remark]など）はCoqから見るとすべて同じ意味を持ちます。
+
+    [intros]や[simpl]、[reflexivity]はタクティックの例です。タクティックは、[Proof]と[Qed]の間に記述され、Coqに対して、我々がしようとしている主張の正当性をどのようにチェックすべきかを指示するためのコマンドです。この講義の残りでは、まだ出てきていないタクティックのうちのいくつかを紹介していきましょう。さらにその後の講義ではもっと色々出てくるのですが。 *)
 
 (** We could try to prove a similar theorem about [plus] *)
 
@@ -654,8 +751,9 @@ Proof.
   simpl. (* Doesn't do anything! *)
 Abort.
 
-(** (Can you explain why this happens?  Step through both proofs with
+(* (Can you explain why this happens?  Step through both proofs with
     Coq and notice how the goal and context change.) *)
+(** 次の証明をCoq上で逐次実行し、どのように状況が変化してゴールが導かれるのかをよく観察してください。 *)
 
 Theorem plus_1_l : forall n:nat, 1 + n = S n. 
 Proof.
@@ -665,20 +763,23 @@ Theorem mult_0_l : forall n:nat, 0 * n = 0.
 Proof.
   intros n. reflexivity.  Qed.
 
-(** The [_l] suffix in the names of these theorems is
+(* The [_l] suffix in the names of these theorems is
     pronounced "on the left." *)
+(** 定理の名前についている[_l]という接尾辞は、「左の」と読みます。 *)
 
 
 (* ###################################################################### *)
-(** * Proof by Rewriting *)
+(* * Proof by Rewriting *)
+(** * 書き換え（[Rewriting]）による証明*)
 
-(** Here is a slightly more interesting theorem: *)
+(* Here is a slightly more interesting theorem: *)
+(** 少しばかり興味深い定理を見てみましょう。 *)
 
 Theorem plus_id_example : forall n m:nat,
   n = m -> 
   n + n = m + m.
 
-(** Instead of making a completely universal claim about all numbers
+(* Instead of making a completely universal claim about all numbers
     [n] and [m], this theorem talks about a more specialized property
     that only holds when [n = m].  The arrow symbol is pronounced
     "implies."
@@ -694,6 +795,9 @@ Theorem plus_id_example : forall n m:nat,
     [n] with [m] in the goal statement and obtain an equality with the
     same expression on both sides.  The tactic that tells Coq to
     perform this replacement is called [rewrite]. *)
+(** この定理は、あらゆる[n]や[m]について完全に成り立つと言っているわけではなく、[n = m]が成り立つときに限って成立する、というもので、この矢印は"ならば"と一般的に読みます。
+
+[n]と[m]が両方とも任意の数なのですから、これをこれまでの証明でやってきたように簡約することはできません。その代わりに、[n = m]ならば、イコールの両側の[n]や[m]を互いに書き換えても等しさは変わらない、というところに注目します。このような書き換えをしてくれるのが[rewrite]タクティックです。 *)
 
 Proof.
   intros n m.   (* move both quantifiers into the context *)
@@ -701,7 +805,7 @@ Proof.
   rewrite -> H. (* Rewrite the goal using the hypothesis *)
   reflexivity.  Qed.
 
-(** The first line of the proof moves the universally quantified
+(* The first line of the proof moves the universally quantified
     variables [n] and [m] into the context.  The second moves the
     hypothesis [n = m] into the context and gives it the (arbitrary)
     name [H].  The third tells Coq to rewrite the current goal ([n + n
@@ -713,9 +817,14 @@ Proof.
     To rewrite from right to left, you can use [rewrite <-].  Try
     making this change in the above proof and see what difference it
     makes in Coq's behavior.) *)
+(** 証明の1行目は、∀（forall）がついた、つまり「あらゆる[n],[m]について」の部分をコンテキストに移しています。2行目は、[n = m]ならば、という仮定をコンテキストに写し、[H]という名前をこれに与えています。3行目は、ゴールになっている式([n + n = m + m])に仮定[H]の左側を右側にするような書き換えを施しています。
 
-(** **** Exercise: 1 star (plus_id_exercise)  *)
-(** Remove "[Admitted.]" and fill in the proof. *)
+（[rewrite]の矢印は特に論理に関与していません。単に左側を右側に置き換えているだけです。逆に右側を左側に置き換えたい場合は、[rewrite <-]と書くこともできます。この逆の置き換えも上の証明で試して、Coqの振る舞いがどのように変わるかを観察してください。） *)
+
+(* **** Exercise: 1 star (plus_id_exercise)  *)
+(** **** 練習問題: ★ (plus_id_exercise) *)
+(* Remove "[Admitted.]" and fill in the proof. *)
+(** [Admitted.]を削除し、証明を完成させなさい。*)
 
 Theorem plus_id_exercise : forall n m o : nat,
   n = m -> m = o -> n + m = m + o.
@@ -723,7 +832,7 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** As we've seen in earlier examples, the [Admitted] command
+(* As we've seen in earlier examples, the [Admitted] command
     tells Coq that we want to skip trying to prove this theorem and
     just accept it as a given.  This can be useful for developing
     longer proofs, since we can state subsidiary facts that we believe
@@ -734,9 +843,11 @@ Proof.
     every time you say [Admitted] (or [admit]) you are leaving a door
     open for total nonsense to enter Coq's nice, rigorous, formally
     checked world! *)
+(** Admittedコマンドは、Coqに対して「この証明はあきらめたので、この定理はこれでいいことにしてください」と指示するものです。この機能は、より長い証明をする際に便利です。何か大きな論証をしようとする時、今のところ信用している補足的な命題を示したい時があります。そんな時、[Admitted]を使用すると、その命題を一時的に信用できることにして、それを踏み台にしてより大きな論証を進めることができるのです。そしてそれが完成したのち、あらためて保留していた命題の証明を埋めればいいのです。ただし注意して下さい。[admit]や[Admitted]を使用することは、一時的にドアを開けて、「全て形式的なチェックを受け証明済みの、信用するに足るCoqの世界」から、信用に値しない下界へ足を踏み出していることに他なりません。いつかは戻ってドアを閉めることがお約束です。*)
 
-(** We can also use the [rewrite] tactic with a previously proved
+(* We can also use the [rewrite] tactic with a previously proved
     theorem instead of a hypothesis from the context. *)
+(** 仮定の代わりに、前もって証明された定理を使っても[rewrite]タクティックは同じように利用することができます。 *)
 
 Theorem mult_0_plus : forall n m : nat,
   (0 + n) * m = n * m.
@@ -745,7 +856,8 @@ Proof.
   rewrite -> plus_O_n.
   reflexivity.  Qed.
 
-(** **** Exercise: 2 stars (mult_S_1)  *)
+(* **** Exercise: 2 stars (mult_S_1)  *)
+(** **** 練習問題: ★★, recommended (mult_S_1) *)
 Theorem mult_S_1 : forall n m : nat,
   m = S n -> 
   m * (1 + n) = m * m.
@@ -755,13 +867,15 @@ Proof.
 
 
 (* ###################################################################### *)
-(** * Proof by Case Analysis *) 
+(* * Proof by Case Analysis *) 
+(** * Case分析 *)
 
-(** Of course, not everything can be proved by simple
+(* Of course, not everything can be proved by simple
     calculation: In general, unknown, hypothetical values (arbitrary
     numbers, booleans, lists, etc.) can block the calculation.  
     For example, if we try to prove the following fact using the 
     [simpl] tactic as above, we get stuck. *)
+(** もちろん、どんな命題でも簡単な計算だけで証明できるという訳ではありません。一般に、未知だったり仮定の（任意のbool、自然数、リストなど）値は、我々が検証しようとしている関数の先頭に記述され、それが簡約の邪魔をしてくれます。例えば、下のような命題をsimplタクティックだけで証明しようとすると、すぐに行き詰まってしまうでしょう。 *)
 
 Theorem plus_1_neq_0_firsttry : forall n : nat,
   beq_nat (n + 1) 0 = false.
@@ -770,7 +884,7 @@ Proof.
   simpl.  (* does nothing! *)
 Abort.
 
-(** The reason for this is that the definitions of both
+(* The reason for this is that the definitions of both
     [beq_nat] and [+] begin by performing a [match] on their first
     argument.  But here, the first argument to [+] is the unknown
     number [n] and the argument to [beq_nat] is the compound
@@ -786,6 +900,11 @@ Abort.
 
     The tactic that tells Coq to consider, separately, the cases where
     [n = O] and where [n = S n'] is called [destruct]. *)
+(** その原因は、beq_natと+の定義で、共に最初の引数が[match]に渡されていることです。つまり、[+]に渡す最初の引数は[n]という未知数な上に、[beq_nat]の引数は[n + 1]という複合式になっているため、そのまま簡約できないのです。
+
+今求められていることは、[n]を何らかの条件に分割し、先に進めそうな形にすることができないかを検討することです。もし[n]が[O]なら、[beq_nat (n + 1) 0]の結果を得ることはできます。もちろん結果は[false]です。しかしもし[n]が何かの[n']を使って[n = S n']と表せると考えても、我々は[n + 1]の値を得ることはできません。ただ、その式が一つの[S]で始まる（始まらないものは[O]にマッチする）ことに着目すると、[beq_nat]の結果を計算して値を求めることができます。その結果[beq_nat (n + 1) 0]は、やはり[false]になるでしょう。
+
+このことから、求められるタクティックはCoqに[n = O]の場合と[n = S n']の場合に分けて考えるように求めるようなもので、これを実現するのが[destruct]タクティックです。 *)
 
 Theorem plus_1_neq_0 : forall n : nat,
   beq_nat (n + 1) 0 = false.
@@ -794,7 +913,7 @@ Proof.
     reflexivity.
     reflexivity.  Qed.
 
-(** The [destruct] generates _two_ subgoals, which we must then
+(* The [destruct] generates _two_ subgoals, which we must then
     prove, separately, in order to get Coq to accept the theorem as
     proved.  (No special command is needed for moving from one subgoal
     to the other.  When the first subgoal has been proved, it just
@@ -814,6 +933,11 @@ Proof.
     datatype.  For example, we use it here to prove that boolean
     negation is involutive -- i.e., that negation is its own
     inverse. *)
+(** [destruct]タクティックは二つのサブゴールを作ります。その両方を別々に、Coqを使って定理として証明していくことになります。一つのサブゴールからもう一つへ移動するための特別なコマンドは必要ありません。一つ目のサブゴールが証明されれば、それは消えて自動的にもう一つのサブゴールにフォーカスが移ります。この証明では、二つに分かれたサブゴールのいずれも[reflexivity]を1回使うだけで簡単に証明できます。
+
+destructについている注釈"[as [| n']]"は、"イントロパターン"と呼ばれるものです。これはCoqに対して、両方のサブゴールに元[n]だった変数をどのような変数名を使って取り入れるかを指示するものです。一般的に[[]]の間にあるものは"名前のリスト"で、"[|]"によって区切られます。このリストの最初の要素は空ですが、これは[nat]の最初のコンストラクタである[O]が引数をとらないからです。二つ目のコンストラクタ[S]は引数を一つ取りますので、リストの二つ目の要素である[n']を名前に使用します。
+
+[destruct]タクティックは帰納的に定義された型に対して使用できます。例えば、bool値の否定が反射的であること・・・つまり否定の否定が元と同じになることを証明してみましょう。 *)
 
 Theorem negb_involutive : forall b : bool,
   negb (negb b) = b.
@@ -822,7 +946,7 @@ Proof.
     reflexivity.
     reflexivity.  Qed.
 
-(** Note that the [destruct] here has no [as] clause because
+(* Note that the [destruct] here has no [as] clause because
     none of the subcases of the [destruct] need to bind any variables,
     so there is no need to specify any names.  (We could also have
     written [as [|]], or [as []].)  In fact, we can omit the [as]
@@ -830,13 +954,14 @@ Proof.
     automatically.  Although this is convenient, it is arguably bad
     style, since Coq often makes confusing choices of names when left
     to its own devices. *)
+(** ここで使われている[destruct]には[as]句がありませんが、ここで展開している[b]の型[bool]の二つのコンストラクタが両方とも引数をとらないため、名前を指定する必要がないのです。このような場合、"[as [|]]"や"[as []]"のように書くこともできます。実際のところほとんどの場合[destruct]の[as]句は省略可能です。その際はCoqの側で自動的に変数名をつけてくれます。これは確かに便利なのですが、よくない書き方とも言えます。Coqはしばしば名前付けに混乱して望ましくない結果を出す場合があります。 *)
 
-(** **** Exercise: 1 star (zero_nbeq_plus_1)  *)
+(* **** Exercise: 1 star (zero_nbeq_plus_1)  *)
+(** **** 練習問題: ★ (zero_nbeq_plus_1) *)
 Theorem zero_nbeq_plus_1 : forall n : nat,
   beq_nat 0 (n + 1) = false.
 Proof.
   (* FILL IN HERE *) Admitted.
-
 (** [] *)
 
 (* ###################################################################### *)
@@ -971,12 +1096,17 @@ Fixpoint plus' (n : nat) (m : nat) : nat :=
     in Coq will terminate on all inputs.  However, because Coq's
     "decreasing analysis" is not very sophisticated, it is sometimes
     necessary to write functions in slightly unnatural ways. *)
+(** 各関数の引数のいくつかが"減少的"でなければならない、という要求仕様は、Coqのデザインにおいて基礎となっているものです。特に、そのことによって、Coq上で作成された関数が、どんな入力を与えられても必ずいつか終了する、ということが保障されています。しかし、Coqの"減少的な解析"が「とても洗練されているとまではいえない」ため、時には不自然な書き方で関数を定義しなければならない、ということもあります。
+ *)
 
-(** **** Exercise: 2 stars, optional (decreasing)  *)
-(** To get a concrete sense of this, find a way to write a sensible
+(* **** Exercise: 2 stars, optional (decreasing)  *)
+(** **** 練習問題: ★★, optional (decreasing) *)
+(* To get a concrete sense of this, find a way to write a sensible
     [Fixpoint] definition (of a simple function on numbers, say) that
     _does_ terminate on all inputs, but that Coq will reject because
     of this restriction. *)
+(** これを具体的に感じるため、[Fixpoint]で定義された、より「微妙な」関数の書き方を考えてみましょう（自然数に関する簡単な関数でかまいません）。それが全ての入力で停止することと、Coqがそれを、この制限のため受け入れてくれないことを確認しなさい。
+*)
 
 (* FILL IN HERE *)
 (** [] *)

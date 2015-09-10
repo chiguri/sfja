@@ -1,9 +1,10 @@
-(** * Preface *)
+(* * Preface *)
+(** * 前書き *)
 
 (* ###################################################################### *)
 (** * Welcome *)
 
-(** This electronic book is a course on _Software Foundations_, the
+(* This electronic book is a course on _Software Foundations_, the
     mathematical underpinnings of reliable software.  Topics include
     basic concepts of logic, computer-assisted theorem proving, the
     Coq proof assistant, functional programming, operational
@@ -25,10 +26,16 @@
     coherent linear narrative, plus a number of "appendices" covering
     additional topics.  All the core chapters are suitable for both
     upper-level undergraduate and graduate students. *)
+(** この電子文章は「ソフトウェアの基礎（プログラミングとプログラミング言語の数学的理論）」という、大学後半～院生向けの1学期分の講義のために書かれたものです。この講義では、Coq上で関数プログラミング、論理学、演算の意味論、ラムダ計算、静的型システムの基礎を学ぶことができます。
+
+このコースの主な特徴は、教材のテキストがCoqのスクリプトファイルそのものとなっており、学習の進み具合を「形式的」かつ「機械的」にチェックしながら学んでいくことができる、ということです。このコースでは、Coqのインタラクティブモードを使って、ソースを1行1行追いながら動きを理解していきます。講義のほとんどはCoqで組み立てられ、Coq上で作業し演習するようデザインされています。
+
+このファイルは章立てされ整理されており、1学期ぶんの教材として十分で、順番に学習していけるよう、筋道立てて作成されています。さらに加えて、いくつかのトピックについて追加項目があります。 *)
 
 
 (* ###################################################################### *)
-(** * Overview *)
+(* * Overview *)
+(** * 概要 *)
 
 (** Building reliable software is hard.  The scale and complexity of
     modern systems, the number of people involved in building them,
@@ -321,18 +328,22 @@
 *)
 
 (* ###################################################################### *)
-(** * Practicalities *)
+(* * Practicalities *)
+(** * 実際の学習について *)
 
 (* ###################################################################### *)
-(** ** Chapter Dependencies *)
+(* ** Chapter Dependencies *)
+(** ** 章間の依存関係 *)
 
-(** A diagram of the dependencies between chapters and some suggested
+(* A diagram of the dependencies between chapters and some suggested
     paths through the material can be found in the file [deps.html]. *)
+(** 章と章の間の依存関係をまとめた図と、学習教材へのパスを、[deps.html]にまとめてあります。 *)
 
 (* ###################################################################### *)
-(** ** System Requirements *)
+(* ** System Requirements *)
+(** ** 学習に必要なもの *)
 
-(** Coq runs on Windows, Linux, and OS X.  You will need:
+(* Coq runs on Windows, Linux, and OS X.  You will need:
 
        - A current installation of Coq, available from the Coq home
          page.  Everything should work with version 8.4.
@@ -349,11 +360,17 @@
              with Coq, but on some platforms compiling it involves
              installing additional packages for GUI libraries and
              such. *)
+(** Coqは、Windowsと多くのUNIX変種（LinuxやMacOSを含む）で動きます。具体的には
+       - Coqホームページにある最新版のCoq。全てのサンプルソースはバージョン8.4でコンパイルできることが確認されています。
+       - Coqを対話的に操作するIDE。現在、以下の二つから選択できます。
+           - ProofGeneralは、Emacs上に作られたIDEです。すでにEmacsに慣れている人向けのものです。Coqとは別にインストールする必要があります。（詳しくはgoogleで"ProofGeneral"を検索してください）
+           - CoqIDEは、スタンドアロンで動作するシンプルなIDEです。Coqと一緒に配布されています。しかしいくつかのプラットホームではGUIライブラリなどの追加パッケージをインストールする必要があります。 *)
 
 (* ###################################################################### *)
-(** ** Exercises *)
+(* ** Exercises *)
+(** * 練習問題について *)
 
-(** Each chapter includes numerous exercises.  Each is marked with a
+(* Each chapter includes numerous exercises.  Each is marked with a
     "star rating," which can be interpreted as follows:
 
        - One star: easy exercises that underscore points in the text
@@ -384,25 +401,46 @@
     solutions to the exercises anyplace where they can be found by
     search engines.
 *)
+(** この資料の各章には、たくさんの練習問題がついています。"optional（任意）"と記されたり"recommended（推奨）"とされているものもあります。"任意"とされていない問題までやることで、その章で学ぶべきことを6～8時間（長い章でも）の学習で理解できるようになっています。
+
+    練習問題についている"スターレーティング"には、以下のような意味があります。
+
+       - ★：多くの読者が1～2分でできる簡単な問題。"推奨"と明示しているものはありませんが、どちらかというと全て"推奨"とされるべきものです。読者は、この問題に取り組んで、このレベルの問題に慣れておくべきです。
+
+       - ★★：　素直で簡単な問題（5～10分でできるでしょう）
+
+       - ★★★：　少し考えないといけない問題（15～30分ほどかかるでしょう）
+
+       - ★★★★：　さらに難しい問題（1～2時間）
+*)
+
 
 (* ###################################################################### *)
-(** ** Downloading the Coq Files *)
+(* ** Downloading the Coq Files *)
+(** ** 教材となるCoqファイルの入手方法 *)
 
-(** A tar file containing the full sources for the "release version"
+(* A tar file containing the full sources for the "release version"
     of these notes (as a collection of Coq scripts and HTML files) is
     available here:
 <<
-        http://www.cis.upenn.edu/~bcpierce/sf   
+        http://www.cis.upenn.edu/~bcpierce/sf
 >>
     If you are using the notes as part of a class, you may be given
     access to a locally extended version of the files, which you
     should use instead of the release version.
 *)
+(** この教材のリリース版のソース（CoqスクリプトとHTMLファイル）をtarで固めたものが、以下のURLで取得できます。
+<<
+        http://www.cis.upenn.edu/~bcpierce/sf
+>>
+    この資料の一部だけを使用したい場合は、tarファイルとなっているリリース版を展開して使用してください。
+*)
 
 (* ###################################################################### *)
-(** * Note for Instructors *)
+(* * Note for Instructors *)
+(** * 教育関係者へ *)
 
-(** If you intend to use these materials in your own course, you will
+(* If you intend to use these materials in your own course, you will
     undoubtedly find things you'd like to change, improve, or add.
     Your contributions are welcome!
 
@@ -412,6 +450,9 @@
     name.  We'll set you up with read/write access to our subversion
     repository and developers' mailing list; in the repository you'll
     find a [README] with further instructions. *)
+(** この資料を自分のコースで使おうと思った場合、ほぼまちがいなくあなたは書き直したり、追加したりしたいところが出てくるでしょう。そういった貢献は大歓迎です。
+
+ぜひBenjamin Pierceまでemailをください。そうすれば、あなた用のsubversionのリポジトリとメーリングリストのアカウントを用意します。リポジトリには、READMEファイルがありますので、次にどうすべきかはそれを参照してください。 *)
 
 (* ###################################################################### *)
 (** * Translations *)

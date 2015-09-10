@@ -1,4 +1,5 @@
 (** * MoreLogic: More on Logic in Coq *)
+(* TODO : 古いLogic_J.vの後半から訳を持ってくること？ *)
 
 Require Export Prop_J.
 
