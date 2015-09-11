@@ -152,6 +152,7 @@ Eval compute in (next_weekday (next_weekday saturday)).
     the only one we'll need; later on we'll see some alternatives that
     are sometimes useful. *)
 (** [compute] というキーワードは、Coqに与えた式を評価する方法を指示します。しばらくの間、[compute]コマンドは我々にとって必要な唯一のコマンドになるでしょう。この後でもう少し使い出のある別のコマンドを覚えるまでの間ですが。 *)
+(* 訳注：これ以後なぜかcomputeではなくsimplが使われている。以前はsimplの説明だったので、修正忘れの可能性？ *)
 
 (* Second, we can record what we _expect_ the result to be in
     the form of a Coq example: *)
@@ -175,7 +176,7 @@ Proof. simpl. reflexivity.  Qed.
     them in a bit), but essentially this can be read as "The assertion
     we've just made can be proved by observing that both sides of the
     equality evaluate to the same thing, after some simplification." *)
-(** この文について細かいことは今は置いておきますが（じきに戻ってきます）、本質的には以下のような意味になります「我々が作成した確認事項は簡約後の同値チェックによって証明されました。」 *)
+(** この文について細かいことは今は置いておきますが（じきに戻ってきます）、本質的には以下のような意味になります「我々が作成した確認事項は等式の両辺が同じものに簡約されたことで証明できました。」 *)
 
 (* Third, we can ask Coq to _extract_, from our [Definition], a
     program in some other, more conventional, programming
@@ -186,7 +187,7 @@ Proof. simpl. reflexivity.  Qed.
     developed.  We'll come back to this topic in later chapters.  More
     information can also be found in the Coq'Art book by Bertot and
     Casteran, as well as the Coq reference manual. *)
-(** 三番目の方法は、Coqで[定義]したものから、他のより一般的な言語（OcamlやScheme、Haskellといった）のプログラムを抽出してしまうことです。この機能は今主流の言語で完全に確認されたプログラムを実現できる道を開いたという意味でとても興味深いものです。ここではこの件について深入りすることはしませんが、もしより深く知りたいという場合はCoq'Art book（Bertot and Casteran著）か、Coqリファレンスマニュアルを参照してください。 *)
+(** 三番目の方法は、Coqで[定義]したものから、他の一般的な言語（OCamlやScheme、Haskell）のプログラムを抽出してしまうことです。この機能は今主流の言語で完全に確認されたプログラムを実現できる道を開いたという意味でとても興味深いものです。これはCoqの開発動機の一つです。後の章で詳しく見ますが、より深く知りたいという場合はCoq'Art book（Bertot and Casteran著）や、Coqリファレンスマニュアルを参照してください。 *)
 
 
 (* ###################################################################### *)
@@ -195,7 +196,7 @@ Proof. simpl. reflexivity.  Qed.
 
 (* In a similar way, we can define the standard type [bool] of
     booleans, with members [true] and [false]. *)
-(** 同様にして、[true]と[false]を値としてとる「[bool型]」を定義することができます。 *)
+(** 同様にして、[true]と[false]を値とする[bool]型を定義することができます。 *)
 
 Inductive bool : Type :=
   | true : bool
@@ -265,7 +266,8 @@ Proof. reflexivity.  Qed.
     a hole in an incomplete definition or proof.  We'll use them in the
     following exercises.  In general, your job in the exercises is 
     to replace [admit] or [Admitted] with real definitions or proofs. *)
-(** 次にCoqでのちょっとトリッキーな定義（[admit]）を紹介しましょう。この[admit]は、定義や証明にある不完全な部分を「とりあえず今は無いこと」にしてくれるものです。これを次の[nandb]での練習問題に使ってみることにしましょう。ここからしばらく、練習問題を解くということは[admit]や[Admitted]と書かれた部分をちゃんとした定義や証明に書き直す作業になります。 *)
+(** [Admitted]や[admit]により、定義や証明の不完全な箇所をひとまず埋めておくことができます。これらは以降の練習問題に使われます。この資料では、練習問題を解くということは[admit]や[Admitted]と書かれた部分をちゃんとした定義や証明に書き直す作業になります。 *)
+(* 訳注：valuesとあるが、[admit]は定義されているものの[Admitted]は相変わらずコマンドであるため、値でも何でもない。そのため訳は値というニュアンスをわざと外している。 *)
 
 (* **** Exercise: 1 star (nandb)  *)
 (** **** 練習問題: ★ (nandb) *)
@@ -341,7 +343,7 @@ Check negb.
     Similarly, the type of [andb], written [bool -> bool -> bool], can
     be read, "Given two inputs, both of type [bool], this function
     produces an output of type [bool]." *)
-(** [negb]の型は[bool->bool]と書き、「[bool]から[bool]」と読み、[bool]型の引数をとって[bool]型の戻り値を返す関数と理解することができます。同様に、[andb]の型は[bool -> bool -> bool]と書き、「二つの[bool]型の値を引数として[bool]型の値を作成して戻す」と解釈します。 *)
+(** [negb]の型を[bool -> bool]と書き、「[bool]から[bool]」と読み、[bool]型の引数をとって[bool]型の戻り値を返す関数と理解することができます。同様に、[andb]の型は[bool -> bool -> bool]と書き、「二つの[bool]型の値を引数として受け取ることで、この関数は[bool]型の値を作成して出力する」と解釈します。 *)
 
 (* ###################################################################### *)
 (* ** Numbers *)
