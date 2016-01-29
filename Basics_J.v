@@ -7,12 +7,17 @@
    that should be completed as part of your homework exercises.  In
    practice, [Admitted] is useful when you're incrementally developing
    large proofs. *)
+(*
+   [Admitted]はCoqにおける「脱出口」です。これにより、あらゆるものを証明なしに定義することができます。
+   この資料ではこれを途中の空白部分として使い、これを埋めるという課題を出します。
+   実際の記述では、大きな証明を作る場合に少しずつ証明を構築するのに有用です。 *)
 Definition admit {T: Type} : T.  Admitted.
 
 (* ###################################################################### *)
-(** * Introduction *)
+(* * Introduction *)
+(** * 導入 *)
 
-(** The functional programming style brings programming closer to
+(* The functional programming style brings programming closer to
     simple, everyday mathematics: If a procedure or method has no side
     effects, then pretty much all you need to understand about it is
     how it maps inputs to outputs -- that is, you can think of it as
@@ -21,6 +26,30 @@ Definition admit {T: Type} : T.  Admitted.
     programming."  The direct connection between programs and simple
     mathematical objects supports both formal proofs of correctness
     and sound informal reasoning about program behavior.
+
+    The other sense in which functional programming is "functional" is
+    that it emphasizes the use of functions (or methods) as
+    _first-class_ values -- i.e., values that can be passed as
+    arguments to other functions, returned as results, stored in data
+    structures, etc.  The recognition that functions can be treated as
+    data in this way enables a host of useful and powerful idioms.
+
+    Other common features of functional languages include _algebraic
+    data types_ and _pattern matching_, which make it easy to construct
+    and manipulate rich data structures, and sophisticated
+    _polymorphic type systems_ that support abstraction and code
+    reuse.  Coq shares all of these features.
+
+    The first half of this chapter introduces the most essential
+    elements of Coq's functional programming language.  The second
+    half introduces some basic _tactics_ that can be used to prove
+    simple properties of Coq programs.
+*)
+(** 関数型プログラミングスタイルはプログラミングを単純で日用の数学に近いものにします。
+    手続きやメソッドが副作用を持たなければ、理解に必要なのは入力をどの出力に割り当てるかだけです。
+    つまり、これは数学的な関数を計算する手法として理解することとも考えられます。
+    これが「関数型プログラミング(functional programming)」において「関数型(functional)」という語の本来の意味です。
+    プログラムと数学的な対象を直接関係づけることは、正しさの形式的証明やプログラムの挙動の健全で非形式的な解釈の両面で役に立ちます。
 
     The other sense in which functional programming is "functional" is
     that it emphasizes the use of functions (or methods) as
@@ -65,16 +94,11 @@ Definition admit {T: Type} : T.  Admitted.
 (** プログラミング言語Coqには、ほとんど何もビルトインされていません。ブール値や自然数、文字列といったデータ型を提供する代わりに、Coqには新しい型やそれを処理するための強力なツールが用意されています。
     これはとても強力で、よくあるデータ型は全てその仕組みで定義することができます。
 
-    Naturally, the Coq distribution comes with an extensive standard
-    library providing definitions of booleans, numbers, and many
-    common data structures like lists and hash tables.  But there is
-    nothing magic or primitive about these library definitions: they
-    are ordinary user code.  To illustrate this, we will explicitly
-    recapitulate all the definitions we need in this course, rather
-    than just getting them implicitly from the library.
+    当然、配布されているCoqにはブール値や数値、リストやハッシュテーブルといったよく使われるデータ構造を定義した標準ライブラリが付属しています。
+    しかし、このライブラリには魔法や基底型のようなものは使われておらず、全て普通のユーザーコードです。
+    これを説明するために、この資料では、必要となる定義をライブラリから暗黙的に得るのではなく、明示的に再現します
 
-    To see how this mechanism works, let's start with a very simple
-    example. *)
+    機構がどのように動くかを知るために、簡単な例から始めましょう。 *)
 
 (* ###################################################################### *)
 (* ** Days of the Week *)
@@ -210,7 +234,7 @@ Inductive bool : Type :=
     documentation if you're interested.)  Whenever possible, we'll
     name our own definitions and theorems so that they exactly
     coincide with the ones in the standard library. *)
-(** このようにして、我々は独自のbool型を一から作りあげることもできるのですが、もちろんCoqには標準ライブラリとしてbool型が多くの有用な関数、補助定理と一緒に用意されています。（もし興味があるなら、CoqライブラリドキュメントのCoq.Init.Datatypesを参照してください。）ここでは可能な限り標準ライブラリと正確に同じ機能を、我々独自の名前で定義していくことにしましょう。 *)
+(** このようにして、我々は独自のbool型を一から作りあげることもできるのですが、もちろんCoqには標準ライブラリとしてbool型が多くの有用な関数、補助定理と一緒に用意されています。（もし興味があるなら、Coqライブラリドキュメントの[Coq.Init.Datatypes]を参照してください。）ここでは可能な限り標準ライブラリと正確に同じ機能を、我々独自の名前で定義していくことにしましょう。 *)
 
 (* Functions over booleans can be defined in the same way as
     above: *)
@@ -267,7 +291,7 @@ Proof. reflexivity.  Qed.
     following exercises.  In general, your job in the exercises is 
     to replace [admit] or [Admitted] with real definitions or proofs. *)
 (** [Admitted]や[admit]により、定義や証明の不完全な箇所をひとまず埋めておくことができます。これらは以降の練習問題に使われます。この資料では、練習問題を解くということは[admit]や[Admitted]と書かれた部分をちゃんとした定義や証明に書き直す作業になります。 *)
-(* 訳注：valuesとあるが、[admit]は定義されているものの[Admitted]は相変わらずコマンドであるため、値でも何でもない。そのため訳は値というニュアンスをわざと外している。 *)
+(* 訳注：valuesとあるが、[admit]は値として定義されているものの、[Admitted]は相変わらずコマンドであり値ではない。そのため訳では値というニュアンスをわざと外している。 *)
 
 (* **** Exercise: 1 star (nandb)  *)
 (** **** 練習問題: ★ (nandb) *)
@@ -302,6 +326,8 @@ Example test_nandb4:               (nandb true true) = false.
 (** Do the same for the [andb3] function below. This function should
     return [true] when all of its inputs are [true], and [false]
     otherwise. *)
+(** 同様のことを以下の [andb3] 関数についてしなさい。
+    この関数は全ての入力が [true] である場合に [true]を返し、そうでない場合は [false] を返すものです。 *)
 
 Definition andb3 (b1:bool) (b2:bool) (b3:bool) : bool :=
   (* ここを埋めなさい *) admit.
@@ -322,7 +348,7 @@ Example test_andb34:                 (andb3 true true false) = false.
 
 (* The [Check] command causes Coq to print the type of an
     expression.  For example, the type of [negb true] is [bool]. *)
-(** [Check]コマンドを使うと、Coqに、指定した式の型を表示させることができます。例えば、（[negb true]）という式の全体の型は[bool]である、という具合です。 *)
+(** [Check]コマンドを使うと、Coqに、指定した式の型を表示させることができます。例えば、 [negb true] という式の全体の型は[bool]である、という具合です。 *)
 
 Check true.
 (* ===> true : bool *)
@@ -332,7 +358,7 @@ Check (negb true).
 (* Functions like [negb] itself are also data values, just like
     [true] and [false].  Their types are called _function types_, and
     they are written with arrows. *)
-(** [negb]のような関数は、それ自身が[true]や[false]と同じように値であると考えることもできます。そのようにとらえた場合の値の型を「関数型」と呼び、以下のように矢印を使った型として表します。 *)
+(** [negb] のような関数は、それ自身が [true] や [false] と同じように値であると考えることもできます。そのようにとらえた場合の値の型を「関数型」と呼び、以下のように矢印を使った型として表します。 *)
 
 Check negb.
 (* ===> negb : bool -> bool *)
