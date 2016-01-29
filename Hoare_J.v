@@ -119,7 +119,7 @@ Require Export Imp_J.
 (* * Hoare Logic *)
 (** * ホーア論理 *)
 
-(** Hoare Logic combines two beautiful ideas: a natural way of
+(* Hoare Logic combines two beautiful ideas: a natural way of
     writing down _specifications_ of programs, and a _compositional
     proof technique_ for proving that programs are correct with
     respect to such specifications -- where by "compositional" we mean
@@ -193,10 +193,14 @@ End ExAssertions.
          Z * Z <= m /\ ~((S Z) * (S Z) <= m).
 *)
 (** 
+[[
       fun st => (st Z) * (st Z) <= m /\
                 ~ ((S (st Z)) * (S (st Z)) <= m)
+]]
     次のように書きます。
+[[
          Z * Z <= m /\ ~((S Z) * (S Z) <= m)
+]]
 *)
 
 (** Given two assertions [P] and [Q], we say that [P] _implies_ [Q],
@@ -300,6 +304,7 @@ Notation "{{ P }}  c  {{ Q }}" :=
 
  *)
 (** 以下のホーアの三つ組を日本語に直しなさい。
+[[
    1) {{True}} c {{X = 5}}
 
    2) {{X = m}} c {{X = m + 5)}}
@@ -310,12 +315,12 @@ Notation "{{ P }}  c  {{ Q }}" :=
 
    5) {{X = m}} 
       c
-      {{Y = real_fact m}}.
+      {{Y = real_fact m}}
 
    6) {{True}} 
       c 
       {{(Z * Z) <= m /\ ~ (((S Z) * (S Z)) <= m)}}
-
+]]
  *)
 
 
@@ -357,6 +362,7 @@ Notation "{{ P }}  c  {{ Q }}" :=
 *)
 (** 以下のホーアの三つ組のうち、正しい(_valid_)ものを選択しなさい。
     -- 正しいとは、[P],[c],[Q]の関係が真であるということです。
+[[
    1) {{True}} X ::= 5 {{X = 5}}
 
    2) {{X = 2}} X ::= X + 1 {{X = 3}}
@@ -378,6 +384,7 @@ Notation "{{ P }}  c  {{ Q }}" :=
    9) {{X = 1}}
       WHILE X <> 0 DO X ::= X + 1 END
       {{X = 100}}
+]]
 
 *)
 (* FILL IN HERE *)
@@ -484,35 +491,54 @@ Proof.
       X ::= 3  
       {{ 0 <= X /\ X <= 5 }}
 *)
-(** old:代入の規則は、ホーア論理の証明規則の中で最も基本的なものです。
+(** 代入の規則は、ホーア論理の証明規則の中で最も基本的なものです。
     この規則は次のように働きます。
 
     次の(正しい)ホーアの三つ組を考えます。
+[[
        {{ Y = 1 }}  X ::= Y  {{ X = 1 }}
+]]
     日本語で言うと、[Y]の値が[1]である状態から始めて、[X]を[Y]に代入するならば、
     [X]が[1]である状態になる、ということです。
     つまり、[1]である、という性質が[X]から[Y]に移された、ということです。
 
     同様に、
+[[
        {{ Y + Z = 1 }}  X ::= Y + Z  {{ X = 1 }}
+]]
     においては、同じ性質(1であること)が代入の右辺の[Y+Z]から[X]に移動されています。
 
     より一般に、[a]が「任意の」算術式のとき、
+[[
        {{ a = 1 }}  X ::= a {{ X = 1 }}
+]]
     は正しいホーアの三つ組になります。
 
-    さらに一般化して、[a]が「任意の」算術式、[Q]が数についての「任意の」性質のとき、
-       {{ Q(a) }}  X ::= a {{ Q(X) }}
-    は正しいホーアの三つ組です。
+    さらに一般化して、「任意の」数についての性質[Q]が[X ::= a]の後に成り立つには、
+    [X ::= a]の前で、[Q]内の「出現している全ての」[X]を[a]に置き換えたものが成り立っている必要があります。
+    ここから次の、代入に関するホーアの三つ組が導かれます。
+[[
+       {{ Q[X |-> a] }}  X ::= a {{ Q }}
+]]
+    ただし、"[Q [X |-> a]]"は「[X]を[a]に置換した[Q]」と読みます。
 
-    これを若干言い換えると、代入に対する一般ホーア規則になります:
-      {{ Q において X を a で置換したもの }}  X ::= a  {{ Q }}
     例えば、以下は、代入規則の正しい適用です:
-      {{ X + 1 <= 5 }}  X ::= X + 1  {{ X <= 5 }}
+[[
+      {{ (X <= 5) [X |-> X + 1]
+         i.e., X + 1 <= 5 }}  
+      X ::= X + 1  
+      {{ X <= 5 }}
 
-      {{ 3 = 3 }}  X ::= 3  {{ X = 3 }}
+      {{ (X = 3) [X |-> 3]
+         i.e., 3 = 3}}  
+      X ::= 3  
+      {{ X = 3 }}
 
-      {{ 0 <= 3 /\ 3 <= 5 }}  X ::= 3  {{ 0 <= X /\ X <= 5 }}
+      {{ (0 <= X /\ X <= 5) [X |-> 3]
+         i.e., (0 <= 3 /\ 3 <= 5)}}  
+      X ::= 3  
+      {{ 0 <= X /\ X <= 5 }}
+]]
 *)
 
 (** To formalize the rule, we must first formalize the idea of
@@ -574,8 +600,10 @@ Notation "P [ X |-> a ]" := (assn_sub X a P) (at level 10).
       {{Q [X |-> a]}} X ::= a {{Q}}
 *)
 (** これを使って、正確な代入の証明規則を与えます:
+[[
       ------------------------------ (hoare_asgn)
       {{Q [X |-> a]}} X ::= a {{Q}}
+]]
 *)
 
 (** We can prove formally that this rule is indeed valid. *)
@@ -611,6 +639,7 @@ Proof.
    ...into formal statements [assn_sub_ex1, assn_sub_ex2] 
    and use [hoare_asgn] to prove them. *)
 (** 次の非形式的なホーアの三つ組...
+[[
     1) {{ (X <= 5) [X |-> X + 1] }}
        X ::= X + 1
        {{ X <= 5 }}
@@ -618,6 +647,7 @@ Proof.
     2) {{ (0 <= X /\ X <= 5) [X |-> 3] }}
        X ::= 3
        {{ 0 <= X /\ X <= 5 }}
+]]
    ...を、形式的記述に直してそれぞれを[assn_sub_ex1, assn_sub_ex2]として記述し、[hoare_asgn_eq]を使って証明しなさい。*)
 
 (* FILL IN HERE *)
@@ -638,8 +668,10 @@ Proof.
 (** 代入規則は、最初に見たとき、ほとんどの人が後向きの規則であるように感じます。
     もし今でも後向きに見えるならば、前向きバージョンの規則を考えてみるのも良いかもしれません。
     次のものは自然に見えます:
+[[
       ------------------------------ (hoare_asgn_wrong)
       {{ True }} X ::= a {{ X = a }}
+]]
     この規則が正しくないことを（非形式的に）示す反例を与えなさい。
     ヒント：この規則は算術式[a]を量化しているので、反例はこの規則がうまく動かないように[a]を提示する必要があります。 *)
 
@@ -744,21 +776,28 @@ Proof.
     あるいは、想定するゴールに比べて、(事前条件について)論理的に弱かったり、(事後条件について)論理的に強かったりすることがあります。
 
     例えば、
-      {{(X = 3) [X |-> 3]}} X ::= 3 {{X = 3}},
+[[
+      {{(X = 3) [X |-> 3]}} X ::= 3 {{X = 3}}
+]]
     が代入規則に直接従うのに対して、より自然な三つ組
+[[
       {{True}} X ::= 3 {{X = 3}}.
+]]
     はそうではないのです。この三つ組も正しいのですが、[hoare_asgn] 
     (または [hoare_asgn_eq]) のインスタンスではないのです。
     なぜなら、[True] と [(X = 3) [X |-> 3]] は、構文的に等しい表明ではないからです。
     しかし、これらが論理的に等価である以上、一方の三つ組が正しいのであれば、もう一方も同様に正しくあるべきです。このことを、以下の規則によって表現します。
+[[
                 {{P'}} c {{Q}}
                   P <<->> P'
          -----------------------------   (hoare_consequence_pre_equiv)
                 {{P}} c {{Q}}
+]]
     Taking this line of thought a bit further, we can see that
     strengthening the precondition or weakening the postcondition of a
     valid triple always produces another valid triple. This
     observation is captured by two _Rules of Consequence_.
+[[
                 {{P'}} c {{Q}}
                    P ->> P'
          -----------------------------   (hoare_consequence_pre)
@@ -768,6 +807,7 @@ Proof.
                   Q' ->> Q 
          -----------------------------    (hoare_consequence_post)
                 {{P}} c {{Q}}
+]]
 *)
 
 (* Here are the formal versions: *)
@@ -801,10 +841,12 @@ Proof.
     Or, formally... 
 *)
 (** (例えば、一つ目の帰結規則を次のように使うことができます:
+[[
                 {{ True }} =>
                 {{ 1 = 1 }}
     X ::= 1
                 {{ X = 1 }}
+]]
     あるいは、形式化すると...
 *)
 
@@ -1090,13 +1132,15 @@ Proof.
                    {{ X = 1 /\ Y = 2 }}
 *)
 (** 次の修飾付きプログラムを形式的証明に直しなさい:
-                   {{ True }} =>
+[[
+                   {{ True }} ->>
                    {{ 1 = 1 }}
     X ::= 1;;
                    {{ X = 1 }} ->>
                    {{ X = 1 /\ 2 = 2 }}
     Y ::= 2
                    {{ X = 1 /\ Y = 2 }}
+]]
 *)
 
 Example hoare_asgn_example4 :
@@ -1115,7 +1159,9 @@ Proof.
 *)
 (** [X]と[Y]の値を交換するImpプログラム[c]を書き、
     それが次の仕様を満たすことを(Coq で)示しなさい:
+[[
       {{X <= Y}} c {{Y <= X}}
+]]
 *)
 
 Definition swap_program : com :=
@@ -1138,10 +1184,12 @@ Proof.
          {{fun st => st Y = n}}.
 *)
 (** 次の命題が証明できない理由を説明しなさい:
+[[
       forall (a : aexp) (n : nat),
          {{fun st => aeval st a = n}}
          (X ::= (ANum 3);; Y ::= a)
          {{fun st => st Y = n}}.
+]]
 *)
 
 (* FILL IN HERE *)
@@ -1169,20 +1217,6 @@ Proof.
      {{ X <= Y }}
    since the rule tells us nothing about the state in which the
    assignments take place in the "then" and "else" branches. *)
-   
-(** But we can actually say something more precise.  In the
-   "then" branch, we know that the boolean expression [b] evaluates to
-   [true], and in the "else" branch, we know it evaluates to [false].
-   Making this information available in the premises of the rule gives
-   us more information to work with when reasoning about the behavior
-   of [c1] and [c2] (i.e., the reasons why they establish the
-   postcondition [Q]). *)
-(**
-              {{P /\  b}} c1 {{Q}}
-              {{P /\ ~b}} c2 {{Q}}
-      ------------------------------------  (hoare_if)
-      {{P}} IFB b THEN c1 ELSE c2 FI {{Q}} 
-*)
 (** 条件分岐コマンドについて推論するために、どのような規則が必要でしょうか？
     確かに、分岐のどちらの枝を実行した後でも表明[Q]が成立するならば、
     条件分岐全体でも[Q]が成立するでしょう。
@@ -1203,14 +1237,29 @@ Proof.
      {{ X <= Y }}
 ]]
    なぜなら、この規則では、"then"部と"else"部のどちらの代入が起こる状態なのかについて、
-   何も言っていないからです。
-
-   しかし、実際には、より詳しいことを言うことができます。
+   何も言っていないからです。 *)
+   
+(* But we can actually say something more precise.  In the
+   "then" branch, we know that the boolean expression [b] evaluates to
+   [true], and in the "else" branch, we know it evaluates to [false].
+   Making this information available in the premises of the rule gives
+   us more information to work with when reasoning about the behavior
+   of [c1] and [c2] (i.e., the reasons why they establish the
+   postcondition [Q]). *)
+(** しかし、実際には、より詳しいことを言うことができます。
    "then"の枝では、ブール式[b]の評価結果が[true]になることがわかっています。
    また"else"の枝では、それが[false]になることがわかっています。
    この情報を補題の前提部分で利用できるようにすることで、
    [c1]と[c2]の振舞いについて(つまり事後条件[Q]が成立する理由について)推論するときに、
-   より多くの情報を使うことができるようになります。
+   より多くの情報を使うことができるようになります。 *)
+
+(*
+              {{P /\  b}} c1 {{Q}}
+              {{P /\ ~b}} c2 {{Q}}
+      ------------------------------------  (hoare_if)
+      {{P}} IFB b THEN c1 ELSE c2 FI {{Q}} 
+*)
+(**
 [[
               {{P /\  b}} c1 {{Q}}
               {{P /\ ~b}} c2 {{Q}}
@@ -1525,8 +1574,13 @@ End If1.
     この場合は、ループは[SKIP]と同様の振舞いをしますので、
     次のように書いても良いかもしれません。 *)
 
-(**
+(*
       {{P}} WHILE b DO c END {{P}}.
+*)
+(**
+[[
+      {{P}} WHILE b DO c END {{P}}.
+]]
 *)
 
 (* 
@@ -1540,8 +1594,13 @@ End If1.
     最終状態では[P]であるだけではなく[b]が偽になっているのです。
     そこで、事後条件にちょっと付け足すことができます:
 *)
-(** 
+(* 
       {{P}} WHILE b DO c END {{P /\ ~b}}
+*)
+(** 
+[[
+      {{P}} WHILE b DO c END {{P /\ ~b}}
+]]
 *)
 
 (* 
@@ -1564,10 +1623,17 @@ End If1.
     [P]が[c]の実行前に常に成立していると仮定することができます。
     このことから次の規則が得られます:
 *)
-(** 
+(* 
                    {{P}} c {{P}}
         -----------------------------------  
         {{P}} WHILE b DO c END {{P /\ ~b}}
+*)
+(** 
+[[
+                   {{P}} c {{P}}
+        -----------------------------------  
+        {{P}} WHILE b DO c END {{P /\ ~b}}
+]]
 *)
 (* 
     This is almost the rule we want, but again it can be improved a
@@ -1591,9 +1657,11 @@ End If1.
     The proposition [P] is called an _invariant_ of the loop.
 *)
 (**
+[[
                {{P /\ b}} c {{P}}
         -----------------------------------  (hoare_while)
         {{P}} WHILE b DO c END {{P /\ ~b}}
+]]
     命題[P]は不変条件(_invariant_)と呼ばれます。
 *)
 
@@ -1710,14 +1778,14 @@ Module RepeatExercise.
 
 (* **** Exercise: 4 stars, advanced (hoare_repeat)  *)
 (** **** 練習問題: ★★★★, advanced (hoare_repeat) *)
-(** In this exercise, we'll add a new command to our language of
+(* In this exercise, we'll add a new command to our language of
     commands: [REPEAT] c [UNTIL] a [END]. You will write the
     evaluation rule for [repeat] and add a new Hoare rule to
     the language for programs involving it. *)
-(** この練習問題では、コマンド言語に新たなコンストラクタ[CRepeat]を追加します。
+(** この練習問題では、言語に新たなコマンドを追加します。
     [REPEAT] c [UNTIL] a [END]という形のコマンドです。
     [repeat]の評価規則を記述し、
-    このコマンドを含むプログラムについての新たなホーア論理の定理を、言語に追加しなさい。 *)
+    このコマンドを含むプログラムについての評価規則と新たなホーア論理の規則を追加しなさい。 *)
 
 
 Inductive com : Type :=
@@ -1961,11 +2029,14 @@ End Himp.
     about programs. The rules of Hoare Logic are the following: *)
 
 (**
+[[
              ------------------------------ (hoare_asgn)
              {{Q [X |-> a]}} X::=a {{Q}}
-
+]]
+[[
              --------------------  (hoare_skip)
              {{ P }} SKIP {{ P }}
+]]
 
                {{ P }} c1 {{ Q }} 
                {{ Q }} c2 {{ R }}
