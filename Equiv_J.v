@@ -58,7 +58,7 @@ Require Export Imp_J.
 (* ** Definitions *)
 (** ** 定義 *)
 
-(** For [aexp]s and [bexp]s with variables, the definition we want is
+(* For [aexp]s and [bexp]s with variables, the definition we want is
     clear.  We say
     that two [aexp]s or [bexp]s are _behaviorally equivalent_ if they
     evaluate to the same result _in every state_. *)
@@ -531,10 +531,9 @@ Proof.
     For example, we might expect to be able to show that [X ::= AId X]
     is equivalent to [SKIP].  However, when we try to show it, we get
     stuck in an interesting way. *)
-(** old:最後に、代入に関する簡単な同値を見てみましょう。
-    これは、ちょっとトリッキーです。
-    まず最初に、ある種の「意味のない」代入が除去できることを示せないか、やってみましょう。
-    一番自明なのは: *)
+(** 最後に、代入に関する簡単な同値を見てみましょう。
+    例えば、 [X ::= AId X] が [SKIP] と等しいと思うでしょう。
+    しかし、これを示そうとすると、面白い形で行き詰まってしまいます。 *)
 
 Theorem identity_assignment_first_try : forall (X:id),
   cequiv (X ::= AId X) SKIP.
@@ -683,7 +682,7 @@ Proof.
 (* First, we verify that the equivalences on [aexps], [bexps], and
     [com]s really are _equivalences_ -- i.e., that they are reflexive,
     symmetric, and transitive.  The proofs are all easy. *)
-(** 最初に、[aexps]、[bexps]、[com]の同値が、本当に「同値関係」であること、つまり、
+(** 最初に、[aexp]、[bexp]、[com]の同値が、本当に「同値関係」であること、つまり、
     反射性、対称性、推移性を持つことを検証します。証明は簡単です。 *)
 
 Lemma refl_aequiv : forall (a : aexp), aequiv a a.
@@ -2252,9 +2251,8 @@ Proof.
          c2
        END
 *)
-(** この練習問題は、Imp_J.vのoptionalの練習問題 add_for_loop を拡張したものです。
-    もとの add_for_loop は、コマンド言語に C-言語のスタイルの [for]ループを
-    拡張しなさい、というものでした。
+(** この練習問題は、Imp_J.vのoptionalの練習問題 [add_for_loop] を拡張したものです。
+    もとの [add_for_loop] は、コマンド言語に C言語のスタイルの [for]ループを追加しなさい、というものでした。
     ここでは次のことを証明しなさい:    
 [[
       for (c1 ; b ; c2) {
