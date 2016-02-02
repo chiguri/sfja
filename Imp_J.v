@@ -28,15 +28,17 @@
     はじめの例は、Imp と呼ばれる単純な命令型プログラミング言語です。
     Imp は C や Java のような標準的に広く使われている言語の中心部分の機能だけを取り出したものです。
     下の例は、おなじみの数学的関数を Imp で書いたものです。
+[[
      Z ::= X;
      Y ::= 1;
      WHILE not (Z = 0) DO
        Y ::= Y * Z;;
        Z ::= Z - 1
      END
+]]
 *)
 
-(** This chapter looks at how to define the _syntax_ and _semantics_
+(* This chapter looks at how to define the _syntax_ and _semantics_
     of Imp; the chapters that follow develop a theory of _program
     equivalence_ and introduce _Hoare Logic_, a widely used logic for
     reasoning about imperative programs. *)
@@ -203,12 +205,11 @@ Inductive bexp : Type :=
          通常はそれらのうちのどのBNFを使っているかを気にしません。
          その必要がないからです。おおざっぱな非形式的な理解だけが必要なのです。 *)
 
-(** It's good to be comfortable with both sorts of notations:
+(* It's good to be comfortable with both sorts of notations:
     informal ones for communicating between humans and formal ones for
     carrying out implementations and proofs. *)
 (** 両方の記法に通じているのは良いことです。
-    非形式的なものは人間とのコミュニケーションのために、
-    形式的なものは実装と証明のためにです。 *)
+    非形式的なものは人間とのコミュニケーションに、形式的なものは実装と証明に便利です。 *)
 
 (* ####################################################### *)
 (* ** Evaluation *)
@@ -390,7 +391,7 @@ Qed.
 (* *** The [try] Tactical *)
 (** *** [try]タクティカル *)
 
-(** If [T] is a tactic, then [try T] is a tactic that is just like [T]
+(* If [T] is a tactic, then [try T] is a tactic that is just like [T]
     except that, if [T] fails, [try T] _successfully_ does nothing at
     all (instead of failing). *)
 (** [T]がタクティックのとき、タクティック [try T] は[T]と同様ですが、[T]が失敗するとき
@@ -511,19 +512,25 @@ Proof.
     この定理の形式的な証明の構造にマッチする非形式的な証明は次の通りです:
 
     「定理」: すべての算術式[a]について
+[[
        aeval (optimize_0plus a) = aeval a.
+]]
     「証明」: [a]についての帰納法を使う。
     [AMinus]と[AMult]の場合は帰納仮定から直接得られる。
     残るのは以下の場合である:
 
       - ある[n]について [a = ANum n] とする。示すべきことは次の通りである:
+[[
           aeval (optimize_0plus (ANum n)) = aeval (ANum n).
+]]
         これは[optimize_0plus]の定義からすぐに得られる。
 
       - ある[a1]と[a2]について [a = APlus a1 a2] とする。
         示すべきことは次の通りである:
+[[
           aeval (optimize_0plus (APlus a1 a2))
         = aeval (APlus a1 a2).
+]]
         [a1]のとり得る形を考える。そのほとんどの場合、
         [optimize_0plus]は部分式について単に自分自身を再帰的に呼び出し、
         [a1]と同じ形の新しい式を再構成する。
@@ -695,7 +702,7 @@ Tactic Notation "aexp_cases" tactic(first) ident(c) :=
 (** ([Case_aux]は[Case]、[SCase]、[SSCase]等の共通機能を実装します。
     例えば、[Case "foo"]は [Case_aux Case "foo"] と定義されます。) *)
 
-(** For example, if [a] is a variable of type [aexp], then doing
+(* For example, if [a] is a variable of type [aexp], then doing
       aexp_cases (induction a) Case
     will perform an induction on [a] (the same as if we had just typed
     [induction a]) and _also_ add a [Case] tag to each subgoal
@@ -703,7 +710,9 @@ Tactic Notation "aexp_cases" tactic(first) ident(c) :=
     from.  For example, here is yet another proof of
     [optimize_0plus_sound], using [aexp_cases]: *)
 (** 例えば、[a]が型[aexp]の変数のとき、
+[[
       aexp_cases (induction a) Case
+]]
     と書くと[a]についての帰納法を実行し(単に [induction a] と書いたのと同じです)、
     そして、「その上に」、[induction]によって生成されたそれぞれのサブゴールに[Case]
     タグを付加します。このタグは、そのサブゴールがどのコンストラクタから来たかのラベルです。
@@ -1213,7 +1222,7 @@ End aevalR_extended.
 (* ** Identifiers *)
 (** ** 識別子 *)
 
-(** To begin, we'll need to formalize _identifiers_ such as program
+(* To begin, we'll need to formalize _identifiers_ such as program
     variables.  We could use strings for this -- or, in a real
     compiler, fancier structures like pointers into a symbol table.
     But for simplicity let's just use natural numbers as identifiers. *)
@@ -1234,7 +1243,7 @@ Module Id.
     identifiers and numbers.  We use [sumbool] to define a computable
     equality operator on [Id]. *)
 (** 新しいデータタイプ[Id]を定義して、識別子と数値を混乱しないようにします。
-    また、 [Id] の計算可能な等価演算子として [subbool] を使います。 *)
+    また、 [Id] の計算可能な等価演算子として [sumbool] を使います。 *)
 
 Inductive id : Type :=
   Id : nat -> id.
