@@ -199,7 +199,7 @@ End ExAssertions.
 ]]
     次のように書きます。
 [[
-         Z * Z <= m /\ ~((S Z) * (S Z) <= m)
+         Z * Z <= m /\ ~ ((S Z) * (S Z) <= m)
 ]]
 *)
 
@@ -410,7 +410,7 @@ Proof.
   apply H.  Qed.
 
 Theorem hoare_pre_false : forall (P Q : Assertion) c,
-  (forall st, ~(P st)) ->
+  (forall st, ~ (P st)) ->
   {{P}} c {{Q}}.
 Proof.
   intros P Q c H. unfold hoare_triple.
@@ -1307,7 +1307,7 @@ Proof.
 
 Theorem hoare_if : forall P Q b c1 c2,
   {{fun st => P st /\ bassn b st}} c1 {{Q}} ->
-  {{fun st => P st /\ ~(bassn b st)}} c2 {{Q}} ->
+  {{fun st => P st /\ ~ (bassn b st)}} c2 {{Q}} ->
   {{P}} (IFB b THEN c1 ELSE c2 FI) {{Q}}.
 Proof.
   intros P Q b c1 c2 HTrue HFalse st st' HE HP.
@@ -1560,7 +1560,9 @@ End If1.
 (** 次のループを考えます:
       WHILE b DO c END
     そして、次の三つ組が正しくなる事前条件[P]と事後条件[Q]を探します:
+[[
       {{P}} WHILE b DO c END {{Q}} 
+]]
 *)
 
 (** *** *)
