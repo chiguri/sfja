@@ -323,7 +323,7 @@ Example test_nandb4:               (nandb true true) = false.
 
 (* **** Exercise: 1 star (andb3)  *)
 (** **** 練習問題: ★ (andb3) *)
-(** Do the same for the [andb3] function below. This function should
+(* Do the same for the [andb3] function below. This function should
     return [true] when all of its inputs are [true], and [false]
     otherwise. *)
 (** 同様のことを以下の [andb3] 関数についてしなさい。
