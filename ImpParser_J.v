@@ -26,7 +26,7 @@
 
     ここでやることは、細部まで理解する必要はありません。
     説明はかなり少なく、練習問題もありません。
-    一番のポイントは単に、それをやることが可能なことを示すことです。
+    一番のポイントは単に、それができることを示すことです。
     コードを眺めてみて欲しいところです。ほとんどの部分はそれほど複雑ではありません。
     ただパーサはある「モナド的」プログラミング法をしているので、
     理解するのにちょっと骨が折れるかもしれません。
@@ -395,9 +395,8 @@ Definition parse (str : string) : optionE (com * list token) :=
 (* ####################################################### *)
 (* * Examples *)
 (** * 例 *)
+(* 訳注：以下は本来Eval以下全てコメントアウトされているが、オリジナルのcoqdocでは何も表示されなくなるため、独断でコマンド部分を外部に出した。 *)
 
-
-(*
 Eval compute in parse "
     IF x == y + 1 + 2 - y * 6 + 3 THEN
       x := x * 1;;
@@ -405,6 +404,8 @@ Eval compute in parse "
     ELSE
       SKIP
     END  ".
+(**
+[[
 ====>
     SomeE
        (IFB BEq (AId (Id 0))
@@ -414,9 +415,9 @@ Eval compute in parse "
                    (ANum 3))
         THEN Id 0 ::= AMult (AId (Id 0)) (ANum 1);; Id 1 ::= ANum 0
         ELSE SKIP FI, [])
+]]
 *)
 
-(*
 Eval compute in parse "
     SKIP;;
     z:=x*y*(x*x);;
@@ -430,6 +431,8 @@ Eval compute in parse "
       SKIP
     END;;
     x:=z  ".
+(**
+[[
 ====> 
      SomeE
         (SKIP;;
@@ -444,9 +447,9 @@ Eval compute in parse "
          END;; 
          Id 1 ::= AId (Id 0), 
         []) 
+]]
 *)
 
-(*
 Eval compute in parse "
    SKIP;;
    z:=x*y*(x*x);;
@@ -460,6 +463,8 @@ Eval compute in parse "
      SKIP
    END;;
    x:=z  ".
+(*
+[[
 =====> 
       SomeE
          (SKIP;;
@@ -476,6 +481,7 @@ Eval compute in parse "
           END;;
           Id 1 ::= AId (Id 0), 
          []).
+]]
 *)
 
 (** $Date: 2014-12-31 11:17:56 -0500 (Wed, 31 Dec 2014) $ *)
