@@ -96,16 +96,20 @@ Require Export Stlc_J.
 
 (**
     簡約:
+<<
                                  t1 ==> t1'
                      ----------------------------------               (ST_Let1)
                      let x=t1 in t2 ==> let x=t1' in t2
 
                         ----------------------------              (ST_LetValue)
                         let x=v1 in t2 ==> [v1/x] t2
+>>
     型付け:
+<<
                 Gamma |- t1 : T1      Gamma , x:T1 |- t2 : T2
                 --------------------------------------------            (T_Let)
                         Gamma |- let x=t1 in t2 : T2
+>>
  *)
 
 (* ** Pairs *)
@@ -220,6 +224,7 @@ Require Export Stlc_J.
                           (v1,v2).snd ==> v2
 *)
 (** 評価については、対と射影がどう振る舞うかを規定するいくつかの新しい規則が必要です。
+<<
                               t1 ==> t1'
                          --------------------                        (ST_Pair1)
                          (t1,t2) ==> (t1',t2)
@@ -241,6 +246,7 @@ Require Export Stlc_J.
 
                           ------------------                       (ST_SndPair)
                           (v1,v2).snd ==> v2
+>>
 *)
 
 (*
@@ -288,6 +294,7 @@ Require Export Stlc_J.
                         Gamma |- t1.snd : T12
 *)
 (** 対と射影の型付け規則はそのまま直ぐに得られます。
+<<
                Gamma |- t1 : T1       Gamma |- t2 : T2
                ---------------------------------------                 (T_Pair)
                        Gamma |- (t1,t2) : T1*T2
@@ -299,6 +306,7 @@ Require Export Stlc_J.
                         Gamma |- t1 : T11*T12
                         ---------------------                           (T_Snd)
                         Gamma |- t1.snd : T12
+>>
 *)
 
 (* The rule [T_Pair] says that [(t1,t2)] has type [T1*T2] if [t1] has
@@ -360,8 +368,10 @@ Require Export Stlc_J.
            | Unit              Unit型
 >>
     型付け:
+<<
                          --------------------                          (T_Unit)
                          Gamma |- unit : Unit
+>>
 *)
     
 (* It may seem a little strange to bother defining a type that
@@ -376,8 +386,8 @@ Require Export Stlc_J.
     nonlocal control structures, etc.  In such languages, it is
     convenient to have a type for the (trivial) result of an
     expression that is evaluated only for its effect. *)
-(** 単に1つだけの要素を持つ型を定義することにわずらわされるのは、少々奇妙なことに見えるかもしれません。
-    何と言っても、このような型の中の計算はどうでも良いものだけではないのでしょうか？
+(** 1つの要素だけしか持たない型を定義することにわずらわされるのは、少々奇妙なことに見えるかもしれません。
+    結局のところ、このような型に属する計算は自明なものだけではないのでしょうか？
 
     これは妥当な質問です。実際STLCでは[Unit]型は特別、問題ではありません
     (ちょっと後でこの型のある使い道を見ることになりますが)。
@@ -405,9 +415,9 @@ Require Export Stlc_J.
 >>
 *)
 (** 多くのプログラムでは2つの異なった形を持つ値を扱うことが求められます。
-   例えばアカウント処理をするアプリケーションで名前か、「または」、
-   IDナンバーで雇用者を認証するかもしれません。
-   探索関数はマッチした値か、「または」、エラーコードを返すかもしれません。
+   例えばアカウント処理をするアプリケーションの認証で、名前か、「または」、
+   IDナンバーを使うという場合があります。
+   探索関数は、マッチした値か、「または」、エラーコードを返すかもしれません。
 
    これらは、(2項の)直和型(_sum type_)の例です。
    (2項)直和型は2つの与えられた型から抽出した値の集合にあたります。
@@ -447,7 +457,7 @@ Require Export Stlc_J.
 >>
 
    これらの関数は、[Nat]または[Bool]の要素を直和型[Nat+Bool]
-   の左部分または右部分に単射("inject")します。
+   の左部分または右部分に注入("inject")します。
    (しかし、実際にはこれらを関数としては扱いません。[inl]と[inr]
    はキーワードで、[inl t] と [inr t] は基本構文形であり、
    関数適用ではありません。この扱いによって、
@@ -459,7 +469,7 @@ Require Export Stlc_J.
 (** 一般に、型 [T1 + T2] の要素は [T1]の要素に[inl]をタグ付けしたものと、
    [T2]の要素に[inr]をタグ付けしたものから成ります。 *)
 
-(** One important usage of sums is signaling errors:
+(* One important usage of sums is signaling errors:
 << 
     div : Nat -> Nat -> (Nat + Unit) =
     div =
@@ -471,12 +481,24 @@ Require Export Stlc_J.
 >>
     The type [Nat + Unit] above is in fact isomorphic to [option nat]
     in Coq, and we've already seen how to signal errors with options. *)
+(** 直和型の重要な用途の一つに、エラー報告があります。
+<< 
+    div : Nat -> Nat -> (Nat + Unit) =
+    div =
+      \x:Nat. \y:Nat.
+        if iszero y then
+          inr unit
+        else
+          inl ...
+>>
+    この型 [Nat + Unit] は Coq における [option nat] と同型です。
+    option型によってエラーを報告する方法は既に紹介した通りです。 *)
 
 (* To _use_ elements of sum types, we introduce a [case]
     construct (a very simplified form of Coq's [match]) to destruct
     them. For example, the following procedure converts a [Nat+Bool]
     into a [Nat]: *)
-(** 直和型の要素を「使う」目的で、その分解のために[case]構文を導入します(これは
+(** 直和型の要素を「利用する」ために、分解する構文として[case]構文を導入します(これは
    Coqの[match]の非常に単純化された形です)。
    例えば、以下の手続きは、[Nat+Bool] を[Nat]に変換します: *)
 
@@ -534,7 +556,7 @@ Require Export Stlc_J.
 >>
 *)
 
-(** Evaluation:
+(* Evaluation:
 
                               t1 ==> t1'
                         ----------------------                         (ST_Inl)
@@ -558,8 +580,7 @@ Require Export Stlc_J.
                            ==>  [x2:=v0]t2
 *)
 (**  評価:
-
-
+<<
                               t1 ==> t1'
                         ----------------------                         (ST_Inl)
                         inl T t1 ==> inl T t1'
@@ -580,6 +601,7 @@ Require Export Stlc_J.
             ----------------------------------------------         (ST_CaseInr)
             case (inr T v0) of inl x1 => t1 | inr x2 => t2
                            ==>  [x2:=v0]t2
+>>
 *)
 
 (* Typing:
@@ -600,6 +622,7 @@ Require Export Stlc_J.
     We use the type annotation in [inl] and [inr] to make the typing
     simpler, similarly to what we did for functions. *)
 (** 型付け:
+<<
                           Gamma |- t1 :  T1
                      ----------------------------                       (T_Inl)
                      Gamma |- inl T2 t1 : T1 + T2
@@ -613,9 +636,9 @@ Require Export Stlc_J.
                        Gamma , x2:T2 |- t2 : T
          ---------------------------------------------------           (T_Case)
          Gamma |- case t0 of inl x1 => t1 | inr x2 => t2 : T
-
+>>
     [inl]と[inr]の形に型を付記する理由は、関数に対して行ったのと同様、型付け規則を単純にするためです。 *)
-(** Without this extra
+(* Without this extra
     information, the typing rule [T_Inl], for example, would have to
     say that, once we have shown that [t1] is an element of type [T1],
     we can derive that [inl t1] is an element of [T1 + T2] for _any_
@@ -641,7 +664,7 @@ Require Export Stlc_J.
     この問題を扱うのにはいろいろな方法があります。簡単なものの1つは、ここで採用する方法ですが、
     単射を実行するときに直和型の「別の側」をプログラマが明示的に付記することを強制するというものです。
     これはプログラマにとってかなりヘビーウェイトです(そのため実際の言語は別の解法を採用しています)。
-    しかし、理解と形式化は容易な方法です。*)
+    しかし、理解と形式化は容易な方法です。 *)
 
 
 
@@ -767,6 +790,7 @@ Require Export Stlc_J.
                           ==> [xh:=vh,xt:=vt]t3
 *)
 (** 簡約:
+<<
                                  t1 ==> t1'
                        --------------------------                    (ST_Cons1)
                        cons t1 t2 ==> cons t1' t2
@@ -787,6 +811,7 @@ Require Export Stlc_J.
             -----------------------------------------------      (ST_LcaseCons)
             (lcase (cons vh vt) of nil -> t2 | xh::xt -> t3)
                           ==> [xh:=vh,xt:=vt]t3
+>>
 *)
 
 (* Typing:
@@ -804,6 +829,7 @@ Require Export Stlc_J.
           Gamma |- (lcase t1 of nil -> t2 | h::t -> t3) : T
 *)
 (** 型付け:
+<<
                           -----------------------                       (T_Nil)
                           Gamma |- nil T : List T
 
@@ -816,6 +842,7 @@ Require Export Stlc_J.
                    Gamma , h:T1, t:List T1 |- t3 : T
           -------------------------------------------------           (T_Lcase)
           Gamma |- (lcase t1 of nil -> t2 | h::t -> t3) : T
+>>
 *)
 (* ** General Recursion *)
 (** ** 一般再帰 *)
@@ -870,7 +897,7 @@ Require Export Stlc_J.
 *)
 
 
-(** The intuition is that the higher-order function [f] passed
+(* The intuition is that the higher-order function [f] passed
    to [fix] is a _generator_ for the [fact] function: if [fact] is
    applied to a function that approximates the desired behavior of
    [fact] up to some number [n] (that is, a function that returns
@@ -923,6 +950,7 @@ Require Export Stlc_J.
            | fix t             不動点演算子
 >>
    簡約:
+<<
                                  t1 ==> t1'
                              ------------------                       (ST_Fix1)
                              fix t1 ==> fix t1'
@@ -930,17 +958,98 @@ Require Export Stlc_J.
                              F = \xf:T1.t2
                          -----------------------                    (ST_FixAbs)
                          fix F ==> [xf:=fix F]t2
+>>
    型付け:
+<<
                             Gamma |- t1 : T1->T1
                             --------------------                        (T_Fix)
                             Gamma |- fix t1 : T1
+>>
  *)
 (* (訳注: 階乗に関する記述中、[f]と[fact]を書き間違えていると思われる部分があったので、
          修正して訳した。) *)
 
-(** Let's see how [ST_FixAbs] works by reducing [fact 3 = fix F 3],
+(* Let's see how [ST_FixAbs] works by reducing [fact 3 = fix F 3],
     where [F = (\f. \x. if x=0 then 1 else x * (f (pred x)))] (we are
     omitting type annotations for brevity here).
+<<
+fix F 3
+>>
+[==>] [ST_FixAbs]
+<<
+(\x. if x=0 then 1 else x * (fix F (pred x))) 3
+>>
+[==>] [ST_AppAbs]
+<<
+if 3=0 then 1 else 3 * (fix F (pred 3))
+>>
+[==>] [ST_If0_Nonzero]
+<<
+3 * (fix F (pred 3))
+>>
+[==>] [ST_FixAbs + ST_Mult2] 
+<<
+3 * ((\x. if x=0 then 1 else x * (fix F (pred x))) (pred 3))
+>>
+[==>] [ST_PredNat + ST_Mult2 + ST_App2]
+<<
+3 * ((\x. if x=0 then 1 else x * (fix F (pred x))) 2)
+>>
+[==>] [ST_AppAbs + ST_Mult2]
+<<
+3 * (if 2=0 then 1 else 2 * (fix F (pred 2)))
+>>
+[==>] [ST_If0_Nonzero + ST_Mult2]
+<<
+3 * (2 * (fix F (pred 2)))
+>>
+[==>] [ST_FixAbs + 2 x ST_Mult2]
+<<
+3 * (2 * ((\x. if x=0 then 1 else x * (fix F (pred x))) (pred 2)))
+>>
+[==>] [ST_PredNat + 2 x ST_Mult2 + ST_App2]
+<<
+3 * (2 * ((\x. if x=0 then 1 else x * (fix F (pred x))) 1))
+>>
+[==>] [ST_AppAbs + 2 x ST_Mult2]
+<<
+3 * (2 * (if 1=0 then 1 else 1 * (fix F (pred 1))))
+>>
+[==>] [ST_If0_Nonzero + 2 x ST_Mult2]
+<<
+3 * (2 * (1 * (fix F (pred 1))))
+>>
+[==>] [ST_FixAbs + 3 x ST_Mult2]
+<<
+3 * (2 * (1 * ((\x. if x=0 then 1 else x * (fix F (pred x))) (pred 1))))
+>>
+[==>] [ST_PredNat + 3 x ST_Mult2 + ST_App2]
+<<
+3 * (2 * (1 * ((\x. if x=0 then 1 else x * (fix F (pred x))) 0)))
+>>
+[==>] [ST_AppAbs + 3 x ST_Mult2]
+<<
+3 * (2 * (1 * (if 0=0 then 1 else 0 * (fix F (pred 0)))))
+>>
+[==>] [ST_If0Zero + 3 x ST_Mult2]
+<<
+3 * (2 * (1 * 1))
+>>
+[==>] [ST_MultNats + 2 x ST_Mult2]
+<<
+3 * (2 * 1)
+>>
+[==>] [ST_MultNats + ST_Mult2]
+<<
+3 * 2
+>>
+[==>] [ST_MultNats]
+<<
+6
+>>
+*)
+(** [fact 3 = fix F 3] の動きを追うことで、 [ST_FixAbs] がどのように動くのか見ます。
+    ここで、 [F = (\f. \x. if x=0 then 1 else x * (f (pred x)))] とします (可読性のために型注釈は除いています)。
 <<
 fix F 3
 >>
@@ -1046,7 +1155,7 @@ if 3=0 then 1 else 3 * (fix F (pred 3))
 
 (* **** Exercise: 1 star, optional (fact_steps)  *)
 (** **** 練習問題: ★, optional (fact_steps) *)
-(** Write down the sequence of steps that the term [fact 1] goes
+(* Write down the sequence of steps that the term [fact 1] goes
     through to reduce to a normal form (assuming the usual reduction
     rules for arithmetic operations).
 
@@ -1158,10 +1267,10 @@ if 3=0 then 1 else 3 * (fix F (pred 3))
 
 (* Records are not included in the extended exercise below, but
     they will be useful to motivate the [Sub] chapter. *)
-(** レコードは以下の追加の練習問題には含まれません。
+(** レコードは下にある追加の練習問題には含まれません。
     しかし、[Sub_J]章における動機付けとして非常に有用です。 *)
 
-(** Syntax:
+(* Syntax:
 <<
        t ::=                          Terms
            | ...
@@ -1182,49 +1291,7 @@ if 3=0 then 1 else 3 * (fix F (pred 3))
    number of these," and we've omitted explicit mention of the usual
    side-condition that the labels of a record should not contain
    repetitions. *)
-
-(** It is possible to devise informal notations that are
-   more precise, but these tend to be quite heavy and to obscure the
-   main points of the definitions.  So we'll leave these a bit loose
-   here (they are informal anyway, after all) and do the work of
-   tightening things up elsewhere (in chapter [Records]). *)
-
-(**
-   Reduction:
-                              ti ==> ti'
-                 ------------------------------------                  (ST_Rcd)
-                     {i1=v1, ..., im=vm, in=ti, ...}
-                 ==> {i1=v1, ..., im=vm, in=ti', ...}
-
-                              t1 ==> t1'
-                            --------------                           (ST_Proj1)
-                            t1.i ==> t1'.i
-
-                      -------------------------                    (ST_ProjRcd)
-                      {..., i=vi, ...}.i ==> vi
-   Again, these rules are a bit informal.  For example, the first rule
-   is intended to be read "if [ti] is the leftmost field that is not a
-   value and if [ti] steps to [ti'], then the whole record steps..."
-   In the last rule, the intention is that there should only be one
-   field called i, and that all the other fields must contain values. *)
-
-(**
-   Typing:
-            Gamma |- t1 : T1     ...     Gamma |- tn : Tn
-          --------------------------------------------------            (T_Rcd)
-          Gamma |- {i1=t1, ..., in=tn} : {i1:T1, ..., in:Tn}
-
-                    Gamma |- t : {..., i:Ti, ...}
-                    -----------------------------                      (T_Proj)
-                          Gamma |- t.i : Ti
-
-*)
-(** 日常的なプログラミング言語のもう1つの馴染み深い構造が、レコード(_records_)です。
-    直観的には、レコードは2種類の一般化の組み合わせによって得られます。
-    1つは(2項だけではなく)n-項積です。
-    もう1つはフィールドアクセスに(場所ではなく)ラベル(_label_)を使うことです。
-
-    構文:
+(** 構文:
 <<
        t ::=                          項
            | ...
@@ -1243,14 +1310,22 @@ if 3=0 then 1 else 3 * (fix F (pred 3))
    しかし、ここで実際に記述したものはかなり非形式的であることは注意しておくべきです。
    特に、いろいろなところで、"[...]"を「これらを何個か」という意味で使っていますし、
    レコードに同じラベルが複数回出てきてはいけない、
-   という通常の付加条件を明示的に述べることを省いています。
-   より詳細な非形式的記法を考案することもできますが、
+   という通常の付加条件を明示的に述べることを省いています。 *)
+
+
+(* It is possible to devise informal notations that are
+   more precise, but these tend to be quite heavy and to obscure the
+   main points of the definitions.  So we'll leave these a bit loose
+   here (they are informal anyway, after all) and do the work of
+   tightening things up elsewhere (in chapter [Records]). *)
+(** より詳細な非形式的記法を考案することもできますが、
    それはかなりヘビーで、また定義の大事な点をわかりにくくすることになりかねません。
    このため、ここではちょっとルーズなまま残しておいて(とにかく、どちらにしろ非形式的なのです)、
-   きっちり仕上げるのは別のところ([Records_J.v])でやります。
+   きっちり仕上げるのは別のところ([Records_J]章)でやります。 *)
 
-   簡約:
-[[
+
+(*
+   Reduction:
                               ti ==> ti'
                  ------------------------------------                  (ST_Rcd)
                      {i1=v1, ..., im=vm, in=ti, ...}
@@ -1262,16 +1337,34 @@ if 3=0 then 1 else 3 * (fix F (pred 3))
 
                       -------------------------                    (ST_ProjRcd)
                       {..., i=vi, ...}.i ==> vi
-]]
-   再び、これらの規則はちょっと非形式的です。
-   例えば、最初の規則は
-   「[ti]が値でないフィールドのうち最も左のもので、[ti]は[ti']にステップで進むならば、
-   レコード全体のステップは...」と読まれることを意図しています。
-   最後の規則では、i と呼ばれるフィールドは1つだけで、
-   他のすべてのフィールドは値を持っていることを意図しています。
+   Again, these rules are a bit informal.  For example, the first rule
+   is intended to be read "if [ti] is the leftmost field that is not a
+   value and if [ti] steps to [ti'], then the whole record steps..."
+   In the last rule, the intention is that there should only be one
+   field called i, and that all the other fields must contain values. *)
+(**
+   簡約:
+<<
+                              ti ==> ti'
+                 ------------------------------------                  (ST_Rcd)
+                     {i1=v1, ..., im=vm, in=ti, ...}
+                 ==> {i1=v1, ..., im=vm, in=ti', ...}
 
-   型付け:
-[[
+                              t1 ==> t1'
+                            --------------                           (ST_Proj1)
+                            t1.i ==> t1'.i
+
+                      -------------------------                    (ST_ProjRcd)
+                      {..., i=vi, ...}.i ==> vi
+>>
+   これらの規則も、やはりちょっと非形式的です。
+   例えば、最初の規則は   「[ti]が値でないフィールドのうち最も左のもので、[ti]は[ti']にステップで進むならば、
+   レコード全体のステップは...」と読まれることを意図しています。
+   最後の規則では、i と呼ばれるフィールドは1つだけで、他のすべてのフィールドは値を持っていることを意図しています。 *)
+
+
+(*
+   Typing:
             Gamma |- t1 : T1     ...     Gamma |- tn : Tn
           --------------------------------------------------            (T_Rcd)
           Gamma |- {i1=t1, ..., in=tn} : {i1:T1, ..., in:Tn}
@@ -1279,15 +1372,26 @@ if 3=0 then 1 else 3 * (fix F (pred 3))
                     Gamma |- t : {..., i:Ti, ...}
                     -----------------------------                      (T_Proj)
                           Gamma |- t.i : Ti
-]]
 
+*)
+(**
+   型付け:
+<<
+            Gamma |- t1 : T1     ...     Gamma |- tn : Tn
+          --------------------------------------------------            (T_Rcd)
+          Gamma |- {i1=t1, ..., in=tn} : {i1:T1, ..., in:Tn}
+
+                    Gamma |- t : {..., i:Ti, ...}
+                    -----------------------------                      (T_Proj)
+                          Gamma |- t.i : Ti
+>>
 *)
 
 (* ###################################################################### *)
 (* *** Encoding Records (Optional) *)
 (** *** レコードのエンコード (Optional) *)
 
-(** There are several ways to make the above definitions precise.  
+(* There are several ways to make the above definitions precise.  
 
       - We can directly formalize the syntactic forms and inference
         rules, staying as close as possible to the form we've given
@@ -1401,7 +1505,7 @@ if 3=0 then 1 else 3 * (fix F (pred 3))
         存在するレコードに1つのフィールドを追加する別のコンストラクタの2つで表現するという方法があります。
         この方法は、レコードについての計算のメタ理論に一番の興味がある場合には正しい方法です。
         なぜなら、この方法をとると、きれいで優雅な定義と証明が得られるからです。
-        ファイル[Records_J.v]では、この方法がどのように行えるかを示しています。
+        [Records_J]章では、この方法がどのように行えるかを示しています。
 
       - 別の方法として、望むならば、レコードを形式化することを完全に避けることができます。
         このためには、レコード記法は、対と直積型を含むより複雑な式の単なる非形式的な略記法である、
@@ -1475,8 +1579,7 @@ if 3=0 then 1 else 3 * (fix F (pred 3))
     レコードのオリジナルの「直接の」表現に対するすべての型付け規則が、
     このエンコードで正しいことをチェックするのは難しいことではありません。
     (簡約規則は正しさを「ほぼ」確認できます。完全に、ではありません。
-    なぜなら、フィールドの並べ直しのエンコードのためです。) *)
-    (* (訳注: "reorders fields" が何を指すのか意味がとれない) *)
+    なぜなら、フィールドの並べ直しによってフィールドの簡約順序が変わりうるためです。) *)
 
 (* Of course, this encoding will not be very efficient if we
     happen to use a record with label [bar]!  But things are not
@@ -1490,7 +1593,7 @@ if 3=0 then 1 else 3 * (fix F (pred 3))
     しかしこの問題は見た目ほど深刻ではありません。
     もし、コンパイラがプログラム全体を同時に見ることができると仮定するなら、
     ラベルの番号づけをうまく選んで、一番よく使われるラベルに小さいポジションを与えることができます。
-    実際、商用のコンパイラで本質的にこれをやっているものがあります! *)
+    実際、商用のコンパイラで本質的にこれをやっているものもあります! *)
 
 (* *** Variants (Optional Reading) *)
 (** *** バリアント (Optional Reading) *)
@@ -2115,7 +2218,7 @@ Notation eo := (Id 18).
     何を調べれば良いかがわかるでしょう。
 
     以下の[Hint]宣言は、次のように言っています:
-    [auto]が [(has_type G (tm_app e1 e2) T)] という形のゴールに到達したときは常に、
+    [auto]が [(has_type G (tapp e1 e2) T)] という形のゴールに到達したときは常に、
     [eapply T_App] を考えなさい。
     この結果、中間的な型 T1 の存在変数が残ります。
     (コメントになっている)[lcase]についても同様です。
@@ -2150,7 +2253,10 @@ Hint Extern 2 (_ = _) => compute; reflexivity.
 Module Numtest.
 
 (* if0 (pred (succ (pred (2 * 0))) then 5 else 6 *)
-(** [if0 (pred (succ (pred (2 * 0)))) then 5 else 6] *)
+(** <<
+   if0 (pred (succ (pred (2 * 0)))) then 5 else 6
+>>
+*)
 Definition test :=
   tif0 
     (tpred
@@ -2211,7 +2317,10 @@ End Numtest.
 Module Prodtest.
 
 (* ((5,6),7).fst.snd *)
-(** [((5,6),7).fst.snd] *)
+(** <<
+   ((5,6),7).fst.snd
+>>
+*)
 Definition test :=
   tsnd
     (tfst
@@ -2249,7 +2358,10 @@ End Prodtest.
 Module LetTest.
 
 (* let x = pred 6 in succ x *)
-(** [let x = pred 6 in succ x] *)
+(** <<
+   let x = pred 6 in succ x
+>>
+*)
 Definition test :=
   tlet
     x
@@ -2287,9 +2399,12 @@ Module Sumtest1.
 (* case (inl Nat 5) of
      inl x => x
    | inr y => y *)
-(** [case (inl Nat 5) of
+(** <<
+   case (inl Nat 5) of
      inl x => x
-   | inr y => y] *)
+   | inr y => y
+>>
+*)
 
 Definition test :=
   tcase (tinl TNat (tnat 5))
@@ -2327,12 +2442,15 @@ Module Sumtest2.
           inl n => n
           inr n => if0 n then 1 else 0 in
    (processSum (inl Nat 5), processSum (inr Nat 5))    *)
-(** [let processSum =
+(** <<
+   let processSum =
      \x:Nat+Nat.
         case x of
           inl n => n
           inr n => if0 n then 1 else 0 in
-   (processSum (inl Nat 5), processSum (inr Nat 5))]    *)
+   (processSum (inl Nat 5), processSum (inr Nat 5))
+>>
+*)
 
 Definition test :=
   tlet
@@ -2377,10 +2495,13 @@ Module ListTest.
    lcase l of
      nil => 0
    | x::y => x*x *)
-(** [let l = cons 5 (cons 6 (nil Nat)) in
+(** <<
+   let l = cons 5 (cons 6 (nil Nat)) in
    lcase l of
      nil => 0
-   | x::y => x*x] *)
+   | x::y => x*x
+>>
+*)
 
 Definition test :=
   tlet l
@@ -2420,10 +2541,13 @@ Module FixTest1.
              (\f:nat->nat.
                 \a:nat. 
                    if a=0 then 1 else a * (f (pred a))) *)
-(** [fact := fix
+(** <<
+   fact := fix
              (\f:nat->nat.
                 \a:nat.
-                   if a=0 then 1 else a * (f (pred a)))] *)
+                   if a=0 then 1 else a * (f (pred a)))
+>>
+*)
 Definition fact :=
   tfix
     (tabs f (TArrow TNat TNat)
@@ -2437,7 +2561,7 @@ Definition fact :=
 
 (* (Warning: you may be able to typecheck [fact] but still have some
     rules wrong!) *)
-(** (ワーニング: [fact]の型チェックが通るかもしれませんが、それでもいくつかの規則が間違ったままです。)
+(** (警告: [fact]の型チェックが通るかもしれませんが、それでもいくつかの規則が間違ったままです。)
      *)
 
 (* 
@@ -2480,14 +2604,16 @@ Module FixTest2.
                case l of
                | [] -> []
                | x::l -> (g x)::(f l)) *) 
-(** map :=
+(** <<
+   map :=
      \g:nat->nat.
        fix
          (\f:[nat]->[nat].
             \l:[nat]. 
                case l of
                | [] -> []
-               | x::l -> (g x)::(f l)) *) 
+               | x::l -> (g x)::(f l))
+>> *) 
 Definition map :=
   tabs g (TArrow TNat TNat)
     (tfix
@@ -2543,13 +2669,15 @@ Module FixTest3.
              if0 m then (if0 n then 1 else 0) 
              else if0 n then 0
              else eq (pred m) (pred n))   *)
-(** equal =
+(** <<
+   equal =
       fix
         (\eq:Nat->Nat->Bool.
            \m:Nat. \n:Nat.
              if0 m then (if0 n then 1 else 0)
              else if0 n then 0
-             else eq (pred m) (pred n))   *)
+             else eq (pred m) (pred n))
+>> *)
 Definition equal :=
   tfix
     (tabs eq (TArrow TNat (TArrow TNat TNat))
@@ -2598,7 +2726,8 @@ Module FixTest4.
     let odd  = evenodd.snd in
     (even 3, even 4)
 *)
-(** [let evenodd =
+(** <<
+   let evenodd =
          fix
            (\eo: (Nat->Nat * Nat->Nat).
               let e = \n:Nat. if0 n then 1 else eo.snd (pred n) in
@@ -2606,7 +2735,8 @@ Module FixTest4.
               (e,o)) in
     let even = evenodd.fst in
     let odd  = evenodd.snd in
-    (even 3, even 4)]
+    (even 3, even 4)
+>>
 *)
 
 Definition eotest :=
