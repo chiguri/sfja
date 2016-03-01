@@ -9,7 +9,7 @@ Module NatList.
 (* * Pairs of Numbers *)
 (** * 数のペア *)
 
-(** In an [Inductive] type definition, each constructor can take
+(* In an [Inductive] type definition, each constructor can take
     any number of arguments -- none (as with [true] and [O]), one (as
     with [S]), or more than one, as in this definition: *)
 (**
@@ -54,21 +54,23 @@ Eval compute in (fst (pair 3 5)).
 
 (** *** *)
 
-(** Since pairs are used quite a bit, it is nice to be able to
+(* Since pairs are used quite a bit, it is nice to be able to
     write them with the standard mathematical notation [(x,y)] instead
     of [pair x y].  We can tell Coq to allow this with a [Notation]
     declaration. *)
 (**
-   ペアはよく使うものなので、 [pair x y] ではなく、数学の標準的な記法で [(x, y)] と書けるとよいでしょう。このような記法を使うためには [Notation] 宣言を使います。
+   ペアはよく使うものなので、 [pair x y] ではなく、数学の標準的な記法で [(x, y)] と書けるとよいでしょう。
+   このような記法を使うためには [Notation] 宣言を使います。
    *)
 
 Notation "( x , y )" := (pair x y).
 
-(** The new notation can be used both in expressions and in
+(* The new notation can be used both in expressions and in
     pattern matches (indeed, we've seen it already in the previous
     chapter -- this notation is provided as part of the standard
     library): *)
-(** こうして定義した新しい記法（notation）は、式だけでなくパターンマッチに使うこともできます。（実際には、前章でも見たように、この記法は標準ライブラリの一部として提供されています。） *)
+(** こうして定義した新しい記法（notation）は、式だけでなくパターンマッチに使うこともできます。
+   （実際には、前章でも見たように、この記法は標準ライブラリの一部として提供されています。） *)
 
 Eval compute in (fst (3,5)).
 
@@ -88,12 +90,13 @@ Definition swap_pair (p : natprod) : natprod :=
 
 (** *** *)
 
-(** Let's try and prove a few simple facts about pairs.  If we
+(* Let's try and prove a few simple facts about pairs.  If we
     state the lemmas in a particular (and slightly peculiar) way, we
     can prove them with just reflexivity (and its built-in
     simplification): *)
 (**
-   それでは、数のペアに関する簡単な事実をいくつか証明してみましょう。補題を一定の（一種独特な）形式で書いておけば、単に reflexivity（と組み込みの簡約）だけで証明することができます。
+   それでは、数のペアに関する簡単な事実をいくつか証明してみましょう。
+   補題を一定の（一種独特な）形式で書いておけば、単に reflexivity（と組み込みの簡約）だけで証明することができます。
    *)
 
 Theorem surjective_pairing' : forall (n m : nat),
@@ -119,9 +122,11 @@ Abort.
     Notice that, unlike for [nat]s, [destruct] doesn't generate an
     extra subgoal here.  That's because [natprod]s can only be
     constructed in one way.  *)
-(** [simpl] で [fst] や [snd] の中のパターンマッチを実行できるよう、 [p] の構造を明らかにする必要があります。これには [destruct] を使います。
+(** [simpl] で [fst] や [snd] の中のパターンマッチを実行できるよう、 [p] の構造を明らかにする必要があります。
+    これには [destruct] を使います。
 
-   [nat] の場合と異なり、 [destruct] でサブゴールが増えることはありません。これは、 [natprod] の構成法がひとつしかないからです。
+   [nat] の場合と異なり、 [destruct] でサブゴールが増えることはありません。
+   これは、 [natprod] の構成法がひとつしかないからです。
    *)
 
 Theorem surjective_pairing : forall (p : natprod),
@@ -153,7 +158,8 @@ Proof.
     either the empty list or else a pair of a number and another
     list." *)
 (**
-   ペアの定義を少し一般化すると、数のリストは次のように表すことができます。すなわち、「リストは、空のリストであるか、または数と他のリストをペアにしたものである」。
+   ペアの定義を少し一般化すると、数のリストは次のように表すことができます。
+   すなわち、「リストは、空のリストであるか、または数と他のリストをペアにしたものである」。
    *)
 
 Inductive natlist : Type :=
@@ -187,7 +193,8 @@ Notation "[ x ; .. ; y ]" := (cons x .. (cons y nil) ..).
 (**
    この宣言を完全に理解する必要はありませんが、興味のある読者のために簡単に説明しておきます。
 
-   [right associativity] アノテーションは複数の [::] を使った式にどのように括弧を付けるか指示するものです。例えば、次のみっつの宣言はすべて同じ意味に解釈されます。
+   [right associativity] アノテーションは複数の [::] を使った式にどのように括弧を付けるか指示するものです。
+   例えば、次のみっつの宣言はすべて同じ意味に解釈されます。
    *)
 
 Definition mylist1 := 1 :: (2 :: (3 :: nil)).
@@ -217,16 +224,20 @@ Notation "x + y" := (plus x y)
    notations and translating them to nested sequences of binary
    constructors. *)
 (**
-   [at level 60] の部分は [::] を他の中置演算子といっしょに使っている式にどのように括弧を付けるかを指示するものです。例えば、 [+] を [plus] に対する level 50 の中置記法として定義したので、
+   [at level 60] の部分は [::] を他の中置演算子といっしょに使っている式にどのように括弧を付けるかを指示するものです。
+   例えば、 [+] を [plus] に対する level 50 の中置記法として定義したので、
 [[
 Notation "x + y" := (plus x y)
                     (at level 50, left associativity).
 ]]
    [+] は [::] よりも強く結合し、 [1 + 2 :: [3]] は期待通り、 [1 + (2 :: [3])] ではなく [(1 + 2) :: [3]] と構文解析されます。
 
-   （ところで、 .v ファイルを読んでいるときには "[1 + 2 :: [3]]" のような書き方は少し読みにくいように感じるでしょう。内側の 3 の左右の角括弧はリストを表すものですが、外側の括弧は coqdoc 用の命令で、角括弧内の部分をそのままのテキストではなく Coq のコードとして表示するよう指示するものです。この角括弧は生成された HTML には現れません。）
+   （ところで、 .v ファイルを読んでいるときには "[1 + 2 :: [3]]" のような書き方は少し読みにくいように感じるでしょう。
+   内側の 3 の左右の角括弧はリストを表すものですが、外側の括弧は coqdoc 用の命令で、角括弧内の部分をそのままのテキストではなく Coq のコードとして表示するよう指示するものです。
+   この角括弧は生成された HTML には現れません。）
 
-   上の二番目と三番目の [Notation] 宣言は標準的なリストの記法を導入するためのものです。三番目の [Notation] の右辺は、 n 引数の記法を二項構成子の入れ子に変換する記法を定義するための Coq の構文の例です。
+   上の二番目と三番目の [Notation] 宣言は標準的なリストの記法を導入するためのものです。
+   三番目の [Notation] の右辺は、 n 引数の記法を二項構成子の入れ子に変換する記法を定義するための Coq の構文の例です。
    *)
 
 (** *** Repeat *)
@@ -234,7 +245,8 @@ Notation "x + y" := (plus x y)
     For example, the [repeat] function takes a number [n] and a
     [count] and returns a list of length [count] where every element
     is [n]. *)
-(** リストを操作するために便利な関数がいくつかあります。例えば、 [repeat] 関数は数 [n] と [count] を取り、各要素が [n] で長さ [count] のリストを返します。 *)
+(** リストを操作するために便利な関数がいくつかあります。
+    例えば、 [repeat] 関数は数 [n] と [count] を取り、各要素が [n] で長さ [count] のリストを返します。 *)
 
 Fixpoint repeat (n count : nat) : natlist := 
   match count with
@@ -282,7 +294,9 @@ Proof. reflexivity.  Qed.
     element (the "tail").  
     Of course, the empty list has no first element, so we
     must pass a default value to be returned in that case.  *)
-(** もうふたつリストを使った例を見てみましょう。 [hd] 関数はリストの最初の要素（先頭—— head）を返し、 [tail] は最初の要素を除いたものを返します。空のリストには最初の要素はありませんから、その場合に返す値を引数として渡しておかなければなりません。 *)
+(** もうふたつリストを使った例を見てみましょう。
+    [hd] 関数はリストの最初の要素（先頭—— head）を返し、 [tail] は最初の要素を除いたものを返します。
+    空のリストには最初の要素はありませんから、その場合に返す値を引数として渡しておかなければなりません。 *)
 
 (** *** Head (with default) and Tail *)
 Definition hd (default:nat) (l:natlist) : nat :=
@@ -348,9 +362,12 @@ Example test_countoddmembers3:    countoddmembers nil = 0.
     both lists at the same time.  (One possible solution requires
     defining a new kind of pairs, but this is not the only way.)  *)
 (**
-   [alternate] の定義を完成させなさい。この関数は、ふたつのリストから交互に要素を取り出しひとつに「綴じ合わせる」関数です。具体的な例は下のテストを見てください。
+   [alternate] の定義を完成させなさい。
+   この関数は、ふたつのリストから交互に要素を取り出しひとつに「綴じ合わせる」関数です。
+   具体的な例は下のテストを見てください。
 
-   注意: [alternate] の自然な定義のひとつは、 「[Fixpoint] による定義は『明らかに停止する』ものでなければならない」という Coq の要求を満たすことができません。このパターンにはまってしまったようであれば、両方のリストの要素を同時に見ていくような少し冗長な方法を探してみてください。
+   注意: [alternate] の自然な定義のひとつは、 「[Fixpoint] による定義は『明らかに停止する』ものでなければならない」という Coq の要求を満たすことができません。
+   このパターンにはまってしまったようであれば、両方のリストの要素を同時に見ていくような少し冗長な方法を探してみてください。
    *)
 
 Fixpoint alternate (l1 l2 : natlist) : natlist :=
@@ -376,14 +393,15 @@ Example test_alternate4:        alternate [] [20;30] = [20;30].
     implementation of bags is to represent a bag of numbers as a
     list. *)
 (**
-   バッグ（[bag]。または多重集合—— [multiset]）は集合のようなものですが、それぞれの要素が一度ではなく複数回現れることのできるようなものを言います。バッグの実装としてありうるのは数のバッグをリストで表現するというものでしょう。
+   バッグ（[bag]、または多重集合—— [multiset]）は集合のようなものですが、それぞれの要素が一度ではなく複数回現れることのできるようなものを言います。
+   バッグの実装としてありうるのは数のバッグをリストで表現するというものでしょう。
    *)
 
 Definition bag := natlist.  
 
 (* **** Exercise: 3 stars (bag_functions)  *)
 (** **** 練習問題: ★★★ (bag_functions) *)
-(** Complete the following definitions for the functions
+(* Complete the following definitions for the functions
     [count], [sum], [add], and [member] for bags. *)
 (**
    バッグに対する [count]、 [sum]、 [add]、 [member] 関数の定義を完成させなさい。
@@ -412,7 +430,13 @@ Example test_count2:              count 6 [1;2;3;1;4;1] = 0.
     think about whether [sum] can be implemented in another way --
     perhaps by using functions that have already been defined.  *)
 (**
-   多重集合の [sum] （直和。または非交和）は集合の [union] （和）と同じようなものです。 [sum a b] は [a] と [b] の両方の要素を持つ多重集合です。（数学者は通常、多重集合の [union] にもう少し異なる定義を与えます。それが、この関数の名前を [union] にしなかった理由です。） [sum] のヘッダには引数の名前を与えませんでした。さらに、 [Fixpoint] ではなく [Definition] を使っています。ですから、引数に名前がついていたとしても再帰的な処理はできません。問題をこのように設定したのは、 [sum] を（定義済みの関数を使うといった）別の方法で定義できないか考えさせるためです。
+   多重集合の [sum] （直和、または非交和）は集合の [union] （和）と同じようなものです。
+   [sum a b] は [a] と [b] の両方の要素を持つ多重集合です。
+   （数学者は通常、多重集合の [union] にもう少し異なる定義を与えます。それが、この関数の名前を [union] にしなかった理由です。）
+   [sum] のヘッダには引数の名前を与えませんでした。
+   さらに、 [Fixpoint] ではなく [Definition] を使っています。
+   ですから、引数に名前がついていたとしても再帰的な処理はできません。
+   問題をこのように設定したのは、 [sum] を（定義済みの関数を使うといった）別の方法で定義できないか考えさせるためです。
    *)
 
 Definition sum : bag -> bag -> bag := 
@@ -481,14 +505,16 @@ Example test_subset2:              subset [1;2;2] [2;1;4;1] = false.
 
 (* **** Exercise: 3 stars (bag_theorem)  *)
 (** **** 練習問題: ★★★ (bag_theorem) *)
-(** Write down an interesting theorem [bag_theorem] about bags involving
+(* Write down an interesting theorem [bag_theorem] about bags involving
     the functions [count] and [add], and prove it.  Note that, since this
     problem is somewhat open-ended, it's possible that you may come up
     with a theorem which is true, but whose proof requires techniques
     you haven't learned yet.  Feel free to ask for help if you get
     stuck! *)
 (**
-   [count] や [add] を使ったバッグに関する面白い定理を書き、それを証明しなさい。この問題はいわゆる自由課題で、真になることがわかっていても、証明にはまだ習っていない技を使わなければならない定理を思いついてしまうこともあります。証明に行き詰まってしまったら気軽に質問してください。
+   [count] や [add] を使ったバッグに関する面白い定理を書き、それを証明しなさい。
+   この問題はいわゆる自由課題で、真になることがわかっていても、証明にはまだ習っていない技を使わなければならない定理を思いついてしまうこともあります。
+   証明に行き詰まってしまったら気軽に質問してください。
 *)
 
 (* FILL IN HERE *)
@@ -671,7 +697,7 @@ Proof.
 *)
 
 (** *** Another example *)
-(**
+(*
   Here is a similar example to be worked together in class: *)
 (**
   下の練習問題は授業中に解きましょう。 *)
@@ -748,7 +774,8 @@ Abort.
 (* So let's take the equation about [snoc] that would have
     enabled us to make progress and prove it as a separate lemma. 
 *)
-(** この [snoc] に関する等式が成り立つことを示せれば証明が先に進むはずです。この式を取り出して別個の補題として証明してみましょう。 *)
+(** この [snoc] に関する等式が成り立つことを示せれば証明が先に進むはずです。
+    この式を取り出して別個の補題として証明してみましょう。 *)
 
 Theorem length_snoc : forall n : nat, forall l : natlist,
   length (snoc l n) = S (length l).
@@ -868,13 +895,15 @@ Proof.
 ]]
         これは、帰納法の仮定から明らかである。 [] *)
 
-(** Obviously, the style of these proofs is rather longwinded
+(* Obviously, the style of these proofs is rather longwinded
     and pedantic.  After the first few, we might find it easier to
     follow proofs that give fewer details (since we can easily work
     them out in our own minds or on scratch paper if necessary) and
     just highlight the non-obvious steps.  In this more compressed
     style, the above proof might look more like this: *)
-(** こういった証明のスタイルは、どう見ても長ったらしく杓子定規な感じがします。最初の何回かは別にして、それ以後は、細かいところは省略してしまって（必要であれば、頭の中や紙の上で追うのは簡単です）、自明でないところにだけ注目した方がわかりやすいでしょう。そのように省略がちに書けば、上の証明は次のようになります。
+(** こういった証明のスタイルは、どう見ても長ったらしく杓子定規な感じがします。
+    最初の何回かは別にして、それ以後は、細かいところは省略してしまって（必要であれば、頭の中や紙の上で追うのは簡単です）、自明でないところにだけ注目した方がわかりやすいでしょう。
+    そのように省略がちに書けば、上の証明は次のようになります。
    *)
 
 (* _Theorem_:
@@ -957,11 +986,12 @@ Theorem rev_involutive : forall l : natlist,
 Proof.
   (* FILL IN HERE *) Admitted.
 
-(** There is a short solution to the next exercise.  If you find
+(* There is a short solution to the next exercise.  If you find
     yourself getting tangled up, step back and try to look for a
     simpler way. *)
 (**
-   次の問題には簡単な解法があります。こんがらがってしまったようであれば、少し戻って単純な方法を探してみましょう。
+   次の問題には簡単な解法があります。
+   こんがらがってしまったようであれば、少し戻って単純な方法を探してみましょう。
    *)
 
 Theorem app_assoc4 : forall l1 l2 l3 l4 : natlist,
@@ -1015,7 +1045,7 @@ Proof.
 
 (* **** Exercise: 2 stars (list_design)  *)
 (** **** 練習問題: ★★ (list_design) *)
-(** Design exercise: 
+(* Design exercise: 
      - Write down a non-trivial theorem [cons_snoc_app]
        involving [cons] ([::]), [snoc], and [app] ([++]).  
      - Prove it. *) 
@@ -1100,7 +1130,9 @@ There is a hard way and an easy way to solve this exercise.
     function that returns the [n]th element of some list.  If we give
     it type [nat -> natlist -> nat], then we'll have to return some
     number when the list is too short! *)
-(** [natoption] 型の使い途のひとつは、関数からエラーコードを返すことです。例えば、リストの [n] 番目の要素を返す関数を書きたいとしましょう。型を [nat -> natlist -> nat] としてしまったら、リストが短かすぎた場合でも何か適当な数を返さなければなりません！
+(** [natoption] 型の使い途のひとつは、関数からエラーコードを返すことです。
+    例えば、リストの [n] 番目の要素を返す関数を書きたいとしましょう。
+    型を [nat -> natlist -> nat] としてしまったら、リストが短かすぎた場合でも何か適当な数を返さなければなりません！
    *)
 
 Fixpoint index_bad (n:nat) (l:natlist) : nat :=
@@ -1162,7 +1194,8 @@ Fixpoint index' (n:nat) (l:natlist) : natoption :=
     guard is considered true if it evaluates to the first constructor
     in the [Inductive] definition and false if it evaluates to the
     second. *)
-(** Coq の条件式(if式)は他の言語に見られるものとほとんど同じですが、少しだけ一般化されています。 Coq には 組み込みのブーリアン型がないため、 Coq の条件式では、実際には、構成子のふたつある任意の帰納型に対して分岐をすることができます。条件部の式が [Inductive] の定義の最初の構成子に評価された場合には真、ふたつめの構成子に評価された場合には偽と見做されます。
+(** Coq の条件式(if式)は他の言語に見られるものとほとんど同じですが、少しだけ一般化されています。
+    Coq には 組み込みのブーリアン型がないため、 Coq の条件式では、実際には、構成子のふたつある任意の帰納型に対して分岐をすることができます。条件部の式が [Inductive] の定義の最初の構成子に評価された場合には真、ふたつめの構成子に評価された場合には偽と見做されます。
    *)
 
 (* The function below pulls the [nat] out of a [natoption], returning
@@ -1238,7 +1271,9 @@ Definition insert (key value : nat) (d : dictionary) : dictionary :=
     found and [Some val] if the key was mapped to [val] in the
     dictionary. If the same key is mapped to multiple values, [find]
     will return the first one it finds. *)
-(** この [find] 関数は、 [dictionary] から与えられたキーに対応する値を探し出すものです。 キーが見つからなかった場合には [None] に評価され、キーが [val] に結び付けられていた場合には [Some val] に評価されます。同じキーが複数の値に結び付けられている場合には、最初に見つかったほうの値を返します。 *)
+(** この [find] 関数は、 [dictionary] から与えられたキーに対応する値を探し出すものです。
+    キーが見つからなかった場合には [None] に評価され、キーが [val] に結び付けられていた場合には [Some val] に評価されます。
+    同じキーが複数の値に結び付けられている場合には、最初に見つかったほうの値を返します。 *)
 
 Fixpoint find (key : nat) (d : dictionary) : natoption := 
   match d with 
