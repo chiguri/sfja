@@ -415,7 +415,7 @@ Check or_intror.
     - [Q] の根拠をコンストラクタ [or_intror] に与える。 *)
 
 (** *** *)
-(** Since [P \/ Q] has two constructors, doing [destruct] on a
+(* Since [P \/ Q] has two constructors, doing [destruct] on a
     hypothesis of type [P \/ Q] yields two subgoals. *)
 (**  [P \/ Q] は二つのコンストラクタを持っているので、 [P \/ Q] の形の仮定に
     [destruct] を適用すると二つのサブゴールが生成されます。
@@ -632,13 +632,13 @@ Proof.
 (* FILL IN HERE *)
 (** [] *)
 
-(** However, unlike [False], which we'll use extensively, [True] is
+(* However, unlike [False], which we'll use extensively, [True] is
     used fairly rarely. By itself, it is trivial (and therefore
     uninteresting) to prove as a goal, and it carries no useful
     information as a hypothesis. But it can be useful when defining
     complex [Prop]s using conditionals, or as a parameter to 
     higher-order [Prop]s. *)
-(** しかしながら、[False] とは違い、広い意味で解釈すると [True] は
+(** しかしながら、広く使われる [False] とは違い、 [True] は
     ごく希にしか使われません。ゴールの証明に使うには当たり前すぎ
     （それゆえつまらない）、仮定として有意義な情報を与えてくれないのです。
     しかし、条件分岐を用いた複雑な命題（[Prop]）の定義や高階論理の引数として渡す場合などにとても有用です。
