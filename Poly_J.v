@@ -17,7 +17,7 @@ Require Export Lists_J.
 (* ** Polymorphic Lists *)
 (** ** 多相的なリスト *)
 
-(** For the last couple of chapters, we've been working just
+(* For the last couple of chapters, we've been working just
     with lists of numbers.  Obviously, interesting programs also need
     to be able to manipulate lists with elements from other types --
     lists of strings, lists of booleans, lists of lists, etc.  We
@@ -57,7 +57,7 @@ Inductive list (X:Type) : Type :=
     [Module] definition that is now out of scope.) *)
 (** これは、前の章にある[natlist]の定義とほとんどそっくりですが、コンストラクタ[cons]の引数の型が[nat]であったのに対し、任意の型を表す[X]がそれに変わっています。この[X]はヘッダに加えられた[X]と結びつけられ、さらに[natlist]であったものが[list X]に置き換わっています（ここで、コンストラクタに[nil]や[cons]といった名前を付けられるのは、最初に定義した[natlist]が[Module]の中で定義されていて、ここからはスコープの外になっているからです）。 *)
 
-(** What sort of thing is [list] itself?  One good way to think
+(* What sort of thing is [list] itself?  One good way to think
     about it is that [list] is a _function_ from [Type]s to
     [Inductive] definitions; or, to put it another way, [list] is a
     function from [Type]s to [Type]s.  For any particular type [X],
@@ -66,7 +66,7 @@ Inductive list (X:Type) : Type :=
 (** それでは、[list]とはいったい何なのか、ということを正確に考えて見ましょう。これを考える一つの手がかりは、リストが「型を引数にとり、帰納的な定義を返す関数である」と考えることです。あるいは「型を引数にとり、型を返す関数」と考えてもいいかもしれません。任意の型[X]について、[list X]という型は、帰納的に定義されたリストの集合で、その要素の型が[X]となっているものと考えることもできます。
  *)
 
-(** With this definition, when we use the constructors [nil] and
+(* With this definition, when we use the constructors [nil] and
     [cons] to build lists, we need to tell Coq the type of the
     elements in the lists we are building -- that is, [nil] and [cons]
     are now _polymorphic constructors_.  Observe the types of these
@@ -371,6 +371,9 @@ Fixpoint length'' {X:Type} (l:list X) : nat :=
 (** 引数を暗黙的に宣言することには、小さな問題が一つあります。時折、Coqが型を特定するために必要な情報を十分に集められない時があるのです。そういう場合には、その時だけ明示してやります。たとえそれがグローバルには[Implicit]と宣言されていたとしてもです。例えば、もし次のように書きたかったとします。 *)
 
 (* Definition mynil := nil.  *)
+(** <<
+(* Definition mynil := nil.  *)
+>> *)
 
 (* If we uncomment this definition, Coq will give us an error,
     because it doesn't know what type argument to supply to [nil].  We
@@ -826,7 +829,7 @@ Example test_filter2':
   = [ [3]; [4]; [8] ].
 Proof. reflexivity.  Qed.
 
-(** **** Exercise: 2 stars (filter_even_gt7)  *)
+(* **** Exercise: 2 stars (filter_even_gt7)  *)
 (** **** 練習問題: ★★ (filter_even_gt7) *)
 
 (* Use [filter] (instead of [Fixpoint]) to write a Coq function
@@ -849,7 +852,7 @@ Example test_filter_even_gt7_2 :
 
 (* **** Exercise: 3 stars (partition)  *)
 (** **** 練習問題: ★★★ (partition) *)
-(** Use [filter] to write a Coq function [partition]:
+(* Use [filter] to write a Coq function [partition]:
   partition : forall X : Type,
               (X -> bool) -> list X -> list X * list X
    Given a set [X], a test function of type [X -> bool] and a [list
@@ -921,9 +924,9 @@ Proof. reflexivity.  Qed.
 (** ** Map for options *)
 (* **** Exercise: 3 stars (map_rev)  *)
 (** **** 練習問題: ★★★ (map_rev) *)
-(** Show that [map] and [rev] commute.  You may need to define an
+(* Show that [map] and [rev] commute.  You may need to define an
     auxiliary lemma. *)
-(** [map]と[rev]が可換であることを示しなさい。証明には補題をたてて証明する必要があるでしょう。 *)
+(** [map]と[rev]が可換であることを示しなさい。補題をたてて証明する必要があるでしょう。 *)
 
 Theorem map_rev : forall (X Y : Type) (f : X -> Y) (l : list X),
   map f (rev l) = rev (map f l).
@@ -997,7 +1000,7 @@ Fixpoint fold {X Y:Type} (f: X->Y->Y) (l:list X) (b:Y) : Y :=
 
 (** *** *)
 
-(** Intuitively, the behavior of the [fold] operation is to
+(* Intuitively, the behavior of the [fold] operation is to
     insert a given binary operator [f] between every pair of elements
     in a given list.  For example, [ fold plus [1;2;3;4] ] intuitively
     means [1+2+3+4].  To make this precise, we also need a "starting
@@ -1009,9 +1012,13 @@ Fixpoint fold {X Y:Type} (f: X->Y->Y) (l:list X) (b:Y) : Y :=
     Here are some more examples:
 *)
 (** 直感的に[fold]は、与えられたリストの各要素の間に、与えられた二項演算子[f]を挟み込むように挿入していくような操作です。 例えば、[ fold plus [1,2,3,4] ]は、直感的に[1+2+3+4]と同じ意味です。ただし正確には、二番めの引数に、[f]に最初に与える"初期値"が必要になります。例えば
+[[
    fold plus [1,2,3,4] 0
+]]
     は、次のように解釈されます。
+[[
    1 + (2 + (3 + (4 + 0))).
+]]
     もう少しサンプルを見てください。
 *)
 
@@ -1110,7 +1117,7 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** We'll use function overriding heavily in parts of the rest of the
+(* We'll use function overriding heavily in parts of the rest of the
     course, and we will end up needing to know quite a bit about its
     properties.  To prove these properties, though, we need to know
     about a few more of Coq's tactics; developing these is the main
@@ -1118,7 +1125,11 @@ Proof.
     one very useful tactic that will also help us with proving
     properties of some of the other functions we have introduced in
     this chapter. *)
-(** このコースでこれ以降、関数のオーバーライド（上書き）がよく登場しますが、この性質について多くを知る必要はありません。しかし、これらの性質を証明するには、さらにいくつかのCoqのタクティックを知らなければなりません。それが、この章の残りの部分の主なトピックになります。 *)
+(** このコースでこれ以降、関数のオーバーライド（上書き）がよく登場しますが、この性質について多くを知る必要はありません。
+    しかし、これらの性質を証明するには、さらにいくつかのCoqのタクティックを知らなければなりません。
+    それが、次章の主なトピックになります。
+    ここからは、あるタクティックを紹介します。
+    本章で導入したいくつかの関数に関する性質の証明で非常に有用です。 *)
 
 (* ###################################################### *)
 
@@ -1185,7 +1196,7 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** As the inverse of [unfold], Coq also provides a tactic
+(* As the inverse of [unfold], Coq also provides a tactic
     [fold], which can be used to "unexpand" a definition.  It is used
     much less often. *)
 (** [unfold]の逆の機能として、Coqには[fold]というタクティックも用意されています。これは、展開された定義を元に戻してくれますが、あまり使われることはありません。 *)
@@ -1243,13 +1254,17 @@ Definition fold_map {X Y:Type} (f : X -> Y) (l : list X) : list Y :=
 (* FILL IN HERE *)
 *)
 (** [index]関数の定義を思い出してください。
+[[
    Fixpoint index {X : Type} (n : nat) (l : list X) : option X :=
      match l with
      | [] => None
      | a :: l' => if beq_nat n O then Some a else index (pred n) l'
      end.
+]]
    次の定理の、非形式的な証明を書きなさい。
+[[
    forall X n l, length l = n -> @index X (S n) l = None.
+]]
 (* FILL IN HERE *)
 *)
 (** [] *)
