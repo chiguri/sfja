@@ -28,14 +28,15 @@
     はじめの例は、Imp と呼ばれる単純な命令型プログラミング言語です。
     Imp は C や Java のような標準的に広く使われている言語の中心部分の機能だけを取り出したものです。
     下の例は、おなじみの数学的関数を Imp で書いたものです。
-[[
+
+<<
      Z ::= X;
      Y ::= 1;
      WHILE not (Z = 0) DO
        Y ::= Y * Z;;
        Z ::= Z - 1
      END
-]]
+>>
 *)
 
 (* This chapter looks at how to define the _syntax_ and _semantics_
@@ -142,7 +143,7 @@ Inductive bexp : Type :=
 *)
 (** 比較のため、同じ抽象構文を定義する慣習的なBNF(Backus-Naur Form)
     文法を以下に示します:
-[[
+<<
     aexp ::= nat
            | aexp '+' aexp
            | aexp '-' aexp
@@ -154,7 +155,7 @@ Inductive bexp : Type :=
            | aexp '<=' aexp
            | bexp 'and' bexp
            | 'not' bexp
-]]
+>>
 *)
 
 (* Compared to the Coq version above...
