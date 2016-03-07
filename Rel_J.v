@@ -42,8 +42,9 @@ Definition relation (X: Type) := X->X->Prop.
     より一般の任意の数の(それぞれ別のものかもしれない)集合の間の関係を指す場合もあります。
     どちらを指しているかは常に議論の文脈から明らかになるようにします。 *)
 
-(** An example relation on [nat] is [le], the less-that-or-equal-to
+(* An example relation on [nat] is [le], the less-that-or-equal-to
     relation which we usually write like this [n1 <= n2]. *)
+(** [nat]上の関係の例は [le] 、通常[n1 <= n2]の形で書かれる「以下」の関係です。 *)
 
 Print le.
 (* ====> Inductive le (n : nat) : nat -> Prop :=
@@ -78,7 +79,7 @@ Definition partial_function {X: Type} (R: relation X) :=
 
 (* For example, the [next_nat] relation defined earlier is a partial
     function. *)
-(** 例えば、[Logic_J]で定義した[next_nat]関係は部分関数です。*)
+(** 例えば、前に定義した[next_nat]関係は部分関数です。*)
 
 Print next_nat.
 (* ====> Inductive next_nat (n : nat) : nat -> Prop := 
@@ -118,7 +119,7 @@ Proof.
 (** **** 練習問題:★★, optional  *)
 (* Show that the [total_relation] defined in earlier is not a partial
     function. *)
-(** [Logic_J.v] に定義された [total_relation] が部分関数ではないことを示しなさい。 *)
+(** 前に定義した [total_relation] が部分関数ではないことを示しなさい。 *)
 
 (* FILL IN HERE *)
 (** [] *)
@@ -127,7 +128,7 @@ Proof.
 (** **** 練習問題:★★, optional  *)
 (* Show that the [empty_relation] defined earlier is a partial
     function. *)
-(** [Logic_J.v] に定義された [empty_relation] が部分関数であることを示しなさい。 *)
+(** 前に定義した [empty_relation] が部分関数であることを示しなさい。 *)
 
 (* FILL IN HERE *)
 (** [] *)
