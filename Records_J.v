@@ -79,6 +79,7 @@ Require Export Stlc_J.
            | {i1:T1, ..., in:Tn}         レコード型
 >>
    簡約:
+<<
                                  ti ==> ti'                            (ST_Rcd)
     --------------------------------------------------------------------
     {i1=v1, ..., im=vm, in=tn, ...} ==> {i1=v1, ..., im=vm, in=tn', ...}
@@ -89,7 +90,9 @@ Require Export Stlc_J.
 
                           -------------------------                (ST_ProjRcd)
                           {..., i=vi, ...}.i ==> vi
+>>
    型付け:
+<<
                Gamma |- t1 : T1     ...     Gamma |- tn : Tn
              --------------------------------------------------         (T_Rcd)
              Gamma |- {i1=t1, ..., in=tn} : {i1:T1, ..., in:Tn}
@@ -97,6 +100,7 @@ Require Export Stlc_J.
                        Gamma |- t : {..., i:Ti, ...}
                        -----------------------------                   (T_Proj)
                              Gamma |- t.i : Ti
+>>
 *)
 
 (* ###################################################################### *)
@@ -129,7 +133,7 @@ Inductive ty : Type :=
     useless for the proofs we want to do.  *)
 (** 残念ながら、ここで Coq の限界につきあたりました。
     この型は期待する帰納原理を自動的には提供してくれないのです。
-    [ty_rcd]の場合の帰納法の仮定はリストの[ty]要素について何の情報も提供してくれないのです。
+    [TRcd]の場合の帰納法の仮定はリストの[ty]要素について何の情報も提供してくれないのです。
     このせいで、行いたい証明に対してこの型は役に立たなくなっています。 *)
 
 (* Check ty_ind. 
@@ -146,9 +150,9 @@ Inductive ty : Type :=
    ====>
     ty_ind :
       forall P : ty -> Prop,
-        (forall i : id, P (ty_base i)) ->
-        (forall t : ty, P t -> forall t0 : ty, P t0 -> P (ty_arrow t t0)) ->
-        (forall a : alist ty, P (ty_rcd a)) ->    (* ??? *)
+        (forall i : id, P (TBase i)) ->
+        (forall t : ty, P t -> forall t0 : ty, P t0 -> P (TArrow t t0)) ->
+        (forall a : alist ty, P (TRcd a)) ->    (* ??? *)
         forall t : ty, P t
 *)
 >> *)
@@ -619,7 +623,7 @@ Qed.
 (* *** Field Lookup *)
 (** *** フィールドのルックアップ *)
 
-(** Lemma: If [empty |- v : T] and [Tlookup i T] returns [Some Ti],
+(* Lemma: If [empty |- v : T] and [Tlookup i T] returns [Some Ti],
      then [tlookup i v] returns [Some ti] for some term [ti] such
      that [empty |- ti \in Ti].
 
