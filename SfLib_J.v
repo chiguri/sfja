@@ -1,7 +1,7 @@
 (* * SfLib: Software Foundations Library *)
 (** * SfLib_J: Software Foundations ライブラリ *)
 
-(** Here we collect together several useful definitions and theorems
+(* Here we collect together several useful definitions and theorems
     from Basics.v, List.v, Poly.v, Ind.v, and Logic.v that are not
     already in the Coq standard library.  From now on we can [Import]
     or [Export] this file, instead of cluttering our environment with
@@ -91,7 +91,7 @@ Inductive ev : nat -> Prop :=
   | ev_SS : forall n:nat, ev n -> ev (S (S n)).
 
 (* * From Logic.v *)
-(** * Logic.vから *)
+(** * Logic_J.vから *)
 
 Theorem andb_true : forall b c,
   andb b c = true -> b = true /\ c = true.
