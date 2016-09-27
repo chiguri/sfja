@@ -2,7 +2,8 @@
 (** * 前書き *)
 
 (* ###################################################################### *)
-(** * Welcome *)
+(* * Welcome *)
+(** * ようこそ *)
 
 (* This electronic book is a course on _Software Foundations_, the
     mathematical underpinnings of reliable software.  Topics include
@@ -26,18 +27,27 @@
     coherent linear narrative, plus a number of "appendices" covering
     additional topics.  All the core chapters are suitable for both
     upper-level undergraduate and graduate students. *)
-(** この電子文章は「ソフトウェアの基礎（プログラミングとプログラミング言語の数学的理論）」という、大学後半～院生向けの1学期分の講義のために書かれたものです。この講義では、Coq上で関数プログラミング、論理学、演算の意味論、ラムダ計算、静的型システムの基礎を学ぶことができます。
+(** この資料は「ソフトウェアの基礎」という、高信頼ソフトウェアの数学的基礎に関するものです。
+    この講義では、Coq上で関数プログラミング、論理、演算の意味論、ラムダ計算、静的型システムの基礎を学ぶことができます。
+    解説は、学部生から博士課程の学生や研究者に至るまで、広範囲の読者を想定しています。
+    論理学やプログラミング言語についての知識は仮定しませんが、ある程度の数学的素養は理解に有用です。
 
-このコースの主な特徴は、教材のテキストがCoqのスクリプトファイルそのものとなっており、学習の進み具合を「形式的」かつ「機械的」にチェックしながら学んでいくことができる、ということです。このコースでは、Coqのインタラクティブモードを使って、ソースを1行1行追いながら動きを理解していきます。講義のほとんどはCoqで組み立てられ、Coq上で作業し演習するようデザインされています。
+    このコースの特徴は、取り扱う内容がすべて形式化されて、さらに機械によって確かめられることです。
+    これは、教材のテキストがCoqのスクリプトファイルそのものとなっていることで実現されています。
+    このコースでは、Coqのインタラクティブモードを使って、ソースを1行1行読み進めていきます。
+    この資料の細部まですべてCoqで形式化され、また演習もCoqを使って行うように設計されています。
 
-このファイルは章立てされ整理されており、1学期ぶんの教材として十分で、順番に学習していけるよう、筋道立てて作成されています。さらに加えて、いくつかのトピックについて追加項目があります。 *)
+    この資料は、主要部とそれ以外の"付録"からなります。
+    主要部は1学期分の講義として十分な量が、順序だって記述されています。
+    また、付録部分は主要部に関連する項目をカバーしています。
+    主要部は学部後半の学生や院生にちょうどいい内容でしょう。 *)
 
 
 (* ###################################################################### *)
 (* * Overview *)
 (** * 概要 *)
 
-(** Building reliable software is hard.  The scale and complexity of
+(* Building reliable software is hard.  The scale and complexity of
     modern systems, the number of people involved in building them,
     and the range of demands placed on them make it extremely
     difficult even to build software that is more or less correct,
@@ -86,10 +96,36 @@
     bringing them together creates a foundation from which it will be
     easy to dig into any of them more deeply.  Some suggestions for
     further reading can be found in the [Postscript] chapter. *)
+(** 信頼性の高いソフトウェアを構築することは非常に困難です。
+    現代のシステムは大きく複雑に、関係者の数は膨大に、さらには要求も多岐にわたっています。
+    これらが原因で、100%%正しいかどうか以前に、そもそもソフトウェアを構築すること自体が難しくなっています。
+    しかし同時に、情報処理が社会の至る所に利用されることで、バグや不具合によるコストが増大し続けています。
 
-(** ** Logic *)
+    計算機科学者やソフトウェア技術者は、これらに対して、ソフトウェアの信頼性を向上させる技術や、プロジェクト管理やチーム構築の手法（例：extreme programming）、ライブラリの設計思想（例：モデル-ビュー-コントローラ、出版-購読(publish-subscribe)など）、プログラミング言語（例：オブジェクト指向プログラミング、アスペクト指向プログラミング、関数型プログラミングなど）、ソフトウェアの性質を表現する数学的手法、性質を確かめるためのツールを開発・提案することで対応してきました。
 
-(** Logic is the field of study whose subject matter is _proofs_ --
+    本講義ではこれらのうち最後の技術について学びます。
+    資料は以下の5つのコンセプトのもと作られています：
+
+    (1) 「論理」を基にして、プログラムに対する正確な言明を記述し、確かめる。
+
+    (2) 「証明支援系」により、厳格で論理的な主張を構成する。
+
+    (3) 「関数型プログラミング」によって、プログラミングを行い、さらに論理との橋渡しを行う。
+
+    (4) 「プログラムの性質の推論」のための形式手法を用いる。
+
+    (5) 「型システム」を通じて、適切な挙動を設定し、あるプログラミング言語で書かれた「すべての」プログラムに対して、うまく動くことを保証する。
+        （例：型が付くJavaのプログラムは実行時にクラッシュしたりしない）
+
+    これらの内容は、それぞれが単体で一つの講義を簡単に組めるくらい、話題が豊富です。
+    これらをすべて合わせて説明するため、かなりの部分を言及しないままになります。
+    もし皆さんが、これらのテーマ同士の関係によって理解を深め、さらにより深く掘り進められる基礎を成していることに気づいてくれれば幸いです。
+    この講義以降に読むとよい本については、[Postscript_J]の章に記載しています。 *)
+
+(* ** Logic *)
+(** ** 論理 *)
+
+(* Logic is the field of study whose subject matter is _proofs_ --
     unassailable arguments for the truth of particular propositions.
     Volumes have been written about the central role of logic in
     computer science.  Manna and Waldinger called it "the calculus of
@@ -107,10 +143,22 @@
     before, in contexts from discrete math to analysis of algorithms,
     but in this course we will examine them much more deeply than you
     have probably done so far. *)
+(** 論理とは、「証明」を対象とした学問領域です。
+    ここでいう証明とは、特定の命題が真実であることの、反証しようのない根拠を指します。
+    計算機科学において論理が果たす役割に関しては、非常にたくさんの文献で述べられています。
+    MonnaとWaldingerは、この役割を"計算機科学における微分"と呼び、またHalpernらの論文「On the Unusual Effectiveness of Logic in Computer Science」では論理から出てきたいくつもの重要な道具や洞察が紹介されています。
+    この論文にはこうあります。
+    "実際のところ、論理は数学においてよりはるかに計算機科学において有効活用されている。
+     特筆すべきなのは、このことが、論理が数学から生まれて100年における、論理の発展の大きな推進剤になっていることである。"
 
-(** ** Proof Assistants *)
+    特に、帰納法の原理は計算機科学の世界においてあまねく存在します。
+    離散数学やアルゴリズムの解析において見てきたと思いますが、このコースではこれまでよりも深くまで利用することになるでしょう。 *)
+(* 訳注：calculusをここでは微分と訳しているが、計算機科学では一般に計算と訳す。「基礎を成すもの」のニュアンスなのか、それとも素直に「微分」なのか、元の文書を見ないことには分からないが、そもそも元の文書がなにかもよく分からない。本があるようだが、中身が見られないので現状放置。 *)
 
-(** The flow of ideas between logic and computer science has not been
+(* ** Proof Assistants *)
+(** ** 証明支援系 *)
+
+(* The flow of ideas between logic and computer science has not been
     in just one direction: CS has also made important contributions to
     logic.  One of these has been the development of software tools
     for helping construct proofs of logical propositions.  These tools
@@ -187,10 +235,58 @@
    is also the national symbol of France, and "Coq" are the first
    three letters of the name of Thierry Coquand, one of Coq's early
    developers. *)
+(** 論理と計算機科学の間の影響は一方方向ではありません。
+    計算機科学もまた論理の発展に寄与してきました。
+    そのうちの一つが、論理命題に対する証明の構築を助けるソフトウェアの開発です。
+    これらのソフトウェアは大きく二種類に分類されます。
 
-(** ** Functional Programming *)
+       - 「自動定理証明器」は"開始ボタン"によって証明の構築を行います。
+         証明器に命題を与えると、証明器はその命題について「真」か「偽」か「時間切れ」を返します。
+         証明器の能力が発揮できる範囲は限定されてはいますが、近年急速に発達し、様々な用途に使われています。
+         例としては、SATソルバー、SMTソルバー、モデル検査器が挙げられます。
 
-(** The term _functional programming_ refers both to a collection of
+       - 「証明支援系」は単純な操作を自動化し、難しい部分を人間が指示するというハイブリッドなツールです。
+         広く使われている証明支援系には、Isabelle、Agda、Twelf、ACL2、PVS、Coqなどがあります。
+
+    このコースは、Coqを用いて進めていきます。
+    Coqは1983年から、フランスの研究機関や大学で開発されている証明支援系です。
+    Coqの提供する機能は、機械的に検証された形式推論の対話的な開発に有効です。
+    Coqの核(kernel)は、演繹が正しく進められているかを確かめるだけの、シンプルな証明検査器です。
+    Coqは、この核を基礎として、証明の構築に便利な機能を提供しています。
+    この機能には、例えば複雑な証明を半自動で生成するタクティクや、よく使われる定理や補題のライブラリなどがあります。
+
+    Coqは計算機科学と数学を通じて、多くのことを実現してきました。
+
+    - 「プログラミング言語をモデル化する基盤」として、複雑な言語の記述と推論に用いられています。
+      例えばJavaCardプラットフォームにおいて、Common Criteria Certificationの最高レベルを得るためにセキュリティの検査に利用されたり、x86やLLVMの命令セットに対する形式仕様を与えたりしています。
+      （訳注：調べてみたが、JavaCardに関しては若干誇張が入っている気がする。総合評価は7段階あるうちの5+、ただし脆弱性評価は確かに最高ランク。）
+      （http://www.commoncriteriaportal.org/products/ や http://www.commoncriteriaportal.org/cc/ のPart.3を参照のこと。）
+
+    - 「証明付きソフトウェアの開発環境」として、CompCertという最適化付きCのコンパイラの開発や、浮動小数点数を使った繊細なアルゴリズムの正しさの証明、また暗号化アルゴリズムのセキュリティ検査の環境Certicryptoの基盤として使われています。
+（訳のぼやき：他と項目の書き方が全然違うんですが。なんとかなりません？）
+
+    - 「現実的な依存型プログラミングの環境」として、非常に多くの革新を起こしています。
+      例えば、ハーバード大学で行われたYnotプロジェクトでは"関係ホーア推論(relational Hoare reasoning)"（このコースで説明する「ホーア論理」の拡張）をCoqに埋め込んでいます。
+
+    - 「高階論理の証明支援系」として、いくつもの数学における重要な性質を検証しました。
+      例えば、証明に複雑な計算を組み込めたので、四色定理(4-color theorem)の最初の形式検証された証明作ることができました。
+      この証明は一時議論を呼びました。
+      というのも、この証明にはプログラムを使った大量の背景の検証が含まれていたためです。
+      Coqによる検証では、計算部分を含む全てのものが検査されます。
+      最近では、Feit-Thompsonの定理のCoqによる定式化が行われました。
+      これは、有限単純群の分類における第一歩です。
+
+   ところで、このソフトウェア"Coq"という名前がどこから来たか疑問に思うかもしれません。
+   オフィシャルのwebサイトでは次のように説明されています。
+   「フランスの計算機科学者には、作ったソフトに動物の名前を付ける伝統があります。
+     例えばCaml（訳注：ラクダ・英語のcamel）、Elan（訳注：ヘラジカ）、Foc（訳注：アザラシ・フランス語のphoqueと音が同じ）、Phox（訳注：キツネ・英語のfox）などがこの暗黙の了解に従っています。
+     フランス語で'coq'は雄鶏を意味し、また音がCoqの基礎であるCalculus of Constructionsの頭文字(CoC)と似ています。」
+   なお、雄鶏はフランスのシンボルでもありますし、また"Coq"はThierry CoquandというCoqの初期の開発者の名前の三文字でもあります。 *)
+
+(* ** Functional Programming *)
+(** ** 関数型プログラミング *)
+
+(* The term _functional programming_ refers both to a collection of
     programming idioms that can be used in almost any programming
     language and to a family of programming languages designed to
     emphasize these idioms, including Haskell, OCaml, Standard ML,
@@ -213,6 +309,51 @@
     numbers and rearrange its pointers to put the list in order, a
     pure sorting function would take the original list and return a
     _new_ list containing the same numbers in sorted order.
+
+    One significant benefit of this style of programming is that it
+    makes programs easier to understand and reason about.  If every
+    operation on a data structure yields a new data structure, leaving
+    the old one intact, then there is no need to worry about how that
+    structure is being shared and whether a change by one part of the
+    program might break an invariant that another part of the program
+    relies on.  These considerations are particularly critical in
+    concurrent programs, where every piece of mutable state that is
+    shared between threads is a potential source of pernicious bugs.
+    Indeed, a large part of the recent interest in functional
+    programming in industry is due to its simple behavior in the
+    presence of concurrency.
+
+    Another reason for the current excitement about functional
+    programming is related to the first: functional programs are often
+    much easier to parallelize than their imperative counterparts.  If
+    running a computation has no effect other than producing a result,
+    then it does not matter _where_ it is run.  Similarly, if a data
+    structure is never modified destructively, then it can be copied
+    freely, across cores or across the network.  Indeed, the MapReduce
+    idiom that lies at the heart of massively distributed query
+    processors like Hadoop and is used by Google to index the entire
+    web is a classic example of functional programming.
+
+    For purposes of this course, functional programming has yet
+    another significant attraction: it serves as a bridge between
+    logic and computer science.  Indeed, Coq itself can be viewed as a
+    combination of a small but extremely expressive functional
+    programming language plus with a set of tools for stating and
+    proving logical assertions.  Moreover, when we come to look more
+    closely, we find that these two sides of Coq are actually aspects
+    of the very same underlying machinery -- i.e., _proofs are
+    programs_.  *)
+(** 「関数型プログラミング」という語には、どの言語でも使えるプログラミング手法としての用法と、これらの手法に重点を置いたプログラミング言語としての用法があります。
+    なお、後者における言語としては、HaskellやOCaml、Standard ML、F##、Scala、Scheme、Racket、Common Lisp、Clojure、Erlang、そしてCoqが挙げられます。
+
+    関数型プログラミングは数十年にわたって用いられてきました。
+    そのルーツは、1930年代初頭、コンピュータが開発されるより前に、チャーチが提案したラムダ計算にさかのぼります。
+    しかし、1990年初めから、エンジニアや言語設計者の関心を引き、またJane St. CapitalやMicrosoft、Facebook、Ericssonなどの企業で重要な役割を担っています。
+
+    関数型プログラミングの基本となる信念は、可能な限り計算は「純粋(pure)」であるべき、というものです。
+    純粋であるとは、その実行が結果となる値を返すだけ、ということです。
+    つまり、計算には入出力や変数への代入、ポインタの書き換えなどといった「副作用(side effect)」を含まないようにすべき、ということを意味します。
+    例えば、「命令的(imperative)」ソートでは、受け取ったリスト内のポインタを張り替えてソートするでしょうが、純粋なソートでは受け取ったリストとは違う新しいリストをソートした上で返すでしょう。
 
     One significant benefit of this style of programming is that it
     makes programs easier to understand and reason about.  If every
@@ -455,10 +596,14 @@
 ぜひBenjamin Pierceまでemailをください。そうすれば、あなた用のsubversionのリポジトリとメーリングリストのアカウントを用意します。リポジトリには、READMEファイルがありますので、次にどうすべきかはそれを参照してください。 *)
 
 (* ###################################################################### *)
-(** * Translations *)
+(* * Translations *)
+(** * 翻訳について *)
 
-(** Thanks to the efforts of a team of volunteer translators, _Software 
+(* Thanks to the efforts of a team of volunteer translators, _Software 
     Foundations_ can now be enjoyed in Japanese at [http://proofcafe.org/sf]
+*)
+(** ボランティアによる翻訳のおかげで、「ソフトウェアの基礎」は日本語で読めます。
+    [http://proofcafe.org/sf]
 *)
 
 (** $Date: 2014-12-31 15:31:47 -0500 (Wed, 31 Dec 2014) $ *)
