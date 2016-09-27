@@ -1,6 +1,6 @@
 (** * Auto: More Automation *)
 
-Require Export Imp_J.
+Require Export Imp.
 
 (** Up to now, we've continued to use a quite restricted set of 
 Coq's tactic facilities. In this chapter, we'll learn more about 

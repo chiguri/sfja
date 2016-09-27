@@ -20,8 +20,8 @@
 (* ####################################################### *)
 (** * Internals *)
 
-Require Import SfLib_J.
-Require Import Imp_J.
+Require Import SfLib.
+Require Import Imp.
 
 Require Import String.
 Require Import Ascii.

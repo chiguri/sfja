@@ -1,7 +1,7 @@
 (** * Sub: Subtyping *)
 
 
-Require Export Types_J.
+Require Export Types.
 
 (* ###################################################### *)
 (** * Concepts *)

@@ -1,7 +1,7 @@
 (** * References: Typing Mutable References *)
 
 
-Require Export Smallstep_J.
+Require Export Smallstep.
 
 (** So far, we have considered a variety of _pure_ language features,
     including functional abstraction, basic types such as numbers and

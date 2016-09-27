@@ -1,6 +1,6 @@
 (** * MoreStlc: More on the Simply Typed Lambda-Calculus *)
 
-Require Export Stlc_J. 
+Require Export Stlc. 
 
 (* ###################################################################### *)
 (** * Simple Extensions to STLC *)

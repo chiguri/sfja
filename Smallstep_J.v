@@ -1,6 +1,6 @@
 (** * Smallstep: Small-step Operational Semantics *)
 
-Require Export Imp_J.
+Require Export Imp.
 
 
 (** The evaluators we have seen so far (e.g., the ones for

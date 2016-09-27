@@ -1,6 +1,6 @@
 (** * Records: Adding Records to STLC *)
 
-Require Export Stlc_J.
+Require Export Stlc.
 
 (* ###################################################################### *)
 (** * Adding Records *)

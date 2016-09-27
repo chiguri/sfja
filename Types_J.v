@@ -1,6 +1,6 @@
 (** * Types: Type Systems *)
 
-Require Export Smallstep_J.
+Require Export Smallstep.
 
 Hint Constructors multi.  
 

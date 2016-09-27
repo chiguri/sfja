@@ -38,7 +38,7 @@
     environment so that, for example, it is easier to search for
     relevant theorems. *)
 
-Require Export SfLib_J.
+Require Export SfLib.
 
 (* ####################################################### *)
 (** * Arithmetic and Boolean Expressions *)

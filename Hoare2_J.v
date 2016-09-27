@@ -1,6 +1,6 @@
 (** * Hoare2: Hoare Logic, Part II *)
 
-Require Export Hoare_J.
+Require Export Hoare.
 
 
 

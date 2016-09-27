@@ -1,6 +1,6 @@
 (** * MoreStlc: A Typechecker for STLC *)
 
-Require Export Stlc_J.
+Require Export Stlc.
 
 (** The [has_type] relation of the STLC defines what it means for a
     term to belong to a type (in some context).  But it doesn't, by

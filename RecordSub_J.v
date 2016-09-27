@@ -1,6 +1,6 @@
 (** * RecordSub: Subtyping with Records *)
 
-Require Export MoreStlc_J.
+Require Export MoreStlc.
 
 (* ###################################################### *)
 (** * Core Definitions *)

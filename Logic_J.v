@@ -1,6 +1,6 @@
 (** * Logic: Logic in Coq *)
 
-Require Export MoreCoq_J.
+Require Export MoreCoq. 
 
 
 

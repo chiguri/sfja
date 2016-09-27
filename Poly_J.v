@@ -7,7 +7,7 @@
     as data).
 *)
 
-Require Export Lists_J.   
+Require Export Lists.   
 
 (* ###################################################### *)
 (** * Polymorphism *)

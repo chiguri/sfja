@@ -1,6 +1,6 @@
 (** * HoareAsLogic: Hoare Logic as a Logic *)
 
-Require Export Hoare_J.
+Require Export Hoare.
 
 (** The presentation of Hoare logic in chapter [Hoare] could be
     described as "model-theoretic": the proof rules for each of the

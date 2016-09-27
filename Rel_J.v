@@ -1,6 +1,6 @@
 (** * Rel: Properties of Relations *)
 
-Require Export SfLib_J.
+Require Export SfLib.
 
 (** This short, optional chapter develops some basic definitions and a
     few theorems about binary relations in Coq.  The key definitions

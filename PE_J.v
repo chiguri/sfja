@@ -26,7 +26,7 @@
         X ::= ANum 3;; Y ::= AMinus (ANum 4) (AId Y)
     without knowing the initial value of [Y]. *)
 
-Require Export Imp_J.
+Require Export Imp.
 Require Import FunctionalExtensionality.
 
 (* ####################################################### *)

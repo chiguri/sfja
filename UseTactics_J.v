@@ -10,7 +10,7 @@
     for various reasons, are not yet available by default in Coq.
     These tactics are defined in the [LibTactics.v] file. *)
 
-Require Import LibTactics_J. 
+Require Import LibTactics. 
 
 (** Remark: SSReflect is another package providing powerful tactics.
     The library "LibTactics" differs from "SSReflect" in two respects:
@@ -52,8 +52,8 @@ Require Import LibTactics_J.
 (** ** The tactic [introv] *)
 
 Module IntrovExamples.
-  Require Import Stlc_J.
-  Import Imp_J STLC. 
+  Require Import Stlc.
+  Import Imp STLC. 
 
 (** The tactic [introv] allows to automatically introduce the 
     variables of a theorem and explicitly name the hypotheses 
@@ -112,7 +112,7 @@ End IntrovExamples.
 (** ** The tactic [inverts] *)
 
 Module InvertsExamples.
-  Require Import Stlc_J Equiv_J Imp_J.
+  Require Import Stlc Equiv Imp.
   Import STLC.
 
 (** The [inversion] tactic of Coq is not very satisfying for
@@ -278,7 +278,7 @@ End InvertsExamples.
     - [exists] for proving n-ary existentials. *)
     
 Module NaryExamples.
-  Require Import References_J SfLib_J. 
+  Require Import References SfLib. 
   Import STLCRef.
 
 
@@ -540,7 +540,7 @@ End EqualityExamples.
 (** ** The tactic [unfolds] *)
 
 Module UnfoldsExample.
-  Require Import Hoare_J.
+  Require Import Hoare.
 
 (** The tactic [unfolds] (without any argument) unfolds the
     head constant of the goal. This tactic saves the need to 
@@ -610,7 +610,7 @@ Qed.
     this tactic takes the form [gen x y z]. *)
 
 Module GenExample.
-  Require Import Stlc_J.
+  Require Import Stlc.
   Import STLC.
 
 Lemma substitution_preserves_typing : forall Gamma x U v t S,
@@ -647,7 +647,7 @@ End GenExample.
     e.g. [?24], and which are typically introduced by [eapply]. *)
 
 Module SkipExample.
-  Require Import Stlc_J.
+  Require Import Stlc.
   Import STLC.
 
 Example astep_example1 : 
@@ -737,7 +737,7 @@ End SkipExample.
 (** ** The tactic [sort] *)
 
 Module SortExamples.
-  Require Import Imp_J.
+  Require Import Imp.
 
 (** The tactic [sort] reorganizes the proof context by placing
     all the variables at the top and all the hypotheses at the
@@ -804,7 +804,7 @@ End SortExamples.
     the arguments provided. *)
 
 Module ExamplesLets.
-  Require Import Sub_J.
+  Require Import Sub.
 
 (* To illustrate the working of [lets], assume that we want to
    exploit the following lemma. *)
@@ -944,7 +944,7 @@ End ExamplesLets.
 (** ** Example of instantiations *)
 
 Module ExamplesInstantiations.
-  Require Import Sub_J.
+  Require Import Sub.
 
 (** The following proof shows several examples where [lets] is used
     instead of [destruct], as well as examples where [applys] is used

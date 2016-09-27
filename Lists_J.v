@@ -1,6 +1,6 @@
 (** * Lists: Working with Structured Data *)
 
-Require Export Induction_J.
+Require Export Induction.
 
 Module NatList. 
 

@@ -1,6 +1,6 @@
 (** * Hoare: Hoare Logic, Part I *)
 
-Require Export Imp_J.
+Require Export Imp.
 
 (** In the past couple of chapters, we've begun applying the
     mathematical tools developed in the first part of the course to

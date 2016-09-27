@@ -1,6 +1,6 @@
 (** * Prop: Propositions and Evidence *)
 
-Require Export Logic_J.
+Require Export Logic.
 
 (* ####################################################### *)
 (** * Inductively Defined Propositions *)

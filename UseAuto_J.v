@@ -27,7 +27,7 @@
     from the library [LibTactics.v], which is presented in the chapter
     [UseTactics]. *)
 
-Require Import LibTactics_J.
+Require Import LibTactics.
 
 
 (* ####################################################### *)
@@ -661,7 +661,7 @@ Ltac auto_tilde ::= auto.
 (** ** Determinism *)
 
 Module DeterministicImp.
-  Require Import Imp_J.
+  Require Import Imp.
 
 (** Recall the original proof of the determinism lemma for the IMP
     language, shown below. *)
@@ -813,7 +813,7 @@ End DeterministicImp.
 (** ** Preservation for STLC *)
 
 Module PreservationProgressStlc.
-  Require Import StlcProp_J.
+  Require Import StlcProp.
   Import STLC.
   Import STLCProp.
 
@@ -913,7 +913,7 @@ End PreservationProgressStlc.
 (** ** BigStep and SmallStep *)
 
 Module Semantics.
-Require Import Smallstep_J.
+Require Import Smallstep.
 
 (** Consider the proof relating a small-step reduction judgment 
     to a big-step reduction judgment. *)
@@ -990,7 +990,7 @@ End Semantics.
 (** ** Preservation for STLCRef *)
 
 Module PreservationProgressReferences.
-  Require Import References_J.
+  Require Import References.
   Import STLCRef.
   Hint Resolve store_weakening extends_refl.
 
@@ -1256,7 +1256,7 @@ End PreservationProgressReferences.
 (** ** Subtyping *)
 
 Module SubtypingInversion.
-  Require Import Sub_J.
+  Require Import Sub.
 
 (** Consider the inversion lemma for typing judgment 
     of abstractions in a type system with subtyping. *)

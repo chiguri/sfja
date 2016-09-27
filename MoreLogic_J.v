@@ -1,6 +1,6 @@
 (** * MoreLogic: More on Logic in Coq *)
 
-Require Export Prop_J.
+Require Export "Prop".
 
 (* ############################################################ *)
 (** * Existential Quantification *)

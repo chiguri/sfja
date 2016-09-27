@@ -4,7 +4,7 @@
 
 (* (Based on TAPL Ch. 12.) *)
 
-Require Export Smallstep_J.
+Require Export Smallstep.
 Hint Constructors multi.  
 
 (** 

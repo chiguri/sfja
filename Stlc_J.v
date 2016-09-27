@@ -1,6 +1,6 @@
 (** * Stlc: The Simply Typed Lambda-Calculus *)
 
-Require Export Types_J.
+Require Export Types.
 
 (* ###################################################################### *)
 (** * The Simply Typed Lambda-Calculus *)

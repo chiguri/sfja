@@ -2,7 +2,7 @@
 
 
 
-Require Export Imp_J.
+Require Export Imp.
 
 (** *** Some general advice for working on exercises:
 
