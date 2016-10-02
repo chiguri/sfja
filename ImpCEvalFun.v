@@ -3,7 +3,7 @@
 (* #################################### *)
 (** * Evaluation Function *)
 
-Require Import Imp_J.
+Require Import Imp.
 
 (** Here's a first try at an evaluation function for commands,
     omitting [WHILE]. *)

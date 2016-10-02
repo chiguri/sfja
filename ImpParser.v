@@ -1,4 +1,4 @@
-(** * ImpParser_J: Coqでの字句解析と構文解析 *)
+(** * ImpParser: Coqでの字句解析と構文解析 *)
 (* * ImpParser: Lexing and Parsing in Coq *)
 
 (* The development of the [Imp] language in Imp.v completely ignores
@@ -17,7 +17,7 @@
     programming idioms that may require a little work to make out --
     but most readers will probably want to just skip down to the
     Examples section at the very end to get the punchline. *)
-(** Imp_J.vでの[Imp]言語の開発は、具象構文の問題を完全に無視しています。
+(** Imp.vでの[Imp]言語の開発は、具象構文の問題を完全に無視しています。
     つまり、プログラマが書くアスキー文字列をデータ型[aexp]、[bexp]、[com]
     で定義された抽象構文木にどうやって変換するか、という問題です。
     このファイルでは、
@@ -36,8 +36,8 @@
 (* * Internals *)
 (** * 内部処理 *)
 
-Require Import SfLib_J.
-Require Import Imp_J.
+Require Import SfLib.
+Require Import Imp.
 
 Require Import String.
 Require Import Ascii.

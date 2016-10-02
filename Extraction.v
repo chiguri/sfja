@@ -13,8 +13,8 @@ Extraction Language Ocaml.
 (** Now we load up the Coq environment with some definitions, either
     directly or by importing them from other modules. *)
 
-Require Import SfLib_J.
-Require Import ImpCEvalFun_J.
+Require Import SfLib.
+Require Import ImpCEvalFun.
 
 (** Finally, we tell Coq the name of a definition to extract and the
     name of a file to put the extracted code into. *)
@@ -97,8 +97,8 @@ Extract Inductive sumbool => "bool" ["true" "false"].
 
 (** The extraction is the same as always. *)
 
-Require Import Imp_J.
-Require Import ImpParser_J.
+Require Import Imp.
+Require Import ImpParser.
 Extraction "imp.ml" empty_state ceval_step parse.
 
 (** Now let's run our generated Imp evaluator.  First, have a look at

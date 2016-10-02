@@ -1,7 +1,7 @@
-(** * Types_J: 型システム *)
+(** * Types: 型システム *)
 (* * Types: Type Systems *)
 
-Require Export Smallstep_J.
+Require Export Smallstep.
 
 Hint Constructors multi.  
 
@@ -33,7 +33,7 @@ Hint Constructors multi.
 
     The language definition is completely routine.  *)
 (**
-   型システムについての議論を始めるために、例のごとく、ごく単純な言語から始めましょう。この言語は、実行時の型エラーで「まずいことが起きる」可能性のあるものであってほしいので、 [Smallstep_J] 章で使った、定数と足し算だけの言語よりはもう少し複雑なものでなければなりません。データが一種類だけ（数のみ）では単純すぎますが、二種類（数とブール値）なら、実験のための材料はもう揃っています。
+   型システムについての議論を始めるために、例のごとく、ごく単純な言語から始めましょう。この言語は、実行時の型エラーで「まずいことが起きる」可能性のあるものであってほしいので、 [Smallstep] 章で使った、定数と足し算だけの言語よりはもう少し複雑なものでなければなりません。データが一種類だけ（数のみ）では単純すぎますが、二種類（数とブール値）なら、実験のための材料はもう揃っています。
 
    言語の定義はいつも通り、お決まりの作業です。  *)
 
@@ -204,7 +204,7 @@ Hint Constructors step.
     included them in our definition of possible "results of
     evaluation").  Such terms are _stuck_. *)
 (**
-   この言語の [step] 関係について、まず注目に値するのは、 Smallstep_J 章の強進行性定理（strong progress theorem）が成り立たないということです。すなわち、正規形ではあるのに（これ以上簡約できないのに）、値ではない項があるのです（これは、そのような項を可能な「評価結果」と定義しなかったからです）。そのような項は [stuck] します。
+   この言語の [step] 関係について、まず注目に値するのは、 Smallstep 章の強進行性定理（strong progress theorem）が成り立たないということです。すなわち、正規形ではあるのに（これ以上簡約できないのに）、値ではない項があるのです（これは、そのような項を可能な「評価結果」と定義しなかったからです）。そのような項は [stuck] します。
    *)
 
 Notation step_normal_form := (normal_form step).
@@ -501,7 +501,7 @@ Proof with auto.
     saw in the Smallstep chapter, where _all_ normal forms were
     values.  Here, a term can be stuck, but only if it is ill
     typed. *)
-(** この定理は Smallstep_J の章の強進行性定理よりも興味深いものです。 Smallstep_J のものは正規形はすべて値でした。本章では項が行き詰まることもありますが、行き詰まるようなものは型のつかないものだけです。 *)
+(** この定理は Smallstep の章の強進行性定理よりも興味深いものです。 Smallstep のものは正規形はすべて値でした。本章では項が行き詰まることもありますが、行き詰まるようなものは型のつかないものだけです。 *)
 
 (* **** Exercise: 1 star (step_review)  *)
 (** **** 練習問題: ★ (step_review)  *)

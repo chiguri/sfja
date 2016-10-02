@@ -1,7 +1,7 @@
-(** * Records_J: STLCにレコードを追加する *)
+(** * Records: STLCにレコードを追加する *)
 (* * Records: Adding Records to STLC *)
 
-Require Export Stlc_J.
+Require Export Stlc.
 
 (* ###################################################################### *)
 (* * Adding Records *)
@@ -16,7 +16,7 @@ Require Export Stlc_J.
     first-class citizens of the language. 
 
     Recall the informal definitions we gave before: *)
-(** [MoreStlc_J]章で、レコードを、直積のネストされた使用の構文糖衣として扱う方法を見ました。
+(** [MoreStlc]章で、レコードを、直積のネストされた使用の構文糖衣として扱う方法を見ました。
     これは簡単な例にはよいです。しかし、エンコードは非形式的です。
     (現実的に、もしこの方法でレコードを本当に扱うならパーサ内で実行されることになりますが、
     パーサはここでは省いています。)

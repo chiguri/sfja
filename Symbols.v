@@ -1,4 +1,4 @@
-(** * Symbols_J: 特殊シンボル *)
+(** * Symbols: 特殊シンボル *)
 (* * Symbols: Special symbols *)
 
 (* This file defines some HTML symbols for use by the coqdoc

@@ -1,7 +1,7 @@
-(** * RecordSub_J: レコードのサブタイプ *)
+(** * RecordSub: レコードのサブタイプ *)
 (* * RecordSub: Subtyping with Records *)
 
-Require Export MoreStlc_J.
+Require Export MoreStlc.
 
 (* ###################################################### *)
 (* * Core Definitions *)

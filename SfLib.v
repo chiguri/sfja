@@ -1,12 +1,12 @@
 (* * SfLib: Software Foundations Library *)
-(** * SfLib_J: Software Foundations ライブラリ *)
+(** * SfLib: Software Foundations ライブラリ *)
 
 (* Here we collect together several useful definitions and theorems
     from Basics.v, List.v, Poly.v, Ind.v, and Logic.v that are not
     already in the Coq standard library.  From now on we can [Import]
     or [Export] this file, instead of cluttering our environment with
     all the examples and false starts in those files. *)
-(** ここでは、Basics_J.v, List_J.v, Poly_J.v, Ind_J.v, Logic_J.vの中から、使い勝手のよい定義や定理でCoqのスタンダードライブラリに含まれていないものをを集めてみました。これ以降、環境を色々な証明で散らかす代わりに、このライブラリファイルを[Import]または[Export]するだけで済むようになります。 *)
+(** ここでは、Basics.v, List.v, Poly.v, Ind.v, Logic.vの中から、使い勝手のよい定義や定理でCoqのスタンダードライブラリに含まれていないものをを集めてみました。これ以降、環境を色々な証明で散らかす代わりに、このライブラリファイルを[Import]または[Export]するだけで済むようになります。 *)
 
 (* * From the Coq Standard Library *)
 (** * Coq スタンダードライブラリから *)
@@ -19,7 +19,7 @@ Require Export Arith.
 Require Export Arith.EqNat.  (* Contains [beq_nat], among other things *)
 
 (* * From Basics.v *)
-(** * Basics_J.vから *)
+(** * Basics.vから *)
 
 Definition admit {T: Type} : T.  Admitted.
 
@@ -74,24 +74,24 @@ Theorem andb_true_elim2 : forall b c,
   andb b c = true -> c = true.
 Proof.
 (* An exercise in Basics.v *)
-(* Basics_J.v の練習問題 *)
+(* Basics.v の練習問題 *)
 Admitted.
 
 Theorem beq_nat_sym : forall (n m : nat),
   beq_nat n m = beq_nat m n.
 (* An exercise in Lists.v *)
-(* Lists_J.v の練習問題 *)
+(* Lists.v の練習問題 *)
 Admitted.
 
 (* * From Props.v *)
-(** * Props_J.vから *)
+(** * Props.vから *)
 
 Inductive ev : nat -> Prop :=
   | ev_0 : ev O
   | ev_SS : forall n:nat, ev n -> ev (S (S n)).
 
 (* * From Logic.v *)
-(** * Logic_J.vから *)
+(** * Logic.vから *)
 
 Theorem andb_true : forall b c,
   andb b c = true -> b = true /\ c = true.
@@ -108,7 +108,7 @@ Theorem false_beq_nat: forall n n' : nat,
      beq_nat n n' = false.
 Proof. 
 (* An exercise in Logic.v *)
-(* Logic_J.vの練習問題 *)
+(* Logic.vの練習問題 *)
 Admitted.
 
 Theorem ex_falso_quodlibet : forall (P:Prop),
@@ -121,7 +121,7 @@ Theorem ev_not_ev_S : forall n,
   ev n -> ~ ev (S n).
 Proof. 
 (* An exercise in Logic.v *)
-(* Logic_J.vの練習問題 *)
+(* Logic.vの練習問題 *)
 Admitted.
 
 Theorem ble_nat_true : forall n m,

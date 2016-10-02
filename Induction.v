@@ -4,7 +4,7 @@
 (** The next line imports all of our definitions from the
     previous chapter. *)
 
-Require Export Basics_J.
+Require Export Basics.
 
 (** For it to work, you need to use [coqc] to compile [Basics.v]
     into [Basics.vo].  (This is like making a .class file from a .java

@@ -1,7 +1,7 @@
-(** * Prop_J: 命題と根拠 *)
+(** * Prop: 命題と根拠 *)
 (* * Prop: Propositions and Evidence *)
 
-Require Export Logic_J.
+Require Export Logic.
 
 (* ####################################################### *)
 (** * Inductively Defined Propositions *)

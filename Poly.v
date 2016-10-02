@@ -1,4 +1,4 @@
-(** * Poly_J:多相性と高階関数 *)
+(** * Poly:多相性と高階関数 *)
 (* * Poly: Polymorphism and Higher-Order Functions *)
 
 (** In this chapter we continue our development of basic 
@@ -8,7 +8,7 @@
     as data).
 *)
 
-Require Export Lists_J.   
+Require Export Lists.   
 
 (* ###################################################### *)
 (* * Polymorphism *)
@@ -421,7 +421,7 @@ Definition list123''' := [1; 2; 3].
 (* Here are a few simple exercises, just like ones in the [Lists]
     chapter, for practice with polymorphism.  Fill in the definitions
     and complete the proofs below. *)
-(** ここにあるいくつかの練習問題は、List_J.vにあったものと同じですが、多相性の練習になります。以下の定義を行い、証明を完成させなさい。 *)
+(** ここにあるいくつかの練習問題は、List.vにあったものと同じですが、多相性の練習になります。以下の定義を行い、証明を完成させなさい。 *)
 
 Fixpoint repeat {X : Type} (n : X) (count : nat) : list X :=
   (* FILL IN HERE *) admit.

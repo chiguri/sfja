@@ -1,7 +1,7 @@
-(** * Hoare_J: ホーア論理、第一部 *)
+(** * Hoare: ホーア論理、第一部 *)
 (* * Hoare: Hoare Logic, Part I *)
 
-Require Export Imp_J.
+Require Export Imp.
 
 (* In the past couple of chapters, we've begun applying the
     mathematical tools developed in the first part of the course to
@@ -86,7 +86,7 @@ Require Export Imp_J.
 
         - プログラムのあるクラスの、停止性の保証
 
-        - プログラムの動作の同値性([Equiv_J.v]の章において)
+        - プログラムの動作の同値性([Equiv.v]の章において)
 
       もしここで止めたとしても、有用なものを持っていることになります。
       それは、プログラミング言語とその特性を定義し議論する、数学的に正確で、

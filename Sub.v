@@ -1,8 +1,8 @@
-(** * Sub_J :サブタイプ *)
+(** * Sub :サブタイプ *)
 (* * Sub: Subtyping *)
 
 
-Require Export Types_J.
+Require Export Types.
 
 (* ###################################################### *)
 (* * Concepts *)
@@ -212,7 +212,7 @@ Require Export Types_J.
                                Gamma |- t : T
     This rule says, intuitively, that it is OK to "forget" some of
     what we know about a term. *)
-(** この章のゴールは([MoreStlc_J]での拡張機能を持つ)単純型付きラムダ計算にサブタイプを追加することです。
+(** この章のゴールは([MoreStlc]での拡張機能を持つ)単純型付きラムダ計算にサブタイプを追加することです。
     これは2つのステップから成ります:
 
       - 型の間の二項サブタイプ関係(_subtype relation_)を定義します。

@@ -1,7 +1,7 @@
-(** * Stlc_J: 単純型付きラムダ計算 *)
+(** * Stlc: 単純型付きラムダ計算 *)
 (* * Stlc: The Simply Typed Lambda-Calculus *)
 
-Require Export Types_J.
+Require Export Types.
 
 (* ###################################################################### *)
 (* * The Simply Typed Lambda-Calculus *)
@@ -204,7 +204,7 @@ Require Export Types_J.
 
     別の注目点は、名前を持つ(_named_)関数を定義する基本構文を、STLCは何も持っていないことです。
     すべての関数は「無名」("anonymous")です。
-    後の[MoreStlc_J]章で、この体系に名前を持つ関数を追加することが簡単であることがわかるでしょう。
+    後の[MoreStlc]章で、この体系に名前を持つ関数を追加することが簡単であることがわかるでしょう。
     実のところ、基本的な命名と束縛の機構はまったく同じです。
 
     STLCの型には[Bool]が含まれます。
@@ -860,7 +860,7 @@ Proof.
 (* We hide the definition of partial maps in a module since it is
     actually defined in [SfLib]. *)
 (** 部分写像の定義はモジュール内に隠蔽します。
-    なぜなら、実際には [SfLib_J] で定義されているからです。*)
+    なぜなら、実際には [SfLib] で定義されているからです。*)
 
 Module PartialMap.
 

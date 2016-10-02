@@ -1,4 +1,4 @@
-(** * UseAuto_J: Coqの証明自動化の理論と実際 *)
+(** * UseAuto: Coqの証明自動化の理論と実際 *)
 (* * UseAuto: Theory and Practice of Automation in Coq Proofs *)
 
 (* Chapter maintained by Arthur Chargueraud *)
@@ -43,11 +43,11 @@
     この章の例の多くは、自動化の特定の側面を示す小さな補題で、「ソフトウェアの基礎」(Software
     Foundations)の他の部分とは独立しています。
     その他にいくつか大きめの例があり、これは自動化を実際の証明でどのように使うかを示しています。
-    これらの例は他の章（多くはSTLCの章）から抜粋しており、ライブラリ[LibTactics_J.v]の
+    これらの例は他の章（多くはSTLCの章）から抜粋しており、ライブラリ[LibTactics.v]の
     タクティックが使用されます。
-    それらのタクティックについては[UseTactics_J.v]章に記述されています。 *)
+    それらのタクティックについては[UseTactics.v]章に記述されています。 *)
 
-Require Import LibTactics_J.
+Require Import LibTactics.
 
 
 (* ####################################################### *)
@@ -117,7 +117,7 @@ Require Import LibTactics_J.
     タクティック[auto]と[eauto]はCoqのビルトインです。
     タクティック[iauto]はビルトインのタクティック [try solve [intuition eauto]]
     の略記法です。
-    タクティック[jauto]はライブラリ[LibTactics_J]に定義されています。
+    タクティック[jauto]はライブラリ[LibTactics]に定義されています。
     このタクティックは単に[eauto]を呼ぶ前にゴールにある前処理を行います。
     この章のゴールは証明探索の一般原理を説明し、
     与えられたゴールを解くために上述の4つのタクティックのうちどれが一番適当かを推測する経験則を示すことです。
@@ -873,7 +873,7 @@ Proof. intros P H1 H3 H2. (* debug *) eauto. Qed.
 
     1つ目の方法は、この特定の場所のためだけに補題を[auto]に使わせるのに便利です。
     補題を仮定として追加するためには、[generalize mylemma; intros]、
-    あるいは単に [lets: mylemma] と打ちます(後者には[LibTactics_J.v]
+    あるいは単に [lets: mylemma] と打ちます(後者には[LibTactics.v]
     が必要です)。
 
     2つ目の方法は何回も補題を使う必要がある場合に便利です。
@@ -970,7 +970,7 @@ Ltac auto_star ::= try solve [ jauto ].
     典型的には、1つは[auto]のような速いタクティック、
     もう1つは[jauto]のように遅いけれどもより強力なタクティックです。
     2種類の自動化をスムーズに共存させるために、
-    [LibTactics_J.v]はタクティックにチルダ([~])を付けるバージョンも定義しています。
+    [LibTactics.v]はタクティックにチルダ([~])を付けるバージョンも定義しています。
     [apply~ H]、[destruct~ H]、[subst~]、[auto~] などです。
     チルダ記号の意味は[auto_tilde]タクティックによって記述されています。
     このデフォルトの実装は[auto]です。*)
@@ -1013,7 +1013,7 @@ Ltac auto_tilde ::= auto.
 (** ** 決定性 *)
 
 Module DeterministicImp.
-  Require Import Imp_J.
+  Require Import Imp.
 
 (* Recall the original proof of the determinism lemma for the IMP
     language, shown below. *)
@@ -1091,7 +1091,7 @@ Qed.
     自動化の利用は、
     証明を記述しメンテナンスする作業を最小化するために、
     タクティック列の構成を再考することなのです。
-    このプロセスは[LibTactics_J.v]のタクティックを使うことで楽になります。
+    このプロセスは[LibTactics.v]のタクティックを使うことで楽になります。
     そこで、自動化の使用法の最適化に取り組む前に、まず決定性の証明を書き直してみましょう:
       - [intros x H] の代わりに [introv H] を使います
       - [generalize dependent x] の代わりに [gen x] を使います
@@ -1139,7 +1139,7 @@ Qed.
     は帰納法の仮定から導出したい結論を主張するのに使われています。
     そこで、この結論を明示的に述べる代わりに、
     帰納法の仮定を具体化する際に自動処理によって計算される具体化法を使うようにCoqに伝えてみましょう。
-    [LibTactics_J.v]に記述されたタクティック[forwards]は、
+    [LibTactics.v]に記述されたタクティック[forwards]は、
     事実の具体化について的確に助けてくれます。
     それでは、この例についてどのようにはたらくか見てみましょう。*)
 
@@ -1198,7 +1198,7 @@ End DeterministicImp.
 (** ** STLC の保存 *)
 
 Module PreservationProgressStlc.
-  Require Import StlcProp_J.
+  Require Import StlcProp.
   Import STLC.
   Import STLCProp.
 
@@ -1241,7 +1241,7 @@ Qed.
     triple-dot notation. More precisely, make use of the tactics 
     [inverts*] and [applys*] to call [auto*] after a call to 
     [inverts] or to [applys]. The solution is three lines long.*)
-(** 練習問題: この証明を [LibTactics_J] のタクティックを使って書き直しなさい。
+(** 練習問題: この証明を [LibTactics] のタクティックを使って書き直しなさい。
     そして、[...]の代わりに星印を使って自動証明を呼びなさい。
     より詳しくは、
     [inverts]あるいは[applys]の後で[auto*]を呼ぶために[inverts*]と[applys*]を使いなさい。
@@ -1311,7 +1311,7 @@ End PreservationProgressStlc.
 (** ** ビッグステップとスモールステップ *)
 
 Module Semantics.
-Require Import Smallstep_J.
+Require Import Smallstep.
 
 (** Consider the proof relating a small-step reduction judgment 
     to a big-step reduction judgment. *)
@@ -1392,7 +1392,7 @@ End Semantics.
 (** ** STLCRef の保存 *)
 
 Module PreservationProgressReferences.
-  Require Import References_J.
+  Require Import References.
   Import STLCRef.
   Hint Resolve store_weakening extends_refl.
 
@@ -1402,7 +1402,7 @@ Module PreservationProgressReferences.
     following material explains how to build the optimized proof
     script.  The resulting optimized proof script for the preservation
     theorem appears afterwards. *)
-(** [STLCRef]の保存の証明は[References_J]の章にあります。
+(** [STLCRef]の保存の証明は[References]の章にあります。
     (場合にラベル付けをする行を除いて)58行です。
     最適化された証明は2分の1以下の短かさになります。
     以下の資料は最適化された証明記述をどのように構築するかを説明します。
@@ -1639,7 +1639,7 @@ Qed.
 (* The proof of progress for [STLCRef] can be found in chapter
     [References]. It contains 53 lines and the optimized proof script
     is, here again, half the length. *)
-(** [STLCRef]の前進の証明はファイル[References_J] の章にあります。
+(** [STLCRef]の前進の証明はファイル[References] の章にあります。
     その証明は53行で、最適化された証明記述は、また、2分の1になります。*)
 
 Theorem progress : forall ST t T st,
@@ -1680,7 +1680,7 @@ End PreservationProgressReferences.
 (** ** サブタイプ *)
 
 Module SubtypingInversion.
-  Require Import Sub_J.
+  Require Import Sub.
 
 (* Consider the inversion lemma for typing judgment 
     of abstractions in a type system with subtyping. *)
@@ -1722,7 +1722,7 @@ Qed.
     the star symbol), and using the tactic [cases_if']. The solution
     is 33 lines, including the [Case] instructions (21 lines without
     them). *)
-(** 補題[substitution_preserves_typing]はファイル[UseTactics_J]
+(** 補題[substitution_preserves_typing]はファイル[UseTactics]
     で[lets]と[applys]のはたらきを示すために既に使われています。
     この証明のさらなる最適化を、(星印付きの)自動処理とタクティック[cases_if']
     を使って行いなさい。解は[Case]命令を含み33行です（取り除くと21行です）。*)
@@ -2038,7 +2038,7 @@ End DemoAbsurd1.
 (** 結論部が[False]である補題をヒントに追加することは、ローカルにはとても効率的な解です。
     しかし、このアプローチはグローバルなヒントにはスケールアップ(拡大適用)できません。
     一番現実的な適用のためには、矛盾を導くのに使う補題に名前を付けるのが合理的です。
-    [LibTactics_J] で提供されているタクティック [false H] はこの目的に有用です。
+    [LibTactics] で提供されているタクティック [false H] はこの目的に有用です。
     このタクティックは、ゴールを[False]に置換し、[eapply H] を呼びます。
     その振る舞いは以下で記述します。
     3つの主張[le_not_gt]、[gt_not_le]、[le_gt_false]のいずれでも使えることを見てください。*)

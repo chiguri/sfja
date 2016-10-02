@@ -1,6 +1,6 @@
 (** * StlcProp: Properties of STLC *)
 
-Require Export Stlc_J.
+Require Export Stlc.
 
 Module STLCProp.
 Import STLC.

@@ -1,4 +1,4 @@
-(** * PE_J: 部分評価 *)
+(** * PE: 部分評価 *)
 (* * PE: Partial Evaluation *)
 
 (* Chapter author/maintainer: Chung-chieh Shan *)
@@ -26,7 +26,7 @@
     to
         X ::= ANum 3;; Y ::= AMinus (ANum 4) (AId Y)
     without knowing the initial value of [Y]. *)
-(** Equiv_J.v ではプログラム変換の例として定数畳み込みを紹介し、
+(** Equiv.v ではプログラム変換の例として定数畳み込みを紹介し、
     そして、それがプログラムの意味を保存することを証明しました。
     定数畳み込みは[ANum]式のようなマニフェスト定数を処理します。
     例えば、コマンド [Y ::= APlus (ANum 3) (ANum 1)] をコマンド 
@@ -52,7 +52,7 @@
         X ::= ANum 3; Y ::= AMinus (ANum 4) (AId Y)
     までです。 *)
 
-Require Export Imp_J.
+Require Export Imp.
 Require Import FunctionalExtensionality.
 
 (* ####################################################### *)

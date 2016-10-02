@@ -1,7 +1,7 @@
-(** * Lists_J: 直積、リスト、オプション *)
+(** * Lists: 直積、リスト、オプション *)
 (* * Lists: Working with Structured Data *)
 
-Require Export Induction_J.
+Require Export Induction.
 
 Module NatList. 
 

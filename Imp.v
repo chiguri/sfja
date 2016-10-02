@@ -1,4 +1,4 @@
-(** * Imp_J: 単純な命令型プログラム *)
+(** * Imp: 単純な命令型プログラム *)
 (* * Imp: Simple Imperative Programs *)
 
 (* In this chapter, we begin a new direction that will continue for
@@ -61,15 +61,15 @@
     library.  The main reason for doing it is to tidy the global Coq
     environment so that, for example, it is easier to search for
     relevant theorems. *)
-(** マイナーな技術的ポイント: ここまでの定義を[Logic_J]の章からインポートする代わりに、
-    [Sflib_J.v]という小さなライブラリをインポートします。
+(** マイナーな技術的ポイント: ここまでの定義を[Logic]の章からインポートする代わりに、
+    [Sflib.v]という小さなライブラリをインポートします。
     このライブラリは、前の章の定義や定理のうち、残りの章で実際に使うものだけを集めたものです。
     読者はそれほど違うものとは感じないでしょう。というのは、
     Sflib で抜けているもののほとんどは、Coqの標準ライブラリの定義と同じものだからです。
     こうする主な理由は、Coqのグローバルな環境を整理して、例えば、
     関係する定理を探すのを容易にするためです。 *)
 
-Require Export SfLib_J.
+Require Export SfLib.
 
 (* ####################################################### *)
 (* * Arithmetic and Boolean Expressions *)
@@ -121,8 +121,8 @@ Inductive bexp : Type :=
 (** この章では、プログラマが実際に書く具象構文から抽象構文木への変換は省略します。
     例えば、文字列["1+2*3"]をAST(Abstract Syntax Tree, 抽象構文木) 
     [APlus (ANum 1) (AMult (ANum 2) (ANum 3))] にする変換のことです。
-    この変換ができる単純な字句解析器と構文解析器をオプションの章[ImpParser_J]で実装します。
-    このファイル([Imp_J.v])を理解するには[ImpParser_J.v]の理解は必要ではありませんが、
+    この変換ができる単純な字句解析器と構文解析器をオプションの章[ImpParser]で実装します。
+    このファイル([Imp.v])を理解するには[ImpParser.v]の理解は必要ではありませんが、
     もしそれらの技術についてのコース(例えばコンパイラコース)を受講していないならば、
     ざっと見てみるのも良いでしょう。 *)
 
@@ -1235,7 +1235,7 @@ End aevalR_extended.
 (* (We hide this section in a module because these definitions are
     actually in [SfLib], but we want to repeat them here so that we
     can explain them.) *)
-(** (このセクションをモジュールに隠します。それは、これらの定義が実際には[SfLib_J]
+(** (このセクションをモジュールに隠します。それは、これらの定義が実際には[SfLib]
     にあるからです。しかし説明のためにここで繰り返します。) *)
 
 Module Id. 

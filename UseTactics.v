@@ -1,4 +1,4 @@
-(** * UseTactics_J:Coq用タクティックライブラリの簡単な紹介 *)
+(** * UseTactics:Coq用タクティックライブラリの簡単な紹介 *)
 (* * UseTactics: Tactic Library for Coq: A Gentle Introduction *)
 
 (* Chapter maintained by Arthur Chargueraud *)
@@ -15,9 +15,9 @@
     より強力なタクティックの集合を使うことで、生産性を飛躍的に上げることができます。
     この章では、とても便利なのに、
     いろいろな理由でデフォルトのCoqでは用意されていないたくさんのタクティックを説明します。
-    それらのタクティックは、[LibTactics_J.v]ファイルに定義されています。 *)
+    それらのタクティックは、[LibTactics.v]ファイルに定義されています。 *)
 
-Require Import LibTactics_J. 
+Require Import LibTactics. 
 
 (* Remark: SSReflect is another package providing powerful tactics.
     The library "LibTactics" differs from "SSReflect" in two respects:
@@ -48,7 +48,7 @@ Require Import LibTactics_J.
     as well as demos can be found at http://www.chargueraud.org/softs/tlc/ . *)
 (** この章は"LibTactics"ライブラリの最も便利な機能に焦点を当てたチュートリアルです。
     "LibTactics"のすべての機能を示すことを狙ってはいません。
-    タクティックの詳細な仕様はソースファイル[LibTactics_J.v]にあります。
+    タクティックの詳細な仕様はソースファイル[LibTactics.v]にあります。
     さらに、タクティックのはたらきを見せるデモは、
     http://www.chargueraud.org/softs/tlc/ にあります。 *)
 
@@ -87,8 +87,8 @@ Require Import LibTactics_J.
 (** ** タクティック[introv] *)
 
 Module IntrovExamples.
-  Require Import Stlc_J.
-  Import Imp_J STLC. 
+  Require Import Stlc.
+  Import Imp STLC. 
 
 (* The tactic [introv] allows to automatically introduce the 
     variables of a theorem and explicitly name the hypotheses 
@@ -157,7 +157,7 @@ End IntrovExamples.
 (** ** タクティック[inverts] *)
 
 Module InvertsExamples.
-  Require Import Stlc_J Equiv_J Imp_J.
+  Require Import Stlc Equiv Imp.
   Import STLC.
 
 (* The [inversion] tactic of Coq is not very satisfying for
@@ -357,7 +357,7 @@ End InvertsExamples.
     - [exists] :n個の存在限量の証明をします。 *)
     
 Module NaryExamples.
-  Require Import References_J SfLib_J. 
+  Require Import References SfLib. 
   Import STLCRef.
 
 
@@ -447,7 +447,7 @@ Abort.
 (** 注記: n個の存在限量についての同様の機能が標準ライブラリのモジュール
     [Coq.Program.Syntax]で提供されています。
     （[Coq.Program.Syntax]は限量対象が4つまでしか対応していませんが、
-    [LibTactics_J]は10個までサポートしています。） *)
+    [LibTactics]は10個までサポートしています。） *)
 
 End NaryExamples.
 
@@ -699,7 +699,7 @@ End EqualityExamples.
 (** ** タクティック [unfolds] *)
 
 Module UnfoldsExample.
-  Require Import Hoare_J.
+  Require Import Hoare.
 
 (* The tactic [unfolds] (without any argument) unfolds the
     head constant of the goal. This tactic saves the need to 
@@ -785,7 +785,7 @@ Qed.
     たくさんの引数を一度に受けます。このタクティックは [gen x y z] という形で呼びます。*)
 
 Module GenExample.
-  Require Import Stlc_J.
+  Require Import Stlc.
   Import STLC.
 
 Lemma substitution_preserves_typing : forall Gamma x U v t S,
@@ -829,7 +829,7 @@ End GenExample.
     典型的には[eapply]によって導入されるものであったことを思い出してください。*)
 
 Module SkipExample.
-  Require Import Stlc_J.
+  Require Import Stlc.
   Import STLC.
 
 Example astep_example1 : 
@@ -934,7 +934,7 @@ End SkipExample.
 (** ** タクティック [sort] *)
 
 Module SortExamples.
-  Require Import Imp_J.
+  Require Import Imp.
 
 (* The tactic [sort] reorganizes the proof context by placing
     all the variables at the top and all the hypotheses at the
@@ -1033,7 +1033,7 @@ End SortExamples.
     型の上の first-match アルゴリズムを使います。*)
 
 Module ExamplesLets.
-  Require Import Sub_J.
+  Require Import Sub.
 
 (* To illustrate the working of [lets], assume that we want to
    exploit the following lemma. *)
@@ -1217,7 +1217,7 @@ End ExamplesLets.
       [clear H]、[rename H' into H] と続けることと同じです。
 
     [applys]の使用例は以下で出てきます。
-    [forwards]の使用例は、チュートリアルの章[UseAuto_J]にあります。 *) 
+    [forwards]の使用例は、チュートリアルの章[UseAuto]にあります。 *) 
 
 
 (* ####################################################### *)
@@ -1225,7 +1225,7 @@ End ExamplesLets.
 (** ** 具体化の例 *)
 
 Module ExamplesInstantiations.
-  Require Import Sub_J.
+  Require Import Sub.
 
 (* The following proof shows several examples where [lets] is used
     instead of [destruct], as well as examples where [applys] is used

@@ -1,4 +1,4 @@
-(** * Postscript_J: あとがき *)
+(** * Postscript: あとがき *)
 (* * Postscript *)
 
 (* * Looking back... *)

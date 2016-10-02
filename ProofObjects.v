@@ -1,6 +1,6 @@
 (** * ProofObjects: Working with Explicit Evidence in Coq *)
 
-Require Export MoreLogic_J.
+Require Export MoreLogic.
 
 (* ##################################################### *)
 

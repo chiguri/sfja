@@ -1,4 +1,4 @@
-(** * LibTactics_J: 使いやすい汎用タクティックのコレクション *)
+(** * LibTactics: 使いやすい汎用タクティックのコレクション *)
 (* * LibTactics: A Collection of Handy General-Purpose Tactics *)
 
 (* Chapter maintained by Arthur Chargueraud *)
@@ -27,7 +27,7 @@
     それまでの間は、本格的なCoqユーザはおそらくとても便利だと感じるでしょう。
 
     このファイルはそれらのタクティックの実装と詳細なドキュメンテーションを含んでいます。
-    SFの読者はこのファイルを読む必要はありません。その代わり、UseTactics_J.v
+    SFの読者はこのファイルを読む必要はありません。その代わり、UseTactics.v
     という名前の章を読むと良いでしょう。
     その章はLibTacticライブラリの最も便利なタクティックの紹介となっています。 *)
 
@@ -663,7 +663,7 @@ Ltac mark_to_generalize H :=
     この関数の結果を使う処理がある場合にループすることがあります。 
     (訳注: このファイル中での積(product)は、他のファイルとは異なり(？)
     Coq のマニュアルの product のことです。含意または全称限量のことを指します。
-    [Logic_J.v]の冒頭で、[->] と [forall] が同じだと言っていますが、
+    [Logic.v]の冒頭で、[->] と [forall] が同じだと言っていますが、
     これらのことです。)
 *)
 

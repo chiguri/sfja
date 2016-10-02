@@ -1,8 +1,8 @@
-(** * References_J: 変更可能な参照の型付け *)
+(** * References: 変更可能な参照の型付け *)
 (* * References: Typing Mutable References *)
 
 
-Require Export Smallstep_J.
+Require Export Smallstep.
 
 (* So far, we have considered a variety of _pure_ language features,
     including functional abstraction, basic types such as numbers and
@@ -259,7 +259,7 @@ Inductive tm  : Type :=
     the proofs small, we won't bother formalizing them again here.  It
     would be easy to do so, since there are no very interesting
     interactions between those features and references. *)
-(** 非形式的な例では、[MoreStlc_J]章で行ったSTLCの拡張も自由に使います。
+(** 非形式的な例では、[MoreStlc]章で行ったSTLCの拡張も自由に使います。
     しかし、証明を小さく保つため、ここでそれらを再度形式化することに煩わされることはしません。
     やろうと思えばそうすることは簡単です。なぜなら、
     それらの拡張と参照とには興味深い相互作用はないからです。*)
@@ -681,7 +681,7 @@ Definition tseq t1 t2 :=
     例えば、関数への参照を使って、数値の配列の(あまり効率的でない)実装をすることができます。
     以下の通りです。型 [Ref (Nat->Nat)] を [NatArray] と書きます。
 
-    [MoreStlc_J]章での[equal]関数を思い出してください:
+    [MoreStlc]章での[equal]関数を思い出してください:
 <<
     equal =
       fix
@@ -767,9 +767,9 @@ would it behave the same? *)
     しかしMLのような言語でも、
     時には正しいポインタを持つことを許すことも許さないこともできるようにしたい場合があります。
     幸い、参照の基本メカニズムを拡張しなくてもこれは実現できます。
-    [MoreStlc_J]章で導入された直和型によってそれが可能になります。
+    [MoreStlc]章で導入された直和型によってそれが可能になります。
 
-    最初に、直和を使って、[Lists_J]章で導入した[option]型に対応するものを構築します。
+    最初に、直和を使って、[Lists]章で導入した[option]型に対応するものを構築します。
     [Option T] を [Unit + T] の略記法として定義します。
 
     すると、「nullになり得る[T]への参照」は単に型 [Option (Ref T)] の要素となります。 *)
@@ -976,7 +976,7 @@ Proof.
   induction l; intros; [ auto | simpl; rewrite IHl; auto ]. Qed.
 
 (* The "solve by inversion" tactic is explained in Stlc.v. *)
-(* "solve by inversion" タクティックは Stlc_J.v で説明されています。 *)
+(* "solve by inversion" タクティックは Stlc.v で説明されています。 *)
 Lemma nth_lt_snoc : forall A (l:list A) x d n,
   n < length l ->
   nth n l d = nth n (snoc l x) d.

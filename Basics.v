@@ -1,4 +1,4 @@
-(** * Basics_J: 関数プログラミングとプログラムの証明 *)
+(** * Basics: 関数プログラミングとプログラムの証明 *)
 (* * Basics: Functional Programming in Coq *)
  
 (*
@@ -169,7 +169,7 @@ Eval compute in (next_weekday (next_weekday saturday)).
     this file ([Basics.v]) from the book's accompanying Coq sources,
     find the above example, submit it to Coq, and observe the
     result. *)
-(** もし今手元にコンピュータがあるなら、CoqのIDEのうち好きなもの（CoqIDEやProofGeneralなどから）を選んで起動し、実際に上のコマンドを入力し動かしてみるといいでしょう。このファイル（[Basic_J.v]）から上のサンプルを探してCoqに読み込ませ、結果を観察してください。 *)
+(** もし今手元にコンピュータがあるなら、CoqのIDEのうち好きなもの（CoqIDEやProofGeneralなどから）を選んで起動し、実際に上のコマンドを入力し動かしてみるといいでしょう。このファイル（[Basic.v]）から上のサンプルを探してCoqに読み込ませ、結果を観察してください。 *)
 
 (* The keyword [compute] tells Coq precisely how to
     evaluate the expression we give it.  For the moment, [compute] is

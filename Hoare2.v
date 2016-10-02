@@ -1,6 +1,6 @@
 (** * Hoare2: Hoare Logic, Part II *)
-(* TODO : 古いHoare_J.vの後半から訳を持ってくること *)
-Require Export Hoare_J.
+
+Require Export Hoare.
 
 
 

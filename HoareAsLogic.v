@@ -1,7 +1,7 @@
-(** * HoareAsLogic_J: 論理としてのホーア論理 *)
+(** * HoareAsLogic: 論理としてのホーア論理 *)
 (* * HoareAsLogic: Hoare Logic as a Logic *)
 
-Require Export Hoare_J.
+Require Export Hoare.
 
 (* The presentation of Hoare logic in chapter [Hoare] could be
     described as "model-theoretic": the proof rules for each of the
@@ -16,7 +16,7 @@ Require Export Hoare_J.
     proof of a Hoare triple is a valid derivation in _that_ logic.  We
     can do this by giving an inductive definition of _valid
     derivations_ in this new logic. *)
-(** [Hoare_J]の章におけるホーア論理の提示を「モデル理論的」("model-theoretic")
+(** [Hoare]の章におけるホーア論理の提示を「モデル理論的」("model-theoretic")
     に行うこともできたでしょう。
     それぞれのコンストラクタに対する証明規則をプログラムの振舞いについての「定理」として提示し、
     プログラムの正しさ(ホーアの三つ組の正しさ)の証明は、
@@ -133,13 +133,13 @@ Proof.
     actually need to perform an induction over the structure of the
     command [c]. *)
 (** Coqの推論機構をホーア論理についてのメタ定理を証明することに使うこともできます。
-    例えば、[Hoare_J.v]で見た2つの定理に対応するものを以下に示します。
+    例えば、[Hoare.v]で見た2つの定理に対応するものを以下に示します。
     ここではホーアの三つ組の意味論から直接にではなく、
     ホーア論理の導出(証明可能性)の構文の面から表現します。
 
     最初のものは、すべての[P]と[c]について、
     表明[{{P}} c {{True}}]がホーア論理で証明可能(_provable_)であることを言うものです。
-    [Hoare_J.v]における意味論的証明と比べて、この証明はより複雑になることに注意して下さい。
+    [Hoare.v]における意味論的証明と比べて、この証明はより複雑になることに注意して下さい。
     実際、コマンド[c]の構造についての帰納法を行う必要があります。*)
 
 Theorem H_Post_True_deriv:
@@ -311,7 +311,7 @@ Proof.
     より明確なイメージを与えてくれます。
     しかし、実際の証明を記述するという観点からは完全に満足できるものではありません。
     かなりくどいのです。
-    [Hoare2_J.v]の修飾付きプログラムの形式化の節が、より良い方法を示してくれます。*)
+    [Hoare2.v]の修飾付きプログラムの形式化の節が、より良い方法を示してくれます。*)
 
 (** $Date: 2014-12-31 11:17:56 -0500 (Wed, 31 Dec 2014) $ *)
 

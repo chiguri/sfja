@@ -1,7 +1,7 @@
 (* * Rel: Properties of Relations *)
-(** * Rel_J:関係の性質 *)
+(** * Rel:関係の性質 *)
 
-Require Export SfLib_J.
+Require Export SfLib.
 
 (* This short, optional chapter develops some basic definitions and a
     few theorems about binary relations in Coq.  The key definitions
@@ -12,10 +12,10 @@ Require Export SfLib_J.
     basic reasoning facilities, so it may be useful to look at it just
     after the [Logic] chapter. *)
 (** この短い章では、いくつかの基本的な定義と二項関係の定理の証明を行います。重要な定義は後に
-    [Smallstep_J]章におけるスモールステップ操作的意味論で再度定義されます。
+    [Smallstep]章におけるスモールステップ操作的意味論で再度定義されます。
     もしこれらに慣れているならばこの章を飛ばしても問題ありません。
     しかし、Coqの基本的推論機構を使う良い練習問題ともなるので、
-    [Logic_J]章の直後で見ておくのがよいかもしれません。 *)
+    [Logic]章の直後で見ておくのがよいかもしれません。 *)
 
 (* A (binary) _relation_ on a set [X] is a family of propositions
     parameterized by two elements of [X] -- i.e., a proposition about
@@ -412,7 +412,7 @@ Inductive refl_step_closure {X:Type} (R: relation X) : relation X :=
 (* (The following [Tactic Notation] definitions are explained in
     another chapter.  You can ignore them if you haven't read the
     explanation yet.) *)
-(** (以下の[Tactic Notation]の定義は Imp_J.v で説明されます。
+(** (以下の[Tactic Notation]の定義は Imp.v で説明されます。
     その章をまだ読んでいないならば、ここではそれを無視して構いません。) *)
 
 Tactic Notation "rt_cases" tactic(first) ident(c) :=

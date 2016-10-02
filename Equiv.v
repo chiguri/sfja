@@ -1,9 +1,9 @@
-(** * Equiv_J: プログラムの同値性 *)
+(** * Equiv: プログラムの同値性 *)
 (* * Equiv: Program Equivalence *)
 
 
 
-Require Export Imp_J.
+Require Export Imp.
 
 (* *** Some general advice for working on exercises:
 
@@ -1472,7 +1472,7 @@ Proof.
 
    - Prove that the optimizer is sound.  (This part should be _very_
      easy.)  *)
-(** Imp_J.vの[optimize_0plus]の定義をふり返ります。
+(** Imp.vの[optimize_0plus]の定義をふり返ります。
 [[
     Fixpoint optimize_0plus (e:aexp) : aexp :=
       match e with
@@ -2251,7 +2251,7 @@ Proof.
          c2
        END
 *)
-(** この練習問題は、Imp_J.vのoptionalの練習問題 [add_for_loop] を拡張したものです。
+(** この練習問題は、Imp.vのoptionalの練習問題 [add_for_loop] を拡張したものです。
     もとの [add_for_loop] は、コマンド言語に C言語のスタイルの [for]ループを追加しなさい、というものでした。
     ここでは次のことを証明しなさい:    
 [[

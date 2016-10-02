@@ -1,11 +1,11 @@
-(** * Norm_J: STLCの正規化 *)
+(** * Norm: STLCの正規化 *)
 (* * Norm: Normalization of STLC *)
 
 (* Chapter maintained by Andrew Tolmach *)
 
 (* (Based on TAPL Ch. 12.) *)
 
-Require Export Smallstep_J.
+Require Export Smallstep.
 Hint Constructors multi.  
 
 (* 
@@ -51,7 +51,7 @@ since each reduction of a term can duplicate redexes in subterms. *)
 ここまで考えてきた型安全性とは異なり、
 正規化性は本格的なプログラミング言語には拡張されません。
 なぜなら、本格的な言語ではほとんどの場合、単純型付きラムダ計算に、
-(MoreStlc_J章で議論したような)一般再帰や再帰型が拡張され、
+(MoreStlc章で議論したような)一般再帰や再帰型が拡張され、
 停止しないプログラムが書けるようになっているからです。
 しかし、正規化性の問題は「型のレベル」で再度現れます。
 それが現れるのは、F_ωのようなラムダ計算の多相バージョンの、メタ理論を考えるときです。
@@ -88,7 +88,7 @@ similar to those in the MoreStlc chapter, and supporting results
 including type preservation and step determinism.  (We won't need
 progress.)  You may just wish to skip down to the Normalization
 section... *)
-(** 関係する言語の定義から始めます。MoreStlc_J章のものと同様です。
+(** 関係する言語の定義から始めます。MoreStlc章のものと同様です。
 そして、型の保存とステップの決定性を含む結果も成立します。
 (進行は使いません。)
 正規化の節まで飛ばしても構いません... *)

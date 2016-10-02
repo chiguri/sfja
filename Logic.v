@@ -1,7 +1,7 @@
-(** * Logic_J: Coqにおける論理 *)
+(** * Logic: Coqにおける論理 *)
 (* * Logic: Logic in Coq *)
 
-Require Export MoreCoq_J.
+Require Export MoreCoq.
 
 
 

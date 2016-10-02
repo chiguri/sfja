@@ -1,9 +1,9 @@
-(** * Typechecking_J: STLCの型チェッカ *)
+(** * Typechecking: STLCの型チェッカ *)
 (* * MoreStlc: A Typechecker for STLC *)
 (* (訳注: そもそも上の ":" の前は Typechecking の間違いだと思われるので、
     それを前提に修正した) *)
 
-Require Export Stlc_J.
+Require Export Stlc.
 
 (* The [has_type] relation of the STLC defines what it means for a
     term to belong to a type (in some context).  But it doesn't, by
