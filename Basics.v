@@ -747,14 +747,14 @@ Fixpoint exp (base power : nat) : nat :=
 (*
 (** Recall the standard factorial function:
 <<
-    factorial(0)  =  1
+    factorial(0)  =  1 
     factorial(n)  =  n * factorial(n-1)     (if n>0)
 >>
     Translate this into Coq. *)
 *)
 (** 再帰を使用した、一般的なfactorical（階乗）の定義を思い出してください :
 <<
-    factorial(0)  =  1
+    factorial(0)  =  1 
     factorial(n)  =  n * factorial(n-1)     (if n>0)
 >>
     これをCoqでの定義に書き直しなさい。 *)
@@ -876,12 +876,11 @@ Example test_blt_nat3:             (blt_nat 4 2) = false.
 
 (** [] *)
 
+(* ###################################################################### *)
 (*
 (** * Proof by Simplification *)
 *)
 (** * 簡約を用いた証明 *)
-
-(* ###################################################################### *)
 
 (*
 (** Now that we've defined a few datatypes and functions, let's
@@ -931,6 +930,7 @@ Example test_blt_nat3:             (blt_nat 4 2) = false.
 Theorem plus_O_n : forall n : nat, 0 + n = n.
 Proof.
   intros n. reflexivity.  Qed.
+
 
 (** (_Note_: You may notice that the above statement looks
     different in the original source file and the final html output. In Coq
@@ -1275,6 +1275,7 @@ Theorem zero_nbeq_plus_1 : forall n : nat,
   beq_nat 0 (n + 1) = false.
 Proof.
   (* FILL IN HERE *) Admitted.
+
 (** [] *)
 
 (* ###################################################################### *)
