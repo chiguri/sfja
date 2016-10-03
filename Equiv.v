@@ -380,7 +380,6 @@ Proof.
 (** **** Exercise: 2 stars (IFB_false)  *)
 *)
 (** **** 練習問題: ★★ (IFB_false) *)
-
 Theorem IFB_false: forall b c1 c2,
   bequiv b BFalse  ->
   cequiv 
@@ -589,7 +588,6 @@ Proof.
 (** **** Exercise: 2 stars, optional (seq_assoc)  *)
 *)
 (** **** 練習問題: ★★, optional (seq_assoc) *)
-
 Theorem seq_assoc : forall c1 c2 c3,
   cequiv ((c1;;c2);;c3) (c1;;(c2;;c3)).
 Proof.
@@ -741,7 +739,6 @@ Qed.
 (** **** Exercise: 2 stars (assign_aequiv)  *)
 *)
 (** **** 練習問題: ★★ (assign_aequiv) *)
-
 Theorem assign_aequiv : forall X e,
   aequiv (AId X) e -> 
   cequiv SKIP (X ::= e).
@@ -1014,7 +1011,6 @@ Proof.
 (** **** Exercise: 3 stars, optional (CSeq_congruence)  *)
 *)
 (** **** 練習問題: ★★★, optional (CSeq_congruence) *)
-
 Theorem CSeq_congruence : forall c1 c1' c2 c2',
   cequiv c1 c1' -> cequiv c2 c2' ->
   cequiv (c1;;c2) (c1';;c2').
@@ -1026,7 +1022,6 @@ Proof.
 (** **** Exercise: 3 stars (CIf_congruence)  *)
 *)
 (** **** 練習問題: ★★★ (CIf_congruence) *)
-
 Theorem CIf_congruence : forall b b' c1 c1' c2 c2',
   bequiv b b' -> cequiv c1 c1' -> cequiv c2 c2' ->
   cequiv (IFB b THEN c1 ELSE c2 FI) (IFB b' THEN c1' ELSE c2' FI).
