@@ -1,20 +1,27 @@
+(*
+(** * Postscript *)
+*)
 (** * Postscript: あとがき *)
-(* * Postscript *)
 
-(* * Looking back... *)
+(*
+(** * Looking back... *)
+*)
 (** * ふりかえり... *)
 
-(*  - _Functional programming_
+(*
+(**  - _Functional programming_
           - "declarative" programming (recursion over persistent data
             structures)
           - higher-order functions
           - polymorphism *)
+*)
 (**  - 関数プログラミング
-          - 「宣言的」プログラミング(永続データ構造上の再帰)
+          - 「宣言的」プログラミング（永続データ構造上の再帰）
           - 高階関数
           - 多相性 *)
 
 (*
+(**
      - _Logic_, the mathematical basis for software engineering:
 <<
                logic                        calculus
@@ -25,12 +32,13 @@
           - inductively defined sets and relations 
           - inductive proofs 
           - proof objects *)
+*)
 (**
      - 論理学、ソフトウェア工学の数学的基盤:
 <<
                 論理学                        微積分学
         --------------------   =   ----------------------------
-            ソフトウェア工学                  機械/土木工学
+            ソフトウェア工学               機械/土木工学
 >>
 
           - 帰納的に定義された集合と関係
@@ -38,10 +46,12 @@
           - 証明オブジェクト *)
 
 (*
+(**
      - _Coq_, an industrial-strength proof assistant
           - functional core language
           - core tactics
           - automation
+*)
 *)
 (**
      - _Coq_、産業用途に耐え得る証明支援器
@@ -50,6 +60,7 @@
           - 自動化
 *)
 
+(*
 (**
      - _Foundations of programming languages_ 
 
@@ -70,6 +81,7 @@
 
            - theory of subtyping
 *)
+*)
 (**
      - プログラミング言語の基礎
 
@@ -80,24 +92,25 @@
                     - スモールステップスタイル
                 - 型システム
 
-           - ホーア論理
-
            - プログラム同値性
+
+           - ホーア論理
 
            - 型システムの基本的メタ理論
 
               - 進行と保存
 
-              - 動的にアロケートされるヒープを持つ言語の型健全性
-
            - サブタイプ理論
 *)
 
 (* ###################################################################### *)
-(* * Looking forward... *)
+(*
+(** * Looking forward... *)
+*)
 (** * これからの指針... *)
 
-(* Some good places to go for more...
+(*
+(** Some good places to go for more...
 
        - Several optional chapters of _Software Foundations_ 
 
@@ -147,6 +160,7 @@
              lambda-calculus (System F)
 
 *)
+*)
 (** 先に進む資料としてよいものをいくつか...
 
        - ソフトウェアの基礎のオプションの章 
@@ -160,18 +174,18 @@
             - CAV
             - (and many others)
 
-       - More on functional programming
+       - 関数型プログラミングについて:
             - Learn You a Haskell for Great Good, by Miran
               Lipovaca (ebook)
             - and many other texts on Haskell, OCaml, Scheme, Scala, ...
 
-       - More on Hoare logic and program verification
+       - ホーア論理とプログラム検証について:
             - The Formal Semantics of Programming Languages: An
               Introduction, by Glynn Winskel.  MIT Press, 1993.
             - Many practical verification tools, e.g. Microsoft's
               Boogie system, Java Extended Static Checking, etc.
 
-       - More on the foundations of programming languages:
+       - プログラミング言語の基礎について:
             - Types and Programming Languages, by Benjamin C. Pierce. MIT
               Press, 2002.
             - Practical Foundations for Programming Languages, by Robert
@@ -181,20 +195,14 @@
               MIT Press, 1996. 
  
        - Coqについて: 
-           - Certified Programming with Dependent Types, by Adam
-             Chlipala.  A draft textbook on practical proof
-             engineering with Coq, available from his web page.
-           - Interactive Theorem Proving and Program Development:
-             Coq'Art: The Calculus of Inductive Constructions, by Yves
-             Bertot and Pierre Casteran.  Springer-Verlag, 2004.
-           - Iron Lambda (http://iron.ouroborus.net/) is a collection
-             of ​Coq formalisations for functional languages of
-             increasing complexity. It fills part of the gap between
-             the end of the​ Software Foundations course and what
-             appears in current research papers.  The collection has
-             at least Progress and Preservation theorems for a number
-             of variants of STLC and the polymorphic
-             lambda-calculus (System F)
+           - Adam ChlipalaによるCertified Programming with Dependent Types。
+             Coqによる実践的な証明工学の本であり、著者のページからドラフト版が入手できます。
+           - Interactive Theorem Proving and Program Development: Coq'Art.
+             The Calculus of Inductive Constructions,
+             by Yves Bertot and Pierre Casteran.  Springer-Verlag, 2004.
+           - Iron Lambda (http://iron.ouroborus.net/) は、複雑さが徐々に増えていく複数の関数型言語のCoqによる定式化です。
+             ソフトウェアの基礎と、最近の研究論文で起こっていることのギャップを埋めてくれます。
+             定式化の中では、STLCや多相ラムダ計算（System F）の複数の亜種について、少なくとも進行性定理や型保存定理が示されています。
 
 *)
 
