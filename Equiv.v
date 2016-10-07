@@ -34,7 +34,7 @@ Require Export Imp.
 (** *** 宿題割当てについての一般的アドバイス
 
     - Coqによる証明問題は、そこまでに文中で行ってきた証明となるべく同じようにできるようにしています。
-      宿題に取り組む前に、そこまでの証明を自分でも(紙上とCoqの両方で)やってみなさい。
+      宿題に取り組む前に、そこまでの証明を自分でも（紙上とCoqの両方で）やってみなさい。
       そして、細部まで理解していることを確認しなさい。そうすることは、多くの時間を節約することになるでしょう。
 
     - 問題にする Coq の証明はそれなりに複雑なため、単に怪しそうなところをランダムに探ってみるような方法で解くことはまず無理です。
@@ -321,37 +321,28 @@ Proof.
 (**
    「証明」:
 
-     - ([->]) すべての[st]と[st']に対して、もし[IFB b THEN c1 ELSE c2 FI / st || st']
-       ならば[c1 / st || st']となることを示す。
+     - ([->]) すべての[st]と[st']に対して、もし[IFB b THEN c1 ELSE c2 FI / st || st']ならば[c1 / st || st']となることを示す。
 
-       [IFB b THEN c1 ELSE c2 FI / st || st']を示すのに使うことができた可能性のある規則、
-       つまり[E_IfTrue]と[E_IfFalse]とで、場合分けをする。
+       [IFB b THEN c1 ELSE c2 FI / st || st']を示すのに使うことができた可能性のある規則、つまり[E_IfTrue]と[E_IfFalse]とで、場合分けをする。
 
-       - [IFB b THEN c1 ELSE c2 FI / st || st']
-         の導出の最後の規則が[E_IfTrue]であると仮定する。
+       - [IFB b THEN c1 ELSE c2 FI / st || st'] の導出の最後の規則が[E_IfTrue]であると仮定する。
          このとき、[E_IfTrue]の仮定より[c1 / st || st']となる。
          これはまさに証明したいことである。
 
-       - 一方、[IFB b THEN c1 ELSE c2 FI / st || st']
-         の導出の最後の規則が[E_IfFalse]と仮定する。
+       - 一方、[IFB b THEN c1 ELSE c2 FI / st || st'] の導出の最後の規則が[E_IfFalse]と仮定する。
          すると、[beval st b = false]かつ[c2 / st || st']となる。
 
-         [b]が[BTrue]と同値であったことから、
-         すべての[st]について、[beval st b = beval st BTrue]が成立する。
+         [b]が[BTrue]と同値であったことから、すべての[st]について、[beval st b = beval st BTrue]が成立する。
          これは特に[beval st b = true]を意味する。
          なぜなら[beval st BTrue = true]だからである。
-         しかしこれは矛盾である。なぜなら、
-         [E_IfFalse]から[beval st b = false]でなければならないからである。
+         しかしこれは矛盾である。
+         なぜなら、[E_IfFalse]から[beval st b = false]でなければならないからである。
          従って、最後の規則は[E_IfFalse]ではあり得ない。
 
-     - ([<-]) すべての[st]と[st']について、もし[c1 / st|| st']ならば
-       [IFB b THEN c1 ELSE c2 FI / st || st']となることを示す。
+     - ([<-]) すべての[st]と[st']について、もし[c1 / st|| st']ならば[IFB b THEN c1 ELSE c2 FI / st || st']となることを示す。
 
-       [b]が[BTrue]と同値であることから、
-       [beval st b] = [beval st BTrue] = [true]となる。
-       仮定[c1 / st || st']より[E_IfTrue]が適用でき、
-       [IFB b THEN c1 ELSE c2 FI / st || st']となる。  []
-       
+       [b]が[BTrue]と同値であることから、[beval st b] = [beval st BTrue] = [true]となる。
+       仮定[c1 / st || st']より[E_IfTrue]が適用でき、[IFB b THEN c1 ELSE c2 FI / st || st']となる。  []
 
    以下がこの証明の形式化版です: *)
 
@@ -480,29 +471,22 @@ Proof.
         prove [(WHILE b DO c END) / st || st'], the other cases of
         the induction are immediately contradictory. [] *)
 *)
-(** 2つ目の事実を証明するためには、
-    ガードが[BTrue]と同値であるwhileループが停止しないことを言う補題が1つ必要です:
+(** 2つ目の事実を証明するためには、ガードが[BTrue]と同値であるwhileループが停止しないことを言う補題が1つ必要です:
 
-    「補題」:[b]が[BTrue]と同値のとき、
-    [(WHILE b DO c END) / st || st']となることはない。
+    「補題」:[b]が[BTrue]と同値のとき、[(WHILE b DO c END) / st || st']となることはない。
 
     「証明」:[(WHILE b DO c END) / st || st']と仮定する。
-    [(WHILE b DO c END) / st || st']の導出についての帰納法によって、
-    この仮定から矛盾が導かれることを示す。
+    [(WHILE b DO c END) / st || st']の導出についての帰納法によって、この仮定から矛盾が導かれることを示す。
 
-      - [(WHILE b DO c END) / st || st']が規則[E_WhileEnd]
-        から証明されると仮定する。すると仮定から[beval st b = false]となる。
+      - [(WHILE b DO c END) / st || st']が規則[E_WhileEnd]から証明されると仮定する。
+        すると仮定から[beval st b = false]となる。
         しかしこれは、[b]が[BTrue]と同値という仮定と矛盾する。
 
-      - [(WHILE b DO c END) / st || st']が規則[E_WhileLoop]
-        を使って証明されると仮定する。
-        すると帰納法の仮定として
-        [(WHILE b DO c END) / st || st']が矛盾するということが得られる。
+      - [(WHILE b DO c END) / st || st']が規則[E_WhileLoop]を使って証明されると仮定する。
+        すると帰納法の仮定として[(WHILE b DO c END) / st || st']が矛盾するということが得られる。
         これはまさに証明しようとしていることである。
 
-      - 上記が[(WHILE b DO c END) / st || st']
-        の証明に使うことができる可能性がある規則のすべてであり、
-        帰納法の他の場合は、すぐに矛盾になる。[] *)
+      - 上記が[(WHILE b DO c END) / st || st']の証明に使うことができる可能性がある規則のすべてであり、帰納法の他の場合は、すぐに矛盾になる。[] *)
 
 Lemma WHILE_true_nonterm : forall b c st st',
      bequiv b BTrue ->
@@ -883,8 +867,7 @@ Proof.
     i.e., the "proof burden" of a small change to a large program is
     proportional to the size of the change, not the program. *)
 *)
-(** 合同性がなぜ重要なのか、
-    次の節で具体的な例([fold_constants_com_sound]の証明)によって見ます。
+(** 合同性がなぜ重要なのか、次の節で具体的な例([fold_constants_com_sound]の証明)によって見ます。
     ただ、メインのアイデアは、大きなプログラムの小さな部分を同値の小さな部分で置き換えると、大きなプログラム全体が元のものと同値になることを、変化していない部分についての明示的な証明「なしに」わかるということです。
     つまり、大きなプログラムの小さな変更についての証明の負担が、プログラムではなく変更に比例するということです。 *)
 
@@ -943,27 +926,21 @@ Proof.
 (** ループの合同性は帰納法が必要になるので、さらに少しおもしろいものになります。
 
     「定理」:[WHILE]についての同値は合同関係である。
-    すなわち、もし[b1]が[b1']と同値であり、[c1]が[c1']と同値ならば、
-    [WHILE b1 DO c1 END]は[WHILE b1' DO c1' END]と同値である。
+    すなわち、もし[b1]が[b1']と同値であり、[c1]が[c1']と同値ならば、[WHILE b1 DO c1 END]は[WHILE b1' DO c1' END]と同値である。
 
     「証明」:[b1]が[b1']と同値、[c1]が[c1']と同値であるとする。
-    すべての[st]と[st']について、証明すべきことは、
-    [WHILE b1 DO c1 END / st || st']の必要十分条件は
-    [WHILE b1' DO c1' END / st || st']であることである。
+    すべての[st]と[st']について、証明すべきことは、[WHILE b1 DO c1 END / st || st']の必要十分条件は[WHILE b1' DO c1' END / st || st']であることである。
     必要条件と十分条件の両方向を別々に証明する。
 
       - ([->]) [WHILE b1 DO c1 END / st || st']ならば
-        [WHILE b1' DO c1' END / st || st']であることを、
-        [WHILE b1 DO c1 END / st || st']の導出についての帰納法で示す。
+        [WHILE b1' DO c1' END / st || st']であることを、[WHILE b1 DO c1 END / st || st']の導出についての帰納法で示す。
         自明でないのは、導出の最後の規則が[E_WhileEnd]または[E_WhileLoop]のときだけである。
 
           - [E_WhileEnd]: この場合、規則の形から[beval st b1 = false]かつ[st = st']となる。
-            しかし[b1]と[b1']が同値であることから
-            [beval st b1' = false]になる。
+            しかし[b1]と[b1']が同値であることから[beval st b1' = false]になる。
             さらに[E-WhileEnd]を適用すると証明すべき[WHILE b1' DO c1' END / st || st']が得られる。
 
-          - [E_WhileLoop]: 規則の形から
-            [beval st b1 = true]および、ある状態[st'0]について帰納法の仮定[WHILE b1' DO c1' END / st'0 || st']のもとで、
+          - [E_WhileLoop]: 規則の形から[beval st b1 = true]および、ある状態[st'0]について帰納法の仮定[WHILE b1' DO c1' END / st'0 || st']のもとで、
             [c1 / st || st'0]かつ[WHILE b1 DO c1 END / st'0 || st']となる。
 
             [c1]と[c1']が同値であることから、[c1' / st || st'0]となる。
@@ -1077,8 +1054,7 @@ Qed.
     output.  Compiler optimizations such as constant folding are
     a canonical example, but there are many others. *)
 *)
-(** プログラム変換(_program transformation_)とは、
-    プログラムを入力とし、出力としてそのプログラムの何らかの変形を生成する関数です。
+(** プログラム変換(_program transformation_)とは、プログラムを入力とし、出力としてそのプログラムの何らかの変形を生成する関数です。
     定数畳み込みのようなコンパイラの最適化は標準的な例ですが、それ以外のものもたくさんあります。*)
 
 (*
@@ -1172,8 +1148,7 @@ Proof. reflexivity. Qed.
     [BEq] and [BLe] cases), we can also find constant _boolean_
     expressions and reduce them in-place. *)
 *)
-(** ([BEq]と[BLe]の場合に)[fold_constants_aexp]を[bexp]
-    に持ち上げることができるだけでなく、定数「ブール」式をみつけてその場で置換することもできます。*)
+(** （[BEq]と[BLe]の場合に）[fold_constants_aexp]を[bexp]に持ち上げることができるだけでなく、定数「ブール」式をみつけてその場で置換することもできます。*)
 
 Fixpoint fold_constants_bexp (b : bexp) : bexp :=
   match b with
@@ -1393,12 +1368,11 @@ Proof.
 *)
 (** ここに、ブール式の定数畳み込みに関する健全性の議論の[BEq]の場合の非形式的証明を示します。
     これを丁寧に読みその後の形式的証明と比較しなさい。
-    次に、形式的証明の[BLe]部分を(もし可能ならば[BEq]の場合を見ないで)記述しなさい。
+    次に、形式的証明の[BLe]部分を（もし可能ならば[BEq]の場合を見ないで）記述しなさい。
 
    「定理」:ブール式に対する定数畳み込み関数[fold_constants_bexp]は健全である。
 
-   「証明」:すべてのブール式[b]について[b]が[fold_constants_bexp]
-   と同値であることを示す。
+   「証明」:すべてのブール式[b]について[b]が[fold_constants_bexp]と同値であることを示す。
    [b]についての帰納法を行う。
    [b]が[BEq a1 a2]という形の場合を示す。
 
@@ -1409,8 +1383,7 @@ Proof.
 ]]
    を示せば良い。これには2種類の場合がある:
 
-     - 最初に、ある[n1]と[n2]について、[fold_constants_aexp a1 = ANum n1]かつ
-       [fold_constants_aexp a2 = ANum n2]と仮定する。
+     - 最初に、ある[n1]と[n2]について、[fold_constants_aexp a1 = ANum n1]かつ[fold_constants_aexp a2 = ANum n2]と仮定する。
 
        この場合、
 [[
@@ -1423,7 +1396,7 @@ Proof.
          = beq_nat (aeval st a1) (aeval st a2).
 ]]
        となる。
-       算術式についての定数畳み込みの健全性(補題[fold_constants_aexp_sound])より、
+       算術式についての定数畳み込みの健全性（補題[fold_constants_aexp_sound]）より、
 [[
            aeval st a1
          = aeval st (fold_constants_aexp a1)
@@ -1444,7 +1417,8 @@ Proof.
          = beq_nat (aeval a1) (aeval a2)
          = beq_nat n1 n2.
 ]]
-       となる。また、([n1 = n2]と[n1 <> n2]の場合をそれぞれ考えると)
+       となる。
+       また、（[n1 = n2]と[n1 <> n2]の場合をそれぞれ考えると）
 [[
            beval st (if beq_nat n1 n2 then BTrue else BFalse)
          = if beq_nat n1 n2 then beval st BTrue else beval st BFalse
@@ -1458,10 +1432,10 @@ Proof.
          = beq_nat n1 n2.
          = beval st (if beq_nat n1 n2 then BTrue else BFalse),
 ]]
-       となる。これは求められる性質である。
+       となる。
+       これは求められる性質である。
 
-     - それ以外の場合、[fold_constants_aexp a1]と[fold_constants_aexp a2]
-       のどちらかは定数ではない。この場合、
+     - それ以外の場合、[fold_constants_aexp a1]と[fold_constants_aexp a2]のどちらかは定数ではない。この場合、
 [[
            beval st (BEq a1 a2)
          = beval st (BEq (fold_constants_aexp a1)
@@ -1475,7 +1449,7 @@ Proof.
                    (aeval st (fold_constants_aexp a2)).
 ]]
        を示すことと同じである。
-       算術式についての定数畳み込みの健全性([fold_constants_aexp_sound])より、
+       算術式についての定数畳み込みの健全性（補題[fold_constants_aexp_sound]）より、
 [[
          aeval st a1 = aeval st (fold_constants_aexp a1)
          aeval st a2 = aeval st (fold_constants_aexp a2),
@@ -1627,16 +1601,14 @@ Proof.
      optimize_0plus_com
 ]]
    これらの関数の健全性を、[fold_constants_*]について行ったのと同様に証明しなさい。
-   [optimize_0plus_com]の証明においては、合同性補題を確実に使いなさい
-   (そうしなければ証明はとても長くなるでしょう!)。
+   [optimize_0plus_com]の証明においては、合同性補題を確実に使いなさい（そうしなければ証明はとても長くなるでしょう!）。
 
-   次に、コマンドに対して次の処理を行う最適化関数を定義しなさい。行うべき処理は、
-   まず定数畳み込みを([fold_constants_com]を使って)行い、
-   次に[0 + n]項を([optimize_0plus_com]を使って)消去することです。
+   次に、コマンドに対して次の処理を行う最適化関数を定義しなさい。
+   行うべき処理は、まず定数畳み込みを（[fold_constants_com]を使って）行い、次に[0 + n]項を（[optimize_0plus_com]を使って）消去することです。
 
    - この最適化関数の出力の意味のある例を示しなさい。
 
-   - この最適化関数が健全であることを示しなさい。(この部分は「とても」簡単なはずです。) *)
+   - この最適化関数が健全であることを示しなさい。（この部分は「とても」簡単なはずです。） *)
 
 (* FILL IN HERE *)
 (** [] *)
@@ -1659,9 +1631,8 @@ Proof.
     Clearly, this _particular_ [c1] and [c2] are equivalent.  Is this
     true in general? *)
 *)
-(** [c1]が[X ::= a1; Y ::= a2]という形のコマンドで、
-    [c2]がコマンド[X ::= a1; Y ::= a2']であると仮定します。ただし[a2']は、
-    [a2]の中のすべてのXを[a1]で置換したものとします。
+(** [c1]が[X ::= a1; Y ::= a2]という形のコマンドで、[c2]がコマンド[X ::= a1; Y ::= a2']であると仮定します。
+    ただし[a2']は、[a2]の中のすべてのXを[a1]で置換したものとします。
     例えば、[c1]と[c2]は次のようなものです。
 [[
        c1  =  (X ::= 42 + 53;
@@ -1785,8 +1756,7 @@ Definition subst_equiv_property := forall i1 i2 a1 a2,
         / empty_state || st2,
 ]]
     ただし[st2 = { X |-> 1, Y |-> 2 }]である。
-    [st1 <> st2]に注意すると、これは[ceval]が決定性を持つことに矛盾する!
-      [] *)
+    [st1 <> st2]に注意すると、これは[ceval]が決定性を持つことに矛盾する! [] *)
 
 
 Theorem subst_inequiv : 
@@ -1838,8 +1808,7 @@ Proof.
     right-hand-side of the first assignment statement. *)
 *)
 (** 上で成立すると考えていた同値は、完全に意味がないものではありません。
-    それは実際、ほとんど正しいのです。それを直すためには、
-    最初の代入の右辺に変数[X]が現れる場合を排除すれば良いのです。*)
+    それは実際、ほとんど正しいのです。それを直すためには、最初の代入の右辺に変数[X]が現れる場合を排除すれば良いのです。*)
 
 Inductive var_not_used_in_aexp (X:id) : aexp -> Prop :=
   | VNUNum: forall n, var_not_used_in_aexp X (ANum n)
@@ -1867,8 +1836,7 @@ Proof.
 (** Using [var_not_used_in_aexp], formalize and prove a correct verson
     of [subst_equiv_property]. *)
 *)
-(** [var_not_used_in_aexp]を使って、[subst_equiv_property]の正しいバージョンを形式化し、
-    証明しなさい。*)
+(** [var_not_used_in_aexp]を使って、[subst_equiv_property]の正しいバージョンを形式化し、証明しなさい。*)
 
 (* FILL IN HERE *)
 (** [] *)
@@ -2142,7 +2110,7 @@ End Himp.
 (*
 (** * Doing Without Extensionality (Advanced) *)
 *)
-(** * 外延性を使わずに行う (Advanced) *)
+(** * 外延性を使わずに行う （Advanced） *)
 
 (*
 (** Purists might object to using the [functional_extensionality]
@@ -2163,8 +2131,7 @@ End Himp.
     一般に、公理を追加することは非常に危険です。
     特に、一度にいくつも追加するときは（追加するものが相互に矛盾することもあるため）そうです。
     実際は、[functional_extensionality]と[excluded_middle]は両者とも何の問題もなく導入できます。
-    しかし、Coqユーザの中には、このような「ヘビーウェイト」の一般テクニックを避け、
-    Coqの標準論理の中で特定の問題のために技巧的解法を使うことを選びたい人もいるでしょう。
+    しかし、Coqユーザの中には、このような「ヘビーウェイト」の一般テクニックを避け、Coqの標準論理の中で特定の問題のために技巧的解法を使うことを選びたい人もいるでしょう。
 
     ここで扱っている問題に特定するなら、状態を表現している関数についてやりたいことをやるために等しさの定義を拡張するより、状態の同値(_equivalence_)の概念を明示的に与えることもできたかもしれません。
     例えば: *)
@@ -2179,9 +2146,8 @@ Notation "st1 '~' st2" := (stequiv st1 st2) (at level 30).
    is reflexive, symmetric, and transitive), so it partitions the set
    of all states into equivalence classes. *)
 *)
-(** [stequiv]が同値関係(_equivalence_、 つまり、反射的、対称的、推移的関係)
-    であることを証明することは容易です。この同値関係により、
-    すべての状態の集合は同値類に分割されます。*)
+(** [stequiv]が同値関係(_equivalence_)、つまり、反射的、対称的、推移的関係であることを証明することは容易です。
+    この同値関係により、すべての状態の集合は同値類に分割されます。*)
 
 (*
 (** **** Exercise: 1 star, optional (stequiv_refl)  *)
@@ -2236,8 +2202,7 @@ Proof.
 (** It is then straightforward to show that [aeval] and [beval] behave
     uniformly on all members of an equivalence class: *)
 *)
-(** [aeval]と[beval]が同値類のすべての要素に対して同じように振る舞うことは、
-    ここからストレートに証明できます: *)
+(** [aeval]と[beval]が同値類のすべての要素に対して同じように振る舞うことは、ここからストレートに証明できます: *)
 
 (*
 (** **** Exercise: 2 stars, optional (stequiv_aeval)  *)
@@ -2266,8 +2231,7 @@ Proof.
     states (this result is a bit more complicated to write down
     because [ceval] is a relation). *)
 *)
-(** 同値である状態の面から[ceval]の振る舞いを特徴づけることもできます
-    ([ceval]は関係なので、この結果を書き下すのはもうちょっと複雑です)。 *)
+(** 同値である状態の面から[ceval]の振る舞いを特徴づけることもできます（[ceval]は関係なので、この結果を書き下すのはもうちょっと複雑です）。 *)
 
 Lemma stequiv_ceval: forall (st1 st2 : state),
   st1 ~ st2 ->
@@ -2324,7 +2288,7 @@ Qed.
 *)
 (** ここで[cequiv]を[=]の代わりに[~]を使って再定義する必要があります。
     定義の簡潔さと対称性を保ったまま再定義するのは、それほど自明なことではありません。
-    しかしその方法はあります(Andrew McCreightに感謝します)。
+    しかしその方法はあります（Andrew McCreightに感謝します）。
     最初に[||]のより緩いバージョンを定義します。
     これは同値概念の中に「畳み込まれ」ます。*)
     
@@ -2352,7 +2316,7 @@ Definition cequiv' (c1 c2 : com) : Prop :=
    is not true, naturally.) *)
 *)
 (** もとのコマンド同値の概念が、新しいものと同じ強さかそれより強いことをサニティチェックします。
-    (その逆は当然成立しません。) *)
+    （その逆は当然成立しません。） *)
 
 Lemma cequiv__cequiv' : forall (c1 c2: com),
   cequiv c1 c2 -> cequiv' c1 c2.
@@ -2372,7 +2336,7 @@ Qed.
 (** Finally, here is our example once more... (You can complete the
     proof.) *)
 *)
-(** 最後にもとの例を再度扱います... (証明を完成しなさい。) *)
+(** 最後にもとの例を再度扱います... （証明を完成しなさい。） *)
 
 Example identity_assignment' :
   cequiv' SKIP (X ::= AId X).
