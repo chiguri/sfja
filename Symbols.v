@@ -1,9 +1,11 @@
+(*
+(** * Symbols: Special symbols *)
+*)
 (** * Symbols: 特殊シンボル *)
-(* * Symbols: Special symbols *)
 
 (* This file defines some HTML symbols for use by the coqdoc
    preprocessor.  It is not intended to be read by anybody. *)
-(* このファイルはcoqdocの前処理が使うHTMLシンボルお定義しています。
+(* このファイルはcoqdocの前処理が使うHTMLシンボルを定義しています。
    誰かが読むことを想定したものではありません。 *)
 
 (** printing -> #<span style="font-family: arial;">&rarr;</span># *)
