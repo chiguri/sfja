@@ -421,10 +421,13 @@ Proof.
          way -- so the goal is not provable. *)
       Abort.
 
-(* What went wrong? *)
+(*
+(** What went wrong? *)
+*)
 (** 何がいけなかったのでしょうか? *)
 
-(* The problem is that, at the point we invoke the induction
+(*
+(** The problem is that, at the point we invoke the induction
     hypothesis, we have already introduced [m] into the context -- 
     intuitively, we have told Coq, "Let's consider some particular
     [n] and [m]..." and we now have to prove that, if [double n =
@@ -470,24 +473,28 @@ Proof.
     [double (S n) = 10]..." but then we'd be stuck: knowing that
     [double (S n)] is [10] tells us nothing about whether [double n]
     is [10], so [Q] is useless at this point.) *)
-(** 帰納法の仮定を導入した時点で [m] をコンテキストに導入してしまっていることが問題です。直感的に言うと、これはCoqに「ある特定の [n] と [m] について考えよう」と教えるようなものです。そのため、この特定の [n] と [m] について [double n = double m] ならば [n = m] を証明しなければなりません。
+*)
+(** 帰納法の仮定を導入した時点で [m] をコンテキストに導入してしまっていることが問題です。
+    直感的に言うと、これはCoqに「ある特定の [n] と [m] について考えよう」と教えるようなものです。
+    そのため、この特定の [n] と [m] について [double n = double m] ならば [n = m] を証明しなければなりません。
 
-    次のタクティックス [induction n] はCoqに「このゴールを [n] に関する帰納法で示します」と伝えます。 なので、命題
+    次のタクティックス [induction n] はCoqに「このゴールを [n] に関する帰納法で示します」と伝えます。
+    なので、命題
 
       - [P n]  =  "[double n = double m] ならば [n = m]"
 
-    がすべての[n]について成り立つことを
+    がすべての[n]について成り立つことを以下の2つの文で言っています。
 
       - [P O]              
 
-         (すなわち、"[double O = double m] ならば [O = m]")
+         （すなわち、"[double O = double m] ならば [O = m]"）
 
       - [P n -> P (S n)]  
 
-        (すなわち、 "[double n = double m] ならば [n = m]" が成り立つならば "
-        [double (S n) = double m] ならば [S n = m]").
+        （すなわち、 "[double n = double m] ならば [n = m]" が成り立つならば "[double (S n) = double m] ならば [S n = m]"）
 
-    2つめの文を見ると、これは奇妙なことを言っています。 それによると特定の [m] について
+    2つめの文を見ると、これは奇妙なことを言っています。
+    それによると特定の [m] について
 
       - "[double n = double m] ならば [n = m]"
 
@@ -497,7 +504,8 @@ Proof.
 
     が証明できることになります。
 
-    これがどう奇妙かを説明するために、特定の [m] 、例えば [5] について考えてみましょう。 するとこの文は
+    これがどう奇妙かを説明するために、特定の [m] 、例えば [5] について考えてみましょう。
+    するとこの文は
 
       - [Q] = "[double n = 10] ならば [n = 5]"
 
@@ -507,18 +515,24 @@ Proof.
 
     が証明できると言っています。
 
-    しかし [Q] を知っていても、[R]を証明するのには何の役にたちません! (もし [Q] から [R] を示そうとすると「[double (S n) = 10]...を仮定すると...」のようなことを言わないといけませんが、これは途中でつまってしまいます。 [double (S n)] が [10] があることは、 [double n]が[10]であるかどうかについては何も教えてくれません。なので[Q] はここでは役にたちません。) *)
+    しかし [Q] を知っていても、[R]を証明するのには何の役にたちません!
+    （もし [Q] から [R] を示そうとすると「[double (S n) = 10]...を仮定すると...」のようなことを言わないといけませんが、これは途中でつまってしまいます。
+    [double (S n)] が [10] があることは、 [double n]が[10]であるかどうかについては何も教えてくれません。
+    なので[Q] はここでは役にたちません。） *)
 
-
-(* To summarize: Trying to carry out this proof by induction on [n]
+(*
+(** To summarize: Trying to carry out this proof by induction on [n]
     when [m] is already in the context doesn't work because we are
     trying to prove a relation involving _every_ [n] but just a
     _single_ [m]. *)
+*)
 (** まとめると、[m]がすでにコンテキストにある状態で[n]に関する帰納法による証明がうまくいかないのは、すべての[n]と単一の[m]の関係を示そうとしてしまうかからです。 *)
 
-(* The good proof of [double_injective] leaves [m] in the goal
+(*
+(** The good proof of [double_injective] leaves [m] in the goal
     statement at the point where the [induction] tactic is invoked on
     [n]: *)
+*)
 (** [double_injective] のいい証明では、[induction]を[n]に対して使う時点では[m]をゴールに残しています。 *)
 
 Theorem double_injective : forall n m,
@@ -560,12 +574,14 @@ Proof.
          need to finish the proof. *)
       apply IHn'. inversion eq. reflexivity. Qed.
 
-(* What this teaches us is that we need to be careful about using
+(*
+(** What this teaches us is that we need to be careful about using
     induction to try to prove something too specific: If we're proving
     a property of [n] and [m] by induction on [n], we may need to
     leave [m] generic. *)
+*)
 (** 帰納法によって証明しようとしていることが、限定的すぎないかに注意する必要があることを学びました。
-    もし[n]と[m]の性質に関する証明を[n]に関する帰納法で行ないたい場合は、[m]を一般的なままにしておく必要があるかもしれません。 *)
+    もし[n]と[m]の性質に関する証明を[n]に関する帰納法で行いたい場合は、[m]を一般的なままにしておく必要があるかもしれません。 *)
 
 (** The proof of this theorem (left as an exercise) has to be treated similarly: *)
 
@@ -604,32 +620,38 @@ Proof.
         (* Stuck again here, just like before. *)
 Abort.
 
-(* The problem is that, to do induction on [m], we must first
+(*
+(** The problem is that, to do induction on [m], we must first
     introduce [n].  (If we simply say [induction m] without
     introducing anything first, Coq will automatically introduce
     [n] for us!)   *)
-(** [m]に関する帰納法の問題点は、最初に[n]をintroしなければいけないことです。 (もし何も導入せずに[induction m]をしても、Coqは自動的に[n]をintroします!) *)
+*)
+(** [m]に関する帰納法の問題点は、最初に[n]をintroしなければいけないことです。
+    （もし何も導入せずに[induction m]をしても、Coqは自動的に[n]をintroします!） *)
 
-(* What can we do about this?  One possibility is to rewrite the
+(*
+(** What can we do about this?  One possibility is to rewrite the
     statement of the lemma so that [m] is quantified before [n].  This
     will work, but it's not nice: We don't want to have to mangle the
     statements of lemmas to fit the needs of a particular strategy for
     proving them -- we want to state them in the most clear and
     natural way. *)
+*)
 (** どうしたらいいでしょうか?
     1つの方法は、補題の文を書き換えて[n]より先に[m]がくるようにします。
     これはうまくいきますが、いい方法ではありません。
     特定の証明戦略のために補題の文をめちゃくちゃにしたくありません。
     補題の文はできるかぎり明確かつ自然な形であるべきです。 *)
 
-(*  What we can do instead is to first introduce all the
+(*
+(**  What we can do instead is to first introduce all the
     quantified variables and then _re-generalize_ one or more of
     them, taking them out of the context and putting them back at
     the beginning of the goal.  The [generalize dependent] tactic
     does this. *)
+*)
 (** その代わりに、いったんすべての限量変数を導入し、そのうちいくつかをコンテキストから取りゴールの先頭に置くことで、再び一般化します。
-    これは[generalize dependent]タクティックスによって実現できます。 *)
-(* 訳注：なんでrevertじゃないんだろう。複雑な依存性がある時の問題？ *)
+    これは[generalize dependent]タクティックによって実現できます。 *)
 
 Theorem double_injective_take2 : forall n m,
      double n = double m ->
@@ -649,8 +671,8 @@ Proof.
     SCase "n = S n'". apply f_equal.
       apply IHm'. inversion eq. reflexivity. Qed.
 
-
-(* Let's look at an informal proof of this theorem.  Note that
+(*
+(** Let's look at an informal proof of this theorem.  Note that
     the proposition we prove by induction leaves [n] quantified,
     corresponding to the use of generalize dependent in our formal
     proof.
@@ -690,11 +712,14 @@ _Proof_: Let [m] be a [nat]. We prove by induction on [m] that, for
     conclude that [n' = m'], and it follows immediately that [S n' = S
     m'].  Since [S n' = n] and [S m' = m], this is just what we wanted
     to show. [] *)
-(** この定理の非形式な証明を見てみましょう。なお [n] を限量化したまま帰納法によって命題を証明する箇所は、形式的な証明では[generalize dependent]を使う箇所に対応します。
+*)
+(** この定理の非形式な証明を見てみましょう。
+    なお [n] を限量化したまま帰納法によって命題を証明する箇所は、形式的な証明では[generalize dependent]を使う箇所に対応します。
 
-_Theorem_: すべての自然数 [n] と [m] について、 [double n = double m] ならば [n = m]。
+定理: すべての自然数 [n] と [m] について、 [double n = double m] ならば [n = m]。
 
-_Proof_: [m]を[nat]とする。 [m]に関する帰納法によって、 すべての[n] に対して [double n = double m] ならば [n = m] を示す。
+証明: [m]を[nat]とする。
+  [m]に関する帰納法によって、 すべての[n] に対して [double n = double m] ならば [n = m] を示す。
 
   - 最初に [m = 0] と仮定し、[n] を [double n = double m] をみたす数とし、 [n = 0] を示す。
 
@@ -704,13 +729,15 @@ _Proof_: [m]を[nat]とする。 [m]に関する帰納法によって、 すべ�
     そうでなくて [n = S n'] となる [n'] が存在する場合、矛盾を導くことで証明する。
     [double] の定義により [n = S (S (double n'))] だが、これは仮定 [dobule n = 0] と矛盾する。
 
-  - そうでない場合、 [m = S m'] と仮定し、 [n] は再び [double n = double m] をみたす数とする。 [n = S m']を示すために、 帰納法の仮定「 すべての数 [s] に対して [double s = double m']ならば[s = m']」を用いる。
+  - そうでない場合、 [m = S m'] と仮定し、 [n] は再び [double n = double m] をみたす数とする。
+    [n = S m']を示すために、 帰納法の仮定「すべての数 [s] に対して [double s = double m']ならば[s = m']」を用いる。
 
-    [m = S m'] と [double] の定義により、 [double n = S (S (double m'))] 。 [n] に関して2つの場合分けが考えられる。
+    [m = S m'] と [double] の定義により、 [double n = S (S (double m'))]。
+    [n] に関して2つの場合分けが考えられる。
 
     [n = 0] ならば、定義により [double n = 0] となり、矛盾を導ける。
-    なので、 [n = S n'] となる [n'] があると仮定すると、再び [double] の定義により、
-    [S (S (double n')) = S (S (double m'))] 。 ここでinversionにより [double n' = dobule m'] 。
+    なので、 [n = S n'] となる [n'] があると仮定すると、再び [double] の定義により、 [S (S (double n')) = S (S (double m'))] 。
+    ここでinversionにより [double n' = dobule m']。
 
     帰納法の仮定を [n'] をあてはめることで、 [n' = m'] という結論を導ける。
     これから直ちに、 [S n' = S m'] を導ける。
@@ -774,9 +801,13 @@ Proof.
     In general, a good rule of thumb is to make the induction hypothesis
     as general as possible. *)
 
-(* **** Exercise: 3 stars (gen_dep_practice)  *)
+(*
+(** **** Exercise: 3 stars (gen_dep_practice)  *)
+*)
 (** **** 練習問題: ★★★ (gen_dep_practice) *)
-(* Prove this by induction on [l]. *)
+(*
+(** Prove this by induction on [l]. *)
+*)
 (** [l] に関する帰納法で示しなさい。 *)
 
 Theorem index_after_last: forall (n : nat) (X : Type) (l : list X),
@@ -786,30 +817,38 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(* **** Exercise: 3 stars, advanced, optional (index_after_last_informal)  *)
+(*
+(** **** Exercise: 3 stars, advanced, optional (index_after_last_informal)  *)
+*)
 (** **** 練習問題: ★★★, advanced, optional (index_after_last_informal) *)
-(* Write an informal proof corresponding to your Coq proof
+(*
+(** Write an informal proof corresponding to your Coq proof
     of [index_after_last]:
  
      _Theorem_: For all sets [X], lists [l : list X], and numbers
       [n], if [length l = n] then [index n l = None].
-
-     _Proof_:
-     (* FILL IN HERE *)
-[]
-*)
-(** [index_after_last] のCoqによる証明に対応する非形式的な証明を書きなさい。
-
-     _Theorem_: すべての集合 [X], リスト [l : list X], 自然数[n]に対して、[length l = n] ならば [index n l = None]。
  
      _Proof_:
      (* FILL IN HERE *)
 []
 *)
+*)
+(** [index_after_last] のCoqによる証明に対応する非形式的な証明を書きなさい。
 
-(* **** Exercise: 3 stars, optional (gen_dep_practice_more)  *)
+     定理: すべての集合 [X], リスト [l : list X], 自然数[n]に対して、[length l = n] ならば [index n l = None]。
+
+     証明:
+     (* FILL IN HERE *)
+[]
+*)
+
+(*
+(** **** Exercise: 3 stars, optional (gen_dep_practice_more)  *)
+*)
 (** **** 練習問題: ★★★, optional (gen_dep_practice_more)  *)
-(* Prove this by induction on [l]. *)
+(*
+(** Prove this by induction on [l]. *)
+*)
 (** [l]に関する帰納法で示しなさい。 *)
 
 Theorem length_snoc''' : forall (n : nat) (X : Type) 
@@ -820,10 +859,14 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(* **** Exercise: 3 stars, optional (app_length_cons)  *)
+(*
+(** **** Exercise: 3 stars, optional (app_length_cons)  *)
+*)
 (** **** 練習問題: ★★★, optional (app_length_cons)  *)
-(* Prove this by induction on [l1], without using [app_length]
+(*
+(** Prove this by induction on [l1], without using [app_length]
     from [Lists]. *)
+*)
 (** [app_length] を使わずに[l1]に関する帰納法で示しなさい。 *)
 
 Theorem app_length_cons : forall (X : Type) (l1 l2 : list X) 
@@ -834,9 +877,13 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(* **** Exercise: 4 stars, optional (app_length_twice)  *)
+(*
+(** **** Exercise: 4 stars, optional (app_length_twice)  *)
+*)
 (** **** 練習問題: ★★★★, optional (app_length_twice)  *)
-(* Prove this by induction on [l], without using app_length. *)
+(*
+(** Prove this by induction on [l], without using app_length. *)
+*)
 (** [app_length] を使わずに [l] に関する帰納法で示しなさい。 *)
 (* 訳注：多分app_lengthはくくり忘れ *)
 
