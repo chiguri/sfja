@@ -1,25 +1,33 @@
+(*
+(** * Sub: Subtyping *)
+*)
 (** * Sub :サブタイプ *)
-(* * Sub: Subtyping *)
 
 
 Require Export Types.
 
 (* ###################################################### *)
-(* * Concepts *)
+(*
+(** * Concepts *)
+*)
 (** * 概念 *)
 
-(* We now turn to the study of _subtyping_, perhaps the most
+(*
+(** We now turn to the study of _subtyping_, perhaps the most
     characteristic feature of the static type systems of recently
     designed programming languages and a key feature needed to support
     the object-oriented programming style. *)
+*)
 (** さて、サブタイプ(_subtyping_)の学習に入ります。
-    サブタイプはおそらく、近年設計されたプログラミング言語で使われる静的型システムの最も特徴的な機能であり、オブジェクト指向プログラミングをサポートするのに重要な機能の一つです。
-    *)
+    サブタイプはおそらく、近年設計されたプログラミング言語で使われる静的型システムの最も特徴的な機能であり、オブジェクト指向プログラミングをサポートするのに重要な機能の一つです。 *)
 
 (* ###################################################### *)
-(* ** A Motivating Example *)
-(** ** 動機付けのための例 *)
+(*
+(** ** A Motivating Example *)
+*)
+(** ** 動機付け *)
 
+(*
 (** Suppose we are writing a program involving two record types
     defined as follows:
 <<
@@ -27,8 +35,16 @@ Require Export Types.
     Student = {name:String, age:Nat, gpa:Nat}
 >>
 *)
+*)
+(** 以下に定義する二つのレコード型が出現するプログラムを書いているとしましょう。
+<<
+    Person  = {name:String, age:Nat}
+    Student = {name:String, age:Nat, gpa:Nat}
+>>
+*)
 
-(* In the simply typed lamdba-calculus with records, the term
+(*
+(** In the simply typed lamdba-calculus with records, the term
 <<
     (\r:Person. (r.age)+1) {name="Pat",age=21,gpa=1}
 >>
@@ -61,41 +77,37 @@ Require Export Types.
    of type [T] is expected.  The idea of subtyping applies not only to
    records, but to all of the type constructors in the language --
    functions, pairs, etc. *)
+*)
 (** レコードを持つ単純型付きラムダ計算では、項
 <<
     (\r:Person. (r.age)+1) {name="Pat",age=21,gpa=1}
 >>
-   は型付けできません。なぜなら、
-   これはフィールドが1つのレコードを引数としてとる関数に2つのフィールドを持つレコードが与えられている部分を含んでいて、
-   一方、[T_App]規則は関数の定義域の型は引数の型に完全に一致することを要求するからです。
-   (訳注：おそらく修正漏れと思われる。実際には[Person]を要求している関数を、より大きなレコードである[Student]相当のレコード値に適用しているため、型が不一致となる。)
+   は型付けできません。
+   なぜなら、これはフィールドが1つのレコードを引数としてとる関数に2つのフィールドを持つレコードが与えられている部分を含んでいて、一方、[T_App]規則は関数の定義域の型は引数の型に完全に一致することを要求するからです。
+   （訳注：おそらく修正漏れと思われる。実際には2つのフィールドを持つ[Person]を要求している関数を、3つのフィールドを持つ[Student]相当のレコード値に適用しているため、型が不一致となる。）
 
    しかしこれは馬鹿らしいことです。
-   実際には関数に、必要とされるものより良い引数を与えているのです!
-   この関数の本体がレコード引数[r]に対して行いうることは、
-   そのフィールド[age]を射影することだけです。型から許されることは他にはありません。
+   実際には関数に、必要とされるものより良い引数を与えているのです！
+   この関数の本体がレコード引数[r]に対して行いうることは、そのフィールド[age]を射影することだけです。
+   型から許されることは他にはありません。
    すると、他に[gpa]フィールドが存在するか否かは何の違いもないはずです。
-   これから、直観的に、
-   この関数は少なくとも[age]フィールドを持つ任意のレコード値に適用可能であるべきと思われます。
+   これから、直観的に、この関数は少なくとも[age]フィールドを持つ任意のレコード値に適用可能であるべきと思われます。
 
-   同じことを別の観点から見ると、より豊かなフィールドを持つレコードは、
-   そのサブセットのフィールドだけを持つレコードと
-   「任意のコンテキストで少なくとも同等の良さである」と言えるでしょう。
-   より長い(多くのフィールドを持つ)レコード型の任意の値は、
-   より短かいレコード型が求められるコンテキストで「安全に」(_safely_)使えるという意味においてです。
-   コンテキストがより短かい型のものを求めているときに、より長い型のものを与えた場合、
-   何も悪いことは起こらないでしょう(形式的には、プログラムは行き詰まることはないでしょう)。
+   同じことを別の観点から見ると、より豊かなフィールドを持つレコードは、そのサブセットのフィールドだけを持つレコードと「任意のコンテキストで少なくとも同等の良さである」と言えるでしょう。
+   より長い（多くのフィールドを持つ）レコード型の任意の値は、より短かいレコード型が求められるコンテキストで「安全に」(_safely_)使えるという意味においてです。
+   コンテキストがより短かい型のものを求めているときに、より長い型のものを与えた場合、何も悪いことは起こらないでしょう（形式的には、プログラムは行き詰まることはないでしょう）。
 
-   ここではたらいている一般原理はサブタイプ(付け)(_subtyping_)と呼ばれます。
-   型[T]の値が求められている任意のコンテキストで型[S]の値が安全に使えるとき、
-   「[S]は[T]のサブタイプである」と言い、非形式的に [S <: T] と書きます。
-   サブタイプの概念はレコードだけではなく、関数、対、など言語のすべての型コンストラクタに適用されます。
-   *)
+   ここではたらいている一般原理はサブタイプ（付け）(_subtyping_)と呼ばれます。
+   型[T]の値が求められている任意のコンテキストで型[S]の値が安全に使えるとき、「[S]は[T]のサブタイプである」と言い、非形式的に [S <: T] と書きます。
+   サブタイプの概念はレコードだけではなく、関数、対、など言語のすべての型コンストラクタに適用されます。 *)
 
-(* ** Subtyping and Object-Oriented Languages *)
+(*
+(** ** Subtyping and Object-Oriented Languages *)
+*)
 (** ** サブタイプとオブジェクト指向言語 *)
 
-(* Subtyping plays a fundamental role in many programming
+(*
+(** Subtyping plays a fundamental role in many programming
     languages -- in particular, it is closely related to the notion of
     _subclassing_ in object-oriented languages.
 
@@ -142,47 +154,35 @@ Require Export Types.
     Languages_, if you are interested.)  Instead, we'll study the core
     concepts behind the subclass / subinterface relation in the
     simplified setting of the STLC. *)
+*)
 (** サブタイプは多くのプログラミング言語で重要な役割を演じます。
     特に、オブジェクト指向言語のサブクラス(_subclassing_)の概念と近い関係にあります。
 
-    (JavaやC[#]等の)オブジェクトはレコードと考えることができます。
-    いくつかのフィールドは関数(「メソッド」)で、いくつかのフィールドはデータ値
-    (「フィールド」または「インスタンス変数」)です。
-    オブジェクト[o]のメソッド[m]を引数[a1..an]のもとで呼ぶことは、
-    [o]から[m]フィールドを射影として抽出して、それを[a1..an]に適用することです。
+    JavaやC[#]等のオブジェクトはレコードと考えることができます。
+    いくつかのフィールドは関数(「メソッド」)で、いくつかのフィールドはデータ値（「フィールド」または「インスタンス変数」）です。
+    オブジェクト[o]のメソッド[m]を引数[a1..an]のもとで呼ぶことは、[o]から[m]フィールドを射影として抽出して、それを[a1..an]に適用することです。
 
-    オブジェクトの型はクラス(_class_)またはインターフェース(_interface_)
-    として与えることができます。
+    オブジェクトの型はクラス(_class_)またはインターフェース(_interface_)として与えることができます。
     この両者はどちらも、どのメソッドとどのデータフィールドをオブジェクトが提供するかを記述します。
 
-    クラスやインターフェースは、サブクラス(_subclass_)関係やサブインターフェース
-    (_subinterface_)関係で関係づけられます。
-    サブクラス(またはサブインターフェース)に属するオブジェクトには、スーパークラス
-    (またはスーパーインターフェース)
-    に属するオブジェクトのメソッドとフィールドのすべての提供することが求められ、
-    おそらくそれに加えてさらにいくつかのものを提供します。
+    クラスやインターフェースは、サブクラス(_subclass_)関係やサブインターフェース(_subinterface_)関係で関係づけられます。
+    サブクラス（またはサブインターフェース）に属するオブジェクトには、スーパークラス（またはスーパーインターフェース）に属するオブジェクトのメソッドとフィールドのすべての提供することが求められ、さらに追加で他のメソッドやフィールドを提供することもできます。
 
-    サブクラス(またはサブインターフェース)のオブジェクトをスーパークラス(またはスーパーインターフェース)
-    のオブジェクトの場所で使えるという事実は、
-    複雑なライブラリの構築にきわめて便利なほどの柔軟性を提供します。
-    例えば、Javaの Swing
-    フレームワークのようなグラフィカルユーザーインターフェースツールキットは、
-    スクリーンに表示できユーザとインタラクションできるグラフィカルな表現を持つすべてのオブジェクトに共通のフィールドとメソッドを集めた、抽象インターフェース[Component]を定義するでしょう。
+    サブクラス（またはサブインターフェース）のオブジェクトをスーパークラス（またはスーパーインターフェース）のオブジェクトの場所で使えるという事実は、複雑なライブラリの構築にきわめて便利なほどの柔軟性を提供します。
+    例えば、Javaの Swingフレームワークのようなグラフィカルユーザーインターフェースツールキットは、スクリーンに表示できユーザとインタラクションできるグラフィカルな表現を持つすべてのオブジェクトに共通のフィールドとメソッドを集めた、抽象インターフェース[Component]を定義するでしょう。
     そのようなオブジェクトの例としては、典型的なGUIのボタン、チェックボックス、スクロールバーなどがあります。
     この共通インターフェースのみに依存するメソッドは任意のそれらのオブジェクトに適用できます。
 
     もちろん、実際のオブジェクト指向言語はこれらに加えてたくさんの他の機能を持っています。
     フィールドは更新できます。フィールドとメソッドは[private]と宣言できます。
-    クラスはまた、
-    オブジェクトを構成しそのメソッドをインプリメントするのに使われる「コード」を与えます。
+    クラスはまた、オブジェクトを構成しそのメソッドをインプリメントするのに使われる「コード」を与えます。
     そしてサブクラスのコードは「継承」を通じてスーパークラスのコードと協調します。
     クラスは、静的なメソッドやフィールド、イニシャライザ、等々を持つことができます。
 
     ものごとを単純なまま進めるために、これらの問題を扱うことはしません。
     実際、これ以上オブジェクトやクラスについて話すことはありません。
-    (もし興味があるなら、 Types and Programming Languages にたくさんの議論があります。)
-    その代わり、STLCの単純化された設定のもとで、
-    サブクラス/サブインターフェース関係の背後にある核となる概念について学習します。 *)
+    （もし興味があるなら、 Types and Programming Languages にたくさんの議論があります。）
+    その代わり、STLCの単純化された設定のもとで、サブクラス/サブインターフェース関係の背後にある核となる概念について学習します。 *)
 
 (** *** *)
 (** Of course, real OO languages have lots of other features...
@@ -194,10 +194,13 @@ Require Export Types.
 
     We'll ignore all these and focus on core mechanisms. *)
 
-(* ** The Subsumption Rule *)
+(*
+(** ** The Subsumption Rule *)
+*)
 (** ** 包摂規則 *)
 
-(* Our goal for this chapter is to add subtyping to the simply typed
+(*
+(** Our goal for this chapter is to add subtyping to the simply typed
     lambda-calculus (with some of the basic extensions from [MoreStlc]).
     This involves two steps:
 
@@ -212,40 +215,51 @@ Require Export Types.
                                Gamma |- t : T
     This rule says, intuitively, that it is OK to "forget" some of
     what we know about a term. *)
-(** この章のゴールは([MoreStlc]での拡張機能を持つ)単純型付きラムダ計算にサブタイプを追加することです。
-    これは2つのステップから成ります:
+*)
+(** この章のゴールは（[MoreStlc]の拡張機能を持つ）単純型付きラムダ計算にサブタイプを追加することです。
+    これは2つのステップから成ります：
 
       - 型の間の二項サブタイプ関係(_subtype relation_)を定義します。
 
       - 型付け関係をサブタイプを考慮した形に拡張します。
 
     2つ目のステップは実際はとても単純です。型付け関係にただ1つの規則だけを追加します。
-    その規則は、包摂規則(_rule of subsumption_)と呼ばれます:
+    その規則は、包摂規則(_rule of subsumption_)と呼ばれます：
+<<
                          Gamma |- t : S     S <: T
                          -------------------------                      (T_Sub)
                                Gamma |- t : T
+>>
     この規則は、直観的には、項について知っている情報のいくらかを「忘れる」ようにしてよいと言っています。 *)
-(* For example, we may know that [t] is a record with two
+(*
+(** For example, we may know that [t] is a record with two
     fields (e.g., [S = {x:A->A, y:B->B}]), but choose to forget about
     one of the fields ([T = {y:B->B}]) so that we can pass [t] to a
     function that requires just a single-field record. *)
-(** 例えば、[t]が2つのフィールドを持つレコード(例えば、[S = {x:A->A, y:B->B}])で、
-    フィールドの1つを忘れることにした([T = {y:B->B}])とします。
+*)
+(** 例えば、[t]が2つのフィールドを持つレコード（例えば、[S = {x:A->A, y:B->B}]）で、フィールドの1つを忘れることにした（[T = {y:B->B}]）とします。
     すると[t]を、1フィールドのレコードを引数としてとる関数に渡すことができるようになります。 *)
 
-(* ** The Subtype Relation *)
+(*
+(** ** The Subtype Relation *)
+*)
 (** ** サブタイプ関係 *)
 
-(* The first step -- the definition of the relation [S <: T] -- is
+(*
+(** The first step -- the definition of the relation [S <: T] -- is
     where all the action is.  Let's look at each of the clauses of its
     definition.  *)
+*)
 (** 最初のステップ、関係 [S <: T] の定義はすべてのアクションに関して存在します。
     それぞれの定義を見てみましょう。 *)
 
-(* *** Structural Rules *)
+(*
+(** *** Structural Rules *)
+*)
 (** *** 構造規則 *)
 
-(* To start off, we impose two "structural rules" that are
+(*
+(** To start off, we impose two "structural rules" that are
     independent of any particular type constructor: a rule of
     _transitivity_, which says intuitively that, if [S] is better than
     [U] and [U] is better than [T], then [S] is better than [T]...
@@ -257,40 +271,52 @@ Require Export Types.
                                    ------                              (S_Refl)
                                    T <: T
 *)
+*)
 (** まず最初に、2つの「構造規則」("structural rules")を追加します。
     これらは特定の型コンストラクタからは独立したものです。
-    推移規則(rule of _transitivity_)は、直観的には、
-    [S]が[U]よりも良く、[U]が[T]よりも良ければ、[S]は[T]よりも良いというものです...
+    推移規則(rule of _transitivity_)は、直観的には、[S]が[U]よりも良く、[U]が[T]よりも良ければ、[S]は[T]よりも良いというものです。
+<<
                               S <: U    U <: T
                               ----------------                        (S_Trans)
                                    S <: T
-    ... そして反射規則(rule of _reflexivity_)は、
-    任意の型はそれ自身と同じ良さを持つというものです。
+>>
+    そして反射規則(rule of _reflexivity_)は、任意の型はそれ自身と同じ良さを持つというものです。
+<<
                                    ------                              (S_Refl)
                                    T <: T
+>>
 *)
 
-(* *** Products *)
+(*
+(** *** Products *)
+*)
 (** *** 直積型 *)
 
-(* Now we consider the individual type constructors, one by one,
+(*
+(** Now we consider the individual type constructors, one by one,
     beginning with product types.  We consider one pair to be "better
     than" another if each of its components is.
                             S1 <: T1    S2 <: T2
                             --------------------                        (S_Prod)
                              S1 * S2 <: T1 * T2
 *)
+*)
 (** 次に、直積型です。ある一つの対が他の対より「良い」とは、
     それぞれの成分が他の対の対応するものより良いことです。
+<<
                             S1 <: T1    S2 <: T2
                             --------------------                        (S_Prod)
                                S1*S2 <: T1*T2
+>>
 *)
 
-(* *** Arrows *)
+(*
+(** *** Arrows *)
+*)
 (** *** 関数型 *)
 
-(* Suppose we have two functions [f] and [g] with these types:
+(*
+(** Suppose we have two functions [f] and [g] with these types:
        f : C -> Student 
        g : (C->Person) -> D
     That is, [f] is a function that yields a record of type [Student],
@@ -341,46 +367,47 @@ Require Export Types.
     [S2]. That is, any function [f] of type [S1->S2] can also be
     viewed as having type [T1->T2]. 
 *)
+*)
 (** 次の型を持つ2つの関数[f]と[g]があるとします：
+[[
        f : C -> Student 
        g : (C->Person) -> D
-    つまり、[f]は型[Student]のレコードを返す関数であり、
-    [g]は引数として、型[Person]のレコードを返す関数をとる高階関数です。
-    そして、レコードのサブタイプについてはまだ議論していませんが、
-    [Student] は [Person] のサブタイプであるとします。
+]]
+    つまり、[f]は型[Student]のレコードを返す関数であり、[g]は引数として、型[Person]のレコードを返す関数をとる高階関数です。
+    そして、レコードのサブタイプについてはまだ議論していませんが、[Student] は [Person] のサブタイプであるとします。
     すると、関数適用 [g f] は、両者の型が正確に一致しないにもかかわらず安全です。
-    なぜなら、[g]が[f]について行うことができるのは、
-    [f]を(型[C]の)ある引数に適用することだけだからです。
+    なぜなら、[g]が[f]について行うことができるのは、[f]を（型[C]の）ある引数に適用することだけだからです。
     その結果は実際には[Student]型のレコード値になります。
-    ここで[g]が期待するのは[Person]型おレコードです。
-    しかしこれは安全です。なぜなら[g]がすることができるのは、
-    わかっている2つのフィールド([name]と[age])を射影することだけで、
-    それは存在するフィールドの一部だからです。
+    ここで[g]が期待するのは[Person]型のレコードです。
+    しかしこれは安全です。なぜなら[g]がすることができるのは、わかっている2つのフィールド（[name]と[age]）を射影することだけで、それは存在するフィールドの一部だからです。
 
     この例から、関数型のサブタイプ規則が以下のようになるべきということが導かれます。
     2つの関数型がサブタイプ関係にあるのは、その結果が次の条件のときです:
+<<
                                   S2 <: T2
                               ----------------                        (S_Arrow_Co)
                               S1 -> S2 <: S1 -> T2
+>>
     同様に、これを一般化して、2つの関数型のサブタイプ関係を、引数の条件を含めた形にすることができます:
+<<
                             T1 <: S1    S2 <: T2
                             --------------------                      (S_Arrow)
-                              S1 -> S2 <: T1 -> T2
+                            S1 -> S2 <: T1 -> T2
+>>
     ここで注意するのは、引数の型はサブタイプ関係が逆向きになることです。
-    [S1->S2] が [T1->T2] のサブタイプであると結論づけるには、
-    [T1]が[S1]のサブタイプでなければなりません。
+    [S1->S2] が [T1->T2] のサブタイプであると結論づけるには、[T1]が[S1]のサブタイプでなければなりません。
     関数型のコンストラクタは最初の引数について反変(_contravariant_)であり、
     二番目の引数について共変(_covariant_)であると言います。
 
-    Here is an example that illustrates this: 
+    このことを表す例を見てみましょう。
+[[
        f : Person -> C
        g : (Student -> C) -> D
-    The application [g f] is safe, because the only thing the body of
-    [g] can do with [f] is to apply it to some argument of type
-    [Student].  Since [f] requires records having (at least) the
-    fields of a [Person], this will always work. So [Person -> C] is a
-    subtype of [Student -> C] since [Student] is a subtype of
-    [Person].
+]]
+    関数適用[g f]は安全です。
+    なぜなら、[g]の本体での[f]の使い方は、[Student]型の引数に適用することだけだからです。
+    [f]は（少なくとも）[Person]のもつフィールドを含んだレコードを要求するだけなので、これはうまく動きます。
+    よって、[Student]が[Person]のサブタイプであるため、[Person -> C]は[Student -> C]のサブタイプとなります。
 
     直観的には、型[S1->S2]の関数[f]があるとき、[f]は型[S1]の要素を引数として許容することがわかります。
     明らかに[f]は[S1]の任意のサブタイプ[T1]の要素も引数として許容します。
@@ -389,13 +416,18 @@ Require Export Types.
     つまり、型[S1->S2]の任意の関数[f]は、型[T1->T2]を持つと見ることもできるということです。
 *)
 
-(* *** Records *)
+(*
+(** *** Records *)
+*)
 (** *** レコード *)
 
-(* What about subtyping for record types? *)
+(*
+(** What about subtyping for record types? *)
+*)
 (** レコード型のサブタイプは何でしょうか？ *)
 
-(* The basic intuition about subtyping for record types is that it is
+(*
+(** The basic intuition about subtyping for record types is that it is
    always safe to use a "bigger" record in place of a "smaller" one.
    That is, given a record type, adding extra fields will always
    result in a subtype.  If some code is expecting a record with
@@ -406,44 +438,51 @@ Require Export Types.
        {name:String, age:Nat} <: {name:String}
        {name:String} <: {}
    This is known as "width subtyping" for records. *)
-(** レコード型のサブタイプについての基本的直観は、
-   「より小さな」レコードの場所で「より大きな」レコードを使うことは常に安全だということです。
+*)
+(** レコード型のサブタイプについての基本的直観は、「より小さな」レコードの場所で「より大きな」レコードを使うことは常に安全だということです。
    つまり、レコード型があるとき、さらにフィールドを追加したものは常にサブタイプになるということです。
-   もしあるコードがフィールド[x]と[y]を持つレコードを期待していたとき、
-   レコード[x]、[y]、[z]を持つレコードを受けとることは完璧に安全です。
+   もしあるコードがフィールド[x]と[y]を持つレコードを期待していたとき、レコード[x]、[y]、[z]を持つレコードを受けとることは完璧に安全です。
    [z]フィールドは単に無視されるだけです。
    例えば次の通りです。
+[[
        {name:String, age:Nat, gpa:Nat} <: {name:String, age:Nat}
        {name:String, age:Nat} <: {name:String}
        {name:String} <: {}
-   これはレコードの幅サブタイプ("width subtyping")として知られます。 *)
+]]
+   これはレコードの「幅サブタイプ(width subtyping)」として知られます。 *)
 
-(* We can also create a subtype of a record type by replacing the type
+(*
+(** We can also create a subtype of a record type by replacing the type
    of one of its fields with a subtype.  If some code is expecting a
    record with a field [x] of type [T], it will be happy with a record
    having a field [x] of type [S] as long as [S] is a subtype of
    [T]. For example,
        {x:Student} <: {x:Person}
    This is known as "depth subtyping". *)
-(** レコードの1つのフィールドの型をそのサブタイプで置き換えることでも、
-   レコードのサブタイプを作ることができます。
-   もしあるコードが型[T]のフィールド[x]を持つレコードを期待するとき、
-   型[S]が型[T]のサブタイプである限り、
-   型[S]のフィールド[x]を持つレコードが来ても何の問題も起こりません。
+*)
+(** レコードの1つのフィールドの型をそのサブタイプで置き換えることでも、レコードのサブタイプを作ることができます。
+   もしあるコードが型[T]のフィールド[x]を持つレコードを期待するとき、型[S]が型[T]のサブタイプである限り、型[S]のフィールド[x]を持つレコードが来ても何の問題も起こりません。
    例えば次の通りです。
+[[
        {x:Student} <: {x:Person}
-   これは深さサブタイプ("depth subtyping")として知られています。 *)
+]]
+   これは「深さサブタイプ(depth subtyping)」として知られています。 *)
 
-(* Finally, although the fields of a record type are written in a
+(*
+(** Finally, although the fields of a record type are written in a
    particular order, the order does not really matter. For example, 
        {name:String,age:Nat} <: {age:Nat,name:String}
    This is known as "permutation subtyping". *)
+*)
 (** 最後に、レコードのフィールドは特定の順番で記述されますが、その順番は実際には問題ではありません。
    例えば次の通りです。
+[[
        {name:String,age:Nat} <: {age:Nat,name:String}
-   これは順列サブタイプ("permutation subtyping")として知られています。 *)
+]]
+   これは「順列サブタイプ(permutation subtyping)」として知られています。 *)
 
-(* We could formalize these requirements in a single subtyping rule
+(*
+(** We could formalize these requirements in a single subtyping rule
    for records as follows:
                         for each jk in j1..jn,
                     exists ip in i1..im, such that
@@ -456,49 +495,58 @@ Require Export Types.
    is rather heavy and hard to read.  If we like, we can decompose it
    into three simpler rules, which can be combined using [S_Trans] to
    achieve all the same effects. *)
+*)
 (** これらをレコードについての単一のサブタイプ規則に形式化することをやってみましょう。
    次の通りです:
+<<
                         for each jk in j1..jn,
                     exists ip in i1..im, such that
                           jk=ip and Sp <: Tk
                   ----------------------------------                    (S_Rcd)
                   {i1:S1...im:Sm} <: {j1:T1...jn:Tn}
-   つまり、左のレコードは(少なくとも)右のレコードのフィールドラベルをすべて持ち、
-   両者で共通するフィールドはサブタイプ関係になければならない、ということです。
+>>
+   つまり、左のレコードは(少なくとも)右のレコードのフィールドラベルをすべて持ち、両者で共通するフィールドはサブタイプ関係になければならない、ということです。
    しかしながら、この規則はかなり重くて読むのがたいへんです。
-   ここでは、3つのより簡単な規則に分解します。この3つを[S_Trans]を使って結合することで、
-   同じように作用させることができます。 *)
+   ここでは、3つのより簡単な規則に分解します。この3つを[S_Trans]を使って結合することで、同じように作用させることができます。 *)
 
-(* First, adding fields to the end of a record type gives a subtype:
+(*
+(** First, adding fields to the end of a record type gives a subtype:
                                n > m
                  ---------------------------------                 (S_RcdWidth)
                  {i1:T1...in:Tn} <: {i1:T1...im:Tm} 
    We can use [S_RcdWidth] to drop later fields of a multi-field
    record while keeping earlier fields, showing for example that
    [{age:Nat,name:String} <: {name:String}]. *)
-(** 最初に、レコード型の最後にフィールドを追加したものはサブタイプになります:
+*)
+(** 最初に、レコード型の最後にフィールドを追加したものはサブタイプになります。
+<<
                                n > m
                  ---------------------------------                 (S_RcdWidth)
                  {i1:T1...in:Tn} <: {i1:T1...im:Tm}
+>>
    [S_RcdWidth]を使うと、複数のフィールドを持つレコードについて、
    前方のフィールドを残したまま後方のフィールドを取り除くことができます。
    この規則で例えば [{age:Nat,name:String} <: {name:String}] を示せます。 *)
 
-(* Second, we can apply subtyping inside the components of a compound
+(*
+(** Second, we can apply subtyping inside the components of a compound
    record type:
                        S1 <: T1  ...  Sn <: Tn
                   ----------------------------------               (S_RcdDepth)
                   {i1:S1...in:Sn} <: {i1:T1...in:Tn}
    For example, we can use [S_RcdDepth] and [S_RcdWidth] together to
    show that [{y:Student, x:Nat} <: {y:Person}]. *)
-(** 二つ目に、レコード型の構成要素の内部にサブタイプ規則を適用できます:
+*)
+(** 二つ目に、レコード型の構成要素の内部にサブタイプ規則を適用できます。
+<<
                        S1 <: T1  ...  Sn <: Tn
                   ----------------------------------               (S_RcdDepth)
                   {i1:S1...in:Sn} <: {i1:T1...in:Tn}
-   例えば [S_RcdDepth]と[S_RcdWidth]を両方使って [{y:Student, x:Nat} <: {y:Person}]
-   を示すことができます。 *)
+>>
+   例えば [S_RcdDepth]と[S_RcdWidth]を両方使って [{y:Student, x:Nat} <: {y:Person}]を示すことができます。 *)
 
-(* Third, we need to be able to reorder fields.  For example, we
+(*
+(** Third, we need to be able to reorder fields.  For example, we
    might expect that [{name:String, gpa:Nat, age:Nat} <: Person].  We
    haven't quite achieved this yet: using just [S_RcdDepth] and
    [S_RcdWidth] we can only drop fields from the _end_ of a record
@@ -507,17 +555,21 @@ Require Export Types.
          ---------------------------------------------------        (S_RcdPerm)
                   {i1:S1...in:Sn} <: {i1:T1...in:Tn}
 *)
+*)
 (** 三つ目に、フィールドの並べ替えを可能にする必要があります。
    念頭に置いてきた例は [{name:String, gpa:Nat, age:Nat} <: Person] でした。
    これはまだ達成されていません。
    [S_RcdDepth]と[S_RcdWidth]だけでは、レコード型の「後」からフィールドを落とすことしかできません。
-   これから次の規則が必要です:
+   そのため、次の規則が必要です。
+<<
          {i1:S1...in:Sn} is a permutation of {i1:T1...in:Tn}
          ---------------------------------------------------        (S_RcdPerm)
                   {i1:S1...in:Sn} <: {i1:T1...in:Tn}
+>>
 *)
 
-(* It is worth noting that full-blown language designs may choose not
+(*
+(** It is worth noting that full-blown language designs may choose not
     to adopt all of these subtyping rules. For example, in Java:
 
     - A subclass may not change the argument or result types of a
@@ -534,25 +586,28 @@ Require Export Types.
     - A class may implement multiple interfaces -- so-called "multiple
       inheritance" of interfaces (i.e., permutation is allowed for
       interfaces). *)
-(** なお、本格的な言語ではこれらのサブタイプ規則のすべてを採用しているとは限らないことは、
-    注記しておくべきでしょう。例えばJavaでは:
-
+*)
+(** なお、本格的な言語ではこれらのサブタイプ規則のすべてを採用しているとは限らないことは注記しておくべきでしょう。
+    例えばJavaでは
+ 
     - サブクラスではスーパークラスのメソッドの引数または結果の型を変えることはできません
-      (つまり、depth subtypingまたは関数型サブタイプのいずれかができないということです。
-      どちらかは見方によります)。
+      （つまり、depth subtypingまたは関数型サブタイプのいずれかができないということです。
+      どちらかは見方によります）。
+ 
+    - それぞれのクラスは（直上の）スーパークラスを1つだけ持ちます（クラスの「単一継承(single inheritance)」です）。
+ 
+    - 各クラスのメンバー（フィールドまたはメソッド）は1つだけインデックスを持ち、サブクラスでメンバーが追加されるたびに新しいインデックスが「右に」追加されます
+      （つまり、クラスには並び換えがありません）。
+ 
+    - クラスは複数のインターフェースを実装できます。
+      これはインターフェースの「多重継承(multiple inheritance)」と呼ばれます
+      （つまり、インターフェースには並び換えがあります）。 *)
 
-    - それぞれのクラスは(直上の)スーパークラスを1つだけ持ちます(クラスの「単一継承」
-      ("single inheritance")です)。
-    
-    - 各クラスのメンバー(フィールドまたはメソッド)は1つだけインデックスを持ち、
-      サブクラスでメンバーが追加されるたびに新しいインデックスが「右に」追加されます
-      (つまり、クラスには並び換えがありません)。
-
-    - クラスは複数のインターフェースをインプリメントできます。これは
-      インターフェースの「多重継承」("multiple inheritance")と呼ばれます
-      (つまり、インターフェースには並び換えがあります)。 *)
-
+(*
 (** **** Exercise: 2 stars (arrow_sub_wrong)  *)
+*)
+(** **** 練習問題: ★★ (arrow_sub_wrong)  *)
+(*
 (** Suppose we had incorrectly defined subtyping as covariant on both
     the right and the left of arrow types:
                             S1 <: T1    S2 <: T2
@@ -565,10 +620,23 @@ Require Export Types.
     execution.
 
 [] *)
+*)
+(** 関数型のサブタイプについて、誤って矢印の左右両方とも共変として定義してしまったとする。
+<<
+                            S1 <: T1    S2 <: T2
+                            --------------------                (S_Arrow_wrong)
+                            S1 -> S2 <: T1 -> T2
+>>
+    2つの関数[f]と[g]について、以下の型
+       f : Student -> Nat
+       g : (Person -> Nat) -> Nat
+    を満たし、適用[g f]が実行時に行き詰まるような例を挙げなさい。
 
-(* *** Top *)
+[] *)
+
 (** *** Top *)
 
+(*
 (** Finally, it is natural to give the subtype relation a maximal
     element -- a type that lies above every other type and is
     inhabited by all (well-typed) values.  We do this by adding to the
@@ -578,11 +646,14 @@ Require Export Types.
                                    --------                             (S_Top)
                                    S <: Top
     The [Top] type is an analog of the [Object] type in Java and C[#]. *)
-(** 最後に、サブタイプ関係の最大要素を定めます。他のすべての型のスーパータイプであり、
-    すべての(型付けできる)値が属する型です。このために言語に新しい一つの型定数[Top]を追加し、
-    [Top]をサブタイプ関係の他のすべての型のスーパータイプとするサブタイプ規則を定めます:
+*)
+(** 最後に、サブタイプ関係の最大要素を定めます。
+    他のすべての型のスーパータイプであり、すべての(型付けできる)値が属する型です。
+    このために言語に新しい一つの型定数[Top]を追加し、[Top]をサブタイプ関係の他のすべての型のスーパータイプとするサブタイプ規則を定めます:
+<<
                                    --------                             (S_Top)
                                    S <: Top
+>>
     [Top]型はJavaやC[#]における[Object]型に対応するものです。 *)
 
 (* ############################################### *)
@@ -829,40 +900,50 @@ Is this a good idea? Briefly explain why or why not.
 [] *)
 
 (* ###################################################### *)
-(* * Formal Definitions *)
+(*
+(** * Formal Definitions *)
+*)
 (** * 形式的定義 *)
 
+(*
 (** Most of the definitions -- in particular, the syntax and
     operational semantics of the language -- are identical to what we
     saw in the last chapter.  We just need to extend the typing
     relation with the subsumption rule and add a new [Inductive]
     definition for the subtyping relation.  Let's first do the
     identical bits. *)
+*)
 (** 定義のほとんどは -- 特に言語の構文と操作的意味は -- 前の章で見たものと同じです。
     ここで必要となるものは型付け規則の包括規則による拡張と、サブタイプ関係を表す帰納的定義の追加です。
     最初に同じ部分をやってみましょう。 *)
 
 (* ###################################################### *)
-(* ** Core Definitions *)
+(*
+(** ** Core Definitions *)
+*)
 (** * 中核部の定義 *)
 
 (* ################################### *)
-(* *** Syntax *)
+(*
+(** *** Syntax *)
+*)
 (** *** 構文 *)
 
-(* For the sake of more interesting examples below, we'll allow an
+(*
+(** For the sake of more interesting examples below, we'll allow an
     arbitrary set of additional base types like [String], [Float],
     etc.  We won't bother adding any constants belonging to these
     types or any operators on them, but we could easily do so. *)
+*)
 (** よりおもしろい例のために、[String]、[Float]のような、任意の「基本型」の集合を許します。
-    これらの型の定数を追加したり、その型の上の操作を追加したりすることをわざわざやりませんが、
-    そうすることは簡単です。 *)
+    これらの型の定数を追加したり、その型の上の操作を追加したりすることをわざわざやりませんが、そうすることは簡単です。 *)
 
-(* In the rest of the chapter, we formalize just base types,
+(*
+(** In the rest of the chapter, we formalize just base types,
     booleans, arrow types, [Unit], and [Top], omitting record types
     and leaving product types as an exercise. *)
-(** この章の残りでは、レコード型は省略して基本型、ブール型、関数型、[Unit]と[Top]のみ形式化し、
-    直積型は練習問題にします。 *)
+*)
+(** この章の残りでは、レコード型は省略して基本型、ブール型、関数型、[Unit]と[Top]のみ形式化し、直積型は練習問題にします。 *)
 
 Inductive ty : Type :=
   | TTop   : ty
@@ -898,11 +979,15 @@ Tactic Notation "t_cases" tactic(first) ident(c) :=
   ].
 
 (* ################################### *)
-(* *** Substitution *)
+(*
+(** *** Substitution *)
+*)
 (** *** 置換 *)
 
-(* The definition of substitution remains exactly the same as for the
+(*
+(** The definition of substitution remains exactly the same as for the
     pure STLC. *)
+*)
 (** 置換の定義はSTLCと全く同じです。 *)
 
 Fixpoint subst (x:id) (s:tm)  (t:tm) : tm :=
@@ -926,11 +1011,15 @@ Fixpoint subst (x:id) (s:tm)  (t:tm) : tm :=
 Notation "'[' x ':=' s ']' t" := (subst x s t) (at level 20).
 
 (* ################################### *)
-(* *** Reduction *)
+(*
+(** *** Reduction *)
+*)
 (** *** 簡約 *)
 
-(* Likewise the definitions of the [value] property and the [step]
+(*
+(** Likewise the definitions of the [value] property and the [step]
     relation. *)
+*)
 (** [value](値)の定義や[step]関係の定義と同様です。 *)
 
 Inductive value : tm -> Prop :=
@@ -978,16 +1067,23 @@ Tactic Notation "step_cases" tactic(first) ident(c) :=
 Hint Constructors step.
 
 (* ###################################################################### *)
-(* ** Subtyping *)
+(*
+(** ** Subtyping *)
+*)
 (** ** サブタイプ *)
 
-(* Now we come to the most interesting part.  We begin by
+(*
+(** Now we come to the most interesting part.  We begin by
     defining the subtyping relation and developing some of its
     important technical properties. *)
-(** さて、一番おもしろい所にやって来ました。サブタイプ関係の定義から始め、その重要な技術的性質を調べます。 *)
+*)
+(** さて、一番おもしろい所にやって来ました。
+    サブタイプ関係の定義から始め、その重要な技術的性質を調べます。 *)
 
-(* The definition of subtyping is just what we sketched in the
+(*
+(** The definition of subtyping is just what we sketched in the
     motivating discussion. *)
+*)
 (** サブタイプの定義は、動機付けの議論のところで概観した通りです。 *)
 
 Reserved Notation "T '<:' U" (at level 40).
@@ -1007,9 +1103,11 @@ Inductive subtype : ty -> ty -> Prop :=
       (TArrow S1 S2) <: (TArrow T1 T2)
 where "T '<:' U" := (subtype T U).
 
-(* Note that we don't need any special rules for base types: they are
+(*
+(** Note that we don't need any special rules for base types: they are
     automatically subtypes of themselves (by [S_Refl]) and [Top] (by
     [S_Top]), and that's all we want. *)
+*)
 (** なお、基本型については特別な規則は何ら必要ありません。
     基本型は自動的に([S_Refl]より)自分自身のサブタイプであり、
     ([S_Top]より)[Top]のサブタイプでもあります。そしてこれが必要な全てです。 *)
@@ -1036,10 +1134,13 @@ Notation String := (TBase (Id 9)).
 Notation Float := (TBase (Id 10)).
 Notation Integer := (TBase (Id 11)).
 
-(* **** Exercise: 2 stars, optional (subtyping_judgements)  *)
+(*
+(** **** Exercise: 2 stars, optional (subtyping_judgements)  *)
+*)
 (** **** 練習問題: ★★, optional (subtyping_judgements)  *)
 
-(* (Do this exercise after you have added product types to the
+(*
+(** (Do this exercise after you have added product types to the
     language, at least up to this point in the file).
 
     Using the encoding of records into pairs, define pair types
@@ -1054,17 +1155,19 @@ Recall that in chapter MoreStlc, the optional subsection "Encoding
 Records" describes how records can be encoded as pairs.
 
 *)
-(** (この練習問題は、少なくともファイルのここまでに、直積型を言語に追加した後で行ってください。)
+*)
+(** （この練習問題は、少なくともファイルのここまでに、直積型を言語に追加した後で行ってください。）
 
     レコードを対でエンコードするときに、以下のレコード型を表す直積型を定義しなさい。
+[[
     Person   := { name : String }
     Student  := { name : String ;
                   gpa  : Float }
     Employee := { name : String ;
                   ssn  : Integer }
+]]
 
-Recall that in chapter MoreStlc, the optional subsection "Encoding
-Records" describes how records can be encoded as pairs.
+MoreStlcの章にある「レコードのエンコーディング」の項で、どのようにレコードを対で表現したか思い出しましょう。
 
 *)
 
@@ -1094,14 +1197,18 @@ Proof.
     apply S_Refl. auto.
 Qed.
 
-(* The following facts are mostly easy to prove in Coq.  To get
+(*
+(** The following facts are mostly easy to prove in Coq.  To get
     full benefit from the exercises, make sure you also
     understand how to prove them on paper! *)
+*)
 (** 以下の事実のほとんどは、Coqで証明するのは簡単です。
     練習問題の効果を十分に得るために、
     どうやって証明するか自分が理解していることを紙に証明を書いて確認しなさい。 *)
 
-(* **** Exercise: 1 star, optional (subtyping_example_1)  *)
+(*
+(** **** Exercise: 1 star, optional (subtyping_example_1)  *)
+*)
 (** **** 練習問題: ★, optional (subtyping_example_1)  *)
 Example subtyping_example_1 :
   (TArrow TTop Student) <: (TArrow (TArrow C C) Person).
@@ -1110,7 +1217,9 @@ Proof with eauto.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(* **** Exercise: 1 star, optional (subtyping_example_2)  *)
+(*
+(** **** Exercise: 1 star, optional (subtyping_example_2)  *)
+*)
 (** **** 練習問題: ★, optional (subtyping_example_2)  *)
 Example subtyping_example_2 :
   (TArrow TTop Person) <: (TArrow Person TTop).
@@ -1123,11 +1232,15 @@ End Examples.
 
 
 (* ###################################################################### *)
-(* ** Typing *)
+(*
+(** ** Typing *)
+*)
 (** ** 型付け *)
 
-(* The only change to the typing relation is the addition of the rule
+(*
+(** The only change to the typing relation is the addition of the rule
     of subsumption, [T_Sub]. *)
+*)
 (** 型付け関係の変更は、包摂規則 [T_Sub] の追加だけです。 *)
 
 Definition context := id -> (option ty).
@@ -1186,34 +1299,43 @@ Hint Extern 2 (_ = _) => compute; reflexivity.
 
 
 (* ############################################### *)
-(* ** Typing examples *)
+(*
+(** ** Typing examples *)
+*)
 (** ** 型付けの例 *)
 
 Module Examples2.
 Import Examples.
 
-(* Do the following exercises after you have added product types to
+(*
+(** Do the following exercises after you have added product types to
     the language.  For each informal typing judgement, write it as a
     formal statement in Coq and prove it. *)
+*)
 (** 以下の練習問題は言語に直積を追加した後に行いなさい。
-    それぞれの非形式的な型付けジャッジメントについて、Coqで形式的主張を記述し、
-    それを証明しなさい。 *)
+    それぞれの非形式的な型付けジャッジメントについて、Coqで形式的主張を記述し、それを証明しなさい。 *)
 
-(* **** Exercise: 1 star, optional (typing_example_0)  *)
+(*
+(** **** Exercise: 1 star, optional (typing_example_0)  *)
+*)
 (** **** 練習問題: ★, optional (typing_example_0)  *)
 (* empty |- ((\z:A.z), (\z:B.z)) 
           : (A->A * B->B) *)
 (* FILL IN HERE *)
 (** [] *)
 
-(* **** Exercise: 2 stars, optional (typing_example_1)  *)
+(*
+(** **** Exercise: 2 stars, optional (typing_example_1)  *)
+*)
 (** **** 練習問題: ★★, optional (typing_example_1)  *)
 (* empty |- (\x:(Top * B->B). x.snd) ((\z:A.z), (\z:B.z)) 
           : B->B *)
 (* FILL IN HERE *)
 (** [] *)
 
-(* **** Exercise: 2 stars, optional (typing_example_2)  *)
+(*
+(** **** Exercise: 2 stars, optional (typing_example_2)  *)
+*)
 (** **** 練習問題: ★★, optional (typing_example_2)  *)
 (* empty |- (\z:(C->C)->(Top * B->B). (z (\x:C.x)).snd)
               (\z:C->C. ((\z:A.z), (\z:B.z)))
@@ -1224,47 +1346,55 @@ Import Examples.
 End Examples2.
 
 (* ###################################################################### *)
-(* * Properties *)
+(*
+(** * Properties *)
+*)
 (** * 性質 *)
 
-(* The fundamental properties of the system that we want to check are
+(*
+(** The fundamental properties of the system that we want to check are
     the same as always: progress and preservation.  Unlike the
     extension of the STLC with references, we don't need to change the
     _statements_ of these properties to take subtyping into account.
     However, their proofs do become a little bit more involved. *)
+*)
 (** チェックしたいシステムの根本的性質はいつもと同じく、進行と保存です。
     STLCに参照を拡張したものとは違い、サブタイプを考慮しても、これらの主張を変化させる必要はありません。
     ただし、それらの証明はもうちょっと複雑になります。 *)
 
 (* ###################################################################### *)
-(* ** Inversion Lemmas for Subtyping *)
-(** ** サブタイプの反転補題(Inversion Lemmas) *)
+(*
+(** ** Inversion Lemmas for Subtyping *)
+*)
+(** ** サブタイプの反転補題(Inversion Lemma) *)
 
-(* Before we look at the properties of the typing relation, we need
+(*
+(** Before we look at the properties of the typing relation, we need
     to record a couple of critical structural properties of the subtype
     relation: 
        - [Bool] is the only subtype of [Bool]
        - every subtype of an arrow type is itself an arrow type. *)
+*)
 (** 型付け関係の性質を見る前に、サブタイプ関係の2つの重要な構造的性質を記しておかなければなりません:
        - [Bool]は[Bool]の唯一のサブタイプです
        - 関数型のすべてのサブタイプはやはり関数型です *)
     
-(* These are called _inversion lemmas_ because they play the same
+(*
+(** These are called _inversion lemmas_ because they play the same
     role in later proofs as the built-in [inversion] tactic: given a
     hypothesis that there exists a derivation of some subtyping
     statement [S <: T] and some constraints on the shape of [S] and/or
     [T], each one reasons about what this derivation must look like to
     tell us something further about the shapes of [S] and [T] and the
     existence of subtype relations between their parts. *)
-(** これらは反転補題(_inversion lemmas_)と呼ばれます。これは、後の証明で組込みの
-    [inversion]タクティックと同じ役目をするためです。
-    つまり、サブタイプ関係の主張 [S <: T] の導出が存在するという仮定と、
-    [S]や[T]の形についてのいくつかの制約が与えられたとき、
-    それぞれの補題は、[S]と[T]の形、および両者の構成要素間のサブタイプ関係の存在について、
-    より多くのことが言えるためには、
-    [S <: T] の導出がどういう形でなければならないかを提示するからです。 *)
+*)
+(** これらは反転補題(_inversion lemma_)と呼ばれます。
+    これは、後の証明で組込みの[inversion]タクティックと同じ役目をするためです。
+    つまり、サブタイプ関係の主張 [S <: T] の導出が存在するという仮定と、[S]や[T]の形についてのいくつかの制約が与えられたとき、それぞれの補題は、[S]と[T]の形、および両者の構成要素間のサブタイプ関係の存在について、より多くのことが言えるためには、[S <: T] の導出がどういう形でなければならないかを提示するからです。 *)
 
-(* **** Exercise: 2 stars, optional (sub_inversion_Bool)  *)
+(*
+(** **** Exercise: 2 stars, optional (sub_inversion_Bool)  *)
+*)
 (** **** 練習問題: ★★, optional (sub_inversion_Bool)  *)
 Lemma sub_inversion_Bool : forall U,
      U <: TBool ->
@@ -1274,7 +1404,9 @@ Proof with auto.
   remember TBool as V.
   (* FILL IN HERE *) Admitted.
 
-(* **** Exercise: 3 stars, optional (sub_inversion_arrow)  *)
+(*
+(** **** Exercise: 3 stars, optional (sub_inversion_arrow)  *)
+*)
 (** **** 練習問題: ★★★, optional (sub_inversion_arrow)  *)
 Lemma sub_inversion_arrow : forall U V1 V2,
      U <: (TArrow V1 V2) ->
@@ -1290,10 +1422,13 @@ Proof with eauto.
 (** [] *)
 
 (* ########################################## *)
-(* ** Canonical Forms *)
+(*
+(** ** Canonical Forms *)
+*)
 (** ** 正準形(Canonical Forms) *)
 
-(* We'll see first that the proof of the progress theorem doesn't
+(*
+(** We'll see first that the proof of the progress theorem doesn't
     change too much -- we just need one small refinement.  When we're
     considering the case where the term in question is an application
     [t1 t2] where both [t1] and [t2] are values, we need to know that
@@ -1315,27 +1450,25 @@ Proof with eauto.
     This bit of reasoning is packaged up in the following lemma, which
     tells us the possible "canonical forms" (i.e. values) of function
     type. *)
+*)
 (** 最初に、進行定理の証明はそれほど変わらないことを見ます。
     1つだけ小さなリファインメントが必要です。
-    問題となる項が関数適用 [t1 t2] で[t1]と[t2]が両方とも値の場合を考えるとき、
-    [t1]がラムダ抽象の形をしており、
-    そのため[ST_AppAbs]簡約規則が適用できることを確認する必要があります。
+    問題となる項が関数適用 [t1 t2] で[t1]と[t2]が両方とも値の場合を考えるとき、[t1]がラムダ抽象の形をしており、そのため[ST_AppAbs]簡約規則が適用できることを確認する必要があります。
     もともとのSTLCでは、これは明らかです。
-    [t1]が関数型[T11->T12]を持ち、また、関数型の値を与える規則が1つだけ、
-    つまり規則[T_Abs]だけであり、そしてこの規則の結論部の形から、
-    [t1]は関数型にならざるを得ない、ということがわかります。
-
+    [t1]が関数型[T11->T12]を持ち、また、関数型の値を与える規則が1つだけ、つまり規則[T_Abs]だけであり、そしてこの規則の結論部の形から、[t1]は関数型にならざるを得ない、ということがわかります。
+ 
     サブタイプを持つSTLCにおいては、この推論はそのままうまく行くわけではありません。
     その理由は、値が関数型を持つことを示すのに使える規則がもう1つあるからです。
-    包摂規則です。幸い、このことが大きな違いをもたらすことはありません。
-    もし [Gamma |- t1 : T11->T12] を示すのに使われた最後の規則が包摂規則だった場合、
-    導出のその前の部分で、同様に[t1]が主部(項の部分)である導出があり、
-    帰納法により一番最初には[T_Abs]が使われたことが推論できるからです。
+    包摂規則です。
+    幸い、このことが大きな違いをもたらすことはありません。
+    もし [Gamma |- t1 : T11->T12] を示すのに使われた最後の規則が包摂規則だった場合、導出のその前の部分で、同様に[t1]が主部(項の部分)である導出があり、帰納法により一番最初には[T_Abs]が使われたことが推論できるからです。
+ 
+    推論のこの部分は次の補題にまとめられています。
+    この補題は、関数型の可能な「正準形(canonical forms、つまり値)」を示します。 *)
 
-    推論のこの部分は次の補題にまとめられています。この補題は、関数型の可能な正準形
-    ("canonical forms"、つまり値)を示します。 *)
-
-(* **** Exercise: 3 stars, optional (canonical_forms_of_arrow_types)  *)
+(*
+(** **** Exercise: 3 stars, optional (canonical_forms_of_arrow_types)  *)
+*)
 (** **** 練習問題: ★★★, optional (canonical_forms_of_arrow_types)  *)
 Lemma canonical_forms_of_arrow_types : forall Gamma s T1 T2,
   Gamma |- s \in (TArrow T1 T2) ->
@@ -1346,8 +1479,10 @@ Proof with eauto.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(* Similarly, the canonical forms of type [Bool] are the constants
+(*
+(** Similarly, the canonical forms of type [Bool] are the constants
     [true] and [false]. *)
+*)
 (** 同様に、型[Bool]の正準形は定数[true]と[false]です。 *)
 
 Lemma canonical_forms_of_Bool : forall Gamma s,
@@ -1364,16 +1499,22 @@ Qed.
 
 
 (* ########################################## *)
-(* ** Progress *)
+(*
+(** ** Progress *)
+*)
 (** ** 進行 *)
 
-(* The proof of progress proceeds like the one for the pure
+(*
+(** The proof of progress proceeds like the one for the pure
     STLC, except that in several places we invoke canonical forms
     lemmas... *)
-(** 進行性の証明は純粋なSTLCとほぼ同様に進みます。ただ何箇所かで正準形補題を使うことを除けば...
+*)
+(** 進行性の証明は純粋なSTLCとほぼ同様に進みます。
+    ただ何箇所かで正準形補題を使うことを除けば...
     *)
 
-(* _Theorem_ (Progress): For any term [t] and type [T], if [empty |-
+(*
+(** _Theorem_ (Progress): For any term [t] and type [T], if [empty |-
     t : T] then [t] is a value or [t ==> t'] for some term [t'].
  
     _Proof_: Let [t] and [T] be given, with [empty |- t : T].  Proceed
@@ -1422,50 +1563,41 @@ Qed.
       result is exactly the induction hypothesis for the typing
       subderivation.
 *)
-(** 「定理」(進行): 任意の項[t]と型[T]について、
-    もし [empty |- t : T] ならば[t]は値であるか、ある項[t']について [t ==> t'] である。
+*)
+(** 「定理」（進行）: 任意の項[t]と型[T]について、もし [empty |- t : T] ならば[t]は値であるか、ある項[t']について [t ==> t'] である。
 
     「証明」:[t]と[T]が与えられ、[empty |- t : T] とする。
     型付けの導出についての帰納法で進める。
 
-    (最後の規則が)[T_Abs]、[T_Unit]、[T_True]、[T_False]のいずれかの場合は、
-    自明である。なぜなら、関数抽象、[unit]、[true]、[false]は既に値だからである。
-    [T_Var]であることはありえない。なぜなら、変数は空コンテキストで型付けできないからである。
+    （最後の規則が）[T_Abs]、[T_Unit]、[T_True]、[T_False]のいずれかの場合は自明である。
+    なぜなら、関数抽象、[unit]、[true]、[false]は既に値だからである。
+    [T_Var]であることはありえない。
+    なぜなら、変数は空コンテキストで型付けできないからである。
     残るのはより興味深い場合である:
 
-    - 型付け導出の最後のステップで規則[T_App]が使われた場合、
-      項[t1]、[t2]と型[T1]、[T2]が存在して [t = t1 t2]、[T = T2]、
-      [empty |- t1 : T1 -> T2]、[empty |- t2 : T1] となる。
-      さらに帰納法の仮定から、[t1]は値であるかステップを進めることができ、
-      [t2]も値であるかステップを進めることができる。
+    - 型付け導出の最後のステップで規則[T_App]が使われた場合、項[t1]、[t2]と型[T1]、[T2]が存在して [t = t1 t2]、[T = T2]、[empty |- t1 : T1 -> T2]、[empty |- t2 : T1] となる。
+      さらに帰納法の仮定から、[t1]は値であるかステップを進めることができ、[t2]も値であるかステップを進めることができる。
       このとき、3つの場合がある:      
 
-      - ある項 [t1'] について [t1 ==> t1'] とする。このとき[ST_App1]より
-        [t1 t2 ==> t1' t2] である。
+      - ある項 [t1'] について [t1 ==> t1'] とする。このとき[ST_App1]より [t1 t2 ==> t1' t2] である。
 
       - [t1]が値であり、ある項[t2']について [t2 ==> t2'] とする。
-        このとき規則[ST_App2]より [t1 t2 ==> t1 t2'] となる。なぜなら
-        [t1]が値だからである。
+        このとき規則[ST_App2]より [t1 t2 ==> t1 t2'] となる。
+        なぜなら[t1]が値だからである。
       
-      - 最後に[t1]と[t2]がどちらも値とする。補題[canonical_forms_for_arrow_types]
-        より、[t1]はある[x]、[S1]、[s2]について[\x:S1.s2]という形である。
-        しかしすると[t2]が値であることから、
-        [ST_AppAbs]より [(\x:S1.s2) t2 ==> [t2/x]s2] となる。
+      - 最後に[t1]と[t2]がどちらも値とする。
+        補題[canonical_forms_for_arrow_types]より、[t1]はある[x]、[S1]、[s2]について[\x:S1.s2]という形である。
+        しかしすると[t2]が値であることから、[ST_AppAbs]より [(\x:S1.s2) t2 ==> [t2/x]s2] となる。
 
-    - 導出の最後のステップで規則[T_If]が使われた場合、項[t1]、[t2]、[t3]があって
-      [t = if t1 then t2 else t3] となり、
-      [empty |- t1 : Bool] かつ [empty |- t2 : T] かつ [empty |- t3 : T] である。
+    - 導出の最後のステップで規則[T_If]が使われた場合、項[t1]、[t2]、[t3]があって [t = if t1 then t2 else t3] となり、 [empty |- t1 : Bool] かつ [empty |- t2 : T] かつ [empty |- t3 : T] である。
       さらに、帰納法の仮定より[t1]は値であるかステップを進めることができる。
 
-       - もし[t1]が値ならば、ブール値についての正準形補題より [t1 = true] または
-         [t1 = false] である。どちらの場合でも、規則[ST_IfTrue]または[ST_IfFalse]
-         を使うことによって[t]はステップを進めることができる。
+       - もし[t1]が値ならば、ブール値についての正準形補題より [t1 = true] または [t1 = false] である。
+         どちらの場合でも、規則[ST_IfTrue]または[ST_IfFalse]を使うことによって[t]はステップを進めることができる。
 
-       - もし[t1]がステップを進めることができるならば、
-         規則[ST_If]より[t]もまたステップを進めることができる。
+       - もし[t1]がステップを進めることができるならば、規則[ST_If]より[t]もまたステップを進めることができる。
 
-    - 導出の最後のステップが規則[T_Sub]による場合、型[S]があって [S <: T] かつ
-      [empty |- t : S] となっている。
+    - 導出の最後のステップが規則[T_Sub]による場合、型[S]があって [S <: T] かつ [empty |- t : S] となっている。
       求める結果は型付け導出の帰納法の仮定そのものである。
 *)
 
@@ -1505,10 +1637,13 @@ Proof with eauto.
 Qed.
 
 (* ########################################## *)
-(* ** Inversion Lemmas for Typing *)
+(*
+(** ** Inversion Lemmas for Typing *)
+*)
 (** ** 型付けの反転補題 *)
 
-(* The proof of the preservation theorem also becomes a little more
+(*
+(** The proof of the preservation theorem also becomes a little more
     complex with the addition of subtyping.  The reason is that, as
     with the "inversion lemmas for subtyping" above, there are a
     number of facts about the typing relation that are "obvious from
@@ -1521,19 +1656,15 @@ Qed.
     derivation of some typing statement [Gamma |- \x:S1.t2 : T] whose
     subject is an abstraction, then there must be some subderivation
     giving a type to the body [t2]. *)
+*)
 (** 保存定理の証明はサブタイプを追加したことでやはり少し複雑になります。
-    その理由は、上述の「サブタイプの反転補題」と同様に、純粋なSTLCでは「定義から自明」
-    であった(したがって[inversion]タクティックからすぐに得られた)のに、
-    サブタイプがあることで本当の証明が必要になった、
-    型付け関係についてのいくつもの事実があるからです。
+    その理由は、上述の「サブタイプの反転補題」と同様に、純粋なSTLCでは「定義から自明」であった（したがって[inversion]タクティックからすぐに得られた）性質が、サブタイプの存在で本当の証明を必要とするようになったためです。
     サブタイプがある場合、同じ[has_type]の主張を導出するのに複数の方法があるのです。
+ 
+    以下の「反転補題(inversion lemma)」は、もし関数抽象の型付け主張 [Gamma |- \x:S1.t2 : T] の導出があるならば、その導出の中に本体[t2]の型を与える部分が含まれている、ということを言うものです。 *)
 
-    以下の「反転補題」("inversion lemma")は、
-    もし、関数抽象の型付け主張 [Gamma |- \x:S1.t2 : T] 
-    の導出があるならば、その導出の中に本体[t2]の型を与える部分が含まれている、
-    ということを言うものです。 *)
-
-(* _Lemma_: If [Gamma |- \x:S1.t2 : T], then there is a type [S2]
+(*
+(** _Lemma_: If [Gamma |- \x:S1.t2 : T], then there is a type [S2]
     such that [Gamma, x:S1 |- t2 : S2] and [S1 -> S2 <: T].
 
     (Notice that the lemma does _not_ say, "then [T] itself is an arrow
@@ -1555,28 +1686,23 @@ Qed.
        some type [S2] with [S1 -> S2 <: S] and [Gamma, x:S1 |- t2 :
        S2].  Picking type [S2] gives us what we need, since [S1 -> S2
        <: T] then follows by [S_Trans]. *)
-(** 「補題」: もし [Gamma |- \x:S1.t2 : T] ならば、
-    型[S2]が存在して [Gamma, x:S1 |- t2 : S2] かつ [S1 -> S2 <: T] となる。
+*)
+(** 「補題」: もし [Gamma |- \x:S1.t2 : T] ならば、型[S2]が存在して [Gamma, x:S1 |- t2 : S2] かつ [S1 -> S2 <: T] となる。
 
-    (この補題は「[T]はそれ自身が関数型である」とは言っていないことに注意します。
-    そうしたいところですが、それは成立しません!)
+    （この補題は「[T]はそれ自身が関数型である」とは言っていないことに注意します。
+    そうしたいところですが、それは成立しません!）
 
     「証明」:[Gamma]、[x]、[S1]、[t2]、[T]を補題の主張に記述された通りとする。
     [Gamma |- \x:S1.t2 : T] の導出についての帰納法で証明する。
     [T_Var]と[T_App]の場合はあり得ない。
     これらは構文的に関数抽象の形の項に型を与えることはできないからである。
 
-     - 導出の最後のステップ使われた規則が[T_Abs]の場合、型[T12]が存在して
-       [T = S1 -> T12] かつ [Gamma,x:S1 |- t2 : T12] である。 
-       [S2]として[T12]をとると、[S_Refl]より [S1 -> T12 <: S1 -> T12] となり、
-       求める性質が成立する。
+     - 導出の最後のステップ使われた規則が[T_Abs]の場合、型[T12]が存在して [T = S1 -> T12] かつ [Gamma,x:S1 |- t2 : T12] である。 
+       [S2]として[T12]をとると、[S_Refl]より [S1 -> T12 <: S1 -> T12] となり、求める性質が成立する。
 
-     - 導出の最後のステップ使われた規則が[T_Sub]の場合、型[S]が存在して
-       [S <: T] かつ [Gamma |- \x:S1.t2 : S] となる。
-       型付け導出の帰納仮定より、型[S2]が存在して
-       [S1 -> S2 <: S] かつ [Gamma, x:S1 |- t2 : S2] である。
-       この[S2]を採用すれば、
-       [S1 -> S2 <: T] であるから[S_Trans]より求める性質が成立する。 *)
+     - 導出の最後のステップ使われた規則が[T_Sub]の場合、型[S]が存在して [S <: T] かつ [Gamma |- \x:S1.t2 : S] となる。
+       型付け導出の帰納仮定より、型[S2]が存在して [S1 -> S2 <: S] かつ [Gamma, x:S1 |- t2 : S2] である。
+       この[S2]を採用すれば、 [S1 -> S2 <: T] であるから[S_Trans]より求める性質が成立する。 *)
 
 Lemma typing_inversion_abs : forall Gamma x S1 t2 T,
      Gamma |- (tabs x S1 t2) \in T ->
@@ -1593,7 +1719,9 @@ Proof with eauto.
     destruct IHhas_type as [S2 [Hsub Hty]]...
   Qed.
 
-(* Similarly... *)
+(*
+(** Similarly... *)
+*)
 (** 同様に... *)
 
 Lemma typing_inversion_var : forall Gamma x T,
@@ -1670,11 +1798,12 @@ Proof with eauto.
 Qed.
 
 
-(* The inversion lemmas for typing and for subtyping between arrow
+(*
+(** The inversion lemmas for typing and for subtyping between arrow
     types can be packaged up as a useful "combination lemma" telling
     us exactly what we'll actually require below. *)
-(** 型付けについての反転補題と関数型の間のサブタイプの反転補題は「結合補題」
-    ("combination lemma")としてまとめることができます。
+*)
+(** 型付けについての反転補題と関数型の間のサブタイプの反転補題は「結合補題(combination lemma)」としてまとめることができます。
     この補題は以下で実際に必要になるものを示します。 *)
 
 Lemma abs_arrow : forall x S1 s2 T1 T2, 
@@ -1690,11 +1819,15 @@ Proof with eauto.
   inversion Heq; subst...  Qed.
 
 (* ########################################## *)
-(* ** Context Invariance *)
+(*
+(** ** Context Invariance *)
+*)
 (** ** コンテキスト不変性 *)
 
-(* The context invariance lemma follows the same pattern as in the
+(*
+(** The context invariance lemma follows the same pattern as in the
     pure STLC. *)
+*)
 (** コンテキスト不変性補題は、純粋のSTLCと同じパターンをとります。 *)
 
 Inductive appears_free_in : id -> tm -> Prop :=
@@ -1752,15 +1885,19 @@ Proof with eauto.
     unfold extend in Hctx. rewrite neq_id in Hctx...  Qed.
 
 (* ########################################## *)
-(* ** Substitution *)
+(*
+(** ** Substitution *)
+*)
 (** ** 置換 *)
 
-(* The _substitution lemma_ is proved along the same lines as
+(*
+(** The _substitution lemma_ is proved along the same lines as
     for the pure STLC.  The only significant change is that there are
     several places where, instead of the built-in [inversion] tactic,
     we need to use the inversion lemmas that we proved above to
     extract structural information from assumptions about the
     well-typedness of subterms. *)
+*)
 (** 置換補題(_substitution lemma_)は純粋なSTLCと同じ流れで証明されます。
     唯一の大きな変更点は、いくつかの場所で、
     部分項が型を持つことについての仮定から構造的情報を抽出するために、
@@ -1828,18 +1965,22 @@ Proof with eauto.
 Qed.
 
 (* ########################################## *)
-(* ** Preservation *)
+(*
+(** ** Preservation *)
+*)
 (** ** 保存 *)
 
-(* The proof of preservation now proceeds pretty much as in earlier
+(*
+(** The proof of preservation now proceeds pretty much as in earlier
     chapters, using the substitution lemma at the appropriate point
     and again using inversion lemmas from above to extract structural
     information from typing assumptions. *)
-(** (型の)保存の証明は以前の章とほとんど同じです。適切な場所で置換補題を使い、
-    型付け仮定から構造的情報を抽出するために上述の反転補題をまた使います。
-    *)
+*)
+(** （型の）保存の証明は以前の章とほとんど同じです。
+    適切な場所で置換補題を使い、型付け仮定から構造的情報を抽出するために上述の反転補題をまた使います。 *)
 
-(* _Theorem_ (Preservation): If [t], [t'] are terms and [T] is a type
+(*
+(** _Theorem_ (Preservation): If [t], [t'] are terms and [T] is a type
     such that [empty |- t : T] and [t ==> t'], then [empty |- t' :
     T].
 
@@ -1889,49 +2030,36 @@ Qed.
        is a type [S] such that [S <: T] and [empty |- t : S].  The
        result is immediate by the induction hypothesis for the typing
        subderivation and an application of [T_Sub].  [] *)
-(** 「定理」(保存)： [t]、[t']が項で[T]が型であり、[empty |- t : T] かつ [t ==> t']
-    ならば、[empty |- t' : T] である。
+*)
+(** 「定理」（保存）： [t]、[t']が項で[T]が型であり、[empty |- t : T] かつ [t ==> t'] ならば、[empty |- t' : T] である。
 
-    「証明」:[t] と [T] が [empty |- t : T] であるとする。
+    「証明」：[t] と [T] が [empty |- t : T] であるとする。
     証明は、[t']を特化しないまま型付け導出の構造に関する帰納法で進める。
     (最後の規則が)[T_Abs]、[T_Unit]、[T_True]、[T_False]の場合は考えなくて良い。
     なぜなら関数抽象と定数はステップを進めないからである。
     [T_Var]も考えなくて良い。なぜならコンテキストが空だからである。
 
-     - もし導出の最後のステップの規則が[T_App]ならば、
-       項[t1] [t2] と型 [T1] [T2] が存在して、[t = t1 t2]、[T = T2]、
-       [empty |- t1 : T1 -> T2]、[empty |- t2 : T1] である。
+     - もし導出の最後のステップの規則が[T_App]ならば、項[t1] [t2] と型 [T1] [T2] が存在して、[t = t1 t2]、[T = T2]、 [empty |- t1 : T1 -> T2]、[empty |- t2 : T1] である。
 
        ステップ関係の定義から、[t1 t2] がステップする方法は3通りである。
-       [ST_App1]と[ST_App2]の場合、
-       型付け導出の帰納仮定と[T_App]より求める結果がすぐに得られる。
+       [ST_App1]と[ST_App2]の場合、型付け導出の帰納仮定と[T_App]より求める結果がすぐに得られる。
 
        [t1 t2] のステップが [ST_AppAbs] によるとする。
-       するとある型[S]と項[t12]について [t1 = \x:S.t12] であり、かつ
-       [t' = [t2/x]t12] である。
+       するとある型[S]と項[t12]について [t1 = \x:S.t12] であり、かつ [t' = [t2/x]t12] である。
 
        補題[abs_arrow]より、[T1 <: S] かつ [x:S1 |- s2 : T2] となる。
-       すると置換補題([substitution_preserves_typing])より、
-       [empty |- [t2/x]t12 : T2] となるがこれが求める結果である。
+       すると置換補題（[substitution_preserves_typing]）より、 [empty |- [t2/x]t12 : T2] となるがこれが求める結果である。
 
-      - もし導出の最後のステップで使う規則が[T_If]ならば、
-        項[t1]、[t2]、[t3]が存在して [t = if t1 then t2 else t3] かつ
-        [empty |- t1 : Bool] かつ [empty |- t2 : T] かつ [empty |- t3 : T]
-        となる。さらに帰納法の仮定より、もし[t1]がステップして[t1']に進むならば
-        [empty |- t1' : Bool] である。
+      - もし導出の最後のステップで使う規則が[T_If]ならば、項[t1]、[t2]、[t3]が存在して [t = if t1 then t2 else t3] かつ [empty |- t1 : Bool] かつ [empty |- t2 : T] かつ [empty |- t3 : T]となる。
+        さらに帰納法の仮定より、もし[t1]がステップして[t1']に進むならば [empty |- t1' : Bool] である。
         [t ==> t'] を示すために使われた規則によって、3つの場合がある。 
 
-           - [t ==> t'] が規則[ST_If]による場合、
-             [t' = if t1' then t2 else t3] かつ [t1 ==> t1'] となる。
-             帰納法の仮定より [empty |- t1' : Bool] となり、
-             これから[T_If]より [empty |- t' : T] となる。
+           - [t ==> t'] が規則[ST_If]による場合、 [t' = if t1' then t2 else t3] かつ [t1 ==> t1'] となる。
+             帰納法の仮定より [empty |- t1' : Bool] となり、これから[T_If]より [empty |- t' : T] となる。
 
-           - [t ==> t'] が規則[ST_IfTrue]または[ST_IfFalse]による場合、
-             [t' = t2] または [t' = t3] であり、仮定から [empty |- t' : T]
-             となる。
+           - [t ==> t'] が規則[ST_IfTrue]または[ST_IfFalse]による場合、 [t' = t2] または [t' = t3] であり、仮定から [empty |- t' : T] となる。
 
-     - もし導出の最後のステップで使う規則が[T_Sub]ならば、
-       型[S]が存在して [S <: T] かつ [empty |- t : S] となる。
+     - もし導出の最後のステップで使う規則が[T_Sub]ならば、型[S]が存在して [S <: T] かつ [empty |- t : S] となる。
        型付け導出についての帰納法の仮定と[T_Sub]の適用から結果がすぐに得られる。 [] *)
 
 Theorem preservation : forall t t' T,
@@ -1979,12 +2107,17 @@ Qed.
     follow this encoding-based approach. *)
 
 (* ###################################################### *)
-(* ** Exercises *)
+(*
+(** ** Exercises *)
+*)
 (** ** 練習問題 *)
 
-(* **** Exercise: 2 stars (variations)  *)
+(*
+(** **** Exercise: 2 stars (variations)  *)
+*)
 (** **** 練習問題: ★★ (variations)  *)
-(* Each part of this problem suggests a different way of
+(*
+(** Each part of this problem suggests a different way of
     changing the definition of the STLC with Unit and
     subtyping.  (These changes are not cumulative: each part
     starts from the original language.)  In each part, list which
@@ -2024,54 +2157,74 @@ Qed.
                           -----------------------                    (S_Arrow')
                                S1->S2 <: T1->T2
 
-[] *)
+[] *) 
+*)
 (** この問題の各部分は、Unitとサブタイプを持つSTLCの定義を変更する別々の方法を導きます。
-    (これらの変更は累積的ではありません。各部分はいずれも元々の言語から始まります。)
-    各部分について、(進行、保存の)性質のうち偽になるものをリストアップしなさい。
+    （これらの変更は累積的ではありません。各部分はいずれも元々の言語から始まります。）
+    各部分について、（進行、保存の）性質のうち偽になるものをリストアップしなさい。
     偽になる性質について、反例を示しなさい。
     - 次の型付け規則を追加する:
+<<
                             Gamma |- t : S1->S2
                     S1 <: T1      T1 <: S1     S2 <: T2
                     -----------------------------------              (T_Funny1)
                             Gamma |- t : T1->T2
+>>
 
     - 次の簡約規則を追加する:
+<<
                              ------------------                     (ST_Funny21)
                              unit ==> (\x:Top. x)
+>>
 
     - 次のサブタイプ規則を追加する:
+<<
                                --------------                        (S_Funny3)
                                Unit <: Top->Top
+>>
 
     - 次のサブタイプ規則を追加する:
+<<
                                --------------                        (S_Funny4)
                                Top->Top <: Unit
+>>
 
     - 次の評価規則を追加する:
+<<
                              -----------------                      (ST_Funny5)
                              (unit t) ==> (t unit)
+>>
 
     - 上と同じ評価規則と新たな型付け規則を追加する:
+<<
                              -----------------                      (ST_Funny5)
                              (unit t) ==> (t unit)
 
                            ----------------------                    (T_Funny6)
                            empty |- Unit : Top->Top
+>>
 
     - 関数型のサブタイプ規則を次のものに変更する:
+<<
                           S1 <: T1       S2 <: T2
                           -----------------------                    (S_Arrow')
                                S1->S2 <: T1->T2
+>>
 
 [] *)
 
 (* ###################################################################### *)
-(* * Exercise: Adding Products *)
+(*
+(** * Exercise: Adding Products *)
+*)
 (** * 練習問題: 直積の追加 *)
 
-(* **** Exercise: 4 stars (products)  *)
+(*
+(** **** Exercise: 4 stars (products)  *)
+*)
 (** **** 練習問題: ★★★★ (products)  *)
-(* Adding pairs, projections, and product types to the system we have
+(*
+(** Adding pairs, projections, and product types to the system we have
     defined is a relatively straightforward matter.  Carry out this
     extension:
 
@@ -2096,13 +2249,14 @@ Qed.
 
     - Extend the proofs of progress, preservation, and all their
       supporting lemmas to deal with the new constructs.  (You'll also
-      need to add some completely new lemmas.)
+      need to add some completely new lemmas.)  
 [] *)
+*)
 (** 定義したシステムに対、射影、直積型を追加することは比較的簡単な問題です。
     次の拡張を行いなさい:
 
     - [ty]と[tm]の定義に、対のコンストラクタ、第1射影、第2射影、直積型を追加しなさい。
-      ([ty_cases]と[tm_cases]に対応する場合を追加することを忘れないこと。)
+      （[ty_cases]と[tm_cases]に対応する場合を追加することを忘れないこと。）
 
     - 自明な方法で、well-formedness 関係を拡張しなさい。
 
@@ -2110,16 +2264,18 @@ Qed.
 
     - サブタイプ関係に次の規則を拡張しなさい:
 
+<<
                         S1 <: T1     S2 <: T2
                         ---------------------                     (Sub_Prod)
                           S1 * S2 <: T1 * T2
+>>
 
     - 型付け関係に、前の章と同様の、対と射影の規則を拡張しなさい。
 
     - 進行および保存の証明、およびそのための補題を、
       新しい構成要素を扱うように拡張しなさい。
-      (完全に新しいある補題を追加する必要もあるでしょう。)
-[] *)
+      （新しい補題を追加する必要もあるでしょう。）
+[]  *)
 
 
 (** $Date: 2014-12-31 11:17:56 -0500 (Wed, 31 Dec 2014) $ *)
