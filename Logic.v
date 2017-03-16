@@ -1,11 +1,14 @@
+(*
+(** * Logic: Logic in Coq *)
+*)
 (** * Logic: Coqにおける論理 *)
-(* * Logic: Logic in Coq *)
 
-Require Export MoreCoq.
-
+Require Export MoreCoq. 
 
 
-(* Coq's built-in logic is very small: the only primitives are
+
+(*
+(** Coq's built-in logic is very small: the only primitives are
     [Inductive] definitions, universal quantification ([forall]), and
     implication ([->]), while all the other familiar logical
     connectives -- conjunction, disjunction, negation, existential
@@ -16,13 +19,13 @@ Require Export MoreCoq.
     reasoning involving these connectives.
 
 *)
-(**
-   Coqにあらかじめ組み込まれた論理はとても小さく、帰納的定義([Inductive])、
-   全称量化([forall])、含意([->])だけがプリミティブです。そしてそれ以外の論理結合子
-   （かつ、または、否定、存在量化子、等号など）は、これら組み込みのものを用いて表現できます。
-
-   この章では、これらの表現方法と、どのようにタクティックがこれら結合子の一般的な
-   論理的推論を表現するかについて見ていきます。
+*)
+(** Coqにあらかじめ組み込まれた論理はとても小さく、帰納的定義([Inductive])、
+    全称量化([forall])、含意([->])だけがプリミティブです。そしてそれ以外の論理結合子
+    （かつ、または、否定、存在量化子、等号など）は、これら組み込みのものを用いて表現できます。
+ 
+    この章では、これらの表現方法と、どのようにタクティックがこれら結合子の一般的な
+    論理的推論を表現するかについて見ていきます。
 *)
 
 (* ########################################################### *)
@@ -141,19 +144,24 @@ Print silly_implication.
 *)
 
 (* ########################################################### *)
-(* * Conjunction (Logical "and") *)
+(*
+(** * Conjunction (Logical "and") *)
+*)
 (** * 論理積、連言（Conjunction、 logical "and"） *)
 
-(* The logical conjunction of propositions [P] and [Q] can be
+(*
+(** The logical conjunction of propositions [P] and [Q] can be
     represented using an [Inductive] definition with one
     constructor. *)
+*)
 (** 命題 [P] と [Q] の論理積（ [logical conjunction] ）は、コンストラクタを
     一つしか持たない [Inductive] を使った定義で表せます。 *)
 
 Inductive and (P Q : Prop) : Prop :=
   conj : P -> Q -> (and P Q). 
 
-(*  The intuition behind this definition is simple: to
+(*
+(** The intuition behind this definition is simple: to
     construct evidence for [and P Q], we must provide evidence
     for [P] and evidence for [Q].  More precisely:
 
@@ -167,41 +175,51 @@ Inductive and (P Q : Prop) : Prop :=
 
    Since we'll be using conjunction a lot, let's introduce a more
    familiar-looking infix notation for it. *)
+*)
 (** この定義の内容を直感的に理解するのに、そうややこしく考える必要はありません。
     [and P Q] に根拠を与えるには、[P] の根拠と [Q] の根拠が必要
     だということです。もっと精確に言えば、
-
+ 
     - もし [p] が [P] の根拠で、[q] が [Q] の根拠であるなら、[conj p q] を [and P Q] の根拠とすることができる。
-
+ 
     - これは [and P Q] に根拠を与える唯一の方法であること、
       即ち、もし [and P Q] の根拠が与えられたならば、
       その根拠が [conj p q] の形をしており、さらに [p] が [P] の根拠であることと
       [q] が [Q] の根拠であることがわかるということです。
-
+ 
    今後論理積をよく使うことになるので、
    もっと馴染みのある、中置記法を導入することにしましょう。 *)
 
 Notation "P /\ Q" := (and P Q) : type_scope.
 
-(*  (The [type_scope] annotation tells Coq that this notation
+(*
+(** (The [type_scope] annotation tells Coq that this notation
     will be appearing in propositions, not values.) *)
+*)
 (** （[type_scope] という注釈は、この記法が値にではなく、
     命題に現れるものであることを、Coqに伝えています。） *)
 
-(*  Consider the "type" of the constructor [conj]: *)
+(*
+(** Consider the "type" of the constructor [conj]: *)
+*)
 (** コンストラクタ [conj] の型はどのようなものか考えてみましょう。 *)
 
 Check conj.
 (* ===>  forall P Q : Prop, P -> Q -> P /\ Q *)
 
-(*  Notice that it takes 4 inputs -- namely the propositions [P]
+(*
+(** Notice that it takes 4 inputs -- namely the propositions [P]
     and [Q] and evidence for [P] and [Q] -- and returns as output the
     evidence of [P /\ Q]. *)
+*)
 (** conjが四つの引数（ [P] 、[Q] という命題と、[P] 、[Q] の根拠）をとり、[P /\ Q]の根拠を返すことに注目して下さい。 *)
 
-(* ** "Introducing" conjunctions *)
+(*
+(** ** "Introducing" conjunctions *)
+*)
 (** ** 論理積の"導入" *)
-(* Besides the elegance of building everything up from a tiny
+(*
+(** Besides the elegance of building everything up from a tiny
     foundation, what's nice about defining conjunction this way is
     that we can prove statements involving conjunction using the
     tactics that we already know.  For example, if the goal statement
@@ -209,8 +227,8 @@ Check conj.
     constructor [conj], which (as can be seen from the type of [conj])
     solves the current goal and leaves the two parts of the
     conjunction as subgoals to be proved separately. *)
-(** 
-    基本的なことから色々なことを組み立てていくエレガントさはさておき、
+*)
+(** 基本的なことから色々なことを組み立てていくエレガントさはさておき、
     このような方法でconjunctionを定義することの利点は、これを含む
     文を、既に知っているタクティックで証明できることです。
     例えば、もしゴールが論理積を含んでいる場合、このたった一つの
@@ -226,8 +244,10 @@ Proof.
   Case "left". reflexivity.
   Case "right". reflexivity.  Qed.
 
-(*  Just for convenience, we can use the tactic [split] as a shorthand for
+(*
+(** Just for convenience, we can use the tactic [split] as a shorthand for
     [apply conj]. *)
+*)
 (** [apply conj] とするかわりに [split] タクティックでも同じことができます。 *)
 
 Theorem and_example' : 
@@ -237,12 +257,16 @@ Proof.
     Case "left". reflexivity.
     Case "right". reflexivity.  Qed.
 
-(* ** "Eliminating" conjunctions *)
+(*
+(** ** "Eliminating" conjunctions *)
+*)
 (** ** 論理積の"除去" *)
-(* Conversely, the [destruct] tactic can be used to take a
+(*
+(** Conversely, the [destruct] tactic can be used to take a
     conjunction hypothesis in the context, calculate what evidence
     must have been used to build it, and add variables representing
     this evidence to the proof context. *)
+*)
 (** 逆に、[destruct] タクティックを、コンテキストにある論理積の形を
     した仮定に使うことで、構築に使われた根拠を取り出し、変数として
     コンテキストに加えることができます。 *)
@@ -254,7 +278,9 @@ Proof.
   destruct H as [HP HQ]. 
   apply HP.  Qed.
 
-(* **** Exercise: 1 star, optional (proj2)  *)
+(*
+(** **** Exercise: 1 star, optional (proj2)  *)
+*)
 (** **** 練習問題: ★, optional (proj2) *)
 Theorem proj2 : forall P Q : Prop, 
   P /\ Q -> Q.
@@ -273,11 +299,15 @@ Proof.
     Case "right". apply HP.  Qed.
   
 
-(* **** Exercise: 2 stars (and_assoc)  *)
+(*
+(** **** Exercise: 2 stars (and_assoc)  *)
+*)
 (** **** 練習問題: ★★ (and_assoc) *)
-(* In the following proof, notice how the _nested pattern_ in the
+(*
+(** In the following proof, notice how the _nested pattern_ in the
     [destruct] breaks the hypothesis [H : P /\ (Q /\ R)] down into
     [HP: P], [HQ : Q], and [HR : R].  Finish the proof from there: *)
+*)
 (** 次の証明では、[destruct]が、入れ子構造になった命題[H : P /\ (Q /\ R)]を
     どのように[HP: P], [HQ : Q], [HR : R] に分解するか、という点に注意しなが
     がら証明を完成させなさい。
@@ -294,11 +324,15 @@ Proof.
 
 
 (* ###################################################### *)
-(* * Iff *)
+(*
+(** * Iff *)
+*)
 (** ** Iff （両含意）*)
 
-(* The handy "if and only if" connective is just the conjunction of
+(*
+(** The handy "if and only if" connective is just the conjunction of
     two implications. *)
+*)
 (** この、"if and only if（～である時、その時に限り）" と表される
     「両含意」という便利な結合子は、二つの「ならば（含意）」をandでつないだものです。
  *)
@@ -325,10 +359,14 @@ Proof.
     Case "->". apply HBA.
     Case "<-". apply HAB.  Qed.
 
-(* **** Exercise: 1 star, optional (iff_properties)  *)
+(*
+(** **** Exercise: 1 star, optional (iff_properties)  *)
+*)
 (** **** 練習問題: ★, optional (iff_properties) *)
-(* Using the above proof that [<->] is symmetric ([iff_sym]) as
+(*
+(** Using the above proof that [<->] is symmetric ([iff_sym]) as
     a guide, prove that it is also reflexive and transitive. *)
+*)
 (** 上の、 [<->] が対称であることを示す証明 ([iff_sym]) を使い、それが反射的で
     あること、推移的であることを証明しなさい。
  *)
@@ -343,9 +381,11 @@ Theorem iff_trans : forall P Q R : Prop,
 Proof.
   (* FILL IN HERE *) Admitted.
 
-(*  Hint: If you have an iff hypothesis in the context, you can use
+(*
+(** Hint: If you have an iff hypothesis in the context, you can use
     [inversion] to break it into two separate implications.  (Think
     about why this works.) *)
+*)
 (** ヒント: もしコンテキストに iff を含む仮定があれば、 
     [inversion] を使ってそれを二つの含意の式に分割することができます。
     (なぜそうできるのか考えてみましょう。) *)
@@ -353,22 +393,28 @@ Proof.
 
 
 
-(*  Some of Coq's tactics treat [iff] statements specially, thus
+(*
+(** Some of Coq's tactics treat [iff] statements specially, thus
     avoiding the need for some low-level manipulation when reasoning
     with them.  In particular, [rewrite] can be used with [iff]
     statements, not just equalities. *)
+*)
 (** Coqのいくつかのタクティックは、証明の際に低レベルな操作を避けるため
     [iff] を特別扱いします。 特に [rewrite] を [iff] に使うと、
     単なる等式以上のものとして扱ってくれます。 *)
 
 (* ############################################################ *)
-(* * Disjunction (Logical "or") *)
+(*
+(** * Disjunction (Logical "or") *)
+*)
 (** * 論理和、選言（Disjunction、logical "or"） *)
 
 (** ** Implementing disjunction *)
 
-(*  Disjunction ("logical or") can also be defined as an
+(*
+(** Disjunction ("logical or") can also be defined as an
     inductive proposition. *)
+*)
 (** 論理和（Disjunction、OR）も、帰納的な命題として定義できます。 *)
 
 Inductive or (P Q : Prop) : Prop :=
@@ -377,15 +423,19 @@ Inductive or (P Q : Prop) : Prop :=
 
 Notation "P \/ Q" := (or P Q) : type_scope.
 
-(* Consider the "type" of the constructor [or_introl]: *)
+(*
+(** Consider the "type" of the constructor [or_introl]: *)
+*)
 (** コンストラクタ [or_introl] の型が何か考えてください。 *)
 
 Check or_introl.
 (* ===>  forall P Q : Prop, P -> P \/ Q *)
 
-(* It takes 3 inputs, namely the propositions [P], [Q] and
+(*
+(** It takes 3 inputs, namely the propositions [P], [Q] and
     evidence of [P], and returns, as output, the evidence of [P \/ Q].
     Next, look at the type of [or_intror]: *)
+*)
 (** このコンストラクタは三つの入力（ [P]、[Q] と名付けられた
     命題に加え、[P] の根拠）を引数にとり、[P \/ Q] の根拠を返します。
     次に、[or_intror] の型を見てみましょう。 *)
@@ -393,13 +443,16 @@ Check or_introl.
 Check or_intror.
 (* ===>  forall P Q : Prop, Q -> P \/ Q *)
 
-(*  It is like [or_introl] but it requires evidence of [Q]
+(*
+(** It is like [or_introl] but it requires evidence of [Q]
     instead of evidence of [P]. *)
+*)
 (** ほとんど [or_introl] と同じように見えますが、[P] ではなく [Q] の
     根拠が要求されています。
  *)
 
-(*  Intuitively, there are two ways of giving evidence for [P \/ Q]:
+(*
+(** Intuitively, there are two ways of giving evidence for [P \/ Q]:
 
     - give evidence for [P] (and say that it is [P] you are giving
       evidence for -- this is the function of the [or_introl]
@@ -407,17 +460,20 @@ Check or_intror.
 
     - give evidence for [Q], tagged with the [or_intror]
       constructor. *)
+*)
 (** 直観的には、命題 [P \/ Q] に根拠を与える方法は二つあることがわかります。
-
+ 
     - [P] の根拠を与える。（そしてそれが [P] の根拠であることを伝える。
     これがコンストラクタ [or_introl] の機能です）か、
-
+ 
     - [Q] の根拠をコンストラクタ [or_intror] に与える。 *)
 
 (** *** *)
-(* Since [P \/ Q] has two constructors, doing [destruct] on a
+(*
+(** Since [P \/ Q] has two constructors, doing [destruct] on a
     hypothesis of type [P \/ Q] yields two subgoals. *)
-(**  [P \/ Q] は二つのコンストラクタを持っているので、 [P \/ Q] の形の仮定に
+*)
+(** [P \/ Q] は二つのコンストラクタを持っているので、 [P \/ Q] の形の仮定に
     [destruct] を適用すると二つのサブゴールが生成されます。
  *)
 
@@ -429,8 +485,10 @@ Proof.
     Case "left". apply or_intror. apply HP.
     Case "right". apply or_introl. apply HQ.  Qed.
 
-(*  From here on, we'll use the shorthand tactics [left] and [right]
+(*
+(** From here on, we'll use the shorthand tactics [left] and [right]
     in place of [apply or_introl] and [apply or_intror]. *)
+*)
 (** 次のように、[apply or_introl] 、 [apply or_intror] の代わりに [left] 、
      [right] という短縮版のタクティックを使うこともできます。
  *)
@@ -458,7 +516,9 @@ Proof.
       SCase "left". right. apply HQ.
       SCase "right". right. apply HR.  Qed.
 
-(* **** Exercise: 2 stars (or_distributes_over_and_2)  *)
+(*
+(** **** Exercise: 2 stars (or_distributes_over_and_2)  *)
+*)
 (** **** 練習問題: ★★ (or_distributes_over_and_2) *)
 Theorem or_distributes_over_and_2 : forall P Q R : Prop,
   (P \/ Q) /\ (P \/ R) -> P \/ (Q /\ R).
@@ -466,7 +526,9 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(* **** Exercise: 1 star, optional (or_distributes_over_and)  *)
+(*
+(** **** Exercise: 1 star, optional (or_distributes_over_and)  *)
+*)
 (** **** 練習問題: ★, optional (or_distributes_over_and) *)
 Theorem or_distributes_over_and : forall P Q R : Prop,
   P \/ (Q /\ R) <-> (P \/ Q) /\ (P \/ R).
@@ -475,10 +537,13 @@ Proof.
 (** [] *)
 
 (* ################################################### *)
-(*  ** Relating [/\] and [\/] with [andb] and [orb] *)
+(*
+(** ** Relating [/\] and [\/] with [andb] and [orb] *)
+*)
 (** ** [/\] 、 [\/] の[andb] 、[orb] への関連付け *)
 
-(*  We've already seen several places where analogous structures
+(*
+(** We've already seen several places where analogous structures
     can be found in Coq's computational ([Type]) and logical ([Prop])
     worlds.  Here is one more: the boolean operators [andb] and [orb]
     are clearly analogs of the logical connectives [/\] and [\/].
@@ -486,6 +551,7 @@ Proof.
     which show how to translate knowledge about [andb] and [orb]'s
     behaviors on certain inputs into propositional facts about those
     inputs. *)
+*)
 (** 我々はすでに、Coqの計算における型([Type]) と論理の命題 ([Prop]) との
     類似性について見てきました。ここではもう一つ、bool 型を扱う [andb] と
     [orb] が、[/\] と [\/] との類似性を持っていることに触れましょう。
@@ -513,7 +579,9 @@ Proof.
   destruct H.
   rewrite H. rewrite H0. reflexivity. Qed.
 
-(* **** Exercise: 2 stars, optional (andb_false)  *)
+(*
+(** **** Exercise: 2 stars, optional (andb_false)  *)
+*)
 (** **** 練習問題: ★★, optional (andb_false)  *)
 Theorem andb_false : forall b c,
   andb b c = false -> b = false \/ c = false.
@@ -536,24 +604,33 @@ Proof.
 
 
 (* ################################################### *)
-(* * Falsehood *)
+(*
+(** * Falsehood *)
+*)
 (** * 偽 *)
 
-(* Logical falsehood can be represented in Coq as an inductively *)
+(*
+(** Logical falsehood can be represented in Coq as an inductively
+    defined proposition with no constructors. *)
+*)
 (** 論理学でいうところの「偽」は、Coqでは「帰納的に定義されてはいるが
     コンストラクタを一つも持たない命題」として定義されています。
  *)
 
 Inductive False : Prop := . 
 
-(* Intuition: [False] is a proposition for which there is no way
+(*
+(** Intuition: [False] is a proposition for which there is no way
     to give evidence. *)
+*)
 (** 直観的な理解: [False] は、根拠を示す方法が一つもない命題です。 *)
 
 
-(* Since [False] has no constructors, inverting an assumption
+(*
+(** Since [False] has no constructors, inverting an assumption
     of type [False] always yields zero subgoals, allowing us to
     immediately prove any goal. *)
+*)
 (** [False] にはコンストラクタがないので、[False] の意味するところのものを
     反転（invert）してもサブゴールが生成されません。このことはつまり、
     「偽」からはどんなゴールも証明できる、ということです。
@@ -565,10 +642,12 @@ Proof.
   intros contra.
   inversion contra.  Qed. 
 
-(* How does this work? The [inversion] tactic breaks [contra] into
+(*
+(** How does this work? The [inversion] tactic breaks [contra] into
     each of its possible cases, and yields a subgoal for each case.
     As [contra] is evidence for [False], it has _no_ possible cases,
     hence, there are no possible subgoals and the proof is done. *)
+*)
 (** これはどういうことでしょうか？ [inversion] タクティックは仮定 [contra] を
     その取りうるケースに分解し、それぞれにサブゴールを生成します。ここで
      [contra] が [False] の根拠となっているため、そこから取りうるケースは
@@ -577,8 +656,10 @@ Proof.
  *)
 
 (** *** *)
-(* Conversely, the only way to prove [False] is if there is already
+(*
+(** Conversely, the only way to prove [False] is if there is already
     something nonsensical or contradictory in the context: *)
+*)
 (** 逆に、[False] を証明する唯一の方法は、コンテキストに何か
     矛盾がないかを探すことです。*)
 
@@ -588,10 +669,12 @@ Proof.
   intros contra.
   inversion contra.  Qed.
 
-(*  Actually, since the proof of [False_implies_nonsense]
+(*
+(** Actually, since the proof of [False_implies_nonsense]
     doesn't actually have anything to do with the specific nonsensical
     thing being proved; it can easily be generalized to work for an
     arbitrary [P]: *)
+*)
 (** 実際、 [False_implies_nonsense] の証明は、特定の意味を持つ証明すべきこと
     を何も持っていないので、任意の [P] に対して簡単に一般化できます。 *)
 
@@ -602,29 +685,39 @@ Proof.
   intros P contra.
   inversion contra.  Qed.
 
-(*  The Latin _ex falso quodlibet_ means, literally, "from
+(*
+(** The Latin _ex falso quodlibet_ means, literally, "from
     falsehood follows whatever you please."  This theorem is also
     known as the _principle of explosion_. *)
+*)
 (** ラテン語の 「_ex falso quodlibet_ 」は、文字通り「偽からはあなたの
     望むものすべてがもたらされる」というような意味です。この定理は、
     「 _principle of explosion_ 」としても知られています。 *)
 
 
 (* #################################################### *)
-(*  ** Truth *)
+(*
+(** ** Truth *)
+*)
 (** ** 真 *)
 
-(* Since we have defined falsehood in Coq, one might wonder whether
+(*
+(** Since we have defined falsehood in Coq, one might wonder whether
     it is possible to define truth in the same way.  We can. *)
+*)
 (** Coqで「偽」を定義することができたので、同じ考え方で「真」を定義することが
     できるか、ということが次の関心事になります。もちろんできます。
  *)
 
-(* **** Exercise: 2 stars, advanced (True)  *)
+(*
+(** **** Exercise: 2 stars, advanced (True)  *)
+*)
 (** **** 練習問題: ★★, advanced (True) *)
-(* Define [True] as another inductively defined proposition.  (The
+(*
+(** Define [True] as another inductively defined proposition.  (The
     intution is that [True] should be a proposition for which it is
     trivial to give evidence.) *)
+*)
 (** [True] を、帰納的な命題として定義しなさい。（直観的には [True] は自明に
     根拠を示される命題であるでしょう。）
  *)
@@ -632,12 +725,14 @@ Proof.
 (* FILL IN HERE *)
 (** [] *)
 
-(* However, unlike [False], which we'll use extensively, [True] is
+(*
+(** However, unlike [False], which we'll use extensively, [True] is
     used fairly rarely. By itself, it is trivial (and therefore
     uninteresting) to prove as a goal, and it carries no useful
     information as a hypothesis. But it can be useful when defining
     complex [Prop]s using conditionals, or as a parameter to 
     higher-order [Prop]s. *)
+*)
 (** しかしながら、広く使われる [False] とは違い、 [True] は
     ごく希にしか使われません。ゴールの証明に使うには当たり前すぎ
     （それゆえつまらない）、仮定として有意義な情報を与えてくれないのです。
@@ -645,18 +740,24 @@ Proof.
  *)
 
 (* #################################################### *)
-(*  * Negation *)
+(*
+(** * Negation *)
+*)
 (** * 否定 *)
 
-(*  The logical complement of a proposition [P] is written [not
+(*
+(** The logical complement of a proposition [P] is written [not
     P] or, for shorthand, [~P]: *)
+*)
 (** 命題 [P] の論理的な補集合というべきものは、 [not P] もしくは短縮形として
      [~P] と表されます。 *)
 
 Definition not (P:Prop) := P -> False.
 
-(*  The intuition is that, if [P] is not true, then anything at
+(*
+(** The intuition is that, if [P] is not true, then anything at
     all (even [False]) follows from assuming [P]. *)
+*)
 (** 直観的には 「もし[P] がtrueでないなら、すべてが（ [False] でさえ）仮定 [P] 
     から導かれるということです。. *)
 
@@ -665,12 +766,14 @@ Notation "~ x" := (not x) : type_scope.
 Check not.
 (* ===> Prop -> Prop *)
 
-(*  It takes a little practice to get used to working with
+(*
+(** It takes a little practice to get used to working with
     negation in Coq.  Even though you can see perfectly well why
     something is true, it can be a little hard at first to get things
     into the right configuration so that Coq can see it!  Here are
     proofs of a few familiar facts about negation to get you warmed
     up. *)
+*)
 (** Coqで否定を扱えるようになるにはある程度慣れが必要です。
     たとえ何かがどう見ても真に思える場合でも、そのことをCoqに納得させるのは
     最初のうちはなかなか大変です。ウォームアップのつもりで、否定のに関する
@@ -696,9 +799,12 @@ Proof.
   (* WORKED IN CLASS *)
   intros P H. unfold not. intros G. apply G. apply H.  Qed.
 
-(* **** Exercise: 2 stars, advanced (double_neg_inf)  *)
+(*
+(** **** Exercise: 2 stars, advanced (double_neg_inf)  *)
+*)
 (** **** 練習問題: ★★, advanced (double_neg_inf) *)
-(* Write an informal proof of [double_neg]:
+(*
+(** Write an informal proof of [double_neg]:
 
    _Theorem_: [P] implies [~~P], for any proposition [P].
 
@@ -706,16 +812,18 @@ Proof.
 (* FILL IN HERE *)
    []
 *)
+*)
 (** [double_neg] の非形式的な証明を書きなさい。: 
-
-
-   _Theorem_: [P] implies [~~P], for any proposition [P].
-
-   _Proof_:
+ 
+   定理: 任意の命題 [P] について、 [P] ならば [~~P] である。
+ 
+   証明:
 (* FILL IN HERE *)
    [] *)
 
-(* **** Exercise: 2 stars (contrapositive)  *)
+(*
+(** **** Exercise: 2 stars (contrapositive)  *)
+*)
 (** **** 練習問題: ★★ (contrapositive) *)
 Theorem contrapositive : forall P Q : Prop,
   (P -> Q) -> (~Q -> ~P).
@@ -723,7 +831,9 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(* **** Exercise: 1 star (not_both_true_and_false)  *)
+(*
+(** **** Exercise: 1 star (not_both_true_and_false)  *)
+*)
 (** **** 練習問題: ★ (not_both_true_and_false) *)
 Theorem not_both_true_and_false : forall P : Prop,
   ~ (P /\ ~P).
@@ -731,20 +841,28 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(* **** Exercise: 1 star, advanced (informal_not_PNP)  *)
+(*
+(** **** Exercise: 1 star, advanced (informal_not_PNP)  *)
+*)
 (** **** 練習問題: ★, advanced (informal_not_PNP) *)
-(* Write an informal proof (in English) of the proposition [forall P
+(*
+(** Write an informal proof (in English) of the proposition [forall P
     : Prop, ~(P /\ ~P)]. *)
+*)
 (** 命題 [forall P : Prop, ~(P /\ ~P)] の形式的でない証明を（日本語で）書きなさい。 *)
 
 (* FILL IN HERE *)
 (** [] *)
 
-(* *** Constructive logic *)
+(*
+(** *** Constructive logic *)
+*)
 (** *** 構成的論理 *)
-(* Note that some theorems that are true in classical logic are _not_
+(*
+(** Note that some theorems that are true in classical logic are _not_
     provable in Coq's (constructive) logic.  E.g., let's look at how
     this proof gets stuck... *)
+*)
 (** いくつかの命題は、古典論理では真と判断できるにもかかわらず、Coqの（構成的）論理では
     証明できないので注意が必要です。例えば、次の証明は行き詰まってしまいます。
  *)
@@ -759,9 +877,12 @@ Proof.
   (* どうなっているのでしょうか？ [~P] の根拠を [P] の根拠から作り出す方法はありません。 *)
   Abort.
 
-(* **** Exercise: 5 stars, advanced, optional (classical_axioms)  *)
+(*
+(** **** Exercise: 5 stars, advanced, optional (classical_axioms)  *)
+*)
 (** **** 練習問題: ★★★★★, advanced, optional (classical_axioms) *)
-(* For those who like a challenge, here is an exercise
+(*
+(** For those who like a challenge, here is an exercise
     taken from the Coq'Art book (p. 123).  The following five
     statements are often considered as characterizations of
     classical logic (as opposed to constructive logic, which is
@@ -769,6 +890,7 @@ Proof.
     we can consistently add any one of them as an unproven axiom
     if we wish to work in classical logic.  Prove that these five
     propositions are equivalent. *)
+*)
 (**  さらなる挑戦を求める人のために、 Coq'Art book (p. 123) から一つ練習問題を
     取り上げてみます。次の五つの文は、よく「古典論理の特性」と考えられている
     もの（Coqにビルトインされている構成的論理の対極にあるもの）です。
@@ -802,15 +924,20 @@ Proof.
 
 
 (* ########################################################## *)
-(* ** Inequality *)
+(*
+(** ** Inequality *)
+*)
 (** ** 不等であるということ*)
 
-(* Saying [x <> y] is just the same as saying [~(x = y)]. *)
+(*
+(** Saying [x <> y] is just the same as saying [~(x = y)]. *)
+*)
 (** [x <> y] というのは、[~(x = y)] と同じことです。 *)
 
 Notation "x <> y" := (~ (x = y)) : type_scope.
 
-(* Since inequality involves a negation, it again requires
+(*
+(** Since inequality involves a negation, it again requires
     a little practice to be able to work with it fluently.  Here
     is one very useful trick.  If you are trying to prove a goal
     that is nonsensical (e.g., the goal state is [false = true]),
@@ -818,6 +945,7 @@ Notation "x <> y" := (~ (x = y)) : type_scope.
     [False].  This makes it easier to use assumptions of the form
     [~P] that are available in the context -- in particular,
     assumptions of the form [x<>y]. *)
+*)
 (** 不等性は、その中に「否定」を含んでいるため、やはりその扱いには
     ある程度の慣れが必要です。ここで一つ有用なトリックをお見せしましょう。
     もし、証明すべきゴールがあり得ない式（例えば[false = true]というような文）
