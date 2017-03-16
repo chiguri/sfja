@@ -4,3 +4,5 @@ html/
 *.vo
 *.glob
 *.gz
+*.ml
+*.mli

@@ -216,6 +216,7 @@ install-doc:
 clean:
 	rm -f $(VOFILES) $(VIFILES) $(GFILES) $(VFILES:.v=.v.d) $(VFILES:=.beautified) $(VFILES:=.old)
 	rm -f all.ps all-gal.ps all.pdf all-gal.pdf all.glob $(VFILES:.v=.glob) $(VFILES:.v=.tex) $(VFILES:.v=.g.tex) all-mli.tex
+	rm -f imp.ml imp.mli imp1.ml imp1.mli imp2.ml imp2.mli
 	- rm -rf html mlihtml
 
 archclean:
