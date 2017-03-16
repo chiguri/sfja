@@ -157,8 +157,8 @@ html: $(GLOBFILES) $(VFILES)
 	$(COQDOC) --with-header header.html --with-footer footer.html \
 	--no-lib-name --lib-subtitles -toc -html $(COQDOCLIBS) -d html $(VFILES)
 	cp index.html coqdoc.css toc.html html
-	cp deps.html deps.gif html
-	tar zcvf html/sfja.tar.gz *.v *.css *.html Makefile README LICENSE *.gif
+	cp deps.html deps.gif jquery.maphilight.min.js html
+	tar zcvf html/sfja.tar.gz *.v *.css *.js *.html Makefile README LICENSE *.gif
 
 gallinahtml: $(GLOBFILES) $(VFILES)
 	- mkdir -p html
