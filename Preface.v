@@ -1,11 +1,16 @@
-(* * Preface *)
+(*
+(** * Preface *)
+*)
 (** * 前書き *)
 
 (* ###################################################################### *)
-(* * Welcome *)
+(*
+(** * Welcome *)
+*)
 (** * ようこそ *)
 
-(* This electronic book is a course on _Software Foundations_, the
+(*
+(** This electronic book is a course on _Software Foundations_, the
     mathematical underpinnings of reliable software.  Topics include
     basic concepts of logic, computer-assisted theorem proving, the
     Coq proof assistant, functional programming, operational
@@ -27,6 +32,7 @@
     coherent linear narrative, plus a number of "appendices" covering
     additional topics.  All the core chapters are suitable for both
     upper-level undergraduate and graduate students. *)
+*)
 (** この資料は「ソフトウェアの基礎」という、高信頼ソフトウェアの数学的基礎に関するものです。
     この講義では、Coq上で関数プログラミング、論理、演算の意味論、ラムダ計算、静的型システムの基礎を学ぶことができます。
     解説は、学部生から博士課程の学生や研究者に至るまで、広範囲の読者を想定しています。
@@ -44,10 +50,13 @@
 
 
 (* ###################################################################### *)
-(* * Overview *)
+(*
+(** * Overview *)
+*)
 (** * 概要 *)
 
-(* Building reliable software is hard.  The scale and complexity of
+(*
+(** Building reliable software is hard.  The scale and complexity of
     modern systems, the number of people involved in building them,
     and the range of demands placed on them make it extremely
     difficult even to build software that is more or less correct,
@@ -96,36 +105,40 @@
     bringing them together creates a foundation from which it will be
     easy to dig into any of them more deeply.  Some suggestions for
     further reading can be found in the [Postscript] chapter. *)
+*)
 (** 信頼性の高いソフトウェアを構築することは非常に困難です。
     現代のシステムは大きく複雑に、関係者の数は膨大に、さらには要求も多岐にわたっています。
     これらが原因で、100%%正しいかどうか以前に、そもそもソフトウェアを構築すること自体が難しくなっています。
     しかし同時に、情報処理が社会の至る所に利用されることで、バグや不具合によるコストが増大し続けています。
-
+ 
     計算機科学者やソフトウェア技術者は、これらに対して、ソフトウェアの信頼性を向上させる技術や、プロジェクト管理やチーム構築の手法（例：extreme programming）、ライブラリの設計思想（例：モデル-ビュー-コントローラ、出版-購読(publish-subscribe)など）、プログラミング言語（例：オブジェクト指向プログラミング、アスペクト指向プログラミング、関数型プログラミングなど）、ソフトウェアの性質を表現する数学的手法、性質を確かめるためのツールを開発・提案することで対応してきました。
-
+ 
     本講義ではこれらのうち最後の技術について学びます。
     資料は以下の5つのコンセプトのもと作られています：
-
+ 
     (1) 「論理」を基にして、プログラムに対する正確な言明を記述し、確かめる。
-
+ 
     (2) 「証明支援系」により、厳格で論理的な主張を構成する。
-
+ 
     (3) 「関数型プログラミング」によって、プログラミングを行い、さらに論理との橋渡しを行う。
-
+ 
     (4) 「プログラムの性質の推論」のための形式手法を用いる。
-
+ 
     (5) 「型システム」を通じて、適切な挙動を設定し、あるプログラミング言語で書かれた「すべての」プログラムに対して、うまく動くことを保証する。
         （例：型が付くJavaのプログラムは実行時にクラッシュしたりしない）
-
+ 
     これらの内容は、それぞれが単体で一つの講義を簡単に組めるくらい、話題が豊富です。
     これらをすべて合わせて説明するため、かなりの部分を言及しないままになります。
     もし皆さんが、これらのテーマ同士の関係によって理解を深め、さらにより深く掘り進められる基礎を成していることに気づいてくれれば幸いです。
     この講義以降に読むとよい本については、[Postscript]の章に記載しています。 *)
 
-(* ** Logic *)
+(*
+(** ** Logic *)
+*)
 (** ** 論理 *)
 
-(* Logic is the field of study whose subject matter is _proofs_ --
+(*
+(** Logic is the field of study whose subject matter is _proofs_ --
     unassailable arguments for the truth of particular propositions.
     Volumes have been written about the central role of logic in
     computer science.  Manna and Waldinger called it "the calculus of
@@ -143,6 +156,7 @@
     before, in contexts from discrete math to analysis of algorithms,
     but in this course we will examine them much more deeply than you
     have probably done so far. *)
+*)
 (** 論理とは、「証明」を対象とした学問領域です。
     ここでいう証明とは、特定の命題が真実であることの、反証しようのない根拠を指します。
     計算機科学において論理が果たす役割に関しては、非常にたくさんの文献で述べられています。
@@ -150,15 +164,18 @@
     この論文にはこうあります。
     "実際のところ、論理は数学においてよりはるかに計算機科学において有効活用されている。
      特筆すべきなのは、このことが、論理が数学から生まれて100年における、論理の発展の大きな推進剤になっていることである。"
-
+ 
     特に、帰納法の原理は計算機科学の世界においてあまねく存在します。
     離散数学やアルゴリズムの解析において見てきたと思いますが、このコースではこれまでよりも深くまで利用することになるでしょう。 *)
 (* 訳注：calculusをここでは微分と訳しているが、計算機科学では一般に計算と訳す。「基礎を成すもの」のニュアンスなのか、それとも素直に「微分」なのか、元の文書を見ないことには分からないが、そもそも元の文書がなにかもよく分からない。本があるようだが、中身が見られないので現状放置。 *)
 
-(* ** Proof Assistants *)
+(*
+(** ** Proof Assistants *)
+*)
 (** ** 証明支援系 *)
 
-(* The flow of ideas between logic and computer science has not been
+(*
+(** The flow of ideas between logic and computer science has not been
     in just one direction: CS has also made important contributions to
     logic.  One of these has been the development of software tools
     for helping construct proofs of logical propositions.  These tools
@@ -235,39 +252,39 @@
    is also the national symbol of France, and "Coq" are the first
    three letters of the name of Thierry Coquand, one of Coq's early
    developers. *)
+*)
 (** 論理と計算機科学の間の影響は一方方向ではありません。
     計算機科学もまた論理の発展に寄与してきました。
     そのうちの一つが、論理命題に対する証明の構築を助けるソフトウェアの開発です。
     これらのソフトウェアは大きく二種類に分類されます。
-
+ 
        - 「自動定理証明器」は"開始ボタン"によって証明の構築を行います。
          証明器に命題を与えると、証明器はその命題について「真」か「偽」か「時間切れ」を返します。
          証明器の能力が発揮できる範囲は限定されてはいますが、近年急速に発達し、様々な用途に使われています。
          例としては、SATソルバー、SMTソルバー、モデル検査器が挙げられます。
-
+ 
        - 「証明支援系」は単純な操作を自動化し、難しい部分を人間が指示するというハイブリッドなツールです。
          広く使われている証明支援系には、Isabelle、Agda、Twelf、ACL2、PVS、Coqなどがあります。
-
+ 
     このコースは、Coqを用いて進めていきます。
     Coqは1983年から、フランスの研究機関や大学で開発されている証明支援系です。
     Coqの提供する機能は、機械的に検証された形式推論の対話的な開発に有効です。
     Coqの核(kernel)は、演繹が正しく進められているかを確かめるだけの、シンプルな証明検査器です。
     Coqは、この核を基礎として、証明の構築に便利な機能を提供しています。
     この機能には、例えば複雑な証明を半自動で生成するタクティクや、よく使われる定理や補題のライブラリなどがあります。
-
+ 
     Coqは計算機科学と数学を通じて、多くのことを実現してきました。
-
+ 
     - 「プログラミング言語をモデル化する基盤」として、複雑な言語の記述と推論に用いられています。
       例えばJavaCardプラットフォームにおいて、Common Criteria Certificationの最高レベルを得るためにセキュリティの検査に利用されたり、x86やLLVMの命令セットに対する形式仕様を与えたりしています。
       （訳注：調べてみたが、JavaCardに関しては若干誇張が入っている気がする。総合評価は7段階あるうちの5+、ただし脆弱性評価は確かに最高ランク。）
       （http://www.commoncriteriaportal.org/products/ や http://www.commoncriteriaportal.org/cc/ のPart.3を参照のこと。）
-
+ 
     - 「証明付きソフトウェアの開発環境」として、CompCertという最適化付きCのコンパイラの開発や、浮動小数点数を使った繊細なアルゴリズムの正しさの証明、また暗号化アルゴリズムのセキュリティ検査の環境Certicryptoの基盤として使われています。
-（訳のぼやき：他と項目の書き方が全然違うんですが。なんとかなりません？）
-
+ 
     - 「現実的な依存型プログラミングの環境」として、非常に多くの革新を起こしています。
       例えば、ハーバード大学で行われたYnotプロジェクトでは"関係ホーア推論(relational Hoare reasoning)"（このコースで説明する「ホーア論理」の拡張）をCoqに埋め込んでいます。
-
+ 
     - 「高階論理の証明支援系」として、いくつもの数学における重要な性質を検証しました。
       例えば、証明に複雑な計算を組み込めたので、四色定理(4-color theorem)の最初の形式検証された証明作ることができました。
       この証明は一時議論を呼びました。
@@ -275,7 +292,7 @@
       Coqによる検証では、計算部分を含む全てのものが検査されます。
       最近では、Feit-Thompsonの定理のCoqによる定式化が行われました。
       これは、有限単純群の分類における第一歩です。
-
+ 
    ところで、このソフトウェア"Coq"という名前がどこから来たか疑問に思うかもしれません。
    オフィシャルのwebサイトでは次のように説明されています。
    「フランスの計算機科学者には、作ったソフトに動物の名前を付ける伝統があります。
@@ -283,10 +300,13 @@
      フランス語で'coq'は雄鶏を意味し、また音がCoqの基礎であるCalculus of Constructionsの頭文字(CoC)と似ています。」
    なお、雄鶏はフランスのシンボルでもありますし、また"Coq"はThierry CoquandというCoqの初期の開発者の名前の三文字でもあります。 *)
 
-(* ** Functional Programming *)
+(*
+(** ** Functional Programming *)
+*)
 (** ** 関数型プログラミング *)
 
-(* The term _functional programming_ refers both to a collection of
+(*
+(** The term _functional programming_ refers both to a collection of
     programming idioms that can be used in almost any programming
     language and to a family of programming languages designed to
     emphasize these idioms, including Haskell, OCaml, Standard ML,
@@ -343,18 +363,19 @@
     closely, we find that these two sides of Coq are actually aspects
     of the very same underlying machinery -- i.e., _proofs are
     programs_.  *)
+*)
 (** 「関数型プログラミング」という語には、どの言語でも使えるプログラミング手法としての用法と、これらの手法に重点を置いたプログラミング言語としての用法があります。
     なお、後者における言語としては、HaskellやOCaml、Standard ML、F##、Scala、Scheme、Racket、Common Lisp、Clojure、Erlang、そしてCoqが挙げられます。
-
+ 
     関数型プログラミングは数十年にわたって用いられてきました。
     そのルーツは、1930年代初頭、コンピュータが開発されるより前に、チャーチが提案したラムダ計算にさかのぼります。
     しかし、1990年初めから、エンジニアや言語設計者の関心を引き、またJane St. CapitalやMicrosoft、Facebook、Ericssonなどの企業で重要な役割を担っています。
-
+ 
     関数型プログラミングの基本となる信念は、可能な限り計算は「純粋(pure)」であるべき、というものです。
     純粋であるとは、その実行が結果となる値を返すだけ、ということです。
     つまり、計算には入出力や変数への代入、ポインタの書き換えなどといった「副作用(side effect)」を含まないようにすべき、ということを意味します。
     例えば、「命令的(imperative)」ソートでは、受け取ったリスト内のポインタを張り替えてソートするでしょうが、純粋なソートでは受け取ったリストとは違う新しいリストをソートした上で返すでしょう。
-
+ 
     One significant benefit of this style of programming is that it
     makes programs easier to understand and reason about.  If every
     operation on a data structure yields a new data structure, leaving
@@ -367,7 +388,7 @@
     Indeed, a large part of the recent interest in functional
     programming in industry is due to its simple behavior in the
     presence of concurrency.
-
+ 
     Another reason for the current excitement about functional
     programming is related to the first: functional programs are often
     much easier to parallelize than their imperative counterparts.  If
@@ -378,7 +399,7 @@
     idiom that lies at the heart of massively distributed query
     processors like Hadoop and is used by Google to index the entire
     web is a classic example of functional programming.
-
+  
     For purposes of this course, functional programming has yet
     another significant attraction: it serves as a bridge between
     logic and computer science.  Indeed, Coq itself can be viewed as a
@@ -469,22 +490,31 @@
 *)
 
 (* ###################################################################### *)
-(* * Practicalities *)
+(*
+(** * Practicalities *)
+*)
 (** * 実際の学習について *)
 
 (* ###################################################################### *)
-(* ** Chapter Dependencies *)
+(*
+(** ** Chapter Dependencies *)
+*)
 (** ** 章間の依存関係 *)
 
-(* A diagram of the dependencies between chapters and some suggested
+(*
+(** A diagram of the dependencies between chapters and some suggested
     paths through the material can be found in the file [deps.html]. *)
+*)
 (** 章と章の間の依存関係をまとめた図と、学習教材へのパスを、[deps.html]にまとめてあります。 *)
 
 (* ###################################################################### *)
-(* ** System Requirements *)
+(*
+(** ** System Requirements *)
+*)
 (** ** 学習に必要なもの *)
 
-(* Coq runs on Windows, Linux, and OS X.  You will need:
+(*
+(** Coq runs on Windows, Linux, and OS X.  You will need:
 
        - A current installation of Coq, available from the Coq home
          page.  Everything should work with version 8.4.
@@ -501,17 +531,31 @@
              with Coq, but on some platforms compiling it involves
              installing additional packages for GUI libraries and
              such. *)
+*)
 (** Coqは、Windowsと多くのUNIX変種（LinuxやMacOSを含む）で動きます。具体的には
-       - Coqホームページにある最新版のCoq。全てのサンプルソースはバージョン8.4でコンパイルできることが確認されています。
+ 
+       - Coqホームページにある最新版のCoq。
+         全てのサンプルソースはバージョン8.4でコンパイルできることが確認されています。
+ 
        - Coqを対話的に操作するIDE。現在、以下の二つから選択できます。
-           - ProofGeneralは、Emacs上に作られたIDEです。すでにEmacsに慣れている人向けのものです。Coqとは別にインストールする必要があります。（詳しくはgoogleで"ProofGeneral"を検索してください）
-           - CoqIDEは、スタンドアロンで動作するシンプルなIDEです。Coqと一緒に配布されています。しかしいくつかのプラットホームではGUIライブラリなどの追加パッケージをインストールする必要があります。 *)
+ 
+           - ProofGeneralは、Emacs上に作られたIDEです。
+             すでにEmacsに慣れている人向けのものです。
+             Coqとは別にインストールする必要があります。
+             （詳しくはgoogleで"ProofGeneral"を検索してください）
+ 
+           - CoqIDEは、スタンドアロンで動作するシンプルなIDEです。
+             Coqと一緒に配布されています。
+             しかしいくつかのプラットホームではGUIライブラリなどの追加パッケージをインストールする必要があります。 *)
 
 (* ###################################################################### *)
-(* ** Exercises *)
+(*
+(** ** Exercises *)
+*)
 (** * 練習問題について *)
 
-(* Each chapter includes numerous exercises.  Each is marked with a
+(*
+(** Each chapter includes numerous exercises.  Each is marked with a
     "star rating," which can be interpreted as follows:
 
        - One star: easy exercises that underscore points in the text
@@ -542,46 +586,64 @@
     solutions to the exercises anyplace where they can be found by
     search engines.
 *)
-(** この資料の各章には、たくさんの練習問題がついています。"optional（任意）"と記されたり"recommended（推奨）"とされているものもあります。"任意"とされていない問題までやることで、その章で学ぶべきことを6～8時間（長い章でも）の学習で理解できるようになっています。
-
+*)
+(** この資料の各章には、たくさんの練習問題がついています。
     練習問題についている"スターレーティング"には、以下のような意味があります。
-
-       - ★：多くの読者が1～2分でできる簡単な問題。"推奨"と明示しているものはありませんが、どちらかというと全て"推奨"とされるべきものです。読者は、この問題に取り組んで、このレベルの問題に慣れておくべきです。
-
+ 
+       - ★：多くの読者が1～2分でできる簡単な問題。
+         読者は、この問題に取り組んで、このレベルの問題に慣れておくべきです。
+ 
        - ★★：　素直で簡単な問題（5～10分でできるでしょう）
-
-       - ★★★：　少し考えないといけない問題（15～30分ほどかかるでしょう）
-
-       - ★★★★：　さらに難しい問題（1～2時間）
+ 
+       - ★★★：　少し考えないといけない問題（10～30分ほどかかるでしょう）
+ 
+       - ★★★★（または★★★★★）：　さらに難しい問題（30分以上）
+ 
+    また、いくつかの練習問題には"advanced"や"optional"とついています。
+    これらの付いていない問題だけで広範囲の内容を学習できます。
+    "optional"な練習問題は重要な概念へのさらなる演習と、また主題とは少し異なる内容への導入となります。
+    "advanced"な練習問題は、さらに難しい問題がほしい読者へのものです。
+    結果として、この教材のより深い理解が得られるでしょう。
+ 
+    お願いですので、この教材の練習問題の解答を皆に見える場所には置かないでください！
+    ソフトウェアの基礎は自学用と講義用の両側面があります。
+    講義の視点では、解答に安易に接することができるのは有効ではありませんし、またこれらの問題は単位認定に関わる課題となります。
+    これらの解答を、検索エンジンによって見つけられる場所に置いたりしないでください！
 *)
 
-
 (* ###################################################################### *)
-(* ** Downloading the Coq Files *)
+(*
+(** ** Downloading the Coq Files *)
+*)
 (** ** 教材となるCoqファイルの入手方法 *)
 
-(* A tar file containing the full sources for the "release version"
+(*
+(** A tar file containing the full sources for the "release version"
     of these notes (as a collection of Coq scripts and HTML files) is
     available here:
 <<
-        http://www.cis.upenn.edu/~bcpierce/sf
+        http://www.cis.upenn.edu/~bcpierce/sf   
 >>
     If you are using the notes as part of a class, you may be given
     access to a locally extended version of the files, which you
     should use instead of the release version.
 *)
+*)
 (** この教材のリリース版のソース（CoqスクリプトとHTMLファイル）をtarで固めたものが、以下のURLで取得できます。
 <<
-        http://www.cis.upenn.edu/~bcpierce/sf
+        http://www.cis.upenn.edu/~bcpierce/sf 
 >>
     この資料の一部だけを使用したい場合は、tarファイルとなっているリリース版を展開して使用してください。
 *)
 
 (* ###################################################################### *)
-(* * Note for Instructors *)
+(*
+(** * Note for Instructors *)
+*)
 (** * 教育関係者へ *)
 
-(* If you intend to use these materials in your own course, you will
+(*
+(** If you intend to use these materials in your own course, you will
     undoubtedly find things you'd like to change, improve, or add.
     Your contributions are welcome!
 
@@ -591,20 +653,28 @@
     name.  We'll set you up with read/write access to our subversion
     repository and developers' mailing list; in the repository you'll
     find a [README] with further instructions. *)
-(** この資料を自分のコースで使おうと思った場合、ほぼまちがいなくあなたは書き直したり、追加したりしたいところが出てくるでしょう。そういった貢献は大歓迎です。
-
-ぜひBenjamin Pierceまでemailをください。そうすれば、あなた用のsubversionのリポジトリとメーリングリストのアカウントを用意します。リポジトリには、READMEファイルがありますので、次にどうすべきかはそれを参照してください。 *)
+*)
+(** この資料を自分のコースで使おうと思った場合、ほぼまちがいなくあなたは書き直したり、追加したりしたいところが出てくるでしょう。
+    そういった貢献は大歓迎です。
+ 
+    ぜひBenjamin Pierceまでemailをください。
+    そうすれば、あなた用のsubversionのリポジトリとメーリングリストのアカウントを用意します。
+    リポジトリには、READMEファイルがありますので、次にどうすべきかはそれを参照してください。 *)
 
 (* ###################################################################### *)
-(* * Translations *)
+(*
+(** * Translations *)
+*)
 (** * 翻訳について *)
 
-(* Thanks to the efforts of a team of volunteer translators, _Software 
+(*
+(** Thanks to the efforts of a team of volunteer translators, _Software 
     Foundations_ can now be enjoyed in Japanese at [http://proofcafe.org/sf]
+*)
 *)
 (** ボランティアによる翻訳のおかげで、「ソフトウェアの基礎」は日本語で読めます。
     [http://proofcafe.org/sf]
-*)
+ *)
 
 (** $Date: 2014-12-31 15:31:47 -0500 (Wed, 31 Dec 2014) $ *)
 
