@@ -73,7 +73,6 @@ Require Export Stlc.
 
     コースのこの時点では、新しい機能の定義のためにたくさんの日本語の文章を読み通すより、同じ情報を伝える規則を単に見る方が、おそらく簡単でしょう。以下がその規則です: *)
 
-
 (*
 (** Syntax:
 <<
@@ -109,18 +108,18 @@ Require Export Stlc.
 (**
     簡約:
 <<
-                                 t1 ==> t1'
-                     ----------------------------------               (ST_Let1)
-                     let x=t1 in t2 ==> let x=t1' in t2
+                                 t1 ==> t1' 
+                     ----------------------------------               (ST_Let1) 
+                     let x=t1 in t2 ==> let x=t1' in t2 
  
-                        ----------------------------              (ST_LetValue)
-                        let x=v1 in t2 ==> [v1/x] t2
+                        ----------------------------              (ST_LetValue) 
+                        let x=v1 in t2 ==> [v1/x] t2 
 >>
     型付け:
 <<
-                Gamma |- t1 : T1      Gamma , x:T1 |- t2 : T2
-                --------------------------------------------            (T_Let)
-                        Gamma |- let x=t1 in t2 : T2
+                Gamma |- t1 : T1      Gamma , x:T1 |- t2 : T2 
+                --------------------------------------------            (T_Let) 
+                        Gamma |- let x=t1 in t2 : T2 
 >>
  *)
 
@@ -140,9 +139,10 @@ Require Export Stlc.
 *)
 (** ここまでのCoqを用いた関数プログラミングの例では、値の対(_pairs_)を頻繁に使ってきました。
     そのような対の型は直積型(_product type_)と呼ばれます。
-
+ 
     対の形式化はほとんど議論する余地がないほど簡単です。
     しかし、共通パターンを強調するため、定義のいろいろな部分をちょっと見てみましょう。 *)
+
 (*
 (** In Coq, the primitive way of extracting the components of a pair
     is _pattern matching_.  An alternative style is to take [fst] and
@@ -164,9 +164,9 @@ Require Export Stlc.
     例えば、数値の対をとり、その和と差の対を返す関数の書き方は次の通りです:
 <<
        \x:Nat*Nat.
-          let sum = x.fst + x.snd in
-          let diff = x.fst - x.snd in
-          (sum,diff)
+          let sum = x.fst + x.snd in 
+          let diff = x.fst - x.snd in 
+          (sum,diff) 
 >>
 *)
 
@@ -204,17 +204,17 @@ Require Export Stlc.
 (** 構文:
 <<
        t ::=                項
-           | ...
+           | ... 
            | (t,t)             対
            | t.fst             第1射影
            | t.snd             第2射影
  
        v ::=                値
-           | ...
+           | ... 
            | (v,v)             対値
  
        T ::=                型
-           | ...
+           | ... 
            | T * T             直積型
 >>
 *)
@@ -247,27 +247,27 @@ Require Export Stlc.
 *)
 (** 評価については、対と射影がどう振る舞うかを規定するいくつかの新しい規則が必要です。
 <<
-                              t1 ==> t1'
-                         --------------------                        (ST_Pair1)
-                         (t1,t2) ==> (t1',t2)
-
-                              t2 ==> t2'
-                         --------------------                        (ST_Pair2)
-                         (v1,t2) ==> (v1,t2')
-
-                              t1 ==> t1'
-                          ------------------                          (ST_Fst1)
-                          t1.fst ==> t1'.fst
-
-                          ------------------                       (ST_FstPair)
-                          (v1,v2).fst ==> v1
-
-                              t1 ==> t1'
-                          ------------------                          (ST_Snd1)
-                          t1.snd ==> t1'.snd
-
-                          ------------------                       (ST_SndPair)
-                          (v1,v2).snd ==> v2
+                              t1 ==> t1' 
+                         --------------------                        (ST_Pair1) 
+                         (t1,t2) ==> (t1',t2) 
+ 
+                              t2 ==> t2' 
+                         --------------------                        (ST_Pair2) 
+                         (v1,t2) ==> (v1,t2') 
+ 
+                              t1 ==> t1' 
+                          ------------------                          (ST_Fst1) 
+                          t1.fst ==> t1'.fst 
+ 
+                          ------------------                       (ST_FstPair) 
+                          (v1,v2).fst ==> v1 
+ 
+                              t1 ==> t1' 
+                          ------------------                          (ST_Snd1) 
+                          t1.snd ==> t1'.snd 
+ 
+                          ------------------                       (ST_SndPair) 
+                          (v1,v2).snd ==> v2 
 >>
 *)
 
@@ -317,17 +317,17 @@ Require Export Stlc.
 *)
 (** 対と射影の型付け規則はそのまま直ぐに得られます。
 <<
-               Gamma |- t1 : T1       Gamma |- t2 : T2
-               ---------------------------------------                 (T_Pair)
-                       Gamma |- (t1,t2) : T1*T2
+               Gamma |- t1 : T1       Gamma |- t2 : T2 
+               ---------------------------------------                 (T_Pair) 
+                       Gamma |- (t1,t2) : T1*T2 
  
-                        Gamma |- t1 : T11*T12
-                        ---------------------                           (T_Fst)
-                        Gamma |- t1.fst : T11
+                        Gamma |- t1 : T11*T12 
+                        ---------------------                           (T_Fst) 
+                        Gamma |- t1.fst : T11 
  
-                        Gamma |- t1 : T11*T12
-                        ---------------------                           (T_Snd)
-                        Gamma |- t1.snd : T12
+                        Gamma |- t1 : T11*T12 
+                        ---------------------                           (T_Snd) 
+                        Gamma |- t1.snd : T12 
 >>
 *)
 
@@ -386,21 +386,21 @@ Require Export Stlc.
 (** 構文:
 <<
        t ::=                項
-           | ...
+           | ... 
            | unit              unit値
-
+ 
        v ::=                値
-           | ...
+           | ... 
            | unit              unit
-
+ 
        T ::=                型
-           | ...
+           | ... 
            | Unit              Unit型
 >>
     型付け:
 <<
-                         --------------------                          (T_Unit)
-                         Gamma |- unit : Unit
+                         --------------------                          (T_Unit) 
+                         Gamma |- unit : Unit 
 >>
 *)
     
@@ -420,7 +420,7 @@ Require Export Stlc.
 *)
 (** 1つの要素だけしか持たない型を定義することにわずらわされるのは、少々奇妙なことに見えるかもしれません。
     結局のところ、このような型に属する計算は自明なものだけではないのでしょうか？
-
+ 
     これは妥当な質問です。
     実際STLCでは[Unit]型は特別、問題ではありません（ちょっと後でこの型のある使い道を見ることになりますが）。
     [Unit]が本当に便利なのはよりリッチな言語でいろいろな種類の副作用(_side effects_)を持つ場合です。
@@ -449,12 +449,12 @@ Require Export Stlc.
 (** 多くのプログラムでは2つの異なった形を持つ値を扱うことが求められます。
    例えばアカウント処理をするアプリケーションの認証で、名前か、「または」、IDナンバーを使うという場合があります。
    探索関数は、マッチした値か、「または」、エラーコードを返すかもしれません。
-
+ 
    これらは、2項の直和型(_sum type_)の例です。
    直和型は2つの与えられた型から抽出した値の集合にあたります。
    例えば次のようなものです。
 <<
-       Nat + Bool
+       Nat + Bool 
 >>
 *)
 
@@ -485,8 +485,8 @@ Require Export Stlc.
    タグの名前[inl]と[inr]は、これらのタグを関数と考えるところから出ています。
  
 <<
-   inl : Nat -> Nat + Bool
-   inr : Bool -> Nat + Bool
+   inl : Nat -> Nat + Bool 
+   inr : Bool -> Nat + Bool 
 >>
  
    これらの関数は、[Nat]または[Bool]の要素を直和型[Nat+Bool]の左部分または右部分に注入("inject")します。
@@ -518,13 +518,13 @@ Require Export Stlc.
 *)
 (** 直和型の重要な用途の一つに、エラー報告があります。
 << 
-    div : Nat -> Nat -> (Nat + Unit) =
-    div =
-      \x:Nat. \y:Nat.
-        if iszero y then
-          inr unit
-        else
-          inl ...
+    div : Nat -> Nat -> (Nat + Unit) = 
+    div = 
+      \x:Nat. \y:Nat. 
+        if iszero y then 
+          inr unit 
+        else 
+          inl ... 
 >>
     この型 [Nat + Unit] は Coq における [option nat] と同型です。
     option型によってエラーを報告する方法は既に紹介した通りです。 *)
@@ -578,7 +578,7 @@ Require Export Stlc.
 (** 構文:
 <<
        t ::=                項
-           | ...
+           | ... 
            | inl T t           タグ付け（左）
            | inr T t           タグ付け（右）
            | case t of         case
@@ -586,12 +586,12 @@ Require Export Stlc.
              | inr x => t
  
        v ::=                値
-           | ...
+           | ... 
            | inl T v           タグ付き値（左）
            | inr T v           タグ付き値（右）
  
        T ::=                型
-           | ...
+           | ... 
            | T + T             直和型
 >>
 *)
@@ -623,26 +623,26 @@ Require Export Stlc.
 *)
 (**  評価:
 <<
-                              t1 ==> t1'
-                        ----------------------                         (ST_Inl)
-                        inl T t1 ==> inl T t1'
+                              t1 ==> t1' 
+                        ----------------------                         (ST_Inl) 
+                        inl T t1 ==> inl T t1' 
  
-                              t1 ==> t1'
-                        ----------------------                         (ST_Inr)
-                        inr T t1 ==> inr T t1'
+                              t1 ==> t1' 
+                        ----------------------                         (ST_Inr) 
+                        inr T t1 ==> inr T t1' 
  
-                              t0 ==> t0'
-                   -------------------------------------------       (ST_Case)
-                   case t0 of inl x1 => t1 | inr x2 => t2 ==>
-                   case t0' of inl x1 => t1 | inr x2 => t2 
+                              t0 ==> t0' 
+                   -------------------------------------------       (ST_Case) 
+                   case t0 of inl x1 => t1 | inr x2 => t2 ==> 
+                   case t0' of inl x1 => t1 | inr x2 => t2  
  
-            ----------------------------------------------         (ST_CaseInl)
-            case (inl T v0) of inl x1 => t1 | inr x2 => t2
-                           ==>  [x1:=v0]t1
+            ----------------------------------------------         (ST_CaseInl) 
+            case (inl T v0) of inl x1 => t1 | inr x2 => t2 
+                           ==>  [x1:=v0]t1 
  
-            ----------------------------------------------         (ST_CaseInr)
-            case (inr T v0) of inl x1 => t1 | inr x2 => t2
-                           ==>  [x2:=v0]t2
+            ----------------------------------------------         (ST_CaseInr) 
+            case (inr T v0) of inl x1 => t1 | inr x2 => t2 
+                           ==>  [x2:=v0]t2 
 >>
 *)
 
@@ -667,19 +667,19 @@ Require Export Stlc.
 *)
 (** 型付け:
 <<
-                          Gamma |- t1 :  T1
-                     ----------------------------                       (T_Inl)
-                     Gamma |- inl T2 t1 : T1 + T2
-
-                           Gamma |- t1 : T2
-                     ----------------------------                       (T_Inr)
-                     Gamma |- inr T1 t1 : T1 + T2
-
-                         Gamma |- t0 : T1+T2
-                       Gamma , x1:T1 |- t1 : T
-                       Gamma , x2:T2 |- t2 : T
-         ---------------------------------------------------           (T_Case)
-         Gamma |- case t0 of inl x1 => t1 | inr x2 => t2 : T
+                          Gamma |- t1 :  T1 
+                     ----------------------------                       (T_Inl) 
+                     Gamma |- inl T2 t1 : T1 + T2 
+ 
+                           Gamma |- t1 : T2 
+                     ----------------------------                       (T_Inr) 
+                     Gamma |- inr T1 t1 : T1 + T2 
+ 
+                         Gamma |- t0 : T1+T2 
+                       Gamma , x1:T1 |- t1 : T 
+                       Gamma , x2:T2 |- t2 : T 
+         ---------------------------------------------------           (T_Case) 
+         Gamma |- case t0 of inl x1 => t1 | inr x2 => t2 : T 
 >>
     [inl]と[inr]の形に型を付記する理由は、関数に対して行ったのと同様、型付け規則を単純にするためです。 *)
 (*
@@ -738,11 +738,11 @@ Require Export Stlc.
 (** ここまで見てきた型付け機能は、[Bool]のような基本型(_base types_)と、古い型から新しい型を構築する[->]や[*]のような型コンストラクタ(_type constructors_)に分類できます。
     もう一つの有用な型コンストラクタが[List]です。
     すべての型[T]について、型 [List T] は[T]から抽出したものを要素とする有限長リストを表します。
-
+ 
     原理的には、直積型や直和型、再帰型(_recursive_ types)を用いることでリストを定義できます。
     しかし、再帰型に意味を与えることは簡単ではありません。
     その代わりに、リストの特別な場合を直接議論します。
-
+ 
     以下にリストの構文、意味、型付け規則を与えます。
     [nil]に対して明示的に型を付記することが必須であり、[cons]には付記できないという点を除けば、ここで定義されたリストは本質的にCoqで構築したものと同じです。
     リストを分解するために[lcase]を使います。
@@ -761,10 +761,10 @@ Require Export Stlc.
 *)
 (** 従って、例えば、数値リストの最初の2つの要素の和を計算する関数は次の通りです:
 << 
-    \x:List Nat.  
-    lcase x of nil -> 0 
-       | a::x' -> lcase x' of nil -> a
-                     | b::x'' -> a+b 
+    \x:List Nat.   
+    lcase x of nil -> 0  
+       | a::x' -> lcase x' of nil -> a 
+                     | b::x'' -> a+b  
 >>
 *)
 
@@ -793,18 +793,18 @@ Require Export Stlc.
     構文:
 <<
        t ::=                項
-           | ...
-           | nil T
-           | cons t t
-           | lcase t of nil -> t | x::x -> t
+           | ... 
+           | nil T 
+           | cons t t 
+           | lcase t of nil -> t | x::x -> t 
  
        v ::=                値
-           | ...
-           | nil T             nil
-           | cons v v          cons
+           | ... 
+           | nil T             nil 
+           | cons v v          cons 
  
        T ::=                型
-           | ...
+           | ... 
            | List T            Tのリスト
 >>
 *)
@@ -835,26 +835,26 @@ Require Export Stlc.
 *)
 (** 簡約:
 <<
-                                 t1 ==> t1'
-                       --------------------------                    (ST_Cons1)
-                       cons t1 t2 ==> cons t1' t2
+                                 t1 ==> t1' 
+                       --------------------------                    (ST_Cons1) 
+                       cons t1 t2 ==> cons t1' t2 
  
-                                 t2 ==> t2'
-                       --------------------------                    (ST_Cons2)
-                       cons v1 t2 ==> cons v1 t2'
+                                 t2 ==> t2' 
+                       --------------------------                    (ST_Cons2) 
+                       cons v1 t2 ==> cons v1 t2' 
  
-                              t1 ==> t1'
-                ----------------------------------------             (ST_Lcase1)
-                (lcase t1 of nil -> t2 | xh::xt -> t3) ==>
-                (lcase t1' of nil -> t2 | xh::xt -> t3)
+                              t1 ==> t1' 
+                ----------------------------------------             (ST_Lcase1) 
+                (lcase t1 of nil -> t2 | xh::xt -> t3) ==> 
+                (lcase t1' of nil -> t2 | xh::xt -> t3) 
  
-               -----------------------------------------          (ST_LcaseNil)
-               (lcase nil T of nil -> t2 | xh::xt -> t3)
-                                ==> t2
+               -----------------------------------------          (ST_LcaseNil) 
+               (lcase nil T of nil -> t2 | xh::xt -> t3) 
+                                ==> t2 
  
-            -----------------------------------------------      (ST_LcaseCons)
-            (lcase (cons vh vt) of nil -> t2 | xh::xt -> t3)
-                          ==> [xh:=vh,xt:=vt]t3
+            -----------------------------------------------      (ST_LcaseCons) 
+            (lcase (cons vh vt) of nil -> t2 | xh::xt -> t3) 
+                          ==> [xh:=vh,xt:=vt]t3 
 >>
 *)
 
@@ -876,18 +876,18 @@ Require Export Stlc.
 *)
 (** 型付け:
 <<
-                          -----------------------                       (T_Nil)
-                          Gamma |- nil T : List T
+                          -----------------------                       (T_Nil) 
+                          Gamma |- nil T : List T 
  
-                Gamma |- t1 : T      Gamma |- t2 : List T
-                -----------------------------------------              (T_Cons)
-                       Gamma |- cons t1 t2: List T
+                Gamma |- t1 : T      Gamma |- t2 : List T 
+                -----------------------------------------              (T_Cons) 
+                       Gamma |- cons t1 t2: List T 
  
-                        Gamma |- t1 : List T1
-                           Gamma |- t2 : T
-                   Gamma , h:T1, t:List T1 |- t3 : T
-          -------------------------------------------------           (T_Lcase)
-          Gamma |- (lcase t1 of nil -> t2 | h::t -> t3) : T
+                        Gamma |- t1 : List T1 
+                           Gamma |- t2 : T 
+                   Gamma , h:T1, t:List T1 |- t3 : T 
+          -------------------------------------------------           (T_Lcase) 
+          Gamma |- (lcase t1 of nil -> t2 | h::t -> t3) : T 
 >>
 *)
 
@@ -915,7 +915,7 @@ Require Export Stlc.
     例えば、階乗関数を次のように定義できるとよいと思うでしょう:
 <<
    fact = \x:Nat.
-             if x=0 then 1 else x * (fact (pred x)))
+             if x=0 then 1 else x * (fact (pred x))) 
 >>
    しかし、これを形式化するには、なかなかの作業が必要になります。
    そうするには、「関数定義」("function definitions")の概念を導入し、[step]の定義の中で、関数定義の「環境」("environment")を持ち回ることが必要になるでしょう。 *)
@@ -939,11 +939,11 @@ Require Export Stlc.
    右辺に定義しようとしている識別子を含む再帰的定義を書く代わりに、不動点演算子(_fixed-point operator_)を定義することができます。
    不動点演算子は、簡約の過程で再帰的定義の右辺を遅延(lazy)して「展開」("unfold")するものです。
 <<
-   fact = 
-       fix
-         (\f:Nat->Nat.
-            \x:Nat. 
-               if x=0 then 1 else x * (f (pred x)))    
+   fact =  
+       fix 
+         (\f:Nat->Nat. 
+            \x:Nat.  
+               if x=0 then 1 else x * (f (pred x)))     
 >> 
 *)
 
@@ -999,24 +999,24 @@ Require Export Stlc.
 (** 構文:
 <<
        t ::=                項
-           | ...
+           | ... 
            | fix t             不動点演算子
 >>
    簡約:
 <<
-                                 t1 ==> t1'
-                             ------------------                       (ST_Fix1)
-                             fix t1 ==> fix t1'
+                                 t1 ==> t1' 
+                             ------------------                       (ST_Fix1) 
+                             fix t1 ==> fix t1' 
  
-                             F = \xf:T1.t2
-                         -----------------------                    (ST_FixAbs)
-                         fix F ==> [xf:=fix F]t2
+                             F = \xf:T1.t2 
+                         -----------------------                    (ST_FixAbs) 
+                         fix F ==> [xf:=fix F]t2 
 >>
    型付け:
 <<
-                            Gamma |- t1 : T1->T1
-                            --------------------                        (T_Fix)
-                            Gamma |- fix t1 : T1
+                            Gamma |- t1 : T1->T1 
+                            --------------------                        (T_Fix) 
+                            Gamma |- fix t1 : T1 
 >>
  *)
 
@@ -1104,79 +1104,79 @@ if 3=0 then 1 else 3 * (fix F (pred 3))
 (** [fact 3 = fix F 3] の動きを追うことで、 [ST_FixAbs] がどのように動くのか見ます。
     ここで、 [F = (\f. \x. if x=0 then 1 else x * (f (pred x)))] とします（可読性のために型注釈は除いています）。
 <<
-fix F 3
+fix F 3 
 >>
-[==>] [ST_FixAbs]
+[==>] [ST_FixAbs] 
 <<
-(\x. if x=0 then 1 else x * (fix F (pred x))) 3
+(\x. if x=0 then 1 else x * (fix F (pred x))) 3 
 >>
-[==>] [ST_AppAbs]
+[==>] [ST_AppAbs] 
 <<
-if 3=0 then 1 else 3 * (fix F (pred 3))
+if 3=0 then 1 else 3 * (fix F (pred 3)) 
 >>
-[==>] [ST_If0_Nonzero]
+[==>] [ST_If0_Nonzero] 
 <<
-3 * (fix F (pred 3))
+3 * (fix F (pred 3)) 
 >>
-[==>] [ST_FixAbs + ST_Mult2] 
+[==>] [ST_FixAbs + ST_Mult2]  
 <<
-3 * ((\x. if x=0 then 1 else x * (fix F (pred x))) (pred 3))
+3 * ((\x. if x=0 then 1 else x * (fix F (pred x))) (pred 3)) 
 >>
-[==>] [ST_PredNat + ST_Mult2 + ST_App2]
+[==>] [ST_PredNat + ST_Mult2 + ST_App2] 
 <<
-3 * ((\x. if x=0 then 1 else x * (fix F (pred x))) 2)
+3 * ((\x. if x=0 then 1 else x * (fix F (pred x))) 2) 
 >>
-[==>] [ST_AppAbs + ST_Mult2]
+[==>] [ST_AppAbs + ST_Mult2] 
 <<
-3 * (if 2=0 then 1 else 2 * (fix F (pred 2)))
+3 * (if 2=0 then 1 else 2 * (fix F (pred 2))) 
 >>
-[==>] [ST_If0_Nonzero + ST_Mult2]
+[==>] [ST_If0_Nonzero + ST_Mult2] 
 <<
-3 * (2 * (fix F (pred 2)))
+3 * (2 * (fix F (pred 2))) 
 >>
-[==>] [ST_FixAbs + 2 x ST_Mult2]
+[==>] [ST_FixAbs + 2 x ST_Mult2] 
 <<
-3 * (2 * ((\x. if x=0 then 1 else x * (fix F (pred x))) (pred 2)))
+3 * (2 * ((\x. if x=0 then 1 else x * (fix F (pred x))) (pred 2))) 
 >>
-[==>] [ST_PredNat + 2 x ST_Mult2 + ST_App2]
+[==>] [ST_PredNat + 2 x ST_Mult2 + ST_App2] 
 <<
-3 * (2 * ((\x. if x=0 then 1 else x * (fix F (pred x))) 1))
+3 * (2 * ((\x. if x=0 then 1 else x * (fix F (pred x))) 1)) 
 >>
-[==>] [ST_AppAbs + 2 x ST_Mult2]
+[==>] [ST_AppAbs + 2 x ST_Mult2] 
 <<
-3 * (2 * (if 1=0 then 1 else 1 * (fix F (pred 1))))
+3 * (2 * (if 1=0 then 1 else 1 * (fix F (pred 1)))) 
 >>
-[==>] [ST_If0_Nonzero + 2 x ST_Mult2]
+[==>] [ST_If0_Nonzero + 2 x ST_Mult2] 
 <<
-3 * (2 * (1 * (fix F (pred 1))))
+3 * (2 * (1 * (fix F (pred 1)))) 
 >>
-[==>] [ST_FixAbs + 3 x ST_Mult2]
+[==>] [ST_FixAbs + 3 x ST_Mult2] 
 <<
-3 * (2 * (1 * ((\x. if x=0 then 1 else x * (fix F (pred x))) (pred 1))))
+3 * (2 * (1 * ((\x. if x=0 then 1 else x * (fix F (pred x))) (pred 1)))) 
 >>
-[==>] [ST_PredNat + 3 x ST_Mult2 + ST_App2]
+[==>] [ST_PredNat + 3 x ST_Mult2 + ST_App2] 
 <<
-3 * (2 * (1 * ((\x. if x=0 then 1 else x * (fix F (pred x))) 0)))
+3 * (2 * (1 * ((\x. if x=0 then 1 else x * (fix F (pred x))) 0))) 
 >>
-[==>] [ST_AppAbs + 3 x ST_Mult2]
+[==>] [ST_AppAbs + 3 x ST_Mult2] 
 <<
-3 * (2 * (1 * (if 0=0 then 1 else 0 * (fix F (pred 0)))))
+3 * (2 * (1 * (if 0=0 then 1 else 0 * (fix F (pred 0))))) 
 >>
-[==>] [ST_If0Zero + 3 x ST_Mult2]
+[==>] [ST_If0Zero + 3 x ST_Mult2] 
 <<
-3 * (2 * (1 * 1))
+3 * (2 * (1 * 1)) 
 >>
-[==>] [ST_MultNats + 2 x ST_Mult2]
+[==>] [ST_MultNats + 2 x ST_Mult2] 
 <<
-3 * (2 * 1)
+3 * (2 * 1) 
 >>
-[==>] [ST_MultNats + ST_Mult2]
+[==>] [ST_MultNats + ST_Mult2] 
 <<
-3 * 2
+3 * 2 
 >>
-[==>] [ST_MultNats]
+[==>] [ST_MultNats] 
 <<
-6
+6 
 >>
 *)
 
@@ -1200,11 +1200,11 @@ if 3=0 then 1 else 3 * (fix F (pred 3))
 *)
 (** 次の再帰的定義を[fix]を用いた定義に直しなさい:
 <<
-   halve = 
-     \x:Nat. 
-        if x=0 then 0 
-        else if (pred x)=0 then 0
-        else 1 + (halve (pred (pred x))))
+   halve =  
+     \x:Nat.  
+        if x=0 then 0  
+        else if (pred x)=0 then 0 
+        else 1 + (halve (pred (pred x)))) 
 >>
 (* FILL IN HERE *) 
 []
@@ -1224,8 +1224,8 @@ if 3=0 then 1 else 3 * (fix F (pred 3))
 *)
  *)
 (** 項 [fact 1] が正規形まで簡約されるステップ列を書き下しなさい（ただし、算術演算については通常の簡約規則を仮定します）。
-
-    (* FILL IN HERE *)
+ 
+    (* FILL IN HERE *) 
 []
 *)
 
@@ -1282,24 +1282,24 @@ if 3=0 then 1 else 3 * (fix F (pred 3))
 <<
     equal =
       fix
-        (\eq:Nat->Nat->Bool.
-           \m:Nat. \n:Nat.
-             if m=0 then iszero n 
-             else if n=0 then false
-             else eq (pred m) (pred n))
+        (\eq:Nat->Nat->Bool. 
+           \m:Nat. \n:Nat. 
+             if m=0 then iszero n  
+             else if n=0 then false 
+             else eq (pred m) (pred n)) 
 >> 
 
     そして最後に、次は[fix]を使って再帰関数の対を定義する例です（この例は、規則[T_Fix]の型[T1]は関数型ではなくてもよいことを示しています）:
 <<
     evenodd =
       fix
-        (\eo: (Nat->Bool * Nat->Bool).
-           let e = \n:Nat. if n=0 then true  else eo.snd (pred n) in
-           let o = \n:Nat. if n=0 then false else eo.fst (pred n) in
-           (e,o))
-
-    even = evenodd.fst
-    odd  = evenodd.snd
+        (\eo: (Nat->Bool * Nat->Bool). 
+           let e = \n:Nat. if n=0 then true  else eo.snd (pred n) in 
+           let o = \n:Nat. if n=0 then false else eo.fst (pred n) in 
+           (e,o)) 
+ 
+    even = evenodd.fst 
+    odd  = evenodd.snd 
 >>
 *)
 
@@ -1362,16 +1362,16 @@ if 3=0 then 1 else 3 * (fix F (pred 3))
 (** 構文:
 <<
        t ::=                          項
-           | ...
+           | ... 
            | {i1=t1, ..., in=tn}         レコード
            | t.i                         射影
-
+ 
        v ::=                          値
-           | ...
+           | ... 
            | {i1=v1, ..., in=vn}         レコード値
-
+ 
        T ::=                          型
-           | ...
+           | ... 
            | {i1:T1, ..., in:Tn}         レコード型
 >>
    直観的には、この一般化はかなり明確です。
@@ -1411,17 +1411,17 @@ if 3=0 then 1 else 3 * (fix F (pred 3))
 (**
    簡約:
 <<
-                              ti ==> ti'
-                 ------------------------------------                  (ST_Rcd)
-                     {i1=v1, ..., im=vm, in=ti, ...}
-                 ==> {i1=v1, ..., im=vm, in=ti', ...}
-
-                              t1 ==> t1'
-                            --------------                           (ST_Proj1)
-                            t1.i ==> t1'.i
-
-                      -------------------------                    (ST_ProjRcd)
-                      {..., i=vi, ...}.i ==> vi
+                              ti ==> ti' 
+                 ------------------------------------                  (ST_Rcd) 
+                     {i1=v1, ..., im=vm, in=ti, ...} 
+                 ==> {i1=v1, ..., im=vm, in=ti', ...} 
+ 
+                              t1 ==> t1' 
+                            --------------                           (ST_Proj1) 
+                            t1.i ==> t1'.i 
+ 
+                      -------------------------                    (ST_ProjRcd) 
+                      {..., i=vi, ...}.i ==> vi 
 >>
    これらの規則も、やはりちょっと非形式的です。
    例えば、最初の規則は   「[ti]が値でないフィールドのうち最も左のもので、[ti]は[ti']にステップで進むならば、レコード全体のステップは...」と読まれることを意図しています。
@@ -1443,13 +1443,13 @@ if 3=0 then 1 else 3 * (fix F (pred 3))
 (**
    型付け:
 <<
-            Gamma |- t1 : T1     ...     Gamma |- tn : Tn
-          --------------------------------------------------            (T_Rcd)
-          Gamma |- {i1=t1, ..., in=tn} : {i1:T1, ..., in:Tn}
-
-                    Gamma |- t : {..., i:Ti, ...}
-                    -----------------------------                      (T_Proj)
-                          Gamma |- t.i : Ti
+            Gamma |- t1 : T1     ...     Gamma |- tn : Tn 
+          --------------------------------------------------            (T_Rcd) 
+          Gamma |- {i1=t1, ..., in=tn} : {i1:T1, ..., in:Tn} 
+ 
+                    Gamma |- t : {..., i:Ti, ...} 
+                    -----------------------------                      (T_Proj) 
+                          Gamma |- t.i : Ti 
 >>
 *)
 
@@ -1581,47 +1581,47 @@ if 3=0 then 1 else 3 * (fix F (pred 3))
     対の記法 [(t1,t2)] を混用するのを避けるため、組を書き下すためにはラベルを持たない中カッコ([{..}])を使います。
     つまり、[{}]は0個組、[{5}]は一つ組、[{5,6}]は二つ組（事実上対と同じ）、[{5,6,7}]は三つ組、等です。
 <<
-    {}                 ---->  unit
-    {t1, t2, ..., tn}  ---->  (t1, trest)
+    {}                 ---->  unit 
+    {t1, t2, ..., tn}  ---->  (t1, trest) 
                               ただし {t2, ..., tn} ----> trest
 >>
     同様に、組の型を直積型のネストでエンコードすることができます。
 <<
-    {}                 ---->  Unit
-    {T1, T2, ..., Tn}  ---->  T1 * TRest
+    {}                 ---->  Unit 
+    {T1, T2, ..., Tn}  ---->  T1 * TRest 
                               ただし {T2, ..., Tn} ----> TRest
 >>
     組のフィールドの射影演算は、第2射影の列に続く第1射影としてエンコードできます:
 <<
-    t.0        ---->  t.fst
-    t.(n+1)    ---->  (t.snd).n
+    t.0        ---->  t.fst 
+    t.(n+1)    ---->  (t.snd).n 
 >>
  
     次に、レコードラベルに何らかの全順序があり、そのため各ラベルに一意に自然数が関連づけられると仮定します。
     この数をラベルのポジション(_position_)と呼びます。
     例えば、以下のようにポジションが定められるとします:
 <<
-      LABEL   POSITION
-      a       0
-      b       1
-      c       2
-      ...     ...
-      foo     1004
-      ...     ...
-      bar     10562
-      ...     ...
+      LABEL   POSITION 
+      a       0 
+      b       1 
+      c       2 
+      ...     ... 
+      foo     1004 
+      ...     ... 
+      bar     10562 
+      ...     ... 
 >>
  
     このポジションを、レコード値を組(つまりネストされた対)でエンコードするために使います。
     つまり、フィールドをそのポジションでソートします。
     例えば:
 <<
-      {a=5, b=6}      ---->   {5,6}
-      {a=5, c=7}      ---->   {5,unit,7}
-      {c=7, a=5}      ---->   {5,unit,7}
-      {c=5, b=3}      ---->   {unit,3,5}
-      {f=8,c=5,a=7}   ---->   {7,unit,5,unit,unit,8}
-      {f=8,c=5}       ---->   {unit,unit,5,unit,unit,8}
+      {a=5, b=6}      ---->   {5,6} 
+      {a=5, c=7}      ---->   {5,unit,7} 
+      {c=7, a=5}      ---->   {5,unit,7} 
+      {c=5, b=3}      ---->   {unit,3,5} 
+      {f=8,c=5,a=7}   ---->   {7,unit,5,unit,unit,8} 
+      {f=8,c=5}       ---->   {unit,unit,5,unit,unit,8} 
 >>
     以下のことに注意します。
     各フィールドはそのラベルに関連づけられたポジションに現れます。
@@ -1630,14 +1630,14 @@ if 3=0 then 1 else 3 * (fix F (pred 3))
  
     レコードの型についてもまったくおなじことをします:
 <<
-      {a:Nat, b:Nat}      ---->   {Nat,Nat}
-      {c:Nat, a:Nat}      ---->   {Nat,Unit,Nat}
-      {f:Nat,c:Nat}       ---->   {Unit,Unit,Nat,Unit,Unit,Nat}
+      {a:Nat, b:Nat}      ---->   {Nat,Nat} 
+      {c:Nat, a:Nat}      ---->   {Nat,Unit,Nat} 
+      {f:Nat,c:Nat}       ---->   {Unit,Unit,Nat,Unit,Unit,Nat} 
 >>
  
     最後に、レコードの射影は適切なポジションについての組の射影でエンコードされます:
 <<
-      t.l  ---->  t.(position of l)
+      t.l  ---->  t.(position of l) 
 >>
  
     レコードのオリジナルの「直接の」表現に対するすべての型付け規則が、このエンコードで正しいことをチェックするのは難しいことではありません。
@@ -1680,7 +1680,7 @@ if 3=0 then 1 else 3 * (fix F (pred 3))
 (** 直積がレコードに一般化できたのと同様、直和は n-個のラベルを持った型「バリアント」(_variants_)に一般化できます。
     [T1+T2] の代わりに [<l1:T1,l2:T2,...ln:Tn>] のように書くことができます。
     ここで[l1]、[l2]、... はフィールドラベルで、インスタンスの構成と、case のラベルの両方に使われます。
-
+ 
     n-個のバリアントは、リストや木構造のような任意の帰納的データ型をゼロから構築するのに必要なメカニズムのほとんどを与えます。
     唯一足りないのは、型定義の再帰です。ここではこの話題は扱いません。
     ただ、詳細な扱いはいろいろなテキストブックに書かれています。
@@ -1726,22 +1726,22 @@ if 3=0 then 1 else 3 * (fix F (pred 3))
     項と型の構文の必要な拡張は提示しておきました。
     また、読者が、自分の定義が期待された通りに動作するかをテストすることができるように、いくつかの例を示しておきました。
     読者は定義の残りの部分を埋め、それに合わせて証明を拡張しなさい。
-
+ 
     （訳注：節構成がまぎらわしいですが、この章のここ以降はすべてこの練習問題の内部のようです。
     埋めるのはその中の「ここを埋めなさい」という部分です。
     なお、以下の記述はCoq記述内の埋め込みコメントを読まないと理解できない部分があると思いますが、HTML化したものでは埋め込みコメントが表示されていないかもしれません。
     その場合はHTML化前のCoqソースを見てください。）
-
+ 
     取りかかるために、以下のものに関しては実装しておきました:
       - 数値
       - 直積とUnit型
       - 直和
       - リスト
-
+ 
     読者は、以下のものに関する実装を完成させなさい:
       - let (束縛を含む)
       - [fix]
-
+ 
     よい戦略は、ファイルの最初から最後までを1パスで行おうとせずに、複数回のパスで拡張項目を一つづつやることです。
     定義または証明のそれぞれについて、提示されたパーツを注意深く読むことから始めなさい。
     その際に、ハイレベルの直観については[Stlc]章のテキストを参照し、詳細の機構については、埋め込まれたコメントを参照しなさい。
@@ -1851,11 +1851,11 @@ Inductive tm : Type :=
 (** なお、簡潔にするため、ブール値をなくし、その代わりゼロテストと条件分岐を組み合わせた [if0] 構文を提供しています。
     つまり、
 <<
-       if x = 0 then ... else ...
+       if x = 0 then ... else ... 
 >>
     と書く代わりに、次のように書きます:
 <<
-       if0 x then ... else ...
+       if0 x then ... else ... 
 >>
 *)
 
@@ -2307,7 +2307,7 @@ Notation eo := (Id 18).
 (** 次に、Coq にちょっと手を入れて、型の導出の検索を自動化します。
     詳細を理解する必要はまったくありません。
     ざっと眺めておけば、もし[auto]に独自の拡張をしなければならなくなったとき、何を調べれば良いかがわかるでしょう。
-
+ 
     以下の[Hint]宣言は、次のように言っています:
     [auto]が [(has_type G (tapp e1 e2) T)] という形のゴールに到達したときは常に、 [eapply T_App] を考えなさい。
     この結果、中間的な型 T1 の存在変数が残ります。
@@ -2329,9 +2329,9 @@ Hint Extern 2 (has_type _ (tlcase _ _ _ _ _) _) =>
   eapply T_Lcase; auto.
 *)
 (** <<
-(* 
-Hint Extern 2 (has_type _ (tlcase _ _ _ _ _) _) =>
-  eapply T_Lcase; auto.
+(*
+Hint Extern 2 (has_type _ (tlcase _ _ _ _ _) _) => 
+  eapply T_Lcase; auto. 
 *)
 >> *)
 Hint Extern 2 (_ = _) => compute; reflexivity.
@@ -2383,20 +2383,20 @@ Qed.
 *)
 (** <<
 (*
-Example typechecks :
-  has_type (@empty ty) test ty_Nat.
-Proof.
-  unfold test.
+Example typechecks : 
+  has_type (@empty ty) test ty_Nat. 
+Proof. 
+  unfold test. 
   (* この型導出は非常に深く、そのため[auto]の最大探索深度を、
      デフォルトの5から10に上げなければなりません。 *)
-  auto 10.
-Qed.
-
-Example numtest_reduces :
-  test ==>* tm_nat 5.
-Proof.
-  unfold test. normalize.
-Qed.
+  auto 10. 
+Qed. 
+ 
+Example numtest_reduces : 
+  test ==>* tm_nat 5. 
+Proof. 
+  unfold test. normalize. 
+Qed. 
 *)
 >> *)
 
@@ -2434,13 +2434,13 @@ Proof. unfold test. normalize. Qed.
 *)
 (** <<
 (*
-Example typechecks :
-  has_type (@empty ty) test ty_Nat.
-Proof. unfold test. eauto 15. Qed.
-
-Example reduces :
-  test ==>* tm_nat 6.
-Proof. unfold test. normalize. Qed.
+Example typechecks : 
+  has_type (@empty ty) test ty_Nat. 
+Proof. unfold test. eauto 15. Qed. 
+ 
+Example reduces : 
+  test ==>* tm_nat 6. 
+Proof. unfold test. normalize. Qed. 
 *)
 >> *)
 
@@ -2472,13 +2472,13 @@ Proof. unfold test. normalize. Qed.
 *)
 (** <<
 (*
-Example typechecks :
-  has_type (@empty ty) test ty_Nat.
-Proof. unfold test. eauto 15. Qed.
-
-Example reduces :
-  test ==>* tm_nat 6.
-Proof. unfold test. normalize. Qed.
+Example typechecks : 
+  has_type (@empty ty) test ty_Nat. 
+Proof. unfold test. eauto 15. Qed. 
+ 
+Example reduces : 
+  test ==>* tm_nat 6. 
+Proof. unfold test. normalize. Qed. 
 *)
 >> *)
 
@@ -2496,8 +2496,8 @@ Module Sumtest1.
    | inr y => y *)
 (** <<
    case (inl Nat 5) of
-     inl x => x
-   | inr y => y
+     inl x => x 
+   | inr y => y 
 >>
 *)
 
@@ -2517,13 +2517,13 @@ Proof. unfold test. normalize. Qed.
 *)
 (** <<
 (*
-Example typechecks :
-  has_type (@empty ty) test ty_Nat.
-Proof. unfold test. eauto 15. Qed.
-
-Example reduces :
-  test ==>* (tm_nat 5).
-Proof. unfold test. normalize. Qed.
+Example typechecks : 
+  has_type (@empty ty) test ty_Nat. 
+Proof. unfold test. eauto 15. Qed. 
+ 
+Example reduces : 
+  test ==>* (tm_nat 5). 
+Proof. unfold test. normalize. Qed. 
 *)
 >> *)
 
@@ -2539,10 +2539,10 @@ Module Sumtest2.
    (processSum (inl Nat 5), processSum (inr Nat 5))    *)
 (** <<
    let processSum =
-     \x:Nat+Nat.
-        case x of
-          inl n => n
-          inr n => if0 n then 1 else 0 in
+     \x:Nat+Nat. 
+        case x of 
+          inl n => n 
+          inr n => if0 n then 1 else 0 in 
    (processSum (inl Nat 5), processSum (inr Nat 5))
 >>
 *)
@@ -2569,13 +2569,13 @@ Proof. unfold test. normalize. Qed.
 *)
 (** <<
 (*
-Example typechecks :
-  has_type (@empty ty) test (ty_prod ty_Nat ty_Nat).
-Proof. unfold test. eauto 15. Qed.
-
-Example reduces :
-  test ==>* (tm_pair (tm_nat 5) (tm_nat 0)).
-Proof. unfold test. normalize. Qed.
+Example typechecks : 
+  has_type (@empty ty) test (ty_prod ty_Nat ty_Nat). 
+Proof. unfold test. eauto 15. Qed. 
+ 
+Example reduces : 
+  test ==>* (tm_pair (tm_nat 5) (tm_nat 0)). 
+Proof. unfold test. normalize. Qed. 
 *)
 >> *)
 
@@ -2594,9 +2594,9 @@ Module ListTest.
    | x::y => x*x *)
 (** <<
    let l = cons 5 (cons 6 (nil Nat)) in
-   lcase l of
-     nil => 0
-   | x::y => x*x
+   lcase l of 
+     nil => 0 
+   | x::y => x*x 
 >>
 *)
 
@@ -2618,13 +2618,13 @@ Proof. unfold test. normalize. Qed.
 *)
 (** <<
 (*
-Example typechecks :
-  has_type (@empty ty) test ty_Nat.
-Proof. unfold test. eauto 20. Qed.
-
-Example reduces :
-  test ==>* (tm_nat 25).
-Proof. unfold test. normalize. Qed.
+Example typechecks : 
+  has_type (@empty ty) test ty_Nat. 
+Proof. unfold test. eauto 20. Qed. 
+ 
+Example reduces : 
+  test ==>* (tm_nat 25). 
+Proof. unfold test. normalize. Qed. 
 *)
 >> *)
 
@@ -2640,8 +2640,8 @@ Module FixTest1.
                    if a=0 then 1 else a * (f (pred a))) *)
 (** <<
    fact := fix
-             (\f:nat->nat.
-                \a:nat.
+             (\f:nat->nat. 
+                \a:nat. 
                    if a=0 then 1 else a * (f (pred a)))
 >>
 *)
@@ -2670,10 +2670,10 @@ Qed.
 *)
 (** <<
 (*
-Example fact_typechecks :
-  has_type (@empty ty) fact (ty_arrow ty_Nat ty_Nat).
-Proof. unfold fact. auto 10.
-Qed.
+Example fact_typechecks : 
+  has_type (@empty ty) fact (ty_arrow ty_Nat ty_Nat). 
+Proof. unfold fact. auto 10. 
+Qed. 
 *)
 >> *)
 
@@ -2684,9 +2684,9 @@ Proof. unfold fact. normalize. Qed.
 *)
 (** <<
 (*
-Example fact_example:
-  (tm_app fact (tm_nat 4)) ==>* (tm_nat 24).
-Proof. unfold fact. normalize. Qed.
+Example fact_example: 
+  (tm_app fact (tm_nat 4)) ==>* (tm_nat 24). 
+Proof. unfold fact. normalize. Qed. 
 *)
 >> *)
 
@@ -2704,12 +2704,12 @@ Module FixTest2.
                | x::l -> (g x)::(f l)) *) 
 (** <<
    map :=
-     \g:nat->nat.
-       fix
-         (\f:[nat]->[nat].
-            \l:[nat]. 
-               case l of
-               | [] -> []
+     \g:nat->nat. 
+       fix 
+         (\f:[nat]->[nat]. 
+            \l:[nat].  
+               case l of 
+               | [] -> [] 
                | x::l -> (g x)::(f l))
 >> *) 
 Definition map :=
@@ -2740,18 +2740,18 @@ Proof. unfold map. normalize. Qed.
 (** <<
 (* 
 (* 上記の最後の [Hint Extern] のコメントが外されていることを確認すること... *)
-Example map_typechecks :
-  has_type empty map
-    (ty_arrow (ty_arrow ty_Nat ty_Nat)
-      (ty_arrow (ty_List ty_Nat)
-        (ty_List ty_Nat))).
-Proof. unfold map. auto 10. Qed.
-
-Example map_example :
-  tm_app (tm_app map (tm_abs a ty_Nat (tm_succ (tm_var a))))
-         (tm_cons (tm_nat 1) (tm_cons (tm_nat 2) (tm_nil ty_Nat)))
-  ==>* (tm_cons (tm_nat 2) (tm_cons (tm_nat 3) (tm_nil ty_Nat))).
-Proof. unfold map. normalize. Qed.
+Example map_typechecks : 
+  has_type empty map 
+    (ty_arrow (ty_arrow ty_Nat ty_Nat) 
+      (ty_arrow (ty_List ty_Nat) 
+        (ty_List ty_Nat))). 
+Proof. unfold map. auto 10. Qed. 
+ 
+Example map_example : 
+  tm_app (tm_app map (tm_abs a ty_Nat (tm_succ (tm_var a)))) 
+         (tm_cons (tm_nat 1) (tm_cons (tm_nat 2) (tm_nil ty_Nat))) 
+  ==>* (tm_cons (tm_nat 2) (tm_cons (tm_nat 3) (tm_nil ty_Nat))). 
+Proof. unfold map. normalize. Qed. 
 *)
 >> *)
 
@@ -2768,11 +2768,11 @@ Module FixTest3.
              else eq (pred m) (pred n))   *)
 (** <<
    equal =
-      fix
-        (\eq:Nat->Nat->Bool.
-           \m:Nat. \n:Nat.
-             if0 m then (if0 n then 1 else 0)
-             else if0 n then 0
+      fix 
+        (\eq:Nat->Nat->Bool. 
+           \m:Nat. \n:Nat. 
+             if0 m then (if0 n then 1 else 0) 
+             else if0 n then 0 
              else eq (pred m) (pred n))
 >> *)
 
@@ -2826,14 +2826,14 @@ Module FixTest4.
 *)
 (** <<
    let evenodd =
-         fix
-           (\eo: (Nat->Nat * Nat->Nat).
-              let e = \n:Nat. if0 n then 1 else eo.snd (pred n) in
-              let o = \n:Nat. if0 n then 0 else eo.fst (pred n) in
-              (e,o)) in
-    let even = evenodd.fst in
-    let odd  = evenodd.snd in
-    (even 3, even 4)
+         fix 
+           (\eo: (Nat->Nat * Nat->Nat). 
+              let e = \n:Nat. if0 n then 1 else eo.snd (pred n) in 
+              let o = \n:Nat. if0 n then 0 else eo.fst (pred n) in 
+              (e,o)) in 
+    let even = evenodd.fst in 
+    let odd  = evenodd.snd in 
+    (even 3, even 4) 
 >>
 *)
 
