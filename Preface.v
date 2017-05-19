@@ -376,42 +376,27 @@
     つまり、計算には入出力や変数への代入、ポインタの書き換えなどといった「副作用(side effect)」を含まないようにすべき、ということを意味します。
     例えば、「命令的(imperative)」ソートでは、受け取ったリスト内のポインタを張り替えてソートするでしょうが、純粋なソートでは受け取ったリストとは違う新しいリストをソートした上で返すでしょう。
  
-    One significant benefit of this style of programming is that it
-    makes programs easier to understand and reason about.  If every
-    operation on a data structure yields a new data structure, leaving
-    the old one intact, then there is no need to worry about how that
-    structure is being shared and whether a change by one part of the
-    program might break an invariant that another part of the program
-    relies on.  These considerations are particularly critical in
-    concurrent programs, where every piece of mutable state that is
-    shared between threads is a potential source of pernicious bugs.
-    Indeed, a large part of the recent interest in functional
-    programming in industry is due to its simple behavior in the
-    presence of concurrency.
+    関数型プログラミングのスタイルにおける大きな利点は、プログラムの理解を容易にすることです。
+    もし全ての操作が既存のデータから新しくデータを作り、既存のものに手を入れないなら、それがどこで保持されていて、そこで変更が影響を及ぼすのか、その影響で他が依拠している条件から逸脱しないか、などを気にする必要がありません。
+    こういった問題は特に並行プログラムにおいて顕著で、複数のスレッドから参照される変更可能な状態は、悪質なバグの原因になり得ます。
+    実際、現場での関数型プログラミングにおける関心の多くが並行プログラムにおけるこの単純な振る舞いによるものです。
  
-    Another reason for the current excitement about functional
-    programming is related to the first: functional programs are often
-    much easier to parallelize than their imperative counterparts.  If
-    running a computation has no effect other than producing a result,
-    then it does not matter _where_ it is run.  Similarly, if a data
-    structure is never modified destructively, then it can be copied
-    freely, across cores or across the network.  Indeed, the MapReduce
-    idiom that lies at the heart of massively distributed query
-    processors like Hadoop and is used by Google to index the entire
-    web is a classic example of functional programming.
+    関数型プログラミングの流行の理由の他の理由としては、（関数型プログラミングという語の）最初の用法と関連しますが、関数型プログラムはしばしば対応する命令的なものに比べて非常に容易に並列化可能です。
+    もし計算が結果を出すこと以外なにも影響を与えないならば、それは「どこで」計算しても構わないことになります。
+    同様に、データ構造が破壊的に変更されないならば、CPUのコア間やネットワーク間で自由にコピーできます。
+    実際、MapReduceというHadoopのような大規模分散クエリ処理系の核にある考え方は、関数型プログラミングで古くからある例の一つです。
   
-    For purposes of this course, functional programming has yet
-    another significant attraction: it serves as a bridge between
-    logic and computer science.  Indeed, Coq itself can be viewed as a
-    combination of a small but extremely expressive functional
-    programming language plus with a set of tools for stating and
-    proving logical assertions.  Moreover, when we come to look more
-    closely, we find that these two sides of Coq are actually aspects
-    of the very same underlying machinery -- i.e., _proofs are
-    programs_.  *)
+    関数型プログラミングには、非常に重要な役割がもう一つあります。
+    論理と計算機をつなぐという役割です。
+    Coqは小さく、しかし表現力豊かな関数型言語と、論理的表明を記述、証明するツールの組み合わせと言えます。
+    加えて、より詳細を見ていくと、その二つの側面が同一の機構、つまり「証明はプログラムである」というものであることがわかります。 *)
 
+(*
 (** ** Program Verification *)
+*)
+(** ** プログラム検証 *)
 
+(*
 (** The first third of the book is devoted to developing the
     conceptual framework of logic and functional programming and
     gaining enough fluency with Coq to use it for modeling and
@@ -465,9 +450,43 @@
     key ideas and mathematical tools used for a wide variety of
     real-world software and hardware verification tasks.
 *)
+ *)
+(** この本の最初の1/3では、論理と関数型言語のフレームワークを作り、またそれを通してCoqで非自明なものを記述、処理していくのに慣れてもらいます。
+    ここから、高信頼ソフトウェア（またはハードウェア）を構築するのに非常に重要な二つの方向に進んでいきます。
+    一方は「プログラム」における特定の性質の証明、そしてもう一方は「プログラミング言語」における一般的性質の証明です。
+ 
+    このどちらも、まず最初にすることはプログラムを数学的対象として表現することです。
+    これにより、プログラムについて正確な議論をできるようになります。
+    また、数学における関数や関係(relation)によってその動作を記述することもできます。
+    プログラムの挙動を数学的対象として表現するために、「抽象構文(_abstract syntax_)」と「操作的意味論(_operational semantics_)」を用います。
+    初めはまず、「大ステップ」形式の操作的意味論を使います。
+    これは利用可能な範囲では単純で読みやすい定義になっています。
+    その後、より詳細な「小ステップ」形式に移行します。
+    これは「終了しないプログラム」の要因の区別に有用で、また並行性など広範の言語機能に対応できます。
+ 
+    最初に対象とするプログラミング言語は、 _Imp_ と呼ばれる非常に小さな、おもちゃのような言語ですが、命令型プログラミングの核となる機能を持っています。
+    変数、代入、条件分岐、そして繰り返しです。
+    この本では、Impプログラムに対して、二つの観点で性質を解釈していきます。
+ 
+    一つ目は、Impプログラムの任意の初期状態に対する振る舞いの観点で「等しい(_equivalent_)」か、というものです。
+    この観点は、「メタプログラム(_metaprogram_)」に対する正当性の基準につながります。
+    メタプログラムとは、他のプログラムを操作するプログラムのことで、例えばコンパイラや最適化器があります。
+    この本では、Impへの簡単な最適化器を作り、それが正しいことを示します。
+ 
+    二つ目は、Impプログラムがある形式仕様を満たすか、というものです。
+    これを記述するために「ホーアの三つ組(_Hoare triple_)」を導入します。
+    ホーアの三つ組は、Impプログラムと、事前条件、事後条件の三つで構成されていて、事前条件を満たす状態から始めてImpプログラムを実行すると、終了するなら終了時の状態は事後条件を満たす、ということを表します。
+    また、ホーアの三つ組について論じる「ホーア論理(_Hoare Logic_)」を導入します。
+    ホーア論理は命令型プログラムの検証に特化した「領域特化論理(domain-specific logic)」であり、「ループ不変条件(loop invariant)」などの概念が組み込まれています。
+ 
+    この部分では、実世界のソフトウェアやハードウェアの検証に広く利用できるアイディアと数学の道具を経験してもらいます。 *)
 
+(*
 (** ** Type Systems *)
+*)
+(** ** 型システム *)
 
+(*
 (** Our final major topic, covering the last third of the course, is
     _type systems_, a powerful set of tools for establishing
     properties of _all_ programs in a given language.
@@ -488,6 +507,18 @@
     essentially a simplified model of the core of Coq itself!
 
 *)
+ *)
+(** 最後の1/3での主題は「型システム(_type system_)」です。
+    これは、導入した言語の全てのプログラムに対する性質を保証する強力な道具です。
+ 
+    型システムは形式検証技術の中でも「軽量形式手法(_lightweight formal method_)」と呼ばれるものの一つで、大きな成功を納めています。
+    形式検証としては、型システムの保証する性質は控えめですが、その控えめさ故に自動検査としてコンパイラやリンカや解析器に組み込め、またその理論に精通していない人にも使いやすいものとなっています。
+    （他の軽量形式手法としてはモデル検査器(model checker)や契約検査器(contract checker)、実行時に性質から逸脱した挙動を検知する実行時モニタリング手法などがあります。）
+ 
+    ここでは「単純型付きラムダ計算(_simply typed lambda-calculus_)」と呼ばれる言語について学びます。
+    これはCoqの核をさらに単純化したものです。
+    つまり、回り回ってCoqの理解という最初の目標に戻ってきます。
+ *)
 
 (* ###################################################################### *)
 (*
