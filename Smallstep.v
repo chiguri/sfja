@@ -1,59 +1,61 @@
+(** * Smallstep: スモールステップ操作的意味論 *)
 (*
 (** * Smallstep: Small-step Operational Semantics *)
 *)
-(** * Smallstep: スモールステップ操作的意味論 *)
 
-Require Export Imp.
-
+Require Import Coq.Arith.Arith.
+Require Import Coq.Arith.EqNat.
+Require Import Coq.omega.Omega.
+Require Import Coq.Lists.List.
+Import ListNotations.
+Require Import Maps.
+Require Import Imp.
 
 (*
-(** The evaluators we have seen so far (e.g., the ones for
-    [aexp]s, [bexp]s, and commands) have been formulated in a
-    "big-step" style -- they specify how a given expression can be
-    evaluated to its final value (or a command plus a store to a final
-    store) "all in one big step."
- 
+(** The evaluators we have seen so far (for [aexp]s, [bexp]s,
+    commands, ...) have been formulated in a "big-step" style: they
+    specify how a given expression can be evaluated to its final
+    value (or a command plus a store to a final store) "all in one big
+    step."
+
     This style is simple and natural for many purposes -- indeed,
-    Gilles Kahn, who popularized its use, called it _natural
-    semantics_.  But there are some things it does not do well.  In
-    particular, it does not give us a natural way of talking about
-    _concurrent_ programming languages, where the "semantics" of a
-    program -- i.e., the essence of how it behaves -- is not just
-    which input states get mapped to which output states, but also
-    includes the intermediate states that it passes through along the
-    way, since these states can also be observed by concurrently
-    executing code.
+    Gilles Kahn, who popularized it, called it _natural semantics_.
+    But there are some things it does not do well.  In particular, it
+    does not give us a natural way of talking about _concurrent_
+    programming languages, where the semantics of a program -- i.e.,
+    the essence of how it behaves -- is not just which input states
+    get mapped to which output states, but also includes the
+    intermediate states that it passes through along the way, since
+    these states can also be observed by concurrently executing code.
 
     Another shortcoming of the big-step style is more technical, but
-    critical in some situations.  To see the issue, suppose we wanted
-    to define a variant of Imp where variables could hold _either_
-    numbers _or_ lists of numbers (see the [HoareList] chapter for
-    details).  In the syntax of this extended language, it will be
+    critical in many situations.  Suppose we want to define a variant
+    of Imp where variables could hold _either_ numbers _or_ lists of
+    numbers.  In the syntax of this extended language, it will be
     possible to write strange expressions like [2 + nil], and our
     semantics for arithmetic expressions will then need to say
-    something about how such expressions behave.  One
-    possibility (explored in the [HoareList] chapter) is to maintain
-    the convention that every arithmetic expressions evaluates to some
-    number by choosing some way of viewing a list as a number -- e.g.,
-    by specifying that a list should be interpreted as [0] when it
-    occurs in a context expecting a number.  But this is really a bit
-    of a hack.
+    something about how such expressions behave.  One possibility is
+    to maintain the convention that every arithmetic expressions
+    evaluates to some number by choosing some way of viewing a list as
+    a number -- e.g., by specifying that a list should be interpreted
+    as [0] when it occurs in a context expecting a number.  But this
+    is really a bit of a hack.
 
     A much more natural approach is simply to say that the behavior of
-    an expression like [2+nil] is _undefined_ -- it doesn't evaluate
-    to any result at all.  And we can easily do this: we just have to
-    formulate [aeval] and [beval] as [Inductive] propositions rather
-    than Fixpoints, so that we can make them partial functions instead
-    of total ones.
+    an expression like [2+nil] is _undefined_ -- i.e., it doesn't
+    evaluate to any result at all.  And we can easily do this: we just
+    have to formulate [aeval] and [beval] as [Inductive] propositions
+    rather than Fixpoints, so that we can make them partial functions
+    instead of total ones.
 
-    However, now we encounter a serious deficiency.  In this language,
-    a command might _fail_ to map a given starting state to any ending
-    state for two quite different reasons: either because the
-    execution gets into an infinite loop or because, at some point,
-    the program tries to do an operation that makes no sense, such as
-    adding a number to a list, and none of the evaluation rules can be
-    applied.
- 
+    Now, however, we encounter a serious deficiency.  In this
+    language, a command might fail to map a given starting state to
+    any ending state for _two quite different reasons_: either because
+    the execution gets into an infinite loop or because, at some
+    point, the program tries to do an operation that makes no sense,
+    such as adding a number to a list, so that none of the evaluation
+    rules can be applied.
+
     These two outcomes -- nontermination vs. getting stuck in an
     erroneous configuration -- are quite different.  In particular, we
     want to allow the first (permitting the possibility of infinite
@@ -61,70 +63,55 @@ Require Export Imp.
     general looping constructs like [while]) but prevent the
     second (which is just wrong), for example by adding some form of
     _typechecking_ to the language.  Indeed, this will be a major
-    topic for the rest of the course.  As a first step, we need a
-    different way of presenting the semantics that allows us to
-    distinguish nontermination from erroneous "stuck states."
- 
+    topic for the rest of the course.  As a first step, we need a way
+    of presenting the semantics that allows us to distinguish
+    nontermination from erroneous "stuck states."
+
     So, for lots of reasons, we'd like to have a finer-grained way of
     defining and reasoning about program behaviors.  This is the topic
     of the present chapter.  We replace the "big-step" [eval] relation
     with a "small-step" relation that specifies, for a given program,
     how the "atomic steps" of computation are performed. *)
 *)
-(** ここまで見てきた評価器(例えば[aexp]のもの、[bexp]のもの、コマンドのもの)
-    はビッグステップスタイルで記述されてきました。
-    つまり、与えられた式がどのように最終的な値になるか
-    (またはコマンドと記憶状態(store)の組がどのように最終記憶状態になるか)を特定していました。
-    「すべてが1つの大きなステップ」で行われました。
-
-    このスタイルは単純で多くの目的のために自然な方法です。実際、Gilles Kahn は、
-    この使用を広めた人ですが、彼はこれを自然意味論(_natural semantics_)と呼びました。
+(** ここまで見てきた評価器（例えば[aexp]用、[bexp]用、コマンド用、などなど）は「ビッグステップスタイル」で記述されてきました。
+    つまり、与えられた式がどのように最終的な値になるか（またはコマンドと記憶状態の組がどのように最終記憶状態になるか）を「すべて大きな1ステップ」として決定しました。
+ 
+    このスタイルは単純で多くの目的のために自然な方法です。
+    実際、この手法を広めた Gilles Kahn は、これを「自然意味論(_natural semantics_)」と呼びました。
     しかし、これではうまくいかないときもあります。
-    特に、この方法は、並列プログラミング言語について話す自然な方法を提供してくれません。
-    並列プログラミング言語の場合、プログラムの「意味」、つまり
-    プログラムがどのように振る舞うかの本質は、
-    入力状態が出力状態にどのように写像されるかだけではなく、途中で通過する状態も含みます。
-    なぜなら、中間状態は並列実行されるコードからも観測されるからです。
-
-    ビッグステップスタイルのもう1つの欠点は、より技術的なことですが、
-    ある種のアプリケーションには致命的です。
-    [HoareList]章で導入した、変数が数値だけでなく数値のリストにも束縛されうるImpの変種を考えましょう。
+    特に、この方法は、並列プログラミング言語について言及する際には自然ではありません。
+    並列プログラミング言語の場合、プログラムの「意味」、つまりプログラムがどのように振る舞うかの本質は、入力状態が出力状態にどのように写像されるかだけではなく、途中で通過する状態も含みます。
+    なぜなら、中間状態は並列実行される他のコードからも観測されるからです。
+ 
+    ビッグステップスタイルのもう1つの欠点は、より技術的なことですが、ある種のアプリケーションには致命的です。
+    変数が数値だけでなく数値のリストにも束縛されうるImpの変種を考えましょう。
     構文的には、この言語では[2 + nil]のような変な式を書くことができます。
     そして、意味論上では、この式がどのように動くのかについて言及する必要があります。
-    一つの動き方としては、([HoareList]章で説明したのですが)リストを適当な数値として扱うことで、
-    全ての算術式を数値に評価するものがあります。例えば数値を期待する箇所ではリストを常に[0]として扱う、
-    といった扱い方があります。ただ、この方法は少し奇抜な方法です。
-
-    より自然な方法としては、[2+nil]のような式の動き方を「未定義」(_undefined_)としてしまうことです。
+    一つの動き方としては、リストを適当な数値として扱うことで、全ての算術式を数値に評価するものがあります。
+    例えば数値を期待する箇所ではリストを常に[0]として扱う、といった扱い方があります。
+    ただ、この方法は少し奇抜な方法です。
+ 
+    より自然な方法としては、[2+nil]のような式の動き方を「未定義(_undefined_)」としてしまうことです。
     つまりどのような結果にも評価されないということです。
     これは簡単に実現できます。
     [aeval]と[beval]を、Fixpoint ではなく帰納的命題として定義するだけです。
-    すると、全関数(total function)ではなく部分関数(partial function)にすることができます。
-
+    すると、全関数ではなく部分関数にすることができます。
+ 
     しかしながら、この方法で Imp を定義することには深刻な欠陥があります。
-    この言語には、コマンドが初期状態を終了状態に写像するのに失敗するまったく異なる2種類の理由があります。
-    1つは評価が無限ループに陥ることによるもの、もう1つは、どこかの地点でプログラムが、
-    数値をリストに加えるなどの意味のない操作をしようとして、
-    どの評価規則も適用できなくなることによるものです。
-
+    この言語では、コマンドが初期状態を終了状態に写像するのに失敗した際に、「まったく異なる」2種類の原因があり得ます。
+    1つは評価が無限ループに陥ることによるもの、もう1つは、どこかの地点でプログラムが、数値をリストに加えるなどの意味のない操作をしようとして、どの評価規則も適用できなくなることによるものです。
+ 
     この2つの結果、つまり「停止しないこと」と「間違った設定によって行き詰まること」は、まったく別物です。
-    特に、1つ目は許容し(無限ループの可能性を許すことは、
-    プログラミングに [while] のような一般的ループ構造を使う便利さの代償です)、
-    2つ目(これはただの間違いです)は禁じたいのです。
-    これは例えば言語に何らかの「型チェック」(_typechecking_)を追加することで実現できます。
+    特に、1つ目は許容し（無限ループの可能性を許すことは、プログラミングに [while] のような一般的ループ構造を使う便利さの代償です）、2つ目（これはただの間違いです）は禁じたいのです。
+    これは例えば言語に何らかの「型チェック(_typechecking_)」を追加することで実現できます。
     実のところ、これはこのコースの残りの部分の主要なトピックです。
-    最初のステップとして、停止しないことと、
-    間違いによる「行き詰まり状態」を区別することができる別の意味提示方法が必要です。
-
-    このように、いろいろな理由で、
-    プログラムの振る舞いを定義し推論するよりきめの細かい方法が欲しいのです。
+    まずは、停止しないことと、間違いによる「行き詰まり状態」を区別することができる別の意味提示方法が必要です。
+ 
+    このように、いろいろな理由で、プログラムの振る舞いを定義し推論するよりきめの細かい方法が欲しいのです。
     これがこの章のトピックです。
-    与えられたプログラムに対して計算の「アトミックなステップ」
-    がどのように行われるかを定める「スモールステップ」の関係によって、
-    「ビッグステップ」の[eval]関係を置き換えます。*)
+    与えられたプログラムに対して計算の「アトミックなステップ」がどのように行われるかを定める「スモールステップ」の関係によって、「ビッグステップ」の[eval]関係を置き換えます。*)
 
-
-(* ########################################################### *)
+(* ################################################################# *)
 (*
 (** * A Toy Language *)
 *)
@@ -133,28 +120,25 @@ Require Export Imp.
 (*
 (** To save space in the discussion, let's go back to an
     incredibly simple language containing just constants and
-    addition.  (We use single letters -- [C] and [P] -- for the
-    constructor names, for brevity.)  At the end of the chapter, we'll
-    see how to apply the same techniques to the full Imp language.  *)
+    addition.  (We use single letters -- [C] and [P] (for Command and
+    Plus) -- as constructor names, for brevity.)  At the end of the
+    chapter, we'll see how to apply the same techniques to the full
+    Imp language.  *)
 *)
 (** 無駄な議論を省くため、定数と足し算だけの極端に単純な言語に戻りましょう。
-    (可読性のために、コンストラクタに[C]と[P]という一文字の名前を用います)
+    （可読性のために、定数と足し算を表すコンストラクタに[C]と[P]という一文字の名前を用います。）
     この章の終わりには、同じテクニックをImp言語全体に適用する方法がわかるでしょう。*)
 
 Inductive tm : Type :=
   | C : nat -> tm         (* Constant *)
   | P : tm -> tm -> tm.   (* Plus *)
 
-Tactic Notation "tm_cases" tactic(first) ident(c) :=
-  first;
-  [ Case_aux c "C" | Case_aux c "P" ].
-
 (*
-(** Here is a standard evaluator for this language, written in the
-    same (big-step) style as we've been using up to this point. *)
+(** Here is a standard evaluator for this language, written in
+    the big-step style that we've been using up to this point. *)
 *)
 (** 次がこの言語の標準的な評価器です。
-    ここまでやってきたのと同じ(ビッグステップの)スタイルで記述されています。*)
+    ここまでやってきたのと同じビッグステップスタイルで記述されています。 *)
 
 Fixpoint evalF (t : tm) : nat :=
   match t with
@@ -163,57 +147,54 @@ Fixpoint evalF (t : tm) : nat :=
   end.
 
 (*
-(** Now, here is the same evaluator, written in exactly the same
+(** Here is the same evaluator, written in exactly the same
     style, but formulated as an inductively defined relation.  Again,
-    we use the notation [t || n] for "[t] evaluates to [n]." *)
+    we use the notation [t \\ n] for "[t] evaluates to [n]." *)
 *)
-(** 次は同じ評価器を、まったく同じスタイルながら、帰納的に定義された関係によって定式化したものです。
-    再び、「[t]が[n]に評価される」を記法 [t || n] で表しています。*)
+(** 同じ評価器を、まったく同じスタイルながら、帰納的に定義された関係によって定式化したものです。
+    ここでも、「[t]が[n]に評価される」を記法 [t \\ n] で表しています。*)
 (*
-(** 
-                               --------                                (E_Const)
-                               C n || n
-
-                               t1 || n1
-                               t2 || n2
-                        ----------------------                         (E_Plus)
-                        P t1 t2 || C (n1 + n2)
-*)
-*)
 (**
+
+                               --------                                (E_Const)
+                               C n \\ n
+
+                               t1 \\ n1
+                               t2 \\ n2
+                           ------------------                          (E_Plus)
+                           P t1 t2 \\ n1 + n2
+*)
+ *)
+(** 
 <<
                                --------                                (E_Const) 
-                               C n || n 
-
-                               t1 || n1 
-                               t2 || n2 
-                        ----------------------                         (E_Plus) 
-                        P t1 t2 || C (n1 + n2) 
+                               C n \\ n 
+ 
+                               t1 \\ n1 
+                               t2 \\ n2 
+                           ------------------                          (E_Plus) 
+                           P t1 t2 \\ n1 + n2 
 >>
-*)
+ *)
 
-Reserved Notation " t '||' n " (at level 50, left associativity). 
+Reserved Notation " t '\\' n " (at level 50, left associativity).
 
 Inductive eval : tm -> nat -> Prop :=
   | E_Const : forall n,
-      C n || n
-  | E_Plus : forall t1 t2 n1 n2, 
-      t1 || n1 -> 
-      t2 || n2 ->
-      P t1 t2 || (n1 + n2)
+      C n \\ n
+  | E_Plus : forall t1 t2 n1 n2,
+      t1 \\ n1 ->
+      t2 \\ n2 ->
+      P t1 t2 \\ (n1 + n2)
 
-  where " t '||' n " := (eval t n).
-
-Tactic Notation "eval_cases" tactic(first) ident(c) :=
-  first;
-  [ Case_aux c "E_Const" | Case_aux c "E_Plus" ].
+  where " t '\\' n " := (eval t n).
 
 Module SimpleArith1.
 
 (*
-(** Now, here is a small-step version. *)
+(** Now, here is the corresponding _small-step_ evaluation relation. *)
 *)
-(** そして、次がスモールステップ版です。*)
+(** そして、次が対応する「スモールステップ」版です。*)
 (*
 (** 
                      -------------------------------        (ST_PlusConstConst)
@@ -227,23 +208,21 @@ Module SimpleArith1.
                       ---------------------------                    (ST_Plus2)
                       P (C n1) t2 ==> P (C n1) t2'
 *)
-*)
+ *)
 (**
 <<
                      -------------------------------        (ST_PlusConstConst) 
                      P (C n1) (C n2) ==> C (n1 + n2) 
-
+ 
                               t1 ==> t1' 
                          --------------------                        (ST_Plus1) 
                          P t1 t2 ==> P t1' t2 
-
+ 
                               t2 ==> t2' 
                       ---------------------------                    (ST_Plus2) 
                       P (C n1) t2 ==> P (C n1) t2' 
 >>
-*)
-
-
+ *)
 
 Reserved Notation " t '==>' t' " (at level 40).
 
@@ -254,19 +233,14 @@ Inductive step : tm -> tm -> Prop :=
       t1 ==> t1' ->
       P t1 t2 ==> P t1' t2
   | ST_Plus2 : forall n1 t2 t2',
-      t2 ==> t2' -> 
+      t2 ==> t2' ->
       P (C n1) t2 ==> P (C n1) t2'
 
   where " t '==>' t' " := (step t t').
 
-Tactic Notation "step_cases" tactic(first) ident(c) :=
-  first;
-  [ Case_aux c "ST_PlusConstConst"
-  | Case_aux c "ST_Plus1" | Case_aux c "ST_Plus2" ].
-
 (*
 (** Things to notice:
- 
+
     - We are defining just a single reduction step, in which
       one [P] node is replaced by its value.
 
@@ -278,17 +252,15 @@ Tactic Notation "step_cases" tactic(first) ident(c) :=
     - A term that is just a constant cannot take a step. *)
 *)
 (** 注目すること:
-
+ 
     - 定義しているのは簡約のちょうど1ステップです。
       そこでは1つの[P]ノードがその値に置き換えられます。
-
-    - 各ステップでは「最左」の準備ができている(つまり、引数が両方とも定数である)
-      [P]ノードを探して、それをその場で書き換えます。
+ 
+    - 各ステップでは「最左」の準備ができている（つまり、引数が両方とも定数である）[P]ノードを探して、それをその場で書き換えます。
       最初の規則は[P]ノードをどのように書き換えるかを定めます。
       残りの2つの規則は、それをどう探すかを定めます。
-
+ 
     - 定数の項は、ステップを進めません。*)
-
 
 (** Let's pause and check a couple of examples of reasoning with
     the [step] relation... *)
@@ -300,12 +272,12 @@ Tactic Notation "step_cases" tactic(first) ident(c) :=
 (** もし[t1]が1ステップで[t1']になるならば、
     [P t1 t2] は1ステップで [P t1' t2] になります: *)
 
-Example test_step_1 : 
-      P 
+Example test_step_1 :
+      P
         (P (C 0) (C 3))
         (P (C 2) (C 4))
       ==>
-      P 
+      P
         (C (0 + 3))
         (P (C 2) (C 4)).
 Proof.
@@ -328,180 +300,209 @@ Proof.
 (* (訳注: 他のところと比べて、明示的な練習問題としての指示がなかったので、
    意を汲んで追記しました。) *)
 
-Example test_step_2 : 
-      P 
+Example test_step_2 :
+      P
         (C 0)
-        (P 
-          (C 2) 
+        (P
+          (C 2)
           (P (C 0) (C 3)))
       ==>
-      P 
+      P
         (C 0)
-        (P 
-          (C 2) 
+        (P
+          (C 2)
           (C (0 + 3))).
-Proof. 
+Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
+End SimpleArith1.
 
-
-
-(* ########################################################### *)
+(* ################################################################# *)
 (** * Relations *)
 
-(** We will be using several different step relations, so it is
-    helpful to generalize a bit and state a few definitions and
-    theorems about relations in general.  (The optional chapter
+(** We will be working with several different single-step relations,
+    so it is helpful to generalize a bit and state a few definitions
+    and theorems about relations in general.  (The optional chapter
     [Rel.v] develops some of these ideas in a bit more detail; it may
-    be useful if the treatment here is too dense.) *)
+    be useful if the treatment here is too dense.) 
 
-(** A (binary) _relation_ on a set [X] is a family of propositions
+    A _binary relation_ on a set [X] is a family of propositions
     parameterized by two elements of [X] -- i.e., a proposition about
     pairs of elements of [X].  *)
 
 Definition relation (X: Type) := X->X->Prop.
 
-
 (** Our main examples of such relations in this chapter will be
-    the single-step and multi-step reduction relations on terms, [==>]
-    and [==>*], but there are many other examples -- some that come to
-    mind are the "equals," "less than," "less than or equal to," and
-    "is the square of" relations on numbers, and the "prefix of"
-    relation on lists and strings. *)
-
+    the single-step reduction relation, [==>], and its multi-step
+    variant, [==>*] (defined below), but there are many other
+    examples -- e.g., the "equals," "less than," "less than or equal
+    to," and "is the square of" relations on numbers, and the "prefix
+    of" relation on lists and strings. *)
 
 (*
 (** One simple property of the [==>] relation is that, like the
-    evaluation relation for our language of Imp programs, it is
-    _deterministic_.
+    big-step evaluation relation for Imp, it is _deterministic_.
 
     _Theorem_: For each [t], there is at most one [t'] such that [t]
     steps to [t'] ([t ==> t'] is provable).  Formally, this is the
     same as saying that [==>] is deterministic. *)
 *)
-(** 関係 [==>] のおもしろい性質の1つは、
-    Imp プログラムの言語の評価関係と同様、決定性を持つ(_deterministic_)ということです。
-
+(** 関係 [==>] のおもしろい性質の1つは、Imp プログラムの言語の評価関係と同様、決定性を持つ(_deterministic_)ということです。
+ 
     「定理」: 各[t]に対して、[t]が1ステップで[t']になる([t ==> t'] が証明可能な)
     [t']は高々1つである。
     形式的には、これは、[==>]が部分関数であるというのと同じです。 *)
 
 (*
-(** _Proof sketch_: We show that if [x] steps to both [y1] and [y2]
-    then [y1] and [y2] are equal, by induction on a derivation of
-    [step x y1].  There are several cases to consider, depending on
-    the last rule used in this derivation and in the given derivation
-    of [step x y2].
+(** _Proof sketch_: We show that if [x] steps to both [y1] and
+    [y2], then [y1] and [y2] are equal, by induction on a derivation
+    of [step x y1].  There are several cases to consider, depending on
+    the last rule used in this derivation and the last rule in the
+    given derivation of [step x y2].
 
       - If both are [ST_PlusConstConst], the result is immediate.
 
       - The cases when both derivations end with [ST_Plus1] or
-        [ST_Plus2] follow by the induction hypothesis.  
+        [ST_Plus2] follow by the induction hypothesis.
 
       - It cannot happen that one is [ST_PlusConstConst] and the other
-        is [ST_Plus1] or [ST_Plus2], since this would imply that [x] has
-        the form [P t1 t2] where both [t1] and [t2] are
-        constants (by [ST_PlusConstConst]) _and_ one of [t1] or [t2] has
-        the form [P ...].
+        is [ST_Plus1] or [ST_Plus2], since this would imply that [x]
+        has the form [P t1 t2] where both [t1] and [t2] are
+        constants (by [ST_PlusConstConst]) _and_ one of [t1] or [t2]
+        has the form [P _].
 
-      - Similarly, it cannot happen that one is [ST_Plus1] and the other
-        is [ST_Plus2], since this would imply that [x] has the form
-        [P t1 t2] where [t1] has both the form [P t1 t2] and
-        the form [C n]. [] *)
+      - Similarly, it cannot happen that one is [ST_Plus1] and the
+        other is [ST_Plus2], since this would imply that [x] has the
+        form [P t1 t2] where [t1] has both the form [P t11 t12] and the
+        form [C n]. [] *)
 *)
 (** 「証明スケッチ」:[x]が1ステップで[y1]と[y2]のどちらにもなるとき、[y1]と[y2]
     が等しいことを、[step x y1] の導出についての帰納法で示す。
     この導出と [step x y2] の導出のそれぞれで使われた最後の規則によって、
     いくつかの場合がある。
-
+ 
       - もし両者とも [ST_PlusConstConst] ならば、一致は明らかである。
-
+ 
       - 導出が両者とも [ST_Plus1] または [ST_Plus2] で終わるならば、
         帰納法の仮定から成立する。
-
+ 
       - 一方が [ST_PlusConstConst] で、他方が [ST_Plus1] または [ST_Plus2]
         であることはあり得ない。なぜなら、そうなるためには、
         [x] が [tm_plus t1 t2] の形で([ST_PlusConstConst]より)
         [t1]と[t2]が両者とも定数であり、かつ[t1]または[t2]が [tm_plus ...] 
         の形でなければならない。
-
+ 
       - 同様に、一方が [ST_Plus1] で他方が [ST_Plus2] であることもあり得ない。
         なぜなら、そのためには、[x] は [P t1 t2] の形で、
-        [t1] が [P t1 t2] の形であると同時に [C n] 
+        [t1] が [P t11 t12] の形であると同時に [C n] 
         の形でもなければならないからである。 [] *)
 
+(** Formally: *)
+
 Definition deterministic {X: Type} (R: relation X) :=
-  forall x y1 y2 : X, R x y1 -> R x y2 -> y1 = y2. 
+  forall x y1 y2 : X, R x y1 -> R x y2 -> y1 = y2.
+
+Module SimpleArith2.
+Import SimpleArith1.
 
 Theorem step_deterministic:
   deterministic step.
 Proof.
   unfold deterministic. intros x y1 y2 Hy1 Hy2.
   generalize dependent y2.
-  step_cases (induction Hy1) Case; intros y2 Hy2.
-    Case "ST_PlusConstConst". step_cases (inversion Hy2) SCase.
-      SCase "ST_PlusConstConst". reflexivity.
-      SCase "ST_Plus1". inversion H2.
-      SCase "ST_Plus2". inversion H2.
-    Case "ST_Plus1". step_cases (inversion Hy2) SCase.
-      SCase "ST_PlusConstConst". rewrite <- H0 in Hy1. inversion Hy1.
-      SCase "ST_Plus1".
+  induction Hy1; intros y2 Hy2.
+    - (* ST_PlusConstConst *) inversion Hy2.
+      + (* ST_PlusConstConst *) reflexivity.
+      + (* ST_Plus1 *) inversion H2.
+      + (* ST_Plus2 *) inversion H2.
+    - (* ST_Plus1 *) inversion Hy2.
+      + (* ST_PlusConstConst *) 
+        rewrite <- H0 in Hy1. inversion Hy1.
+      + (* ST_Plus1 *)
         rewrite <- (IHHy1 t1'0).
         reflexivity. assumption.
-      SCase "ST_Plus2". rewrite <- H in Hy1. inversion Hy1.
-    Case "ST_Plus2". step_cases (inversion Hy2) SCase.
-      SCase "ST_PlusConstConst". rewrite <- H1 in Hy1. inversion Hy1.
-      SCase "ST_Plus1". inversion H2.
-      SCase "ST_Plus2".
+      + (* ST_Plus2 *) 
+        rewrite <- H in Hy1. inversion Hy1.
+    - (* ST_Plus2 *) inversion Hy2.
+      + (* ST_PlusConstConst *) 
+        rewrite <- H1 in Hy1. inversion Hy1.
+      + (* ST_Plus1 *) inversion H2.
+      + (* ST_Plus2 *)
         rewrite <- (IHHy1 t2'0).
-        reflexivity. assumption.  
+        reflexivity. assumption.
 Qed.
 
-(** There is some annoying repetition in this proof.
-    Each use of [inversion Hy2] results in three subcases, 
-    only one of which is relevant (the one which matches the 
-    current case in the induction on [Hy1]). The other two
-    subcases need to be dismissed by finding the contradiction
-    among the hypotheses and doing inversion on it.
+End SimpleArith2.
 
-    There is a tactic called [solve by inversion] defined in [SfLib.v]
-    that can be of use in such cases. It will solve the goal if it
-    can be solved by inverting some hypothesis; otherwise, it fails.
-    (There are variants [solve by inversion 2] and [solve by inversion 3]
-    that work if two or three consecutive inversions will solve the goal.)
+(** There is some annoying repetition in this proof.  Each use of
+    [inversion Hy2] results in three subcases, only one of which is
+    relevant (the one that matches the current case in the induction
+    on [Hy1]).  The other two subcases need to be dismissed by finding
+    the contradiction among the hypotheses and doing inversion on it.
 
-    The example below shows how a proof of the previous theorem can be
-    simplified using this tactic.
-*)
+    The following custom tactic, called [solve_by_inverts], can be
+    helpful in such cases.  It will solve the goal if it can be solved
+    by inverting some hypothesis; otherwise, it fails. *)
+
+Ltac solve_by_inverts n :=
+  match goal with | H : ?T |- _ => 
+  match type of T with Prop =>
+    solve [ 
+      inversion H; 
+      match n with S (S (?n')) => subst; solve_by_inverts (S n') end ]
+  end end.
+
+(** The details of how this works are not important for now, but it
+    illustrates the power of Coq's [Ltac] language for
+    programmatically defining special-purpose tactics.  It looks
+    through the current proof state for a hypothesis [H] (the first
+    [match]) of type [Prop] (the second [match]) such that performing
+    inversion on [H] (followed by a recursive invocation of the same
+    tactic, if its argument [n] is greater than one) completely solves
+    the current goal.  If no such hypothesis exists, it fails.
+
+    We will usually want to call [solve_by_inverts] with argument
+    [1] (especially as larger arguments can lead to very slow proof
+    checking), so we define [solve_by_invert] as a shorthand for this
+    case. *)
+
+Ltac solve_by_invert :=
+  solve_by_inverts 1.
+
+(** Let's see how a proof of the previous theorem can be simplified
+    using this tactic... *)
+
+Module SimpleArith3.
+Import SimpleArith1.
 
 Theorem step_deterministic_alt: deterministic step.
 Proof.
   intros x y1 y2 Hy1 Hy2.
   generalize dependent y2.
-  step_cases (induction Hy1) Case; intros y2 Hy2; 
-    inversion Hy2; subst; try (solve by inversion).
-  Case "ST_PlusConstConst". reflexivity.
-  Case "ST_Plus1". 
+  induction Hy1; intros y2 Hy2;
+    inversion Hy2; subst; try solve_by_invert.
+  - (* ST_PlusConstConst *) reflexivity.
+  - (* ST_Plus1 *)
     apply IHHy1 in H2. rewrite H2. reflexivity.
-  Case "ST_Plus2".
+  - (* ST_Plus2 *)
     apply IHHy1 in H2. rewrite H2. reflexivity.
 Qed.
 
+End SimpleArith3.
 
-End SimpleArith1.
-
-(* ########################################################### *)
+(* ================================================================= *)
 (*
 (** ** Values *)
 *)
 (** ** 値 *)
 
 (*
-(** Let's take a moment to slightly generalize the way we state the
-    definition of single-step reduction.  *)
+(** Next, it will be useful to slightly reformulate the
+    definition of single-step reduction by stating it in terms of
+    "values." *)
 *)
-(** 定義した1ステップ簡約の定義をちょっとだけ一般化するために少し時間をとりましょう。*)
+(** 次に、1ステップ簡約を再定義して、「値」であることを明示するようにしましょう。 *)
 
 (*
 (** It is useful to think of the [==>] relation as defining an
@@ -513,19 +514,17 @@ End SimpleArith1.
         here, a single "add" operation.
 
       - The _halting states_ of the machine are ones where there is no
-        more computation to be done.
-*)
+        more computation to be done. *)
 *)
 (** 関係 [==>] を抽象機械(_abstract machine_)の定義と考えるのは便利です:
-
+ 
       - どの時点でも、機械の状態(_state_)は項です。
-
+ 
       - 機械のステップ(_step_)は、計算のアトミックな単位です。ここでは、1つの加算処理です。
+ 
+      - 機械の停止状態(_halting states_)は、さらなる計算が存在しない状態です。 *)
 
-      - 機械の停止状態(_halting states_)は、さらなる計算が存在しない状態です。
-*)
-(**
-    We can then execute a term [t] as follows:
+(** We can then execute a term [t] as follows:
 
       - Take [t] as the starting state of the machine.
 
@@ -535,15 +534,14 @@ End SimpleArith1.
 
       - When no more reduction is possible, "read out" the final state
         of the machine as the result of execution. *)
-(**
-    このとき、項[t]は以下のように評価できます:
-
+(** このとき、項[t]は以下のように評価できます:
+ 
       - [t]を機械の開始状態としてとります。
-
+ 
       - 次のような機械の状態の列を見つけるために、[==>] 関係を繰り返し使います。
         見つけるのは、[t]から始まり、それぞれの状態から1ステップでその次の状態になる列です。
-
-      - もう簡約ができなくなったとき、機械の最終状態を、実行結果として「読み出し」ます。*)
+ 
+      - もう簡約ができなくなったとき、機械の最終状態を、実行結果として「読み出し」ます。 *)
 
 (*
 (** Intuitively, it is clear that the final states of the
@@ -555,7 +553,7 @@ End SimpleArith1.
     そのような項を「値」(_values_)と呼びます。*)
 
 Inductive value : tm -> Prop :=
-  v_const : forall n, value (C n).
+  | v_const : forall n, value (C n).
 
 (*
 (** Having introduced the idea of values, we can use it in the
@@ -579,22 +577,22 @@ Inductive value : tm -> Prop :=
                          --------------------                        (ST_Plus2)
                          P v1 t2 ==> P v1 t2'
 *)
-*)
+ *)
 (**
 <<
                      -------------------------------        (ST_PlusConstConst) 
                      P (C n1) (C n2) ==> C (n1 + n2) 
-
+ 
                               t1 ==> t1' 
                          --------------------                        (ST_Plus1) 
                          P t1 t2 ==> P t1' t2 
-
+ 
                                value v1 
                               t2 ==> t2' 
                          --------------------                        (ST_Plus2) 
                          P v1 t2 ==> P v1 t2' 
 >>
-*)
+ *)
 (*
 (** Again, the variable names here carry important information:
     by convention, [v1] ranges only over values, while [t1] and [t2]
@@ -602,12 +600,12 @@ Inductive value : tm -> Prop :=
     [value] hypothesis is arguably redundant.  We'll keep it for now,
     to maintain a close correspondence between the informal and Coq
     versions of the rules, but later on we'll drop it in informal
-    rules, for the sake of brevity.) *)
+    rules for brevity.) *)
 *)
 (** 再び、変数名が重要な情報を担っています:
     慣習として、[v1]は値のみを変域とし、一方[t1]と[t2]は任意の項を変域とします。
-    (この慣習により、明示的に[value]仮定を用いることは冗長となります。
-    この時点では非形式的なルールとCoqの記述の対応をわかりやすくするために仮定を取っておきますが、後に可読性を優先して除去します。) *)
+    （この慣習により、明示的に[value]仮定を用いることは冗長となります。
+    この時点では非形式的なルールとCoqの記述の対応をわかりやすくするために仮定を取っておきますが、後に可読性を優先して除去します。） *)
 
 (**  Here are the formal rules: *)
 
@@ -621,47 +619,41 @@ Inductive step : tm -> tm -> Prop :=
         t1 ==> t1' ->
         P t1 t2 ==> P t1' t2
   | ST_Plus2 : forall v1 t2 t2',
-        value v1 ->                     (* <----- n.b. *) 
+        value v1 ->                     (* <----- n.b. *)
         t2 ==> t2' ->
         P v1 t2 ==> P v1 t2'
 
   where " t '==>' t' " := (step t t').
 
-Tactic Notation "step_cases" tactic(first) ident(c) :=
-  first;
-  [ Case_aux c "ST_PlusConstConst"
-  | Case_aux c "ST_Plus1" | Case_aux c "ST_Plus2" ].
-
 (*
-(** **** Exercise: 3 stars (redo_determinism)  *)
+(** **** Exercise: 3 stars, recommended (redo_determinism)  *)
 *)
-(** **** 練習問題: ★★★ (redo_determinacy)  *)
+(** **** 練習問題: ★★★, recommended (redo_determinacy)  *)
 (*
-(** As a sanity check on this change, let's re-verify determinism 
+(** As a sanity check on this change, let's re-verify determinism.
 
-    Proof sketch: We must show that if [x] steps to both [y1] and [y2]
-    then [y1] and [y2] are equal.  Consider the final rules used in
-    the derivations of [step x y1] and [step x y2].
+    _Proof sketch_: We must show that if [x] steps to both [y1] and
+    [y2], then [y1] and [y2] are equal.  Consider the final rules used
+    in the derivations of [step x y1] and [step x y2].
 
     - If both are [ST_PlusConstConst], the result is immediate.
 
     - It cannot happen that one is [ST_PlusConstConst] and the other
       is [ST_Plus1] or [ST_Plus2], since this would imply that [x] has
-      the form [P t1 t2] where both [t1] and [t2] are
-      constants (by [ST_PlusConstConst]) AND one of [t1] or [t2] has
-      the form [P ...].
+      the form [P t1 t2] where both [t1] and [t2] are constants (by
+      [ST_PlusConstConst]) _and_ one of [t1] or [t2] has the form [P _].
 
     - Similarly, it cannot happen that one is [ST_Plus1] and the other
-      is [ST_Plus2], since this would imply that [x] has the form
-      [P t1 t2] where [t1] both has the form [P t1 t2] and
-      is a value (hence has the form [C n]).
+      is [ST_Plus2], since this would imply that [x] has the form [P
+      t1 t2] where [t1] both has the form [P t11 t12] and is a
+      value (hence has the form [C n]).
 
     - The cases when both derivations end with [ST_Plus1] or
       [ST_Plus2] follow by the induction hypothesis. [] *)
 *)
 (** この変更のサニティチェックのため、決定性を再検証しましょう。
  
-    証明スケッチ: もし[x]が1ステップで[y1]にも[y2]にも進むならば、
+    「証明スケッチ」: もし[x]が1ステップで[y1]にも[y2]にも進むならば、
     [y1]と[y2]が等しいことを示さなければならない。
     [step x y1] と [step x y2] の導出の最後の規則を考える。
  
@@ -669,25 +661,25 @@ Tactic Notation "step_cases" tactic(first) ident(c) :=
  
     - 一方が [ST_PlusConstConst] で、他方が [ST_Plus1] または [ST_Plus2]
       であることはあり得ない。なぜなら、そうなるためには、
-      [x] が [P t1 t2] の形で([ST_PlusConstConst]より)
-      [t1]と[t2]が両者とも定数であり、かつ[t1]または[t2]が [P ...] 
-      の形でなければならない。
+      [x] が [P t1 t2] の形で（[ST_PlusConstConst]より）
+      [t1]と[t2]が両者とも定数であり、かつ[t1]または[t2]が [P _] の形でなければならない。
  
     - 同様に、一方が [ST_Plus1] で他方が [ST_Plus2] であることもあり得ない。
       なぜなら、そのためには、[x] が [P t1 t2] の形で、
-      [t1] は [P t1 t2] の形であり、かつ値でもなければならない
-      (つまり [C n] の形でもある)からである。
+      [t1] は [P t11 t12] の形であり、かつ値でもなければならない
+      （つまり [C n] の形でもある）からである。
  
     - 導出が両者とも [ST_Plus1] または [ST_Plus2] で終わるならば、
       帰納法の仮定から成立する。[] *)
 
 (*
 (** Most of this proof is the same as the one above.  But to get
-    maximum benefit from the exercise you should try to write it from
-    scratch and just use the earlier one if you get stuck. *)
+    maximum benefit from the exercise you should try to write your
+    formal version from scratch and just use the earlier one if you
+    get stuck. *)
 *)
 (** 証明のほとんどは前のものと同じです。しかし、練習問題の効果を最大にするために、
-    ゼロから証明を書き、前のものを見るのは行き詰まった時だけにしなさい。 *)
+    ゼロから形式的証明を書き、前のものを見るのは行き詰まった時だけにしなさい。 *)
 
 Theorem step_deterministic :
   deterministic step.
@@ -695,19 +687,19 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(* ########################################################### *)
+(* ================================================================= *)
 (*
 (** ** Strong Progress and Normal Forms *)
 *)
 (** ** 強進行と正規形 *)
 
 (*
-(** The definition of single-step reduction for our toy language is
-    fairly simple, but for a larger language it would be pretty easy
-    to forget one of the rules and create a situation where some term
-    cannot take a step even though it has not been completely reduced
-    to a value.  The following theorem shows that we did not, in fact,
-    make such a mistake here. *)
+(** The definition of single-step reduction for our toy language
+    is fairly simple, but for a larger language it would be easy to
+    forget one of the rules and accidentally create a situation where
+    some term cannot take a step even though it has not been
+    completely reduced to a value.  The following theorem shows that
+    we did not, in fact, make such a mistake here. *)
 *)
 (** おもちゃの言語に対する1ステップの簡約の定義はかなり単純です。
     しかし、より大きな言語に対しては、何か規則を忘れてしまうことは簡単に起き、
@@ -716,20 +708,20 @@ Proof.
 
 (*
 (** _Theorem_ (_Strong Progress_): If [t] is a term, then either [t]
-    is a value, or there exists a term [t'] such that [t ==> t']. *)
+    is a value or else there exists a term [t'] such that [t ==> t']. *)
 *)
 (** 「定理(強進行)」(_Strong Progress_): [t] が項であるならば、
-    [t]は値であるか、ある項[t']が存在して [t ==> t'] となる。 *)
+    [t]は値であるか、そうでなければある項[t']が存在して [t ==> t'] となる。 *)
 
 (*
 (** _Proof_: By induction on [t].
 
-    - Suppose [t = C n]. Then [t] is a [value].
+    - Suppose [t = C n]. Then [t] is a value.
 
-    - Suppose [t = P t1 t2], where (by the IH) [t1] is either a
-      value or can step to some [t1'], and where [t2] is either a
-      value or can step to some [t2']. We must show [P t1 t2] is
-      either a value or steps to some [t'].
+    - Suppose [t = P t1 t2], where (by the IH) [t1] either is a value
+      or can step to some [t1'], and where [t2] is either a value or
+      can step to some [t2']. We must show [P t1 t2] is either a value
+      or steps to some [t'].
 
       - If [t1] and [t2] are both values, then [t] can take a step, by
         [ST_PlusConstConst].
@@ -737,41 +729,45 @@ Proof.
       - If [t1] is a value and [t2] can take a step, then so can [t],
         by [ST_Plus2].
 
-      - If [t1] can take a step, then so can [t], by [ST_Plus1].  [] *)
+      - If [t1] can take a step, then so can [t], by [ST_Plus1].  [] 
+
+   Or, formally: *)
 *)
 (** 「証明」: [t]についての帰納法で証明する。
-
-    - [t = C n] とする。すると、[t] は [value](値)である。
-
-    - [t = P t1 t2] と仮定する。ここで(帰納仮定から)
+ 
+    - [t = C n] とする。すると、[t] は値である。
+ 
+    - [t = P t1 t2] と仮定する。ここで（帰納仮定から）
       [t1]は値であるか、1ステップである[t1']になり、また、[t2]は値であるか、
       1ステップである[t2']になる。
       ここで必要なのは、[P t1 t2]が値であるか、
       ある[t']に1ステップで進むということを示すことである。
-
+ 
       - もし[t1]と[t2]がともに値なら、[ST_PlusConstConst]により
         [t]はステップを進むことができる。
-
+ 
       - もし[t1]が値で[t2]がステップを進むことができるならば、[ST_Plus2]により
         [t]もステップを進むことができる。
-
+ 
       - もし[t1]がステップを進むことができるならば、[ST_Plus1]により
-        [t]もステップを進むことができる。  [] *)
+        [t]もステップを進むことができる。  []
+ 
+   形式的には次の通りです。 *)
 
 Theorem strong_progress : forall t,
   value t \/ (exists t', t ==> t').
-Proof.  
-  tm_cases (induction t) Case.
-    Case "C". left. apply v_const.
-    Case "P". right. inversion IHt1.
-      SCase "l". inversion IHt2.
-        SSCase "l". inversion H. inversion H0.
+Proof.
+  induction t.
+    - (* C *) left. apply v_const.
+    - (* P *) right. inversion IHt1.
+      + (* l *) inversion IHt2.
+        * (* l *) inversion H. inversion H0.
           exists (C (n + n0)).
           apply ST_PlusConstConst.
-        SSCase "r". inversion H0 as [t' H1].
+        * (* r *) inversion H0 as [t' H1].
           exists (P t1 t').
           apply ST_Plus2. apply H. apply H1.
-      SCase "r". inversion H as [t' H0]. 
+      + (* r *) inversion H as [t' H0].
           exists (P t' t2).
           apply ST_Plus1. apply H0.  Qed.
 
@@ -780,34 +776,33 @@ Proof.
     every term either is a value or can "make progress" by stepping to
     some other term.  (The qualifier "strong" distinguishes it from a
     more refined version that we'll see in later chapters, called
-    simply "progress.") *)
+    just _progress_.) *)
 *)
 (** この重要な性質は「強進行」(_strong progress_)と呼ばれます。
     これは、すべての項が値であるか、別の項に「進行できる」("make progress")
     ことからきた名称です。「強」("strong")という修飾句は、
-    後の章のより細分されたバージョン(単に「進行」("progress")と呼ばれる)
+    後の章のより細分されたバージョン（単に「進行」("progress")と呼ばれる）
     と区別するためのものです。*)
 
 (*
 (** The idea of "making progress" can be extended to tell us something
-    interesting about [value]s: in this language [value]s are exactly
-    the terms that _cannot_ make progress in this sense.  
+    interesting about values: in this language, values are exactly the
+    terms that _cannot_ make progress in this sense.
 
     To state this observation formally, let's begin by giving a name
     to terms that cannot make progress.  We'll call them _normal
-    forms_. *)
+    forms_.  *)
 *)
 (** 「進行する」という概念の拡張から、[value](値)についての興味深い性質がわかります:
     値とはこの意味で進行「できない」項のことに他なりません。
-
-    この観察結果を形式的に述べるために、進行できない項に名前をつけましょう。そういう項を「正規形」
-    (_normal form_)と呼びます。*)
+ 
+    この観察結果を形式的に述べるために、進行できない項に名前をつけましょう。そういう項を「正規形(_normal form_)」と呼びます。*)
 
 Definition normal_form {X:Type} (R:relation X) (t:X) : Prop :=
   ~ exists t', R t t'.
 
 (*
-(** This definition actually specifies what it is to be a normal form
+(** Note that this definition specifies what it is to be a normal form
     for an _arbitrary_ relation [R] over an arbitrary set [X], not
     just for the particular single-step reduction relation over terms
     that we are interested in at the moment.  We'll re-use the same
@@ -839,10 +834,10 @@ Lemma nf_is_value : forall t,
 Proof. (* a corollary of [strong_progress]... *)
   unfold normal_form. intros t H.
   assert (G : value t \/ exists t', t ==> t').
-    SCase "Proof of assertion". apply strong_progress.
+    { apply strong_progress. }
   inversion G.
-    SCase "l". apply H0.
-    SCase "r". apply ex_falso_quodlibet. apply H. assumption.  Qed.
+    + (* l *) apply H0.
+    + (* r *) exfalso. apply H. assumption.  Qed.
 
 Corollary nf_same_as_value : forall t,
   normal_form step t <-> value t.
@@ -850,41 +845,40 @@ Proof.
   split. apply nf_is_value. apply value_is_nf. Qed.
 
 (*
-(** Why is this interesting?  
+(** Why is this interesting?
 
     Because [value] is a syntactic concept -- it is defined by looking
     at the form of a term -- while [normal_form] is a semantic one --
     it is defined by looking at how the term steps.  It is not obvious
-    that these concepts should coincide!
- 
-    Indeed, we could easily have written the definitions so that they
-    would not coincide... *)
+    that these concepts should coincide!  Indeed, we could easily have
+    written the definitions so that they would _not_ coincide. *)
 *)
-(** なぜこれが興味深いのでしょう？ 2つの理由があります:
-
+(** なぜこれが興味深いのでしょう？
+ 
     なぜなら[value](値)は構文的概念です。つまり項の形を見ることで定義されます。
-    一方[normal_form](正規形)は意味論的なものです。
+    一方[normal_form]（正規形）は意味論的なものです。
     つまり項がどのようにステップを進むかによって定義されます。
     この2つの概念が一致することは自明ではないのです!
+    実際、正規形と値の概念が一致「しない」定義も簡単に書けます。*)
 
-    実際、正規形と値の概念が一致「しない」言語はたくさん存在します。*)
- 
-(* ##################################################### *)
-
+(*
+(** **** Exercise: 3 stars, optional (value_not_same_as_normal_form1)  *)
+*)
+(** **** 練習問題: ★★★, optional (value_not_same_as_normal_form1)  *)
 (*
 (** We might, for example, mistakenly define [value] so that it
     includes some terms that are not finished reducing. *)
 *)
-(** 例えば、[value](値)の定義を間違えていて、
-    簡約が完了していない項を含んでいるかもしれません。*)
+(** 例えば、[value](値)の定義を間違えていて、簡約が完了していない項を含んでいるかもしれません。*)
+(** (Even if you don't work this exercise and the following ones
+    in Coq, make sure you can think of an example of such a term.) *)
 
-Module Temp1. 
-(* Open an inner module so we can redefine value and step. *)
+Module Temp1.
 
 Inductive value : tm -> Prop :=
 | v_const : forall n, value (C n)
 | v_funny : forall t1 n2,                       (* <---- *)
-              value (P t1 (C n2)).  
+              value (P t1 (C n2)).
 
 Reserved Notation " t '==>' t' " (at level 40).
 
@@ -901,20 +895,18 @@ Inductive step : tm -> tm -> Prop :=
 
   where " t '==>' t' " := (step t t').
 
-
-
-(*
-(** **** Exercise: 3 stars, advanced (value_not_same_as_normal_form)  *)
-*)
-(** **** 練習問題: ★★★, advanced (value_not_same_as_normal_form)  *)
 Lemma value_not_same_as_normal_form :
   exists v, value v /\ ~ normal_form step v.
 Proof.
   (* FILL IN HERE *) Admitted.
-(** [] *)
 End Temp1.
 
-(* ##################################################### *)
+(** [] *)
+
+(*
+(** **** Exercise: 2 stars, optional (value_not_same_as_normal_form2)  *)
+*)
+(** **** 練習問題: ★★, optional (value_not_same_as_normal_form2)  *)
 (*
 (** Alternatively, we might mistakenly define [step] so that it
     permits something designated as a value to reduce further. *)
@@ -944,20 +936,20 @@ Inductive step : tm -> tm -> Prop :=
 
   where " t '==>' t' " := (step t t').
 
-
-(*
-(** **** Exercise: 2 stars, advanced (value_not_same_as_normal_form)  *)
-*)
-(** **** 練習問題: ★★★, advanced (value_not_same_as_normal_form)  *)
 Lemma value_not_same_as_normal_form :
   exists v, value v /\ ~ normal_form step v.
 Proof.
   (* FILL IN HERE *) Admitted.
 
-(** [] *)
 End Temp2.
 
-(* ########################################################### *)
+(** [] *)
+
+
+(*
+(** **** Exercise: 3 stars, optional (value_not_same_as_normal_form3)  *)
+*)
+(** **** 練習問題: ★★★, optional (value_not_same_as_normal_form3)  *)
 (*
 (** Finally, we might define [value] and [step] so that there is some
     term that is not a value but that cannot take a step in the [step]
@@ -993,19 +985,17 @@ Inductive step : tm -> tm -> Prop :=
 *)
 (** ([ST_Plus2] がないことに注意します。) *)
 
-(*
-(** **** Exercise: 3 stars, advanced (value_not_same_as_normal_form')  *)
-*)
-(** **** 練習問題: ★★★, advanced (value_not_same_as_normal_form')  *)
 Lemma value_not_same_as_normal_form :
   exists t, ~ value t /\ normal_form step t.
 Proof.
   (* FILL IN HERE *) Admitted.
-(** [] *)
 
 End Temp3.
 
-(* ########################################################### *)
+
+(** [] *)
+
+(* ----------------------------------------------------------------- *)
 (*
 (** *** Additional Exercises *)
 *)
@@ -1015,10 +1005,10 @@ Module Temp4.
 
 (*
 (** Here is another very simple language whose terms, instead of being
-    just plus and numbers, are just the booleans true and false and a
-    conditional expression... *)
+    just addition expressions and numbers, are just the booleans true
+    and false and a conditional expression... *)
 *)
-(** 以下は、別の非常に簡単な言語です。項は、加算と数値の代わりに、
+(** 以下は、別の非常に簡単な言語です。項は、加算式と数の代わりに、
     真理値 true と false、および条件式です... *)
 
 Inductive tm : Type :=
@@ -1044,7 +1034,7 @@ Inductive step : tm -> tm -> Prop :=
   where " t '==>' t' " := (step t t').
 
 (*
-(** **** Exercise: 1 star (smallstep_bools)  *) 
+(** **** Exercise: 1 starM (smallstep_bools)  *)
 *)
 (** **** 練習問題: ★ (smallstep_bools)  *)
 (*
@@ -1066,7 +1056,7 @@ Definition bool_step_prop2 :=
        ttrue
        (tif ttrue ttrue ttrue)
        (tif tfalse tfalse tfalse)
-  ==> 
+  ==>
      ttrue.
 
 (* FILL IN HERE *)
@@ -1076,7 +1066,7 @@ Definition bool_step_prop3 :=
        (tif ttrue ttrue ttrue)
        (tif ttrue ttrue ttrue)
        tfalse
-   ==> 
+   ==>
      tif
        ttrue
        (tif ttrue ttrue ttrue)
@@ -1098,7 +1088,7 @@ Definition bool_step_prop3 :=
 
 Theorem strong_progress : forall t,
   value t \/ (exists t', t ==> t').
-Proof.  
+Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
@@ -1112,10 +1102,10 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-Module Temp5. 
+Module Temp5.
 
 (*
-(** **** Exercise: 2 stars (smallstep_bool_shortcut)  *) 
+(** **** Exercise: 2 stars (smallstep_bool_shortcut)  *)
 *)
 (** **** 練習問題: ★★ (smallstep_bool_shortcut)  *)
 (*
@@ -1125,28 +1115,29 @@ Module Temp5.
     [ttrue] or [tfalse]) and reduce the whole conditional to this
     value in a single step, even if the guard has not yet been reduced
     to a value. For example, we would like this proposition to be
-    provable: 
+    provable:
+
          tif
             (tif ttrue ttrue ttrue)
             tfalse
             tfalse
-     ==> 
+     ==>
          tfalse.
 *)
-*)
+ *)
 (** 条件式の[then]と[else]の枝が同じ値のとき(ともに[tm_true]であるか、
     ともに[tm_false]であるかのとき)、ガードが値に簡約されていなくても、
     条件式全体を枝の値に簡約するように、ステップ関係にバイパスを追加したいとします。
     例えば次の命題を証明できるようにしたいとします:
 [[
-         tm_if
-            (tm_if tm_true tm_true tm_true)
-            tm_false
-            tm_false
-     ==>
-         tm_false.
+         tif 
+            (tif ttrue ttrue ttrue) 
+            tfalse 
+            tfalse 
+     ==> 
+         tfalse 
 ]]
-*)
+ *)
 
 (*
 (** Write an extra clause for the step relation that achieves this
@@ -1164,7 +1155,7 @@ Inductive step : tm -> tm -> Prop :=
   | ST_If : forall t1 t1' t2 t3,
       t1 ==> t1' ->
       tif t1 t2 t3 ==> tif t1' t2 t3
-(* FILL IN HERE *)
+  (* FILL IN HERE *)
 
   where " t '==>' t' " := (step t t').
 
@@ -1173,10 +1164,10 @@ Definition bool_step_prop4 :=
             (tif ttrue ttrue ttrue)
             tfalse
             tfalse
-     ==> 
+     ==>
          tfalse.
 
-Example bool_step_prop4_holds : 
+Example bool_step_prop4_holds :
   bool_step_prop4.
 Proof.
   (* FILL IN HERE *) Admitted.
@@ -1195,18 +1186,16 @@ Proof.
     - Is the [step] relation still deterministic?  Write yes or no and
       briefly (1 sentence) explain your answer.
 
-      Optional: prove your answer correct in Coq.
-*)
+      Optional: prove your answer correct in Coq. *)
 *)
 (** 講義ノートのステップ関係についての決定性定理と強進行定理が、
     上記のステップの定義についても証明できます。
     [ST_ShortCircuit]節を追加した後で...
-
+ 
     - [step]関係はそれでも決定性を持つでしょうか？
       yes または no と書き、簡潔に(1文で)その答えを説明しなさい。
-
-      Optional: Coq でその答えが正しいことを証明しなさい。
-*)
+ 
+      Optional: Coq でその答えが正しいことを証明しなさい。 *)
 
 (* FILL IN HERE *)
 (*
@@ -1216,13 +1205,13 @@ Proof.
 
      Optional: prove your answer correct in Coq.
 *)
-*)
+ *)
 (**
    - 強進行定理は成立するでしょうか？
      yes または no と書き、簡潔に(1文で)その答えを説明しなさい。
-
+ 
       Optional: Coq でその答えが正しいことを証明しなさい。
-*)
+ *)
 
 (* FILL IN HERE *)
 (*
@@ -1234,64 +1223,63 @@ Proof.
 
 (* FILL IN HERE *)
 *)
-*)
-(**
+ *)
+(** 
    - 一般に、オリジナルのステップ関係から1つ以上のコンストラクタを取り除いて、
      強進行性を持たなくする方法はあるでしょうか？
      yes または no と書き、簡潔に(1文で)その答えを説明しなさい。
-
-  (* FILL IN HERE *)
-*)
+ 
+(* FILL IN HERE *) 
+ *)
 (** [] *)
 
 End Temp5.
 End Temp4.
 
-(* ########################################################### *)
+(* ################################################################# *)
 (*
 (** * Multi-Step Reduction *)
 *)
 (** * マルチステップ簡約 *)
 
 (*
-(** Until now, we've been working with the _single-step reduction_
+(** We've been working so far with the _single-step reduction_
     relation [==>], which formalizes the individual steps of an
-    _abstract machine_ for executing programs.  
+    abstract machine for executing programs.
 
-    We can also use this machine to reduce programs to completion --
-    to find out what final result they yield.  This can be formalized
-    as follows:
+    We can use the same machine to reduce programs to completion -- to
+    find out what final result they yield.  This can be formalized as
+    follows:
 
     - First, we define a _multi-step reduction relation_ [==>*], which
       relates terms [t] and [t'] if [t] can reach [t'] by any number
-      of single reduction steps (including zero steps!).
+      (including zero) of single reduction steps.
 
     - Then we define a "result" of a term [t] as a normal form that
       [t] can reach by multi-step reduction. *)
 *)
 (** ここまでは、1ステップ簡約関係 [==>] に取り組んできました。
     これは、プログラムを実行する抽象機械の1つのステップを形式化したものです。
-
+ 
     この機械を使って、プログラムを完全に簡約してみるのもおもしろいでしょう。
     つまり、その最後の結果がどうなるかを調べることです。
     これは以下のように形式化できます:
-  
+ 
     - 最初に、「マルチステップ簡約関係」(_multi-step reduction relation_)
       [==>*] を定義します。
-      この関係は、[t]から1ステップ簡約を何らかの回数回行うことで[t']に到達できるとき、
-      [t]と[t']を関係づけるものです。(これは0回も含みます!)
-
+      この関係は、[t]から1ステップ簡約を何らかの回数回（0回も含みます）行うことで[t']に到達できるとき、
+      [t]と[t']を関係づけるものです。
+ 
     - 次に項[t]の結果("result")を、
       [t]がマルチステップ簡約で到達できる正規形[t]として定義します。*)
 
-(* ########################################################### *)
 
 (** Since we'll want to reuse the idea of multi-step reduction many
-    times in this and future chapters, let's take a little extra
-    trouble here and define it generically.  
+    times, let's take a little extra trouble and define it
+    generically.
 
     Given a relation [R], we define a relation [multi R], called the
-    _multi-step closure of [R]_ as follows: *)
+    _multi-step closure of [R]_ as follows. *)
 
 Inductive multi {X:Type} (R: relation X) : relation X :=
   | multi_refl  : forall (x : X), multi R x x
@@ -1300,36 +1288,34 @@ Inductive multi {X:Type} (R: relation X) : relation X :=
                     multi R y z ->
                     multi R x z.
 
-(** The effect of this definition is that [multi R] relates two
-    elements [x] and [y] if either 
+(** (In the [Rel] chapter and the Coq standard library, this relation
+    is called [clos_refl_trans_1n].  We give it a shorter name here
+    for the sake of readability.)
 
-       - [x = y], or else
-       - there is some sequence [z1], [z2], ..., [zn]
-         such that
-           R x z1
-           R z1 z2
-           ...
+    The effect of this definition is that [multi R] relates two
+    elements [x] and [y] if 
+
+       - [x = y], or 
+       - [R x y], or 
+       - there is some nonempty sequence [z1], [z2], ..., [zn] such that 
+
+           R x z1 
+           R z1 z2 
+           ...  
            R zn y.
 
-    Thus, if [R] describes a single-step of computation, [z1],
-    ... [zn] is the sequence of intermediate steps of computation
-    between [x] and [y].
-*)
+    Thus, if [R] describes a single-step of computation, then [z1]...[zn] 
+    is the sequence of intermediate steps of computation between [x] and 
+    [y]. *)
 
-Tactic Notation "multi_cases" tactic(first) ident(c) :=
-  first;
-  [ Case_aux c "multi_refl" | Case_aux c "multi_step" ].
-
-(** We write [==>*] for the [multi step] relation -- i.e., the
-    relation that relates two terms [t] and [t'] if we can get from
-    [t] to [t'] using the [step] relation zero or more times. *)
+(** We write [==>*] for the [multi step] relation on terms. *)
 
 Notation " t '==>*' t' " := (multi step t t') (at level 40).
 
 (** The relation [multi R] has several crucial properties.
 
     First, it is obviously _reflexive_ (that is, [forall x, multi R x
-    x]).  In the case of the [==>*] (i.e. [multi step]) relation, the
+    x]).  In the case of the [==>*] (i.e., [multi step]) relation, the
     intuition is that a term can execute to itself by taking zero
     steps of execution.
 
@@ -1353,41 +1339,42 @@ Theorem multi_trans :
       multi R x z.
 Proof.
   intros X R x y z G H.
-  multi_cases (induction G) Case.
-    Case "multi_refl". assumption.
-    Case "multi_step". 
-      apply multi_step with y. assumption. 
+  induction G.
+    - (* multi_refl *) assumption.
+    - (* multi_step *)
+      apply multi_step with y. assumption.
       apply IHG. assumption.  Qed.
 
-(** That is, if [t1==>*t2] and [t2==>*t3], then [t1==>*t3]. *)
+(** In particular, for the [multi step] relation on terms, if
+    [t1==>*t2] and [t2==>*t3], then [t1==>*t3]. *)
 
-(* ########################################################### *)
+(* ================================================================= *)
 (** ** Examples *)
+
+(** Here's a specific instance of the [multi step] relation: *)
 
 Lemma test_multistep_1:
       P
         (P (C 0) (C 3))
         (P (C 2) (C 4))
-   ==>* 
+   ==>*
       C ((0 + 3) + (2 + 4)).
 Proof.
-  apply multi_step with 
-            (P
-                (C (0 + 3))
-                (P (C 2) (C 4))).
+  apply multi_step with
+            (P (C (0 + 3))
+               (P (C 2) (C 4))).
   apply ST_Plus1. apply ST_PlusConstConst.
   apply multi_step with
-            (P
-                (C (0 + 3))
-                (C (2 + 4))).
-  apply ST_Plus2. apply v_const. 
-  apply ST_PlusConstConst. 
-  apply multi_R. 
+            (P (C (0 + 3))
+               (C (2 + 4))).
+  apply ST_Plus2. apply v_const.
+  apply ST_PlusConstConst.
+  apply multi_R.
   apply ST_PlusConstConst. Qed.
 
 (*
-(** Here's an alternate proof that uses [eapply] to avoid explicitly
-    constructing all the intermediate terms. *)
+(** Here's an alternate proof of the same fact that uses [eapply] to
+    avoid explicitly constructing all the intermediate terms. *)
 *)
 (** 以下は別証です。
     [eapply]を使うことで、すべての中間的な項を明示的に構成する必要をなくしたものです。*)
@@ -1400,7 +1387,7 @@ Lemma test_multistep_1':
       C ((0 + 3) + (2 + 4)).
 Proof.
   eapply multi_step. apply ST_Plus1. apply ST_PlusConstConst.
-  eapply multi_step. apply ST_Plus2. apply v_const. 
+  eapply multi_step. apply ST_Plus2. apply v_const.
   apply ST_PlusConstConst.
   eapply multi_step. apply ST_PlusConstConst.
   apply multi_refl.  Qed.
@@ -1445,7 +1432,7 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(* ########################################################### *)
+(* ================================================================= *)
 (*
 (** ** Normal Forms Again *)
 *)
@@ -1477,7 +1464,7 @@ Definition normal_form_of (t t' : tm) :=
     つまり、[normal_form_of] は部分関数です。言い換えると、
     [normal_form t t'] を、
     (「[t']は[t]の正規形である」と読む以外に)
-    「[t]の正規形は[t']である」と読んでよいということです。
+    「[t]の正規形とは[t']である」と読んでよいということです。
     (訳注：原文では "_the_ normal form of [t]" 
     と定冠詞を使ってよいことと記述されています。) *)
 
@@ -1488,13 +1475,15 @@ Definition normal_form_of (t t' : tm) :=
 Theorem normal_forms_unique:
   deterministic normal_form_of.
 Proof.
-  unfold deterministic. unfold normal_form_of.  intros x y1 y2 P1 P2.
-  inversion P1 as [P11 P12]; clear P1. inversion P2 as [P21 P22]; clear P2. 
-  generalize dependent y2. 
   (* We recommend using this initial setup as-is! *)
+  unfold deterministic. unfold normal_form_of.
+  intros x y1 y2 P1 P2.
+  inversion P1 as [P11 P12]; clear P1.
+  inversion P2 as [P21 P22]; clear P2.
+  generalize dependent y2.
   (* FILL IN HERE *) Admitted.
 (** [] *)
-  
+
 (*
 (** Indeed, something stronger is true for this language (though not
     for all languages): the reduction of _any_ term [t] will
@@ -1522,7 +1511,7 @@ Definition normalizing {X:Type} (R:relation X) :=
     node whose left-hand child is a value. *)
 *)
 (** [step]が正規化性を持つことを証明するため、二つの補題を必要とします。
-
+ 
     一つは、[t]が[t']に何ステップかで簡約されるならば、
     [t]が [P] ノードの左側の子ノードとして現れるときには、
     [t]内で同じ簡約ステップ列が可能である、ということ、
@@ -1534,10 +1523,10 @@ Lemma multistep_congr_1 : forall t1 t1' t2,
      t1 ==>* t1' ->
      P t1 t2 ==>* P t1' t2.
 Proof.
-  intros t1 t1' t2 H. multi_cases (induction H) Case.
-    Case "multi_refl". apply multi_refl. 
-    Case "multi_step". apply multi_step with (P y t2). 
-        apply ST_Plus1. apply H. 
+  intros t1 t1' t2 H. induction H.
+    - (* multi_refl *) apply multi_refl.
+    - (* multi_step *) apply multi_step with (P y t2).
+        apply ST_Plus1. apply H.
         apply IHmulti.  Qed.
 
 (*
@@ -1553,119 +1542,126 @@ Proof.
 (** [] *)
 
 (*
-(** _Theorem_: The [step] function is normalizing -- i.e., for every
+(** With these lemmas in hand, the main proof is a straightforward
+    induction.
+
+    _Theorem_: The [step] function is normalizing -- i.e., for every
     [t] there exists some [t'] such that [t] steps to [t'] and [t'] is
     a normal form.
 
     _Proof sketch_: By induction on terms.  There are two cases to
     consider:
 
-    - [t = C n] for some [n].  Here [t] doesn't take a step,
-      and we have [t' = t].  We can derive the left-hand side by
-      reflexivity and the right-hand side by observing (a) that values
-      are normal forms (by [nf_same_as_value]) and (b) that [t] is a
-      value (by [v_const]).
-      
-    - [t = P t1 t2] for some [t1] and [t2].  By the IH, [t1] and
-      [t2] have normal forms [t1'] and [t2'].  Recall that normal
-      forms are values (by [nf_same_as_value]); we know that [t1' =
-      C n1] and [t2' = C n2], for some [n1] and [n2].
-      We can combine the [==>*] derivations for [t1] and [t2] to prove
-      that [P t1 t2] reduces in many steps to [C (n1 + n2)].
+    - [t = C n] for some [n].  Here [t] doesn't take a step, and we
+      have [t' = t].  We can derive the left-hand side by reflexivity
+      and the right-hand side by observing (a) that values are normal
+      forms (by [nf_same_as_value]) and (b) that [t] is a value (by
+      [v_const]).
 
-      It is clear that our choice of [t' = C (n1 + n2)] is a
-      value, which is in turn a normal form. [] *)
+    - [t = P t1 t2] for some [t1] and [t2].  By the IH, [t1] and [t2]
+      have normal forms [t1'] and [t2'].  Recall that normal forms are
+      values (by [nf_same_as_value]); we know that [t1' = C n1] and
+      [t2' = C n2], for some [n1] and [n2].  We can combine the [==>*]
+      derivations for [t1] and [t2] using [multi_congr_1] and
+      [multi_congr_2] to prove that [P t1 t2] reduces in many steps to
+      [C (n1 + n2)].
+
+      It is clear that our choice of [t' = C (n1 + n2)] is a value,
+      which is in turn a normal form. [] *)
 *)
-(** 「定理」: [step] 関数は正規化性を持つ。つまり、
+(** これらの補題を使えば、後は単純な帰納法で証明できます。
+ 
+    「定理」: [step] 関数は正規化性を持つ。つまり、
     任意の[t]に対して、ある[t']があって、[t]からステップを進めると[t']に到達し、
     かつ[t']は正規形である、が成立する。
-
+ 
     「証明スケッチ」:項についての帰納法を使う。考える対象は2つの場合である:
-
+ 
     - ある[n]について [t = C n] である場合。
       このとき、[t]はステップを進めることができないことから、
       [t' = t] である。左辺は反射性から導出され、
       右辺は、(a)([nf_same_as_value]より)値は正規形であること、
       (b)([v_const]より)[t]は値であること、から導出される。
-
+ 
     - ある[t1]、[t2]について、[t = P t1 t2] である場合。
       帰納仮定より[t1]と[t2]はそれぞれ正規形[t1']と[t2']を持つ。
       ([nf_same_as_value]より)正規形は値であったから、
       ある [n1]、[n2]について、[t1' = C n1] かつ [t2' = C n2]
-      である。[t1]と[t2]についての [==>*] 導出を組合せると、
-      [P t1 t2] が幾つかのステップで [C (plus n1 n2)] 
-      に簡約されることを証明できる。
-
+      である。[t1]と[t2]についての [==>*] 導出を、 [multi_congr_1] と [multi_congr_2] によって組合せると、
+      [P t1 t2] が幾つかのステップで [C (n1 + n2)] に簡約されることを証明できる。
+ 
       [t' = C (plus n1 n2)] が値であることは明らかなので、これは正規形である。*)
 
 Theorem step_normalizing :
   normalizing step.
 Proof.
   unfold normalizing.
-  tm_cases (induction t) Case.
-    Case "C". 
-      exists (C n). 
+  induction t.
+    - (* C *)
+      exists (C n).
       split.
-      SCase "l". apply multi_refl. 
-      SCase "r". 
+      + (* l *) apply multi_refl.
+      + (* r *)
         (* We can use [rewrite] with "iff" statements, not
            just equalities: *)
         rewrite nf_same_as_value. apply v_const.
-    Case "P".
-      inversion IHt1 as [t1' H1]; clear IHt1. inversion IHt2 as [t2' H2]; clear IHt2.
-      inversion H1 as [H11 H12]; clear H1. inversion H2 as [H21 H22]; clear H2.
+    - (* P *)
+      destruct IHt1 as [t1' [H11 H12]].
+      destruct IHt2 as [t2' [H21 H22]].
       rewrite nf_same_as_value in H12. rewrite nf_same_as_value in H22.
-      inversion H12 as [n1]. inversion H22 as [n2]. 
-      rewrite <- H in H11. 
-      rewrite <- H0 in H21.
+      inversion H12 as [n1 H]. inversion H22 as [n2 H'].
+      rewrite <- H in H11.
+      rewrite <- H' in H21.
       exists (C (n1 + n2)).
       split.
-        SCase "l". 
+        + (* l *)
           apply multi_trans with (P (C n1) t2).
-          apply multistep_congr_1. apply H11.
-          apply multi_trans with 
+          * apply multistep_congr_1. apply H11.
+          * apply multi_trans with
              (P (C n1) (C n2)).
-          apply multistep_congr_2. apply v_const. apply H21.
-          apply multi_R. apply ST_PlusConstConst.
-        SCase "r". 
+            { apply multistep_congr_2. apply v_const. apply H21. }
+            { apply multi_R. apply ST_PlusConstConst. }
+        + (* r *)
           rewrite nf_same_as_value. apply v_const.  Qed.
 
-(* ########################################################### *)
+(* ================================================================= *)
 (*
-(** ** Equivalence of Big-Step and Small-Step Reduction *)
+(** ** Equivalence of Big-Step and Small-Step *)
 *)
-(** ** ビッグステップ簡約とスモールステップ簡約の同値性 *)
+(** ** ビッグステップとスモールステップの同値性 *)
 
 (*
 (** Having defined the operational semantics of our tiny programming
-    language in two different styles, it makes sense to ask whether
-    these definitions actually define the same thing!  They do, though
-    it takes a little work to show it.  (The details are left as an
-    exercise). *)
+    language in two different ways (big-step and small-step), it makes
+    sense to ask whether these definitions actually define the same
+    thing!  They do, though it takes a little work to show it.  The
+    details are left as an exercise. *)
 *)
-(** 小さなプログラミング言語に対して2つの異なったスタイルで操作的意味論を定義したので、
+(** 小さなプログラミング言語に対して2つの異なった方法（ビッグステップとスモールステップ）で操作的意味論を定義したので、
     その2つの定義が本当に同じものを定義しているのかを考えるのは意味があります!
     実際に定義は一致しているのですが、それを示すにはもう少し準備が必要です。
-    (詳細は練習問題として残しています)　*)
+    詳細は練習問題として残しています。　*)
 
 (*
 (** **** Exercise: 3 stars (eval__multistep)  *)
 *)
 (** **** 練習問題: ★★★ (eval__multistep)  *)
 Theorem eval__multistep : forall t n,
-  t || n -> t ==>* C n.
+  t \\ n -> t ==>* C n.
 
-(** The key idea behind the proof comes from the following picture:
-       P t1 t2 ==>            (by ST_Plus1) 
-       P t1' t2 ==>           (by ST_Plus1)  
-       P t1'' t2 ==>          (by ST_Plus1) 
-       ...                
+(** The key ideas in the proof can be seen in the following picture:
+
+       P t1 t2 ==>            (by ST_Plus1)
+       P t1' t2 ==>           (by ST_Plus1)
+       P t1'' t2 ==>          (by ST_Plus1)
+       ...
        P (C n1) t2 ==>        (by ST_Plus2)
        P (C n1) t2' ==>       (by ST_Plus2)
        P (C n1) t2'' ==>      (by ST_Plus2)
-       ...                
+       ...
        P (C n1) (C n2) ==>    (by ST_PlusConstConst)
-       C (n1 + n2)              
+       C (n1 + n2)
+
     That is, the multistep reduction of a term of the form [P t1 t2]
     proceeds in three phases:
        - First, we use [ST_Plus1] some number of times to reduce [t1]
@@ -1697,12 +1693,13 @@ Proof.
 (* FILL IN HERE *)
 []
 *)
-*)
+ *)
 (** eval__multistep の非形式的証明を詳細に記述しなさい。
-
+ 
 (* ここを埋めなさい *)
 []
-*)
+ *)
+
 (** For the other direction, we need one lemma, which establishes a
     relation between single-step reduction and big-step evaluation. *)
 
@@ -1712,18 +1709,19 @@ Proof.
 (** **** 練習問題: ★★★ (step__eval)  *)
 Lemma step__eval : forall t t' n,
      t ==> t' ->
-     t' || n ->
-     t || n.
+     t' \\ n ->
+     t \\ n.
 Proof.
   intros t t' n Hs. generalize dependent n.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** The fact that small-step reduction implies big-step is now
-    straightforward to prove, once it is stated correctly. 
+(** The fact that small-step reduction implies big-step evaluation is
+    now straightforward to prove, once it is stated correctly.
 
     The proof proceeds by induction on the multi-step reduction
     sequence that is buried in the hypothesis [normal_form_of t t']. *)
+
 (** Make sure you understand the statement before you start to
     work on the proof.  *)
 
@@ -1732,12 +1730,12 @@ Proof.
 *)
 (** **** 練習問題: ★★★ (multistep__eval)  *)
 Theorem multistep__eval : forall t t',
-  normal_form_of t t' -> exists n, t' = C n /\ t || n.
+  normal_form_of t t' -> exists n, t' = C n /\ t \\ n.
 Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(* ########################################################### *)
+(* ================================================================= *)
 (*
 (** ** Additional Exercises *)
 *)
@@ -1747,26 +1745,24 @@ Proof.
 (** **** Exercise: 3 stars, optional (interp_tm)  *)
 *)
 (** **** 練習問題: ★★★, optional (interp_tm)  *)
-(** Remember that we also defined big-step evaluation of [tm]s as a
+(** Remember that we also defined big-step evaluation of terms as a
     function [evalF].  Prove that it is equivalent to the existing
-    semantics.
- 
-    Hint: we just proved that [eval] and [multistep] are
+    semantics.  (Hint: we just proved that [eval] and [multistep] are
     equivalent, so logically it doesn't matter which you choose.
-    One will be easier than the other, though!  *)
+    One will be easier than the other, though!) *)
 
 Theorem evalF_eval : forall t n,
-  evalF t = n <-> t || n.
+  evalF t = n <-> t \\ n.
 Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
 (*
-(** **** Exercise: 4 stars (combined_properties)  *)
+(** **** Exercise: 4 starsM (combined_properties)  *)
 *)
 (** **** 練習問題: ★★★★ (combined_properties)  *)
 (*
-(** We've considered the arithmetic and conditional expressions
+(** We've considered arithmetic and conditional expressions
     separately.  This exercise explores how the two interact. *)
 *)
 (** ここまでに算術式と条件式を別々に考えてきました。
@@ -1780,11 +1776,6 @@ Inductive tm : Type :=
   | ttrue : tm
   | tfalse : tm
   | tif : tm -> tm -> tm -> tm.
-
-Tactic Notation "tm_cases" tactic(first) ident(c) :=
-  first;
-  [ Case_aux c "C" | Case_aux c "P"
-  | Case_aux c "ttrue" | Case_aux c "tfalse" | Case_aux c "tif" ].
 
 Inductive value : tm -> Prop :=
   | v_const : forall n, value (C n)
@@ -1800,7 +1791,7 @@ Inductive step : tm -> tm -> Prop :=
       t1 ==> t1' ->
       P t1 t2 ==> P t1' t2
   | ST_Plus2 : forall v1 t2 t2',
-      value v1 ->     
+      value v1 ->
       t2 ==> t2' ->
       P v1 t2 ==> P v1 t2'
   | ST_IfTrue : forall t1 t2,
@@ -1813,12 +1804,6 @@ Inductive step : tm -> tm -> Prop :=
 
   where " t '==>' t' " := (step t t').
 
-Tactic Notation "step_cases" tactic(first) ident(c) :=
-  first;
-  [ Case_aux c "ST_PlusConstConst"
-  | Case_aux c "ST_Plus1" | Case_aux c "ST_Plus2"
-  | Case_aux c "ST_IfTrue" | Case_aux c "ST_IfFalse" | Case_aux c "ST_If" ].
-
 (*
 (** Earlier, we separately proved for both plus- and if-expressions...
 
@@ -1830,39 +1815,39 @@ Tactic Notation "step_cases" tactic(first) ident(c) :=
     Prove or disprove these two properties for the combined language. *)
 *)
 (** 前には、plus式とif式について、以下のことを別々に証明しました...
-
+ 
     - ステップ関係が部分関数であること(つまり、決定性を持つこと)。
-
+ 
     - すべての項が値であるか、1ステップ進むことができるかを主張する強進行補題。
-
+ 
     結合した言語について、これら二つの性質を証明、または反証しなさい。*)
 
 (* FILL IN HERE *)
-(** [] *)
 
 End Combined.
+(** [] *)
 
 
-(* ########################################################### *)
+(* ################################################################# *)
 (*
 (** * Small-Step Imp *)
 *)
 (** * スモールステップ Imp *)
 
 (*
-(** For a more serious example, here is the small-step version of the
-    Imp operational semantics.  *)
+(** Now for a more serious example: a small-step version of the Imp
+    operational semantics. *)
 *)
-(** より本気の例として、Impの操作的意味論のスモールステップ版を示します。 *)
+(** ここではより本気の例として、Impの操作的意味論のスモールステップ版を示します。 *)
 
-(** The small-step evaluation relations for arithmetic and boolean
-    expressions are straightforward extensions of the tiny language
-    we've been working up to now.  To make them easier to read, we
-    introduce the symbolic notations [==>a] and [==>b], respectively,
-    for the arithmetic and boolean step relations. *)
+(** The small-step reduction relations for arithmetic and
+    boolean expressions are straightforward extensions of the tiny
+    language we've been working up to now.  To make them easier to
+    read, we introduce the symbolic notations [==>a] and [==>b] for
+    the arithmetic and boolean step relations. *)
 
 Inductive aval : aexp -> Prop :=
-  av_num : forall n, aval (ANum n).
+  | av_num : forall n, aval (ANum n).
 
 (*
 (** We are not actually going to bother to define boolean
@@ -1874,10 +1859,11 @@ Inductive aval : aexp -> Prop :=
     なぜならば、以下の [==>b] の定義にはブール値の定義が必要ないからです(なぜでしょう？)。
     言語がちょっと大きかったら必要になったかもしれません(なぜでしょう？)。 *)
 
-Reserved Notation " t '/' st '==>a' t' " (at level 40, st at level 39).
+Reserved Notation " t '/' st '==>a' t' "
+                  (at level 40, st at level 39).
 
 Inductive astep : state -> aexp -> aexp -> Prop :=
-  | AS_Id : forall st i, 
+  | AS_Id : forall st i,
       AId i / st ==>a ANum (st i)
   | AS_Plus : forall st n1 n2,
       APlus (ANum n1) (ANum n2) / st ==>a ANum (n1 + n2)
@@ -1901,7 +1887,7 @@ Inductive astep : state -> aexp -> aexp -> Prop :=
       (AMult (ANum n1) (ANum n2)) / st ==>a (ANum (mult n1 n2))
   | AS_Mult1 : forall st a1 a1' a2,
       a1 / st ==>a a1' ->
-      (AMult (a1) (a2)) / st ==>a (AMult (a1') (a2))
+      (AMult a1 a2) / st ==>a (AMult a1' a2)
   | AS_Mult2 : forall st v1 a2 a2',
       aval v1 ->
       a2 / st ==>a a2' ->
@@ -1909,57 +1895,58 @@ Inductive astep : state -> aexp -> aexp -> Prop :=
 
     where " t '/' st '==>a' t' " := (astep st t t').
 
-  Reserved Notation " t '/' st '==>b' t' " (at level 40, st at level 39).
+Reserved Notation " t '/' st '==>b' t' "
+                  (at level 40, st at level 39).
 
-  Inductive bstep : state -> bexp -> bexp -> Prop :=
-  | BS_Eq : forall st n1 n2,
-      (BEq (ANum n1) (ANum n2)) / st ==>b 
-      (if (beq_nat n1 n2) then BTrue else BFalse)
-  | BS_Eq1 : forall st a1 a1' a2,
-      a1 / st ==>a a1' ->
-      (BEq a1 a2) / st ==>b (BEq a1' a2)
-  | BS_Eq2 : forall st v1 a2 a2',
-      aval v1 -> 
-      a2 / st ==>a a2' ->
-      (BEq v1 a2) / st ==>b (BEq v1 a2')
-  | BS_LtEq : forall st n1 n2,
-      (BLe (ANum n1) (ANum n2)) / st ==>b 
-               (if (ble_nat n1 n2) then BTrue else BFalse)
-  | BS_LtEq1 : forall st a1 a1' a2,
-      a1 / st ==>a a1' ->
-      (BLe a1 a2) / st ==>b (BLe a1' a2)
-  | BS_LtEq2 : forall st v1 a2 a2',
-      aval v1 ->
-      a2 / st ==>a a2' ->
-      (BLe v1 a2) / st ==>b (BLe v1 (a2'))
-  | BS_NotTrue : forall st,
-      (BNot BTrue) / st ==>b BFalse
-  | BS_NotFalse : forall st,
-      (BNot BFalse) / st ==>b BTrue
-  | BS_NotStep : forall st b1 b1',
-      b1 / st ==>b b1' ->
-      (BNot b1) / st ==>b (BNot b1')
-  | BS_AndTrueTrue : forall st,
-      (BAnd BTrue BTrue) / st ==>b BTrue
-  | BS_AndTrueFalse : forall st,
-      (BAnd BTrue BFalse) / st ==>b BFalse
-  | BS_AndFalse : forall st b2,
-      (BAnd BFalse b2) / st ==>b BFalse
-  | BS_AndTrueStep : forall st b2 b2',
-      b2 / st ==>b b2' ->
-      (BAnd BTrue b2) / st ==>b (BAnd BTrue b2')
-  | BS_AndStep : forall st b1 b1' b2,
-      b1 / st ==>b b1' ->
-      (BAnd b1 b2) / st ==>b (BAnd b1' b2)
+Inductive bstep : state -> bexp -> bexp -> Prop :=
+| BS_Eq : forall st n1 n2,
+    (BEq (ANum n1) (ANum n2)) / st ==>b
+    (if (beq_nat n1 n2) then BTrue else BFalse)
+| BS_Eq1 : forall st a1 a1' a2,
+    a1 / st ==>a a1' ->
+    (BEq a1 a2) / st ==>b (BEq a1' a2)
+| BS_Eq2 : forall st v1 a2 a2',
+    aval v1 ->
+    a2 / st ==>a a2' ->
+    (BEq v1 a2) / st ==>b (BEq v1 a2')
+| BS_LtEq : forall st n1 n2,
+    (BLe (ANum n1) (ANum n2)) / st ==>b
+             (if (leb n1 n2) then BTrue else BFalse)
+| BS_LtEq1 : forall st a1 a1' a2,
+    a1 / st ==>a a1' ->
+    (BLe a1 a2) / st ==>b (BLe a1' a2)
+| BS_LtEq2 : forall st v1 a2 a2',
+    aval v1 ->
+    a2 / st ==>a a2' ->
+    (BLe v1 a2) / st ==>b (BLe v1 a2')
+| BS_NotTrue : forall st,
+    (BNot BTrue) / st ==>b BFalse
+| BS_NotFalse : forall st,
+    (BNot BFalse) / st ==>b BTrue
+| BS_NotStep : forall st b1 b1',
+    b1 / st ==>b b1' ->
+    (BNot b1) / st ==>b (BNot b1')
+| BS_AndTrueTrue : forall st,
+    (BAnd BTrue BTrue) / st ==>b BTrue
+| BS_AndTrueFalse : forall st,
+    (BAnd BTrue BFalse) / st ==>b BFalse
+| BS_AndFalse : forall st b2,
+    (BAnd BFalse b2) / st ==>b BFalse
+| BS_AndTrueStep : forall st b2 b2',
+    b2 / st ==>b b2' ->
+    (BAnd BTrue b2) / st ==>b (BAnd BTrue b2')
+| BS_AndStep : forall st b1 b1' b2,
+    b1 / st ==>b b1' ->
+    (BAnd b1 b2) / st ==>b (BAnd b1' b2)
 
-  where " t '/' st '==>b' t' " := (bstep st t t').
+where " t '/' st '==>b' t' " := (bstep st t t').
 
 (*
 (** The semantics of commands is the interesting part.  We need two
     small tricks to make it work:
 
        - We use [SKIP] as a "command value" -- i.e., a command that
-         has reached a normal form.  
+         has reached a normal form.
 
             - An assignment command reduces to [SKIP] (and an updated
               state).
@@ -1970,7 +1957,7 @@ Inductive astep : state -> aexp -> aexp -> Prop :=
               subcommand.
 
        - We reduce a [WHILE] command by transforming it into a
-         conditional followed by the same [WHILE].  *)
+         conditional followed by the same [WHILE]. *)
 *)
 (** コマンドの意味論は興味深い部分です。
     うまくやるために2つの小さなトリックを使います:
@@ -1987,23 +1974,22 @@ Inductive astep : state -> aexp -> aexp -> Prop :=
 
 (*
 (** (There are other ways of achieving the effect of the latter
-   trick, but they all share the feature that the original [WHILE]
-   command needs to be saved somewhere while a single copy of the loop
-   body is being evaluated.) *)
+    trick, but they all share the feature that the original [WHILE]
+    command needs to be saved somewhere while a single copy of the loop
+    body is being reduced.) *)
 *)
 (** (後者の効果を得るには他にもいろいろな方法がありますが、
-    いずれも、もとの[WHILE]コマンドをどこかに保存して、
-    ループ本体の1コピーを評価することには変わりありません。) *)
+    いずれも、もとの[WHILE]コマンドをどこかに保存して、ループ本体の1コピーを簡約することには変わりありません。) *)
 
-Reserved Notation " t '/' st '==>' t' '/' st' " 
+Reserved Notation " t '/' st '==>' t' '/' st' "
                   (at level 40, st at level 39, t' at level 39).
 
 Inductive cstep : (com * state) -> (com * state) -> Prop :=
   | CS_AssStep : forall st i a a',
       a / st ==>a a' ->
-      (i ::= a) / st ==> (i ::= a') / st 
-  | CS_Ass : forall st i n, 
-      (i ::= (ANum n)) / st ==> SKIP / (update st i n)
+      (i ::= a) / st ==> (i ::= a') / st
+  | CS_Ass : forall st i n,
+      (i ::= (ANum n)) / st ==> SKIP / (t_update st i n)
   | CS_SeqStep : forall st c1 c1' st' c2,
       c1 / st ==> c1' / st' ->
       (c1 ;; c2) / st ==> (c1' ;; c2) / st'
@@ -2015,15 +2001,15 @@ Inductive cstep : (com * state) -> (com * state) -> Prop :=
       IFB BFalse THEN c1 ELSE c2 FI / st ==> c2 / st
   | CS_IfStep : forall st b b' c1 c2,
       b / st ==>b b' ->
-      IFB b THEN c1 ELSE c2 FI / st ==> (IFB b' THEN c1 ELSE c2 FI) / st
+          IFB b THEN c1 ELSE c2 FI / st 
+      ==> (IFB b' THEN c1 ELSE c2 FI) / st
   | CS_While : forall st b c1,
           (WHILE b DO c1 END) / st
       ==> (IFB b THEN (c1;; (WHILE b DO c1 END)) ELSE SKIP FI) / st
 
   where " t '/' st '==>' t' '/' st' " := (cstep (t,st) (t',st')).
 
-
-(* ########################################################### *)
+(* ################################################################# *)
 (*
 (** * Concurrent Imp *)
 *)
@@ -2054,31 +2040,26 @@ Inductive com : Type :=
   (* New: *)
   | CPar : com -> com -> com.
 
-Tactic Notation "com_cases" tactic(first) ident(c) :=
-  first;
-  [ Case_aux c "SKIP" | Case_aux c "::=" | Case_aux c ";"
-  | Case_aux c "IFB" | Case_aux c "WHILE" | Case_aux c "PAR" ].
-
-Notation "'SKIP'" := 
+Notation "'SKIP'" :=
   CSkip.
-Notation "x '::=' a" := 
+Notation "x '::=' a" :=
   (CAss x a) (at level 60).
-Notation "c1 ;; c2" := 
+Notation "c1 ;; c2" :=
   (CSeq c1 c2) (at level 80, right associativity).
-Notation "'WHILE' b 'DO' c 'END'" := 
+Notation "'WHILE' b 'DO' c 'END'" :=
   (CWhile b c) (at level 80, right associativity).
-Notation "'IFB' b 'THEN' c1 'ELSE' c2 'FI'" := 
+Notation "'IFB' b 'THEN' c1 'ELSE' c2 'FI'" :=
   (CIf b c1 c2) (at level 80, right associativity).
-Notation "'PAR' c1 'WITH' c2 'END'" := 
+Notation "'PAR' c1 'WITH' c2 'END'" :=
   (CPar c1 c2) (at level 80, right associativity).
 
 Inductive cstep : (com * state)  -> (com * state) -> Prop :=
     (* Old part *)
   | CS_AssStep : forall st i a a',
-      a / st ==>a a' -> 
+      a / st ==>a a' ->
       (i ::= a) / st ==> (i ::= a') / st
-  | CS_Ass : forall st i n, 
-      (i ::= (ANum n)) / st ==> SKIP / (update st i n)
+  | CS_Ass : forall st i n,
+      (i ::= (ANum n)) / st ==> SKIP / (t_update st i n)
   | CS_SeqStep : forall st c1 c1' st' c2,
       c1 / st ==> c1' / st' ->
       (c1 ;; c2) / st ==> (c1' ;; c2) / st'
@@ -2089,14 +2070,15 @@ Inductive cstep : (com * state)  -> (com * state) -> Prop :=
   | CS_IfFalse : forall st c1 c2,
       (IFB BFalse THEN c1 ELSE c2 FI) / st ==> c2 / st
   | CS_IfStep : forall st b b' c1 c2,
-      b /st ==>b b' -> 
-      (IFB b THEN c1 ELSE c2 FI) / st ==> (IFB b' THEN c1 ELSE c2 FI) / st
+      b /st ==>b b' ->
+          (IFB b THEN c1 ELSE c2 FI) / st 
+      ==> (IFB b' THEN c1 ELSE c2 FI) / st
   | CS_While : forall st b c1,
-      (WHILE b DO c1 END) / st ==> 
-               (IFB b THEN (c1;; (WHILE b DO c1 END)) ELSE SKIP FI) / st
+          (WHILE b DO c1 END) / st 
+      ==> (IFB b THEN (c1;; (WHILE b DO c1 END)) ELSE SKIP FI) / st
     (* New part: *)
   | CS_Par1 : forall st c1 c1' c2 st',
-      c1 / st ==> c1' / st' -> 
+      c1 / st ==> c1' / st' ->
       (PAR c1 WITH c2 END) / st ==> (PAR c1' WITH c2 END) / st'
   | CS_Par2 : forall st c1 c2 c2' st',
       c2 / st ==> c2' / st' ->
@@ -2105,24 +2087,20 @@ Inductive cstep : (com * state)  -> (com * state) -> Prop :=
       (PAR SKIP WITH SKIP END) / st ==> SKIP / st
   where " t '/' st '==>' t' '/' st' " := (cstep (t,st) (t',st')).
 
+Definition cmultistep := multi cstep.
 
-Definition cmultistep := multi cstep. 
-
-Notation " t '/' st '==>*' t' '/' st' " := 
-   (multi cstep  (t,st) (t',st')) 
-   (at level 40, st at level 39, t' at level 39).  
-
-
-
+Notation " t '/' st '==>*' t' '/' st' " :=
+   (multi cstep  (t,st) (t',st'))
+   (at level 40, st at level 39, t' at level 39).
 
 
 (*
 (** Among the many interesting properties of this language is the fact
     that the following program can terminate with the variable [X] set
-    to any value... *)
+    to any value. *)
 *)
 (** この言語のいろいろな興味深い性質の中でも格別なものは、次のプログラムが、
-    変数[X]にどのような値を入れても停止するという事実です... *)
+    変数[X]にどのような値を入れても停止するという事実です。 *)
 
 Definition par_loop : com :=
   PAR
@@ -2145,16 +2123,16 @@ Example par_loop_example_0:
 Proof.
   eapply ex_intro. split.
   unfold par_loop.
-  eapply multi_step. apply CS_Par1. 
+  eapply multi_step. apply CS_Par1.
     apply CS_Ass.
   eapply multi_step. apply CS_Par2. apply CS_While.
-  eapply multi_step. apply CS_Par2. apply CS_IfStep. 
+  eapply multi_step. apply CS_Par2. apply CS_IfStep.
     apply BS_Eq1. apply AS_Id.
-  eapply multi_step. apply CS_Par2. apply CS_IfStep. 
-    apply BS_Eq. simpl. 
-  eapply multi_step. apply CS_Par2. apply CS_IfFalse. 
-  eapply multi_step. apply CS_ParDone. 
-  eapply multi_refl. 
+  eapply multi_step. apply CS_Par2. apply CS_IfStep.
+    apply BS_Eq. simpl.
+  eapply multi_step. apply CS_Par2. apply CS_IfFalse.
+  eapply multi_step. apply CS_ParDone.
+  eapply multi_refl.
   reflexivity. Qed.
 
 (*
@@ -2169,43 +2147,43 @@ Example par_loop_example_2:
 Proof.
   eapply ex_intro. split.
   eapply multi_step. apply CS_Par2. apply CS_While.
-  eapply multi_step. apply CS_Par2. apply CS_IfStep. 
+  eapply multi_step. apply CS_Par2. apply CS_IfStep.
     apply BS_Eq1. apply AS_Id.
-  eapply multi_step. apply CS_Par2. apply CS_IfStep. 
-    apply BS_Eq. simpl. 
-  eapply multi_step. apply CS_Par2. apply CS_IfTrue. 
+  eapply multi_step. apply CS_Par2. apply CS_IfStep.
+    apply BS_Eq. simpl.
+  eapply multi_step. apply CS_Par2. apply CS_IfTrue.
   eapply multi_step. apply CS_Par2. apply CS_SeqStep.
     apply CS_AssStep. apply AS_Plus1. apply AS_Id.
   eapply multi_step. apply CS_Par2. apply CS_SeqStep.
-    apply CS_AssStep. apply AS_Plus.  
+    apply CS_AssStep. apply AS_Plus.
   eapply multi_step. apply CS_Par2. apply CS_SeqStep.
     apply CS_Ass.
   eapply multi_step. apply CS_Par2. apply CS_SeqFinish.
 
   eapply multi_step. apply CS_Par2. apply CS_While.
-  eapply multi_step. apply CS_Par2. apply CS_IfStep. 
+  eapply multi_step. apply CS_Par2. apply CS_IfStep.
     apply BS_Eq1. apply AS_Id.
-  eapply multi_step. apply CS_Par2. apply CS_IfStep. 
-    apply BS_Eq. simpl. 
-  eapply multi_step. apply CS_Par2. apply CS_IfTrue. 
+  eapply multi_step. apply CS_Par2. apply CS_IfStep.
+    apply BS_Eq. simpl.
+  eapply multi_step. apply CS_Par2. apply CS_IfTrue.
   eapply multi_step. apply CS_Par2. apply CS_SeqStep.
     apply CS_AssStep. apply AS_Plus1. apply AS_Id.
   eapply multi_step. apply CS_Par2. apply CS_SeqStep.
-    apply CS_AssStep. apply AS_Plus.  
+    apply CS_AssStep. apply AS_Plus.
   eapply multi_step. apply CS_Par2. apply CS_SeqStep.
     apply CS_Ass.
 
   eapply multi_step. apply CS_Par1. apply CS_Ass.
   eapply multi_step. apply CS_Par2. apply CS_SeqFinish.
   eapply multi_step. apply CS_Par2. apply CS_While.
-  eapply multi_step. apply CS_Par2. apply CS_IfStep. 
+  eapply multi_step. apply CS_Par2. apply CS_IfStep.
     apply BS_Eq1. apply AS_Id.
-  eapply multi_step. apply CS_Par2. apply CS_IfStep. 
-    apply BS_Eq. simpl. 
-  eapply multi_step. apply CS_Par2. apply CS_IfFalse. 
-  eapply multi_step. apply CS_ParDone. 
-  eapply multi_refl. 
-  reflexivity. Qed. 
+  eapply multi_step. apply CS_Par2. apply CS_IfStep.
+    apply BS_Eq. simpl.
+  eapply multi_step. apply CS_Par2. apply CS_IfFalse.
+  eapply multi_step. apply CS_ParDone.
+  eapply multi_refl.
+  reflexivity. Qed.
 
 (*
 (** More generally... *)
@@ -2213,20 +2191,20 @@ Proof.
 (** より一般に... *)
 
 (*
-(** **** Exercise: 3 stars, optional  *)
+(** **** Exercise: 3 stars, optional (par_body_n__Sn)  *)
 *)
-(** **** 練習問題: ★★★, optional  *)
+(** **** 練習問題: ★★★, optional (par_body_n__Sn)  *)
 Lemma par_body_n__Sn : forall n st,
   st X = n /\ st Y = 0 ->
-  par_loop / st ==>* par_loop / (update st X (S n)).
+  par_loop / st ==>* par_loop / (t_update st X (S n)).
 Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
 (*
-(** **** Exercise: 3 stars, optional  *)
+(** **** Exercise: 3 stars, optional (par_body_n)  *)
 *)
-(** **** 練習問題: ★★★, optional  *)
+(** **** 練習問題: ★★★, optional (par_body_n)  *)
 Lemma par_body_n : forall n st,
   st X = 0 /\ st Y = 0 ->
   exists st',
@@ -2246,34 +2224,34 @@ Theorem par_loop_any_X:
     par_loop / empty_state ==>*  SKIP / st'
     /\ st' X = n.
 Proof.
-  intros n. 
-  destruct (par_body_n n empty_state). 
-    split; unfold update; reflexivity.
+  intros n.
+  destruct (par_body_n n empty_state).
+    split; unfold t_update; reflexivity.
 
   rename x into st.
-  inversion H as [H' [HX HY]]; clear H. 
-  exists (update st Y 1). split.
-  eapply multi_trans with (par_loop,st). apply H'. 
+  inversion H as [H' [HX HY]]; clear H.
+  exists (t_update st Y 1). split.
+  eapply multi_trans with (par_loop,st). apply H'.
   eapply multi_step. apply CS_Par1. apply CS_Ass.
   eapply multi_step. apply CS_Par2. apply CS_While.
   eapply multi_step. apply CS_Par2. apply CS_IfStep.
-    apply BS_Eq1. apply AS_Id. rewrite update_eq.
+    apply BS_Eq1. apply AS_Id. rewrite t_update_eq.
   eapply multi_step. apply CS_Par2. apply CS_IfStep.
     apply BS_Eq. simpl.
   eapply multi_step. apply CS_Par2. apply CS_IfFalse.
   eapply multi_step. apply CS_ParDone.
   apply multi_refl.
 
-  rewrite update_neq. assumption. intro X; inversion X. 
+  rewrite t_update_neq. assumption. intro X; inversion X.
 Qed.
 
 End CImp.
 
-(* ########################################################### *)
+(* ################################################################# *)
 (** * A Small-Step Stack Machine *)
 
-(** Last example: a small-step semantics for the stack machine example
-    from Imp.v. *)
+(** Our last example is a small-step semantics for the stack machine
+    example from the [Imp] chapter. *)
 
 Definition stack := list nat.
 Definition prog  := list sinstr.
@@ -2290,7 +2268,7 @@ Inductive stack_step : state -> prog * stack -> prog * stack -> Prop :=
   | SS_Mult : forall st stk n m p',
     stack_step st (SMult :: p', n::m::stk)  (p', (m*n)::stk).
 
-Theorem stack_step_deterministic : forall st, 
+Theorem stack_step_deterministic : forall st,
   deterministic (stack_step st).
 Proof.
   unfold deterministic. intros st x y1 y2 H1 H2.
@@ -2300,15 +2278,15 @@ Qed.
 Definition stack_multistep st := multi (stack_step st).
 
 (** **** Exercise: 3 stars, advanced (compiler_is_correct)  *)
-(** Remember the definition of [compile] for [aexp] given in the 
+(** Remember the definition of [compile] for [aexp] given in the
     [Imp] chapter. We want now to prove [compile] correct with respect
     to the stack machine.
 
-    State what it means for the compiler to be correct according to 
+    State what it means for the compiler to be correct according to
     the stack machine small step semantics and then prove it. *)
 
-Definition compiler_is_correct_statement : Prop := 
-(* FILL IN HERE *) admit.
+Definition compiler_is_correct_statement : Prop 
+  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
 
 
 Theorem compiler_is_correct : compiler_is_correct_statement.
@@ -2316,6 +2294,5 @@ Proof.
 (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** $Date: 2014-12-31 15:16:58 -0500 (Wed, 31 Dec 2014) $ *)
-
+(** $Date: 2016-12-20 11:28:30 -0500 (Tue, 20 Dec 2016) $ *)
 

@@ -1,11 +1,14 @@
+(** * MoreStlc: 単純型付きラムダ計算についてさらに *)
 (*
 (** * MoreStlc: More on the Simply Typed Lambda-Calculus *)
 *)
-(** * MoreStlc: 単純型付きラムダ計算についてさらに *)
 
-Require Export Stlc. 
+Require Import Maps.
+Require Import Types.
+Require Import Smallstep.
+Require Import Stlc.
 
-(* ###################################################################### *)
+(* ################################################################# *)
 (*
 (** * Simple Extensions to STLC *)
 *)
@@ -14,97 +17,103 @@ Require Export Stlc.
 (*
 (** The simply typed lambda-calculus has enough structure to make its
     theoretical properties interesting, but it is not much of a
-    programming language.  In this chapter, we begin to close the gap
-    with real-world languages by introducing a number of familiar
-    features that have straightforward treatments at the level of
-    typing. *)
+    programming language.
+
+    In this chapter, we begin to close the gap with real-world
+    languages by introducing a number of familiar features that have
+    straightforward treatments at the level of typing. *)
 *)
 (** 単純型付きラムダ計算は理論的性質を興味深いものにするには十分な構造を持っていますが、プログラミング言語といえるようなものではありません。
+　
     この章では、型における扱いが明らかないくつもの馴染み深い機能を導入することで、実世界の言語とのギャップを埋め始めます。*)
 
+(* ================================================================= *)
 (*
 (** ** Numbers *)
 *)
 (** ** 数値 *)
 
-(*
-(** Adding types, constants, and primitive operations for numbers is
-    easy -- just a matter of combining the [Types] and [Stlc]
-    chapters. *)
-*)
-(** 数値に関する型、定数、基本操作を追加することは容易です。
-    [Types]章と[Stlc]章をくっつけるだけです。 *)
+(** As we saw in exercise [stlc_arith] at the end of the [StlcProp]
+    chapter, adding types, constants, and primitive operations for
+    natural numbers is easy -- basically just a matter of combining
+    the [Types] and [Stlc] chapters.  Adding more realistic
+    numeric types like machine integers and floats is also
+    straightforward, though of course the specifications of the
+    numeric primitives become more fiddly. *)
 
+(* ================================================================= *)
 (*
-(** ** [let]-bindings *)
+(** ** Let Bindings *)
 *)
 (** ** [let]束縛 *)
 
 (*
-(** When writing a complex expression, it is often useful to give
-    names to some of its subexpressions: this avoids repetition and
-    often increases readability.  Most languages provide one or more
-    ways of doing this.  In OCaml (and Coq), for example, we can write
-    [let x=t1 in t2] to mean ``evaluate the expression [t1] and bind
-    the name [x] to the resulting value while evaluating [t2].''
+(** When writing a complex expression, it is useful to be able
+    to give names to some of its subexpressions to avoid repetition
+    and increase readability.  Most languages provide one or more ways
+    of doing this.  In OCaml (and Coq), for example, we can write [let
+    x=t1 in t2] to mean "reduce the expression [t1] to a value and
+    bind the name [x] to this value while reducing [t2]."
 
-    Our [let]-binder follows OCaml's in choosing a call-by-value
-    evaluation order, where the [let]-bound term must be fully
-    evaluated before evaluation of the [let]-body can begin.  The
-    typing rule [T_Let] tells us that the type of a [let] can be
+    Our [let]-binder follows OCaml in choosing a standard
+    _call-by-value_ evaluation order, where the [let]-bound term must
+    be fully reduced before reduction of the [let]-body can begin.
+    The typing rule [T_Let] tells us that the type of a [let] can be
     calculated by calculating the type of the [let]-bound term,
     extending the context with a binding with this type, and in this
-    enriched context calculating the type of the body, which is then
-    the type of the whole [let] expression.
+    enriched context calculating the type of the body (which is then
+    the type of the whole [let] expression).
 
-    At this point in the course, it's probably easier simply to look
-    at the rules defining this new feature as to wade through a lot of
-    english text conveying the same information.  Here they are: *)
+    At this point in the book, it's probably easier simply to look at
+    the rules defining this new feature than to wade through a lot of
+    English text conveying the same information.  Here they are: *)
 *)
-(** 複雑な式を書くとき、部分式に名前をつけるのが便利なことがよくあります。
+(** 複雑な式を書くとき、部分式に名前をつけられると便利なことがよくあります。
     同じことを繰り返すのを避けることができ、またしばしば可読性が向上します。
     ほとんどの言語はこのための1つ以上の方法を持っています。
-    OCaml(および Coq)では、例えば [let x=t1 in t2] と書くと「式[t1]を評価して、その結果を名前[x]に束縛して[t2]を評価する」ことを意味します。
-
+    例えばOCaml（およびCoq）では、 [let x=t1 in t2] と書くと「式[t1]を簡約して、その結果を名前[x]に束縛して[t2]を簡約する」ことを意味します。
+ 
     ここで導入する[let]束縛子はOCamlに従って値呼び(call-by-value)評価順序とします。
     つまり、[let]本体の評価が始まる前に[let]束縛項は完全に評価されます。
     型付け規則[T_Let]は、[let]の型が次の手順で計算されることを示しています:
-    まず[let]束縛項の型の計算、次にその型の束縛によるコンテキストの拡張、さらにこの拡張されたコンテキストでの[let]本体の型の計算をすると、それが[let]式全体の型になります。
-
-    コースのこの時点では、新しい機能の定義のためにたくさんの日本語の文章を読み通すより、同じ情報を伝える規則を単に見る方が、おそらく簡単でしょう。以下がその規則です: *)
+    まず[let]束縛項の型の計算、次にその型の束縛によるコンテキストの拡張、さらにこの拡張されたコンテキストでの[let]本体の型の計算をします（これが[let]式全体の型になります）。
+ 
+    本資料のこの時点では、新しい機能の定義のためにたくさんの日本語の文章を読み通すより、同じ情報を伝える規則を単に見る方が、おそらく簡単でしょう。以下がその規則です: *)
 
 (*
 (** Syntax:
-<<
+
        t ::=                Terms
            | ...               (other terms same as before)
            | let x=t in t      let-binding
->>
 *)
-*)
+ *)
 (** 構文:
 <<
        t ::=                項
-           | ...               (前と同じ他の項)
+           | ...               （前と同じ他の項）
            | let x=t in t      let束縛
 >>
-*)
+ *)
 
 (*
 (**
     Reduction:
+
                                  t1 ==> t1'
                      ----------------------------------               (ST_Let1)
                      let x=t1 in t2 ==> let x=t1' in t2
 
                         ----------------------------              (ST_LetValue)
                         let x=v1 in t2 ==> [x:=v1]t2
+
     Typing:
-                Gamma |- t1 : T1      Gamma , x:T1 |- t2 : T2
+
+                Gamma |- t1 : T1      Gamma, x:T1 |- t2 : T2
                 --------------------------------------------            (T_Let)
                         Gamma |- let x=t1 in t2 : T2
- *)
 *)
+ *)
 (**
     簡約:
 <<
@@ -113,16 +122,17 @@ Require Export Stlc.
                      let x=t1 in t2 ==> let x=t1' in t2 
  
                         ----------------------------              (ST_LetValue) 
-                        let x=v1 in t2 ==> [v1/x] t2 
+                        let x=v1 in t2 ==> [x:=v1]t2 
 >>
     型付け:
 <<
-                Gamma |- t1 : T1      Gamma , x:T1 |- t2 : T2 
+                Gamma |- t1 : T1      Gamma, x:T1 |- t2 : T2 
                 --------------------------------------------            (T_Let) 
                         Gamma |- let x=t1 in t2 : T2 
 >>
  *)
 
+(* ================================================================= *)
 (*
 (** ** Pairs *)
 *)
@@ -130,7 +140,7 @@ Require Export Stlc.
 
 (*
 (** Our functional programming examples in Coq have made
-    frequent use of _pairs_ of values.  The type of such pairs is
+    frequent use of _pairs_ of values.  The type of such a pair is
     called a _product type_.
 
     The formalization of pairs is almost too simple to be worth
@@ -138,37 +148,36 @@ Require Export Stlc.
     the definition to emphasize the common pattern. *)
 *)
 (** ここまでのCoqを用いた関数プログラミングの例では、値の対(_pairs_)を頻繁に使ってきました。
-    そのような対の型は直積型(_product type_)と呼ばれます。
+    そのような対の型は「直積型(_product type_)」と呼ばれます。
  
     対の形式化はほとんど議論する余地がないほど簡単です。
     しかし、共通パターンを強調するため、定義のいろいろな部分をちょっと見てみましょう。 *)
 
 (*
 (** In Coq, the primitive way of extracting the components of a pair
-    is _pattern matching_.  An alternative style is to take [fst] and
+    is _pattern matching_.  An alternative is to take [fst] and
     [snd] -- the first- and second-projection operators -- as
-    primitives.  Just for fun, let's do our products this way.  For
+    primitives.  Just for fun, let's do our pairs this way.  For
     example, here's how we'd write a function that takes a pair of
     numbers and returns the pair of their sum and difference:
-<<
-       \x:Nat*Nat. 
+
+       \x : Nat*Nat.
           let sum = x.fst + x.snd in
           let diff = x.fst - x.snd in
           (sum,diff)
->>
 *)
-*)
+ *)
 (** Coqでは、対の構成要素を抽出する基本的な方法は、パターンマッチング(_pattern matching_)です。
     別の方法としては、[fst]と[snd]、つまり、1番目と2番目の要素の射影操作を基本操作として持つ方法があります。
-    お遊びで、直積をこの方法でやってみましょう。
+    お遊びで、対をこの方法でやってみましょう。
     例えば、数値の対をとり、その和と差の対を返す関数の書き方は次の通りです:
 <<
-       \x:Nat*Nat.
+       \x : Nat*Nat. 
           let sum = x.fst + x.snd in 
           let diff = x.fst - x.snd in 
           (sum,diff) 
 >>
-*)
+ *)
 
 (*
 (** Adding pairs to the simply typed lambda-calculus, then, involves
@@ -184,44 +193,48 @@ Require Export Stlc.
 
 (*
 (** Syntax:
-<<
+
        t ::=                Terms
-           | ...               
            | (t,t)             pair
            | t.fst             first projection
            | t.snd             second projection
+           | ...
 
        v ::=                Values
-           | ...
            | (v,v)             pair value
+           | ...
 
        T ::=                Types
-           | ...
            | T * T             product type
->>
+           | ...
 *)
-*)
+ *)
 (** 構文:
 <<
        t ::=                項
-           | ... 
            | (t,t)             対
            | t.fst             第1射影
            | t.snd             第2射影
+           | ... 
  
        v ::=                値
-           | ... 
            | (v,v)             対値
+           | ... 
  
        T ::=                型
-           | ... 
            | T * T             直積型
+           | ... 
 >>
-*)
+ *)
 
 (*
-(** For evaluation, we need several new rules specifying how pairs and
-    projection behave.  
+(** For reduction, we need several new rules specifying how pairs and
+    projection behave. *)
+ *)
+(** 簡約については、対と射影がどう振る舞うかを規定するいくつかの新しい規則が必要です。 *)
+(*
+(**
+
                               t1 ==> t1'
                          --------------------                        (ST_Pair1)
                          (t1,t2) ==> (t1',t2)
@@ -244,8 +257,8 @@ Require Export Stlc.
                           ------------------                       (ST_SndPair)
                           (v1,v2).snd ==> v2
 *)
-*)
-(** 評価については、対と射影がどう振る舞うかを規定するいくつかの新しい規則が必要です。
+ *)
+(** 
 <<
                               t1 ==> t1' 
                          --------------------                        (ST_Pair1) 
@@ -269,16 +282,15 @@ Require Export Stlc.
                           ------------------                       (ST_SndPair) 
                           (v1,v2).snd ==> v2 
 >>
-*)
+ *)
 
 (*
-(**
-    Rules [ST_FstPair] and [ST_SndPair] specify that, when a fully
-    evaluated pair meets a first or second projection, the result is
+(** Rules [ST_FstPair] and [ST_SndPair] say that, when a fully
+    reduced pair meets a first or second projection, the result is
     the appropriate component.  The congruence rules [ST_Fst1] and
     [ST_Snd1] allow reduction to proceed under projections, when the
-    term being projected from has not yet been fully evaluated.
-    [ST_Pair1] and [ST_Pair2] evaluate the parts of pairs: first the
+    term being projected from has not yet been fully reduced.
+    [ST_Pair1] and [ST_Pair2] reduce the parts of pairs: first the
     left part, and then -- when a value appears on the left -- the right
     part.  The ordering arising from the use of the metavariables [v]
     and [t] in these rules enforces a left-to-right evaluation
@@ -287,21 +299,25 @@ Require Export Stlc.
     also added a clause to the definition of values, above, specifying
     that [(v1,v2)] is a value.  The fact that the components of a pair
     value must themselves be values ensures that a pair passed as an
-    argument to a function will be fully evaluated before the function
+    argument to a function will be fully reduced before the function
     body starts executing. *)
 *)
-(**
-    規則[ST_FstPair]と[ST_SndPair]は、完全に評価された対が第1射影または第2射影に遭遇したとき、結果が対応する要素であることを規定します。
-    合同規則[ST_Fst1]と[ST_Snd1]は、射影の対象の項が完全に評価されきっていないとき、その簡約を認めるものです。
-    [ST_Pair1]と[ST_Pair2]は対の構成部分の評価です。
-    最初に左の部分を評価し、それが値を持ったら、次に右の部分を評価します。
-    これらの規則内でメタ変数[v]と[t]を使うことで現れる順番は、対を左から右の順で評価すること(left-to-right evaluation)を規定しています。
+(** 規則[ST_FstPair]と[ST_SndPair]は、完全に簡約された対が第1射影または第2射影に遭遇したとき、結果が対応する要素であると言っています。
+    合同規則[ST_Fst1]と[ST_Snd1]は、射影の対象の項が完全に評価されきっていないとき、対象の簡約を認めるものです。
+    [ST_Pair1]と[ST_Pair2]は対の構成部分の簡約です。
+    最初に左の部分を簡約し、それが値となったら、次に右の部分を簡約します。
+    これらの規則内におけるメタ変数[v]と[t]の使い方は、対に関して左から右に評価する戦略(left-to-right evaluation strategy)であることを規定します。
     （暗黙の慣習として、[v]や[v1]などのメタ変数は値のみを指すものとしています。）
     また値の定義に節を加え、[(v1,v2)] が値であることを規定しています。
-    値の対自体が値でなければならないという事実は、関数の引数として渡された対が、関数の本体の実行が開始される前に完全に評価されることを保証します。 *)
+    値の対自体が値でなければならないという事実は、関数の引数として渡された対が、関数の本体の実行が開始される前に完全に簡約されることを保証します。 *)
 
 (*
-(** The typing rules for pairs and projections are straightforward.
+(** The typing rules for pairs and projections are straightforward. *)
+ *)
+(** 対と射影の型付け規則はそのまま直ぐに得られます。 *)
+(*
+(**
+
                Gamma |- t1 : T1       Gamma |- t2 : T2
                ---------------------------------------                 (T_Pair)
                        Gamma |- (t1,t2) : T1*T2
@@ -314,8 +330,8 @@ Require Export Stlc.
                         ---------------------                           (T_Snd)
                         Gamma |- t1.snd : T12
 *)
-*)
-(** 対と射影の型付け規則はそのまま直ぐに得られます。
+ *)
+(** 
 <<
                Gamma |- t1 : T1       Gamma |- t2 : T2 
                ---------------------------------------                 (T_Pair) 
@@ -329,18 +345,19 @@ Require Export Stlc.
                         ---------------------                           (T_Snd) 
                         Gamma |- t1.snd : T12 
 >>
-*)
+ *)
 
 (*
-(** The rule [T_Pair] says that [(t1,t2)] has type [T1*T2] if [t1] has
-   type [T1] and [t2] has type [T2].  Conversely, the rules [T_Fst]
-   and [T_Snd] tell us that, if [t1] has a product type
-   [T11*T12] (i.e., if it will evaluate to a pair), then the types of
-   the projections from this pair are [T11] and [T12]. *)
+(** [T_Pair] says that [(t1,t2)] has type [T1*T2] if [t1] has
+   type [T1] and [t2] has type [T2].  Conversely, [T_Fst] and [T_Snd]
+   tell us that, if [t1] has a product type [T11*T12] (i.e., if it
+   will reduce to a pair), then the types of the projections from
+   this pair are [T11] and [T12]. *)
 *)
-(** 規則[T_Pair]は、[t1]が型[T1]を持ち、[t2]が型[T2]を持つならば、 [(t1,t2)] が型 [T1*T2] を持つことを言っています。
-    逆に、規則[T_Fst]と[T_Snd]は、[t1]が直積型[T11*T12]を持つ（つまり評価結果が対になる）ならば、射影の型は[T11]と[T12]になることを定めます。 *)
+(** [T_Pair]は、[t1]が型[T1]を持ち、[t2]が型[T2]を持つならば、 [(t1,t2)] が型 [T1*T2] を持つことを言っています。
+    逆に、[T_Fst]と[T_Snd]は、[t1]が直積型[T11*T12]を持つ（つまり評価結果が対になる）ならば、射影の型は[T11]と[T12]になることを定めます。 *)
 
+(* ================================================================= *)
 (*
 (** ** Unit *)
 *)
@@ -354,56 +371,57 @@ Require Export Stlc.
 (*
 (** It has a single element -- the term constant [unit] (with a small
     [u]) -- and a typing rule making [unit] an element of [Unit].  We
-    also add [unit] to the set of possible result values of
-    computations -- indeed, [unit] is the _only_ possible result of
-    evaluating an expression of type [Unit]. *)
+    also add [unit] to the set of possible values -- indeed, [unit] is
+    the _only_ possible result of reducing an expression of type
+    [Unit]. *)
 *)
 (** この型は要素を1つ持ちます。それは項定数[unit]です（先頭の文字は小文字の[u]です）。
     型付け規則は [unit]を[Unit]の要素と定めます。
-    計算の結果として取りうる値の集合にも[unit]を加えます。
+    取りうる値の集合にも[unit]を加えます。
     実際、[unit]は型[Unit]の式の評価結果としてとり得る唯一の値です。 *)
 
 (*
 (** Syntax:
-<<
+
        t ::=                Terms
-           | ...               
            | unit              unit value
+           | ...
 
        v ::=                Values
-           | ...     
            | unit              unit
+           | ...
 
        T ::=                Types
-           | ...
            | Unit              Unit type
->>
+           | ...
+
     Typing:
+
                          --------------------                          (T_Unit)
                          Gamma |- unit : Unit
 *)
-*)
+ *)
 (** 構文:
 <<
        t ::=                項
-           | ... 
            | unit              unit値
+           | ... 
  
        v ::=                値
+           | unit              unit 
            | ... 
-           | unit              unit
  
        T ::=                型
-           | ... 
            | Unit              Unit型
+           | ... 
 >>
     型付け:
 <<
                          --------------------                          (T_Unit) 
                          Gamma |- unit : Unit 
 >>
-*)
-    
+ *)
+
 (*
 (** It may seem a little strange to bother defining a type that
     has just one element -- after all, wouldn't every computation
@@ -412,21 +430,22 @@ Require Export Stlc.
     This is a fair question, and indeed in the STLC the [Unit] type is
     not especially critical (though we'll see two uses for it below).
     Where [Unit] really comes in handy is in richer languages with
-    various sorts of _side effects_ -- e.g., assignment statements
-    that mutate variables or pointers, exceptions and other sorts of
-    nonlocal control structures, etc.  In such languages, it is
-    convenient to have a type for the (trivial) result of an
-    expression that is evaluated only for its effect. *)
+    _side effects_ -- e.g., assignment statements that mutate
+    variables or pointers, exceptions and other sorts of nonlocal
+    control structures, etc.  In such languages, it is convenient to
+    have a type for the (trivial) result of an expression that is
+    evaluated only for its effect. *)
 *)
 (** 1つの要素だけしか持たない型を定義することにわずらわされるのは、少々奇妙なことに見えるかもしれません。
     結局のところ、このような型に属する計算は自明なものだけではないのでしょうか？
  
     これは妥当な質問です。
-    実際STLCでは[Unit]型は特別、問題ではありません（ちょっと後でこの型のある使い道を見ることになりますが）。
-    [Unit]が本当に便利なのはよりリッチな言語でいろいろな種類の副作用(_side effects_)を持つ場合です。
+    実際STLCでは[Unit]型は特別、問題ではありません（ちょっと後でこの型の使い道を二つ見ることになりますが）。
+    [Unit]が本当に便利なのはよりリッチな言語で副作用(_side effects_)を持つ場合です。
     例えば、変更可能な変数やポインタについての代入文や、例外その他のローカルではないコントロール機構を持つ場合、などです。
     そのような言語では、副作用のためだけに評価される式の(どうでもよい)結果のための型が便利なのです。 *)
 
+(* ================================================================= *)
 (*
 (** ** Sums *)
 *)
@@ -435,52 +454,46 @@ Require Export Stlc.
 (*
 (** Many programs need to deal with values that can take two distinct
    forms.  For example, we might identify employees in an accounting
-   application using using _either_ their name _or_ their id number.
+   application using _either_ their name _or_ their id number.
    A search function might return _either_ a matching value _or_ an
-   error code.  
+   error code.
 
-   These are specific examples of a binary _sum type_,
-   which describes a set of values drawn from exactly two given types, e.g.
-<<
+   These are specific examples of a binary _sum type_ (sometimes called
+   a _disjoint union_), which describes a set of values drawn from 
+   one of two given types, e.g.:
+
        Nat + Bool
->>
 *)
-*)
+ *)
 (** 多くのプログラムでは2つの異なった形を持つ値を扱うことが求められます。
    例えばアカウント処理をするアプリケーションの認証で、名前か、「または」、IDナンバーを使うという場合があります。
    探索関数は、マッチした値か、「または」、エラーコードを返すかもしれません。
  
-   これらは、2項の直和型(_sum type_)の例です。
-   直和型は2つの与えられた型から抽出した値の集合にあたります。
+   これらは、2項の直和型(_sum type_ または _disjoint union_)の例です。
+   直和型は2つの与えられた型の一方から抽出した値の集合にあたります。
    例えば次のようなものです。
 <<
        Nat + Bool 
 >>
-*)
-
-
-
+ *)
 (*
 (** We create elements of these types by _tagging_ elements of
-    the component types.  For example, if [n] is a [Nat] then [inl v]
+    the component types.  For example, if [n] is a [Nat] then [inl n]
     is an element of [Nat+Bool]; similarly, if [b] is a [Bool] then
     [inr b] is a [Nat+Bool].  The names of the tags [inl] and [inr]
     arise from thinking of them as functions
 
-<<
    inl : Nat -> Nat + Bool
    inr : Bool -> Nat + Bool
->>
 
     that "inject" elements of [Nat] or [Bool] into the left and right
     components of the sum type [Nat+Bool].  (But note that we don't
     actually treat them as functions in the way we formalize them:
     [inl] and [inr] are keywords, and [inl t] and [inr t] are primitive
-    syntactic forms, not function applications.  This allows us to give
-    them their own special typing rules.) *)
+    syntactic forms, not function applications.) *)
 *)
 (** この型の要素を、それぞれの構成部分の型の要素にタグ付けする(_tagging_)ことで生成します。
-   例えば、[n]が[Nat]ならば [inl v] は [Nat+Bool] の要素です。
+   例えば、[n]が[Nat]ならば [inl n] は [Nat+Bool] の要素です。
    同様に、[b]が[Bool]ならば [inr b] は [Nat+Bool] の要素です。
    タグの名前[inl]と[inr]は、これらのタグを関数と考えるところから出ています。
  
@@ -491,8 +504,7 @@ Require Export Stlc.
  
    これらの関数は、[Nat]または[Bool]の要素を直和型[Nat+Bool]の左部分または右部分に注入("inject")します。
    （しかし、実際にはこれらを関数としては扱いません。
-   [inl]と[inr]はキーワードで、[inl t] と [inr t] は基本構文形であり、関数適用ではありません。
-   この扱いによって、これらに特別な型付け規則を用意できるようになります。） *)
+   [inl]と[inr]はキーワードで、[inl t] と [inr t] は基本構文形であり、関数適用ではありません。） *)
 
 (*
 (** In general, the elements of a type [T1 + T2] consist of the
@@ -504,7 +516,7 @@ Require Export Stlc.
 
 (*
 (** One important usage of sums is signaling errors:
-<< 
+
     div : Nat -> Nat -> (Nat + Unit) =
     div =
       \x:Nat. \y:Nat.
@@ -512,10 +524,8 @@ Require Export Stlc.
           inr unit
         else
           inl ...
->>
-    The type [Nat + Unit] above is in fact isomorphic to [option nat]
-    in Coq, and we've already seen how to signal errors with options. *)
 *)
+ *)
 (** 直和型の重要な用途の一つに、エラー報告があります。
 << 
     div : Nat -> Nat -> (Nat + Unit) = 
@@ -526,8 +536,14 @@ Require Export Stlc.
         else 
           inl ... 
 >>
-    この型 [Nat + Unit] は Coq における [option nat] と同型です。
-    option型によってエラーを報告する方法は既に紹介した通りです。 *)
+ *)
+(*
+(** The type [Nat + Unit] above is in fact isomorphic to [option
+    nat] in Coq -- i.e., it's easy to write functions that translate
+    back and forth. *) 
+*)
+(** この型 [Nat + Unit] は Coq における [option nat] と同型です。
+    つまり、簡単に両方向へ変換する関数が書けます。 *)
 
 (*
 (** To _use_ elements of sum types, we introduce a [case]
@@ -537,17 +553,25 @@ Require Export Stlc.
 *)
 (** 直和型の要素を「利用する」ために、分解する構文として[case]構文を導入します（これはCoqの[match]の非常に単純化された形です）。
    例えば、以下の手続きは、[Nat+Bool] を[Nat]に変換します: *)
+(*
+(** 
 
-(**
-<< 
-    getNat = 
+    getNat =
       \x:Nat+Bool.
         case x of
           inl n => n
         | inr b => if b then 1 else 0
->>
 *)
-          
+ *)
+(**  
+<<
+    getNat = 
+      \x:Nat+Bool. 
+        case x of 
+          inl n => n 
+        | inr b => if b then 1 else 0 
+>>
+ *)
 (*
 (** More formally... *)
 *)
@@ -555,49 +579,49 @@ Require Export Stlc.
 
 (*
 (** Syntax:
-<<
+
        t ::=                Terms
-           | ...               
            | inl T t           tagging (left)
            | inr T t           tagging (right)
            | case t of         case
                inl x => t
-             | inr x => t 
+             | inr x => t
+           | ...
 
        v ::=                Values
-           | ...
            | inl T v           tagged value (left)
            | inr T v           tagged value (right)
+           | ...
 
        T ::=                Types
-           | ...
            | T + T             sum type
->>
+           | ...
 *)
-*)
+ *)
 (** 構文:
 <<
        t ::=                項
-           | ... 
            | inl T t           タグ付け（左）
            | inr T t           タグ付け（右）
-           | case t of         case
-               inl x => t
-             | inr x => t
+           | case t of         case 
+               inl x => t 
+             | inr x => t 
+           | ... 
  
        v ::=                値
-           | ... 
            | inl T v           タグ付き値（左）
            | inr T v           タグ付き値（右）
+           | ... 
  
        T ::=                型
-           | ... 
            | T + T             直和型
+           | ... 
 >>
-*)
+ *)
 
 (*
-(** Evaluation:
+(** Reduction:
+
 
                               t1 ==> t1'
                         ----------------------                         (ST_Inl)
@@ -610,7 +634,7 @@ Require Export Stlc.
                               t0 ==> t0'
                    -------------------------------------------       (ST_Case)
                    case t0 of inl x1 => t1 | inr x2 => t2 ==>
-                   case t0' of inl x1 => t1 | inr x2 => t2 
+                   case t0' of inl x1 => t1 | inr x2 => t2
 
             ----------------------------------------------         (ST_CaseInl)
             case (inl T v0) of inl x1 => t1 | inr x2 => t2
@@ -620,8 +644,8 @@ Require Export Stlc.
             case (inr T v0) of inl x1 => t1 | inr x2 => t2
                            ==>  [x2:=v0]t2
 *)
-*)
-(**  評価:
+ *)
+(**  簡約:
 <<
                               t1 ==> t1' 
                         ----------------------                         (ST_Inl) 
@@ -648,6 +672,7 @@ Require Export Stlc.
 
 (*
 (** Typing:
+
                           Gamma |- t1 :  T1
                      ----------------------------                       (T_Inl)
                      Gamma |- inl T2 t1 : T1 + T2
@@ -662,8 +687,9 @@ Require Export Stlc.
          ---------------------------------------------------           (T_Case)
          Gamma |- case t0 of inl x1 => t1 | inr x2 => t2 : T
 
-    We use the type annotation in [inl] and [inr] to make the typing
-    simpler, similarly to what we did for functions. *)
+
+    We use the type annotation in [inl] and [inr] to make the typing 
+    relation simpler, similarly to what we did for functions. *)
 *)
 (** 型付け:
 <<
@@ -682,35 +708,35 @@ Require Export Stlc.
          Gamma |- case t0 of inl x1 => t1 | inr x2 => t2 : T 
 >>
     [inl]と[inr]の形に型を付記する理由は、関数に対して行ったのと同様、型付け規則を単純にするためです。 *)
+
 (*
-(** Without this extra
-    information, the typing rule [T_Inl], for example, would have to
-    say that, once we have shown that [t1] is an element of type [T1],
-    we can derive that [inl t1] is an element of [T1 + T2] for _any_
-    type T2.  For example, we could derive both [inl 5 : Nat + Nat]
-    and [inl 5 : Nat + Bool] (and infinitely many other types).
-    This failure of uniqueness of types would mean that we cannot
-    build a typechecking algorithm simply by "reading the rules from
-    bottom to top" as we could for all the other features seen so far.
+(** Without this extra information, the typing rule [T_Inl], for
+    example, would have to say that, once we have shown that [t1] is
+    an element of type [T1], we can derive that [inl t1] is an element
+    of [T1 + T2] for _any_ type T2.  For example, we could derive both
+    [inl 5 : Nat + Nat] and [inl 5 : Nat + Bool] (and infinitely many
+    other types).  This peculiarity (technically, a failure of
+    uniqueness of types) would mean that we cannot build a
+    typechecking algorithm simply by "reading the rules from bottom to
+    top" as we could for all the other features seen so far.
 
     There are various ways to deal with this difficulty.  One simple
     one -- which we've adopted here -- forces the programmer to
     explicitly annotate the "other side" of a sum type when performing
-    an injection.  This is rather heavyweight for programmers (and so
-    real languages adopt other solutions), but it is easy to
-    understand and formalize. *)
+    an injection.  This is a bit heavy for programmers (so real
+    languages adopt other solutions), but it is easy to understand and
+    formalize. *)
 *)
 (** この情報がなければ、型推論規則[T_Inl]は、例えば、[t1]が型[T1]の要素であることを示した後、「任意の」型[T2]について [inl t1] が [T1 + T2] の要素であることを導出できます。
     例えば、[inl 5 : Nat + Nat] と [inl 5 : Nat + Bool] の両方（および無数の型）が導出できます。
-    この型の一意性の失敗は、型チェックアルゴリズムを、ここまでやってきたように「規則を下から上に読む」という単純な方法で構築することができなくなることを意味します。
+    この奇妙さ（技術的に言えば型の一意性の欠如）は、型チェックアルゴリズムを、ここまでやってきたように「規則を下から上に読む」という単純な方法で構築することができなくなることを意味します。
  
     この問題を扱うのにはいろいろな方法があります。
     簡単なものの1つは、ここで採用する方法ですが、単射を実行するときに直和型の「別の側」をプログラマが明示的に付記することを強制するというものです。
-    これはプログラマにとってかなりヘビーウェイトです（そのため実際の言語は別の解法を採用しています）。
+    これはプログラマにはかなり重い作業です（そのため実際の言語は別の解法を採用しています）。
     しかし、理解と形式化は容易な方法です。 *)
 
-
-
+(* ================================================================= *)
 (*
 (** ** Lists *)
 *)
@@ -751,66 +777,64 @@ Require Export Stlc.
 (*
 (** For example, here is a function that calculates the sum of
     the first two elements of a list of numbers:
-<< 
-    \x:List Nat.  
-    lcase x of nil -> 0 
-       | a::x' -> lcase x' of nil -> a
-                     | b::x'' -> a+b 
->>
-*)
-*)
-(** 従って、例えば、数値リストの最初の2つの要素の和を計算する関数は次の通りです:
-<< 
-    \x:List Nat.   
-    lcase x of nil -> 0  
-       | a::x' -> lcase x' of nil -> a 
-                     | b::x'' -> a+b  
->>
-*)
 
+      \x:List Nat.
+      lcase x of nil -> 0
+         | a::x' -> lcase x' of nil -> a
+                       | b::x'' -> a+b
+*)
+ *)
+(** 従って、例えば、数値リストの最初の2つの要素の和を計算する関数は次の通りです:
+<<
+      \x:List Nat. 
+      lcase x of nil -> 0 
+         | a::x' -> lcase x' of nil -> a 
+                       | b::x'' -> a+b 
+>>
+ *)
 (*
 (**
     Syntax:
-<<
+
        t ::=                Terms
-           | ...
            | nil T
            | cons t t
            | lcase t of nil -> t | x::x -> t
+           | ...
 
        v ::=                Values
-           | ...
            | nil T             nil value
            | cons v v          cons value
+           | ...
 
        T ::=                Types
-           | ...
            | List T            list of Ts
->>
+           | ...
 *)
-*)
+ *)
 (**
     構文:
 <<
        t ::=                項
-           | ... 
            | nil T 
            | cons t t 
            | lcase t of nil -> t | x::x -> t 
+           | ... 
  
        v ::=                値
+           | nil T             nil値
+           | cons v v          cons値
            | ... 
-           | nil T             nil 
-           | cons v v          cons 
  
        T ::=                型
-           | ... 
            | List T            Tのリスト
+           | ... 
 >>
-*)
+ *)
 
 (*
 (** Reduction:
+
                                  t1 ==> t1'
                        --------------------------                    (ST_Cons1)
                        cons t1 t2 ==> cons t1' t2
@@ -832,7 +856,7 @@ Require Export Stlc.
             (lcase (cons vh vt) of nil -> t2 | xh::xt -> t3)
                           ==> [xh:=vh,xt:=vt]t3
 *)
-*)
+ *)
 (** 簡約:
 <<
                                  t1 ==> t1' 
@@ -856,10 +880,11 @@ Require Export Stlc.
             (lcase (cons vh vt) of nil -> t2 | xh::xt -> t3) 
                           ==> [xh:=vh,xt:=vt]t3 
 >>
-*)
+ *)
 
 (*
 (** Typing:
+
                           -----------------------                       (T_Nil)
                           Gamma |- nil T : List T
 
@@ -873,7 +898,7 @@ Require Export Stlc.
           -------------------------------------------------           (T_Lcase)
           Gamma |- (lcase t1 of nil -> t2 | h::t -> t3) : T
 *)
-*)
+ *)
 (** 型付け:
 <<
                           -----------------------                       (T_Nil) 
@@ -889,9 +914,9 @@ Require Export Stlc.
           -------------------------------------------------           (T_Lcase) 
           Gamma |- (lcase t1 of nil -> t2 | h::t -> t3) : T 
 >>
-*)
+ *)
 
-
+(* ================================================================= *)
 (*
 (** ** General Recursion *)
 *)
@@ -902,284 +927,345 @@ Require Export Stlc.
     Coq) is the ability to define recursive functions.  For example,
     we might like to be able to define the factorial function like
     this:
-<<
-   fact = \x:Nat. 
-             if x=0 then 1 else x * (fact (pred x)))    
->> 
-   But this would require quite a bit of work to formalize: we'd have
-   to introduce a notion of "function definitions" and carry around an
-   "environment" of such definitions in the definition of the [step]
-   relation. *)
+
+      fact = \x:Nat.
+                if x=0 then 1 else x * (fact (pred x)))
+
+   Note that the right-hand side of this binder mentions the variable
+   being bound -- something that is not allowed by our formalization of
+   [let] above.  
+
+   Directly formalizing this "recursive definition" mechanism is possible, 
+   but it requires a bit of extra effort: in particular, we'd have to 
+   pass around an "environment" of recursive function definitions in 
+   the definition of the [step] relation. *)
 *)
 (** （Coqを含む）ほとんどのプログラミング言語に現れるもう1つの機構が、再帰関数を定義する機能です。
     例えば、階乗関数を次のように定義できるとよいと思うでしょう:
 <<
-   fact = \x:Nat.
-             if x=0 then 1 else x * (fact (pred x))) 
+      fact = \x:Nat. 
+                if x=0 then 1 else x * (fact (pred x))) 
 >>
-   しかし、これを形式化するには、なかなかの作業が必要になります。
-   そうするには、「関数定義」("function definitions")の概念を導入し、[step]の定義の中で、関数定義の「環境」("environment")を持ち回ることが必要になるでしょう。 *)
+   この束縛子の中では、上で導入した[let]と異なり、右辺の変数[fact]が束縛されることになります。
+ 
+   直接「再帰的定義」を形式化することも可能ですが、なかなかの作業が必要になります。
+   特に[step]内で再帰関数定義の「環境(environment)」を持ち回る必要があるでしょう。 *)
 
 (*
-(** Here is another way that is straightforward to formalize: instead
-   of writing recursive definitions where the right-hand side can
-   contain the identifier being defined, we can define a _fixed-point
-   operator_ that performs the "unfolding" of the recursive definition
-   in the right-hand side lazily during reduction.
-<<
-   fact = 
-       fix
-         (\f:Nat->Nat.
-            \x:Nat. 
-               if x=0 then 1 else x * (f (pred x)))    
->> 
-*)
-*)
-(** ここでは、直接的に形式化する別の方法をとります。
-   右辺に定義しようとしている識別子を含む再帰的定義を書く代わりに、不動点演算子(_fixed-point operator_)を定義することができます。
-   不動点演算子は、簡約の過程で再帰的定義の右辺を遅延(lazy)して「展開」("unfold")するものです。
-<<
-   fact =  
-       fix 
-         (\f:Nat->Nat. 
-            \x:Nat.  
-               if x=0 then 1 else x * (f (pred x)))     
->> 
-*)
+(** Here is another way of presenting recursive functions that is equally
+    powerful (though not quite as convenient for the programmer) and 
+    more straightforward to formalize: instead of writing recursive 
+    definitions, we define a _fixed-point operator_ called [fix] 
+    that performs the "unfolding" of the recursive definition in the 
+    right-hand side as needed, during reduction.  
 
+    For example, instead of 
+
+      fact = \x:Nat.
+                if x=0 then 1 else x * (fact (pred x)))
+
+    we will write:
+
+      fact =
+          fix
+            (\f:Nat->Nat.
+               \x:Nat.
+                  if x=0 then 1 else x * (f (pred x)))
+
+    We can derive the latter from the former as follows:
+
+      - In the right-hand side of the definition of [fact], replace 
+        recursive references to [fact] by a fresh variable [f].
+
+      - Add an abstraction binding [f] at the front, with an 
+        appropriate type annotation.  (Since we are using [f] in place 
+        of [fact], which had type [Nat->Nat], we should require [f]
+        to have the same type.)  The new abstraction has type 
+        [(Nat->Nat) -> (Nat->Nat)].
+
+      - Apply [fix] to this abstraction.  This application has  
+        type [Nat->Nat].
+
+      - Use all of this as the right-hand side of an ordinary 
+        [let]-binding for [fact].  
+*)
+ *)
+(** ここでは、同じくらい強力な、また直接の形式化が容易な形での再帰関数の定義方法を取ります（プログラマにとっては不便を強いられることになりますが）。
+    再帰的定義を書く代わりに、[fix]という名前の「不動点演算子(_fixed-point operator_)」を定義します。
+    不動点演算子は、簡約の過程で必要に応じて再帰的定義の右辺に「展開」("unfold")するものです。
+ 
+    例えば、
+<<
+      fact = \x:Nat. 
+                if x=0 then 1 else x * (fact (pred x))) 
+>>
+    のように書く代わりに、次のように書きます。
+<<
+      fact = 
+          fix 
+            (\f:Nat->Nat. 
+               \x:Nat. 
+                  if x=0 then 1 else x * (f (pred x))) 
+>>
+    前者の書き方から、以下のようにして後者の書き方を得ます。
+ 
+      - [fact]の定義の右辺から再帰的定義の対象である[fact]という名前を新しい変数名[f]で置き換えます。
+ 
+      - [f]を束縛する抽象を、適切な方注釈と共に追加します。
+        （[f]を[fact]の代わりに使っているので、[fact]が型[Nat->Nat]を持っていることから、[f]に同じ型[Nat->Nat]を付けます。）
+        全体の型は[(Nat->Nat) -> (Nat->Nat)]になります。
+ 
+      - この抽象に[fix]を適用します。
+        その結果の型は[Nat->Nat]になります。
+ 
+      - この全体を、[fact]に対する通常の[let]束縛の右辺として利用します。
+ *)
 
 (*
 (** The intuition is that the higher-order function [f] passed
-   to [fix] is a _generator_ for the [fact] function: if [fact] is
-   applied to a function that approximates the desired behavior of
-   [fact] up to some number [n] (that is, a function that returns
-   correct results on inputs less than or equal to [n]), then it
-   returns a better approximation to [fact] -- a function that returns
-   correct results for inputs up to [n+1].  Applying [fix] to this
-   generator returns its _fixed point_ -- a function that gives the
-   desired behavior for all inputs [n].
+    to [fix] is a _generator_ for the [fact] function: if [f] is
+    applied to a function that "approximates" the desired behavior of
+    [fact] up to some number [n] (that is, a function that returns
+    correct results on inputs less than or equal to [n] but we don't
+    care what it does on inputs greater than [n]), then [f] returns a
+    slightly better approximation to [fact] -- a function that returns
+    correct results for inputs up to [n+1].  Applying [fix] to this
+    generator returns its _fixed point_, which is a function that
+    gives the desired behavior for all inputs [n].
 
-   (The term "fixed point" has exactly the same sense as in ordinary
-   mathematics, where a fixed point of a function [f] is an input [x]
-   such that [f(x) = x].  Here, a fixed point of a function [F] of
-   type (say) [(Nat->Nat)->(Nat->Nat)] is a function [f] such that [F
-   f] is behaviorally equivalent to [f].) *)
+    (The term "fixed point" is used here in exactly the same sense as
+    in ordinary mathematics, where a fixed point of a function [f] is
+    an input [x] such that [f(x) = x].  Here, a fixed point of a
+    function [F] of type [(Nat->Nat)->(Nat->Nat)] is a function [f] of
+    type [Nat->Nat] such that [F f] behaves the same as [f].) *)
 *)
 (** 直観的には[fix]に渡される高階関数[f]は[fact]関数の生成器(_generator_)です。
-   [f]が、[fact]に求められる振る舞いを[n]まで近似する関数（つまり、[n]以下の入力に対して正しい結果を返す関数）に適用されるとき、[f]はより良い近似、つまり、[n+1]まで正しい答えを返す関数、を返します。
-   [fix]をこの生成器に適用すると、生成器の不動点(_fixed point_)を返します。
-   この不動点は、すべての入力[n]について求められる振る舞いをする関数です。
-
-   （不動点("fixed point")という用語は通常の数学とまったく同じ意味で使っています。
-   通常の数学では、関数[f]の不動点とは、[f(x) = x] となる入力 [x] のことです。
-   ここでは、（いってみれば）型 [(Nat->Nat)->(Nat->Nat)] を持つ関数[F]の不動点は、[F f]が[f]と振る舞い同値である関数[f]です。） *)
-(* 訳注: 階乗に関する記述中、[f]と[fact]を書き間違えていると思われる部分があったので、修正して訳した。 *)
+    [f]が、[fact]に求められる振る舞いを[n]まで「近似」する関数（つまり、[n]以下の入力に対しては正しい結果を返すが[n]より大きい入力に関してはどうでもいい関数）に適用されるとき、[f]はより良い近似、つまり、[n+1]まで正しい答えを返す関数、を返します。
+    [fix]をこの生成器に適用すると、生成器の「不動点(_fixed point_)」を返します。
+    この不動点は、すべての入力[n]について求められる振る舞いをする関数です。
+ 
+    （ここでは不動点("fixed point")という用語を通常の数学と同じ意味で使っています。
+    通常の数学では、関数[f]の不動点とは、[f(x) = x] となる入力 [x] のことです。
+    ここでは、型 [(Nat->Nat)->(Nat->Nat)] を持つ関数[F]の不動点は、[Nat->Nat]型の関数[f]のうち、[F f]が[f]と同じように振る舞うものです。） *)
 
 (*
 (** Syntax:
-<<
-       t ::=                Terms
-           | ...
-           | fix t             fixed-point operator
->>
-   Reduction:
-                                 t1 ==> t1'
-                             ------------------                       (ST_Fix1)
-                             fix t1 ==> fix t1'
 
-                             F = \xf:T1.t2
-                         -----------------------                    (ST_FixAbs)
-                         fix F ==> [xf:=fix F]t2
+       t ::=                Terms
+           | fix t             fixed-point operator
+           | ...
+
+   Reduction:
+
+                                t1 ==> t1'
+                            ------------------                        (ST_Fix1)
+                            fix t1 ==> fix t1'
+
+               --------------------------------------------         (ST_FixAbs)
+               fix (\xf:T1.t2) ==> [xf:=fix (\xf:T1.t2)] t2
+
    Typing:
-                            Gamma |- t1 : T1->T1
-                            --------------------                        (T_Fix)
-                            Gamma |- fix t1 : T1
- *)
+
+                           Gamma |- t1 : T1->T1
+                           --------------------                         (T_Fix)
+                           Gamma |- fix t1 : T1
 *)
+ *)
 (** 構文:
 <<
        t ::=                項
-           | ... 
            | fix t             不動点演算子
+           | ... 
 >>
    簡約:
 <<
-                                 t1 ==> t1' 
-                             ------------------                       (ST_Fix1) 
-                             fix t1 ==> fix t1' 
+                                t1 ==> t1' 
+                            ------------------                       (ST_Fix1) 
+                            fix t1 ==> fix t1' 
  
-                             F = \xf:T1.t2 
-                         -----------------------                    (ST_FixAbs) 
-                         fix F ==> [xf:=fix F]t2 
+               --------------------------------------------         (ST_FixAbs) 
+               fix (\xf:T1.t2) ==> [xf:=fix (\xf:T1.t2)] t2 
 >>
    型付け:
 <<
-                            Gamma |- t1 : T1->T1 
-                            --------------------                        (T_Fix) 
-                            Gamma |- fix t1 : T1 
+                           Gamma |- t1 : T1->T1 
+                           --------------------                        (T_Fix) 
+                           Gamma |- fix t1 : T1 
 >>
  *)
 
 (*
 (** Let's see how [ST_FixAbs] works by reducing [fact 3 = fix F 3],
-    where [F = (\f. \x. if x=0 then 1 else x * (f (pred x)))] (we are
-    omitting type annotations for brevity here).
-<<
-fix F 3
->>
-[==>] [ST_FixAbs]
-<<
-(\x. if x=0 then 1 else x * (fix F (pred x))) 3
->>
+    where 
+
+    F = (\f. \x. if x=0 then 1 else x * (f (pred x)))
+>> 
+    (type annotations are omitted for brevity).
+
+    fix F 3
+
+[==>] [ST_FixAbs] + [ST_App1]
+
+    (\x. if x=0 then 1 else x * (fix F (pred x))) 3
+
 [==>] [ST_AppAbs]
-<<
-if 3=0 then 1 else 3 * (fix F (pred 3))
->>
+
+    if 3=0 then 1 else 3 * (fix F (pred 3))
+
 [==>] [ST_If0_Nonzero]
-<<
-3 * (fix F (pred 3))
->>
-[==>] [ST_FixAbs + ST_Mult2] 
-<<
-3 * ((\x. if x=0 then 1 else x * (fix F (pred x))) (pred 3))
->>
+
+    3 * (fix F (pred 3))
+
+[==>] [ST_FixAbs + ST_Mult2]
+
+    3 * ((\x. if x=0 then 1 else x * (fix F (pred x))) (pred 3))
+
 [==>] [ST_PredNat + ST_Mult2 + ST_App2]
-<<
-3 * ((\x. if x=0 then 1 else x * (fix F (pred x))) 2)
->>
+
+    3 * ((\x. if x=0 then 1 else x * (fix F (pred x))) 2)
+
 [==>] [ST_AppAbs + ST_Mult2]
-<<
-3 * (if 2=0 then 1 else 2 * (fix F (pred 2)))
->>
+
+    3 * (if 2=0 then 1 else 2 * (fix F (pred 2)))
+
 [==>] [ST_If0_Nonzero + ST_Mult2]
-<<
-3 * (2 * (fix F (pred 2)))
->>
+
+    3 * (2 * (fix F (pred 2)))
+
 [==>] [ST_FixAbs + 2 x ST_Mult2]
-<<
-3 * (2 * ((\x. if x=0 then 1 else x * (fix F (pred x))) (pred 2)))
->>
+
+    3 * (2 * ((\x. if x=0 then 1 else x * (fix F (pred x))) (pred 2)))
+
 [==>] [ST_PredNat + 2 x ST_Mult2 + ST_App2]
-<<
-3 * (2 * ((\x. if x=0 then 1 else x * (fix F (pred x))) 1))
->>
+
+    3 * (2 * ((\x. if x=0 then 1 else x * (fix F (pred x))) 1))
+
 [==>] [ST_AppAbs + 2 x ST_Mult2]
-<<
-3 * (2 * (if 1=0 then 1 else 1 * (fix F (pred 1))))
->>
+
+    3 * (2 * (if 1=0 then 1 else 1 * (fix F (pred 1))))
+
 [==>] [ST_If0_Nonzero + 2 x ST_Mult2]
-<<
-3 * (2 * (1 * (fix F (pred 1))))
->>
+
+    3 * (2 * (1 * (fix F (pred 1))))
+
 [==>] [ST_FixAbs + 3 x ST_Mult2]
-<<
-3 * (2 * (1 * ((\x. if x=0 then 1 else x * (fix F (pred x))) (pred 1))))
->>
+
+    3 * (2 * (1 * ((\x. if x=0 then 1 else x * (fix F (pred x))) (pred 1))))
+
 [==>] [ST_PredNat + 3 x ST_Mult2 + ST_App2]
-<<
-3 * (2 * (1 * ((\x. if x=0 then 1 else x * (fix F (pred x))) 0)))
->>
+
+    3 * (2 * (1 * ((\x. if x=0 then 1 else x * (fix F (pred x))) 0)))
+
 [==>] [ST_AppAbs + 3 x ST_Mult2]
-<<
-3 * (2 * (1 * (if 0=0 then 1 else 0 * (fix F (pred 0)))))
->>
+
+    3 * (2 * (1 * (if 0=0 then 1 else 0 * (fix F (pred 0)))))
+
 [==>] [ST_If0Zero + 3 x ST_Mult2]
-<<
-3 * (2 * (1 * 1))
->>
+
+    3 * (2 * (1 * 1))
+
 [==>] [ST_MultNats + 2 x ST_Mult2]
-<<
-3 * (2 * 1)
->>
+
+    3 * (2 * 1)
+
 [==>] [ST_MultNats + ST_Mult2]
-<<
-3 * 2
->>
+
+    3 * 2
+
 [==>] [ST_MultNats]
-<<
-6
->>
+
+    6
 *)
 *)
 (** [fact 3 = fix F 3] の動きを追うことで、 [ST_FixAbs] がどのように動くのか見ます。
-    ここで、 [F = (\f. \x. if x=0 then 1 else x * (f (pred x)))] とします（可読性のために型注釈は除いています）。
+    ここで、[F]は以下の式とします。
 <<
-fix F 3 
+    F = (\f. \x. if x=0 then 1 else x * (f (pred x))) 
+>> 
+    （可読性のために型注釈は省略します。）
+<<
+    fix F 3 
 >>
-[==>] [ST_FixAbs] 
+[==>] [ST_FixAbs] + [ST_App1] 
 <<
-(\x. if x=0 then 1 else x * (fix F (pred x))) 3 
+    (\x. if x=0 then 1 else x * (fix F (pred x))) 3 
 >>
 [==>] [ST_AppAbs] 
 <<
-if 3=0 then 1 else 3 * (fix F (pred 3)) 
+    if 3=0 then 1 else 3 * (fix F (pred 3)) 
 >>
 [==>] [ST_If0_Nonzero] 
 <<
-3 * (fix F (pred 3)) 
+    3 * (fix F (pred 3)) 
 >>
-[==>] [ST_FixAbs + ST_Mult2]  
+[==>] [ST_FixAbs + ST_Mult2] 
 <<
-3 * ((\x. if x=0 then 1 else x * (fix F (pred x))) (pred 3)) 
+    3 * ((\x. if x=0 then 1 else x * (fix F (pred x))) (pred 3)) 
 >>
 [==>] [ST_PredNat + ST_Mult2 + ST_App2] 
 <<
-3 * ((\x. if x=0 then 1 else x * (fix F (pred x))) 2) 
+    3 * ((\x. if x=0 then 1 else x * (fix F (pred x))) 2) 
 >>
 [==>] [ST_AppAbs + ST_Mult2] 
 <<
-3 * (if 2=0 then 1 else 2 * (fix F (pred 2))) 
+    3 * (if 2=0 then 1 else 2 * (fix F (pred 2))) 
 >>
 [==>] [ST_If0_Nonzero + ST_Mult2] 
 <<
-3 * (2 * (fix F (pred 2))) 
+    3 * (2 * (fix F (pred 2))) 
 >>
 [==>] [ST_FixAbs + 2 x ST_Mult2] 
 <<
-3 * (2 * ((\x. if x=0 then 1 else x * (fix F (pred x))) (pred 2))) 
+    3 * (2 * ((\x. if x=0 then 1 else x * (fix F (pred x))) (pred 2))) 
 >>
 [==>] [ST_PredNat + 2 x ST_Mult2 + ST_App2] 
 <<
-3 * (2 * ((\x. if x=0 then 1 else x * (fix F (pred x))) 1)) 
+    3 * (2 * ((\x. if x=0 then 1 else x * (fix F (pred x))) 1)) 
 >>
 [==>] [ST_AppAbs + 2 x ST_Mult2] 
 <<
-3 * (2 * (if 1=0 then 1 else 1 * (fix F (pred 1)))) 
+    3 * (2 * (if 1=0 then 1 else 1 * (fix F (pred 1)))) 
 >>
 [==>] [ST_If0_Nonzero + 2 x ST_Mult2] 
 <<
-3 * (2 * (1 * (fix F (pred 1)))) 
+    3 * (2 * (1 * (fix F (pred 1)))) 
 >>
 [==>] [ST_FixAbs + 3 x ST_Mult2] 
 <<
-3 * (2 * (1 * ((\x. if x=0 then 1 else x * (fix F (pred x))) (pred 1)))) 
+    3 * (2 * (1 * ((\x. if x=0 then 1 else x * (fix F (pred x))) (pred 1)))) 
 >>
 [==>] [ST_PredNat + 3 x ST_Mult2 + ST_App2] 
 <<
-3 * (2 * (1 * ((\x. if x=0 then 1 else x * (fix F (pred x))) 0))) 
+    3 * (2 * (1 * ((\x. if x=0 then 1 else x * (fix F (pred x))) 0))) 
 >>
 [==>] [ST_AppAbs + 3 x ST_Mult2] 
 <<
-3 * (2 * (1 * (if 0=0 then 1 else 0 * (fix F (pred 0))))) 
+    3 * (2 * (1 * (if 0=0 then 1 else 0 * (fix F (pred 0))))) 
 >>
 [==>] [ST_If0Zero + 3 x ST_Mult2] 
 <<
-3 * (2 * (1 * 1)) 
+    3 * (2 * (1 * 1)) 
 >>
 [==>] [ST_MultNats + 2 x ST_Mult2] 
 <<
-3 * (2 * 1) 
+    3 * (2 * 1) 
 >>
 [==>] [ST_MultNats + ST_Mult2] 
 <<
-3 * 2 
+    3 * 2 
 >>
 [==>] [ST_MultNats] 
 <<
-6 
+    6
 >>
-*)
+ *)
 
+(*
+(** One important point to note is that, unlike [Fixpoint]
+    definitions in Coq, there is nothing to prevent functions defined
+    using [fix] from diverging. *)
+*)
+(** 重要な点として、Coqの[Fixpoint]と異なり、[fix]での定義は発散するような関数も書けます。 *)
 
 (*
 (** **** Exercise: 1 star, optional (halve_fix)  *)
@@ -1187,27 +1273,27 @@ if 3=0 then 1 else 3 * (fix F (pred 3))
 (** **** 練習問題: ★, optional (halve_fix) *)
 (*
 (** Translate this informal recursive definition into one using [fix]:
-<<
-   halve = 
-     \x:Nat. 
-        if x=0 then 0 
-        else if (pred x)=0 then 0
-        else 1 + (halve (pred (pred x))))
->>
+
+      halve =
+        \x:Nat.
+           if x=0 then 0
+           else if (pred x)=0 then 0
+           else 1 + (halve (pred (pred x))))
+
 (* FILL IN HERE *)
 []
 *)
-*)
+ *)
 (** 次の再帰的定義を[fix]を用いた定義に直しなさい:
 <<
-   halve =  
-     \x:Nat.  
-        if x=0 then 0  
-        else if (pred x)=0 then 0 
-        else 1 + (halve (pred (pred x)))) 
+      halve = 
+        \x:Nat. 
+           if x=0 then 0 
+           else if (pred x)=0 then 0 
+           else 1 + (halve (pred (pred x)))) 
 >>
 (* FILL IN HERE *) 
-[]
+[] 
  *)
 
 (*
@@ -1226,47 +1312,48 @@ if 3=0 then 1 else 3 * (fix F (pred 3))
 (** 項 [fact 1] が正規形まで簡約されるステップ列を書き下しなさい（ただし、算術演算については通常の簡約規則を仮定します）。
  
     (* FILL IN HERE *) 
-[]
-*)
+[] 
+ *)
 
 (* 
 (** The ability to form the fixed point of a function of type [T->T]
     for any [T] has some surprising consequences.  In particular, it
     implies that _every_ type is inhabited by some term.  To see this,
     observe that, for every type [T], we can define the term
+
     fix (\x:T.x)
+
     By [T_Fix]  and [T_Abs], this term has type [T].  By [ST_FixAbs]
-    it reduces to itself, over and over again.  Thus it is an 
-    _undefined element_ of [T]. 
+    it reduces to itself, over and over again.  Thus it is a
+    _diverging element_ of [T].
 
     More usefully, here's an example using [fix] to define a
     two-argument recursive function:
-<<
-    equal = 
-      fix 
+
+    equal =
+      fix
         (\eq:Nat->Nat->Bool.
            \m:Nat. \n:Nat.
-             if m=0 then iszero n 
+             if m=0 then iszero n
              else if n=0 then false
              else eq (pred m) (pred n))
->>
+
 
     And finally, here is an example where [fix] is used to define a
     _pair_ of recursive functions (illustrating the fact that the type
     [T1] in the rule [T_Fix] need not be a function type):
-<<
-    evenodd = 
-      fix 
-        (\eo: (Nat->Bool * Nat->Bool).
-           let e = \n:Nat. if n=0 then true  else eo.snd (pred n) in
-           let o = \n:Nat. if n=0 then false else eo.fst (pred n) in
-           (e,o))
 
-    even = evenodd.fst
-    odd  = evenodd.snd
->>
+      evenodd =
+        fix
+          (\eo: (Nat->Bool * Nat->Bool).
+             let e = \n:Nat. if n=0 then true  else eo.snd (pred n) in
+             let o = \n:Nat. if n=0 then false else eo.fst (pred n) in
+             (e,o))
+
+      even = evenodd.fst
+      odd  = evenodd.snd
 *)
-*)
+ *)
 (** 任意の[T]について型 [T->T] の関数の不動点が記述できる形ができたことから、驚くようなことが起こります。
     特に、すべての型が何らかの項に住まれている(inhabited)ということが導かれます。
     これを確認するため、すべての型[T]について、項
@@ -1276,121 +1363,98 @@ if 3=0 then 1 else 3 * (fix F (pred 3))
     が定義できることを見てみましょう。
     [T_Fix]と[T_Abs]から、この項は型[T]を持ちます。
     [ST_FixAbs]より、この項を簡約すると何度やっても自分自身になります。
-    したがって、この項は[T]の未定義要素(_undefined element_)です。
+    したがって、この項は[T]の発散要素(_diverging element_)です。
  
     より有用なこととして、次は[fix]を使って2引数の再帰関数を定義する例です:
 <<
-    equal =
-      fix
+    equal = 
+      fix 
         (\eq:Nat->Nat->Bool. 
            \m:Nat. \n:Nat. 
-             if m=0 then iszero n  
+             if m=0 then iszero n 
              else if n=0 then false 
              else eq (pred m) (pred n)) 
->> 
-
+>>
+ 
     そして最後に、次は[fix]を使って再帰関数の対を定義する例です（この例は、規則[T_Fix]の型[T1]は関数型ではなくてもよいことを示しています）:
 <<
-    evenodd =
-      fix
-        (\eo: (Nat->Bool * Nat->Bool). 
-           let e = \n:Nat. if n=0 then true  else eo.snd (pred n) in 
-           let o = \n:Nat. if n=0 then false else eo.fst (pred n) in 
-           (e,o)) 
+      evenodd = 
+        fix 
+          (\eo: (Nat->Bool * Nat->Bool). 
+             let e = \n:Nat. if n=0 then true  else eo.snd (pred n) in 
+             let o = \n:Nat. if n=0 then false else eo.fst (pred n) in 
+             (e,o)) 
  
-    even = evenodd.fst 
-    odd  = evenodd.snd 
+      even = evenodd.fst 
+      odd  = evenodd.snd 
 >>
-*)
+ *)
 
-(* ###################################################################### *)
+(* ================================================================= *)
 (*
 (** ** Records *)
 *)
 (** ** レコード *)
 
 (*
-(** As a final example of a basic extension of the STLC, let's
-    look briefly at how to define _records_ and their types.
-    Intuitively, records can be obtained from pairs by two kinds of
-    generalization: they are n-ary products (rather than just binary)
-    and their fields are accessed by _label_ (rather than position).
-
-    Conceptually, this extension is a straightforward generalization
-    of pairs and product types, but notationally it becomes a little
-    heavier; for this reason, we postpone its formal treatment to a
-    separate chapter ([Records]). *)
+(** As a final example of a basic extension of the STLC, let's look
+    briefly at how to define _records_ and their types.  Intuitively,
+    records can be obtained from pairs by two straightforward
+    generalizations: they are n-ary (rather than just binary) and
+    their fields are accessed by _label_ (rather than position). *)
 *)
 (** STLCの基本拡張の最後の例として、
     レコード(_records_)とその型をどのように形式化するかをちょっと見てみましょう。
-    直観的には、レコードは組に二種類の一般化をほどこすことで得られます。
-    （二つの代わりに）n-要素の組とすること、そして（位置の代わりに）ラベル (_label_) で要素へアクセスできることです。
- 
-    この拡張は概念的には対と直積型の真っ直ぐな一般化ですが、記法的にはちょっとたいへんです。
-    このため、形式的な扱いは独立した章([Records])まで置いておきます。 *)
-
-(*
-(** Records are not included in the extended exercise below, but
-    they will be useful to motivate the [Sub] chapter. *)
-*)
-(** レコードは下にある追加の練習問題には含まれません。
-    しかし、[Sub]章における動機付けとして非常に有用です。 *)
+    直観的には、レコードは組に二つの一般化をほどこすことで得られます。
+    （二つの代わりに）n-要素の組とすること、そして（位置の代わりに）「ラベル(_label_)」で要素へアクセスできることです。 *)
 
 (*
 (** Syntax:
-<<
+
        t ::=                          Terms
-           | ...
-           | {i1=t1, ..., in=tn}         record 
+           | {i1=t1, ..., in=tn}         record
            | t.i                         projection
+           | ...
 
        v ::=                          Values
-           | ...
            | {i1=v1, ..., in=vn}         record value
+           | ...
 
        T ::=                          Types
-           | ...
            | {i1:T1, ..., in:Tn}         record type
->> 
-   Intuitively, the generalization is pretty obvious.  But it's worth
-   noticing that what we've actually written is rather informal: in
-   particular, we've written "[...]" in several places to mean "any
+           | ...
+
+   The generalization from products should be pretty obvious.  But 
+   it's worth noticing the ways in which what we've actually written is
+   even _more_ informal than the informal syntax we've used in previous 
+   sections and chapters: we've used "[...]" in several places to mean "any
    number of these," and we've omitted explicit mention of the usual
-   side-condition that the labels of a record should not contain
+   side condition that the labels of a record should not contain any
    repetitions. *)
 *)
 (** 構文:
 <<
        t ::=                          項
-           | ... 
            | {i1=t1, ..., in=tn}         レコード
            | t.i                         射影
+           | ... 
  
        v ::=                          値
-           | ... 
            | {i1=v1, ..., in=vn}         レコード値
+           | ... 
  
        T ::=                          型
-           | ... 
            | {i1:T1, ..., in:Tn}         レコード型
+           | ... 
 >>
-   直観的には、この一般化はかなり明確です。
-   しかし、ここで実際に記述したものはかなり非形式的であることは注意しておくべきです。
-   特に、いろいろなところで、"[...]"を「これらを何個か」という意味で使っていますし、レコードに同じラベルが複数回出てきてはいけない、という通常の付加条件を明示的に述べることを省いています。 *)
-
-(*
-(** It is possible to devise informal notations that are
-   more precise, but these tend to be quite heavy and to obscure the
-   main points of the definitions.  So we'll leave these a bit loose
-   here (they are informal anyway, after all) and do the work of
-   tightening things up elsewhere (in chapter [Records]). *)
-*)
-(** より詳細な非形式的記法を考案することもできますが、それはかなりヘビーで、また定義の大事な点をわかりにくくすることになりかねません。
-   このため、ここではちょっとルーズなまま残しておいて（どちらにしろ結局非形式的なのです）、きっちり仕上げるのは別のところ（[Records]章）でやります。 *)
+   直積からの一般化はかなり明確です。
+   しかし、ここで実際に記述したものは、以前の章で書いたものよりかなり非形式的であることは注意しておくべきです。
+   いろいろなところで、"[...]"を「これらを何個か」という意味で使っていますし、レコードに同じラベルが繰り返し出てきてはいけない、という通常の付加条件を明示的に述べることを省いています。 *)
 
 (*
 (**
    Reduction:
+
                               ti ==> ti'
                  ------------------------------------                  (ST_Rcd)
                      {i1=v1, ..., im=vm, in=ti, ...}
@@ -1402,13 +1466,14 @@ if 3=0 then 1 else 3 * (fix F (pred 3))
 
                       -------------------------                    (ST_ProjRcd)
                       {..., i=vi, ...}.i ==> vi
+
    Again, these rules are a bit informal.  For example, the first rule
    is intended to be read "if [ti] is the leftmost field that is not a
    value and if [ti] steps to [ti'], then the whole record steps..."
    In the last rule, the intention is that there should only be one
    field called i, and that all the other fields must contain values. *)
 *)
-(**
+(** 
    簡約:
 <<
                               ti ==> ti' 
@@ -1424,12 +1489,13 @@ if 3=0 then 1 else 3 * (fix F (pred 3))
                       {..., i=vi, ...}.i ==> vi 
 >>
    これらの規則も、やはりちょっと非形式的です。
-   例えば、最初の規則は   「[ti]が値でないフィールドのうち最も左のもので、[ti]は[ti']にステップで進むならば、レコード全体のステップは...」と読まれることを意図しています。
+   例えば、最初の規則は「[ti]が値でないフィールドのうち最も左のもので、[ti]は[ti']にステップで進むならば、レコード全体のステップは...」と読まれることを意図しています。
    最後の規則では、i と呼ばれるフィールドは1つだけで、他のすべてのフィールドは値を持っていることを意図しています。 *)
 
 (*
 (**
-   Typing:
+   The typing rules are also simple:
+
             Gamma |- t1 : T1     ...     Gamma |- tn : Tn
           --------------------------------------------------            (T_Rcd)
           Gamma |- {i1=t1, ..., in=tn} : {i1:T1, ..., in:Tn}
@@ -1437,11 +1503,10 @@ if 3=0 then 1 else 3 * (fix F (pred 3))
                     Gamma |- t : {..., i:Ti, ...}
                     -----------------------------                      (T_Proj)
                           Gamma |- t.i : Ti
-
 *)
-*)
-(**
-   型付け:
+ *)
+(** 
+   型付けも簡単です:
 <<
             Gamma |- t1 : T1     ...     Gamma |- tn : Tn 
           --------------------------------------------------            (T_Rcd) 
@@ -1451,133 +1516,145 @@ if 3=0 then 1 else 3 * (fix F (pred 3))
                     -----------------------------                      (T_Proj) 
                           Gamma |- t.i : Ti 
 >>
-*)
+ *)
 
-(* ###################################################################### *)
+(*
+(** There are several ways to approach formalizing the above
+    definitions.
+
+      - We can directly formalize the syntactic forms and inference
+        rules, staying as close as possible to the form we've given
+        them above.  This is conceptually straightforward, and it's
+        probably what we'd want to do if we were building a real
+        compiler (in particular, it will allow us to print error
+        messages in the form that programmers will find easy to
+        understand).  But the formal versions of the rules will not be
+        very pretty or easy to work with, because all the [...]s above
+        will have to be replaced with explicit quantifications or
+        comprehensions.  For this reason, records are not included in
+        the extended exercise at the end of this chapter.  (It is
+        still useful to discuss them informally here because they will
+        help motivate the addition of subtyping to the type system
+        when we get to the [Sub] chapter.)
+
+      - Alternatively, we could look for a smoother way of presenting
+        records -- for example, a binary presentation with one
+        constructor for the empty record and another constructor for
+        adding a single field to an existing record, instead of a
+        single monolithic constructor that builds a whole record at
+        once.  This is the right way to go if we are primarily
+        interested in studying the metatheory of the calculi with
+        records, since it leads to clean and elegant definitions and
+        proofs.  Chapter [Records] shows how this can be done.
+
+      - Finally, if we like, we can avoid formalizing records
+        altogether, by stipulating that record notations are just
+        informal shorthands for more complex expressions involving
+        pairs and product types.  We sketch this approach in the next
+        section. *)
+ *)
+(** 上述の定義を精密にする方法はいくつもあります。
+ 
+      - 構文の形と推論規則を、上記の形になるべく近いまま直接形式化するという方法があります。
+        これは概念的に「直球」で、もし本当のコンパイラを作るならば、おそらくいちばん合っているでしょう。
+        特に、形式化の中にエラーメッセージのプリントを含めることができるので、プログラマが理解するのが容易になるでしょう。
+        しかし、規則の形式化版はまったくきれいにはなりませんし、扱いも難しいものになります。
+        というのも、[...]で省略した部分を全て明示的に定量化し、理解しなければならないからです。
+        このため、レコードによる拡張は本章の追加課題にも入れていません。
+        （それでもここで非形式的に議論しておくのは、[Sub]章における部分型付けのモチベーションになるからです。）
+ 
+      - 別の方法として、レコードを表現する、よりスムーズな方法を探すことができます。
+        例えば、1つのコンストラクタでレコード全体を一度に作るのではなく、空レコードに対応する1つのコンストラクタと、存在するレコードに1つのフィールドを追加する別のコンストラクタの2つで表現するという方法があります。
+        この方法は、レコードについての計算のメタ理論に一番の興味がある場合には正しい方法です。
+        なぜなら、この方法をとると、きれいで優雅な定義と証明が得られるからです。
+        [Records]章では、この方法がどのように行えるかを示しています。
+ 
+      - 最後に、望むならば、レコードを形式化することを完全に避けることができます。
+        このためには、レコード記法は、対と直積型を含むより複雑な式の単なる非形式的な略記法である、と規定します。
+        次節では、このアプローチの概略を与えます。 *)
+
+(* ----------------------------------------------------------------- *)
 (*
 (** *** Encoding Records (Optional) *)
 *)
 (** *** レコードのエンコード (Optional) *)
 
 (*
-(** There are several ways to make the above definitions precise.  
+(** Let's see how records can be encoded using just pairs and [unit].  
 
-      - We can directly formalize the syntactic forms and inference
-        rules, staying as close as possible to the form we've given
-        them above.  This is conceptually straightforward, and it's
-        probably what we'd want to do if we were building a real
-        compiler -- in particular, it will allow is to print error
-        messages in the form that programmers will find easy to
-        understand.  But the formal versions of the rules will not be
-        pretty at all!
-
-      - We could look for a smoother way of presenting records -- for
-        example, a binary presentation with one constructor for the
-        empty record and another constructor for adding a single field
-        to an existing record, instead of a single monolithic
-        constructor that builds a whole record at once.  This is the
-        right way to go if we are primarily interested in studying the
-        metatheory of the calculi with records, since it leads to
-        clean and elegant definitions and proofs.  Chapter [Records]
-        shows how this can be done.
-
-      - Alternatively, if we like, we can avoid formalizing records
-        altogether, by stipulating that record notations are just
-        informal shorthands for more complex expressions involving
-        pairs and product types.  We sketch this approach here.
-
-    First, observe that we can encode arbitrary-size tuples using
+    First, observe that we can encode arbitrary-size _tuples_ using
     nested pairs and the [unit] value.  To avoid overloading the pair
     notation [(t1,t2)], we'll use curly braces without labels to write
     down tuples, so [{}] is the empty tuple, [{5}] is a singleton
     tuple, [{5,6}] is a 2-tuple (morally the same as a pair),
-    [{5,6,7}] is a triple, etc.  
-<<
-    {}                 ---->  unit
-    {t1, t2, ..., tn}  ---->  (t1, trest)
-                              where {t2, ..., tn} ----> trest
->>
+    [{5,6,7}] is a triple, etc.
+
+      {}                 ---->  unit
+      {t1, t2, ..., tn}  ---->  (t1, trest)
+                                where {t2, ..., tn} ----> trest
+
     Similarly, we can encode tuple types using nested product types:
-<<
-    {}                 ---->  Unit
-    {T1, T2, ..., Tn}  ---->  T1 * TRest
-                              where {T2, ..., Tn} ----> TRest
->>
+
+      {}                 ---->  Unit
+      {T1, T2, ..., Tn}  ---->  T1 * TRest
+                                where {T2, ..., Tn} ----> TRest
+
     The operation of projecting a field from a tuple can be encoded
-    using a sequence of second projections followed by a first projection: 
-<<
-    t.0        ---->  t.fst
-    t.(n+1)    ---->  (t.snd).n
->>
+    using a sequence of second projections followed by a first projection:
+
+      t.0        ---->  t.fst
+      t.(n+1)    ---->  (t.snd).n
 
     Next, suppose that there is some total ordering on record labels,
     so that we can associate each label with a unique natural number.
     This number is called the _position_ of the label.  For example,
     we might assign positions like this:
-<<
+
       LABEL   POSITION
       a       0
       b       1
       c       2
       ...     ...
-      foo     1004
+      bar     1395
       ...     ...
-      bar     10562
+      foo     4460
       ...     ...
->>       
 
     We use these positions to encode record values as tuples (i.e., as
     nested pairs) by sorting the fields according to their positions.
     For example:
-<<
+
       {a=5, b=6}      ---->   {5,6}
       {a=5, c=7}      ---->   {5,unit,7}
       {c=7, a=5}      ---->   {5,unit,7}
       {c=5, b=3}      ---->   {unit,3,5}
       {f=8,c=5,a=7}   ---->   {7,unit,5,unit,unit,8}
       {f=8,c=5}       ---->   {unit,unit,5,unit,unit,8}
->>
+
     Note that each field appears in the position associated with its
     label, that the size of the tuple is determined by the label with
     the highest position, and that we fill in unused positions with
-    [unit].  
+    [unit].
 
     We do exactly the same thing with record types:
-<<
+
       {a:Nat, b:Nat}      ---->   {Nat,Nat}
       {c:Nat, a:Nat}      ---->   {Nat,Unit,Nat}
       {f:Nat,c:Nat}       ---->   {Unit,Unit,Nat,Unit,Unit,Nat}
->>
 
     Finally, record projection is encoded as a tuple projection from
     the appropriate position:
-<<
+
       t.l  ---->  t.(position of l)
->>    
 
     It is not hard to check that all the typing rules for the original
     "direct" presentation of records are validated by this
     encoding.  (The reduction rules are "almost validated" -- not
     quite, because the encoding reorders fields.) *)
 *)
-(** 上述の定義を精密にするにはいろいろな方法があります。
+(** では、レコードを[unit]と対で表現する方法を見ていきましょう。
  
-      - 構文の形と推論規則を、上記の形になるべく近いまま直接形式化するという方法があります。
-        これは概念的に「直球」で、もし本当のコンパイラを作るならば、おそらくいちばん合っているでしょう。
-        特に、形式化の中にエラーメッセージのプリントを含めることができるので、プログラマが理解するのが容易になるでしょう。
-        しかし、規則の形式化版はまったくきれいにはなりません!
- 
-      - レコードを表現する、よりスムーズな方法を探すことができます。
-        例えば、1つのコンストラクタでレコード全体を一度に作るのではなく、空レコードに対応する1つのコンストラクタと、存在するレコードに1つのフィールドを追加する別のコンストラクタの2つで表現するという方法があります。
-        この方法は、レコードについての計算のメタ理論に一番の興味がある場合には正しい方法です。
-        なぜなら、この方法をとると、きれいで優雅な定義と証明が得られるからです。
-        [Records]章では、この方法がどのように行えるかを示しています。
- 
-      - 別の方法として、望むならば、レコードを形式化することを完全に避けることができます。
-        このためには、レコード記法は、対と直積型を含むより複雑な式の単なる非形式的な略記法である、と規定します。
-        ここではこのアプローチのスケッチを与えます。
- 
-    最初に、任意のサイズの組が対と[unit]値のネストでエンコードできることを確認します。
+    最初に、任意のサイズの「組(_tuple_)」が対と[unit]値のネストでエンコードできることを確認します。
     対の記法 [(t1,t2)] を混用するのを避けるため、組を書き下すためにはラベルを持たない中カッコ([{..}])を使います。
     つまり、[{}]は0個組、[{5}]は一つ組、[{5,6}]は二つ組（事実上対と同じ）、[{5,6,7}]は三つ組、等です。
 <<
@@ -1598,7 +1675,7 @@ if 3=0 then 1 else 3 * (fix F (pred 3))
 >>
  
     次に、レコードラベルに何らかの全順序があり、そのため各ラベルに一意に自然数が関連づけられると仮定します。
-    この数をラベルのポジション(_position_)と呼びます。
+    この数をラベルの「ポジション(_position_)」と呼びます。
     例えば、以下のようにポジションが定められるとします:
 <<
       LABEL   POSITION 
@@ -1606,12 +1683,11 @@ if 3=0 then 1 else 3 * (fix F (pred 3))
       b       1 
       c       2 
       ...     ... 
-      foo     1004 
+      bar     1395 
       ...     ... 
-      bar     10562 
+      foo     4460 
       ...     ... 
 >>
- 
     このポジションを、レコード値を組(つまりネストされた対)でエンコードするために使います。
     つまり、フィールドをそのポジションでソートします。
     例えば:
@@ -1634,48 +1710,47 @@ if 3=0 then 1 else 3 * (fix F (pred 3))
       {c:Nat, a:Nat}      ---->   {Nat,Unit,Nat} 
       {f:Nat,c:Nat}       ---->   {Unit,Unit,Nat,Unit,Unit,Nat} 
 >>
- 
     最後に、レコードの射影は適切なポジションについての組の射影でエンコードされます:
 <<
       t.l  ---->  t.(position of l) 
 >>
- 
     レコードのオリジナルの「直接の」表現に対するすべての型付け規則が、このエンコードで正しいことをチェックするのは難しいことではありません。
     （簡約規則は正しさを「ほぼ」確認できます。完全に、ではありません。
     なぜなら、フィールドの並べ直しによってフィールドの簡約順序が変わりうるためです。） *)
 
 (*
 (** Of course, this encoding will not be very efficient if we
-    happen to use a record with label [bar]!  But things are not
+    happen to use a record with label [foo]!  But things are not
     actually as bad as they might seem: for example, if we assume that
     our compiler can see the whole program at the same time, we can
     _choose_ the numbering of labels so that we assign small positions
     to the most frequently used labels.  Indeed, there are industrial
     compilers that essentially do this! *)
 *)
-(** もちろん、ラベル[bar]を持つレコードをたまたま使ったときには、このエンコードはあまり効率的ではありません。
+(** もちろん、ラベル[foo]を持つレコードをたまたま使ったときには、このエンコードはあまり効率的ではありません。
     しかしこの問題は見た目ほど深刻ではありません。
     もし、コンパイラがプログラム全体を同時に見ることができると仮定するなら、ラベルの番号づけをうまく選んで、一番よく使われるラベルに小さいポジションを与えることができます。
     実際、商用のコンパイラで本質的にこれをやっているものもあります! *)
 
+(* ----------------------------------------------------------------- *)
 (*
-(** *** Variants (Optional Reading) *)
+(** *** Variants (Optional) *)
 *)
-(** *** バリアント (Optional Reading) *)
+(** *** バリアント (Optional) *)
 
 (*
 (** Just as products can be generalized to records, sums can be
     generalized to n-ary labeled types called _variants_.  Instead of
     [T1+T2], we can write something like [<l1:T1,l2:T2,...ln:Tn>]
     where [l1],[l2],... are field labels which are used both to build
-    instances and as case arm labels.  
+    instances and as case arm labels.
 
     These n-ary variants give us almost enough mechanism to build
     arbitrary inductive data types like lists and trees from
     scratch -- the only thing missing is a way to allow _recursion_ in
     type definitions.  We won't cover this here, but detailed
     treatments can be found in many textbooks -- e.g., Types and
-    Programming Languages. *)
+    Programming Languages [Pierce 2002]. *)
 *)
 (** 直積がレコードに一般化できたのと同様、直和は n-個のラベルを持った型「バリアント」(_variants_)に一般化できます。
     [T1+T2] の代わりに [<l1:T1,l2:T2,...ln:Tn>] のように書くことができます。
@@ -1684,76 +1759,76 @@ if 3=0 then 1 else 3 * (fix F (pred 3))
     n-個のバリアントは、リストや木構造のような任意の帰納的データ型をゼロから構築するのに必要なメカニズムのほとんどを与えます。
     唯一足りないのは、型定義の再帰です。ここではこの話題は扱いません。
     ただ、詳細な扱いはいろいろなテキストブックに書かれています。
-    例えば "Types and Programming Languages" です。*)
+    例えば "Types and Programming Languages" [Pierce 2002] です。*)
 
-(* ###################################################################### *)
+(* ################################################################# *)
 (*
 (** * Exercise: Formalizing the Extensions *)
 *)
 (** * 練習問題: 拡張を形式化する *)
 
 (*
-(** **** Exercise: 4 stars, optional (STLC_extensions)  *)
+(** **** Exercise: 5 stars (STLC_extensions)  *)
 *)
-(** **** 練習問題: ★★★★, optional (STLC_extensions) *)
+(** **** 練習問題: ★★★★★ (STLC_extensions) *)
 (*
-(** In this problem you will formalize a couple of the extensions
-    described above.  We've provided the necessary additions to the
-    syntax of terms and types, and we've included a few examples that
-    you can test your definitions with to make sure they are working
-    as expected.  You'll fill in the rest of the definitions and
-    extend all the proofs accordingly.
+(** In this exercise, you will formalize some of the extensions
+    described in this chapter.  We've provided the necessary additions
+    to the syntax of terms and types, and we've included a few
+    examples that you can test your definitions with to make sure they
+    are working as expected.  You'll fill in the rest of the
+    definitions and extend all the proofs accordingly.
 
     To get you started, we've provided implementations for:
      - numbers
-     - pairs and units
-     - sums 
+     - sums
      - lists
+     - unit
 
     You need to complete the implementations for:
+     - pairs 
      - let (which involves binding)
      - [fix]
 
-    A good strategy is to work on the extensions one at a time, in
-    multiple passes, rather than trying to work through the file from
-    start to finish in a single pass.  For each definition or proof,
-    begin by reading carefully through the parts that are provided for
-    you, referring to the text in the [Stlc] chapter for high-level
-    intuitions and the embedded comments for detailed mechanics.
+    A good strategy is to work on the extensions one at a time, in two
+    passes, rather than trying to work through the file from start to
+    finish in a single pass.  For each definition or proof, begin by
+    reading carefully through the parts that are provided for you,
+    referring to the text in the [Stlc] chapter for high-level
+    intuitions and the embedded comments for detailed mechanics. *)
 *)
-*)
-(** この問題では、上で説明した拡張の形式化をしてもらいます。
+(** この課題では、本章で説明した拡張の形式化をしてもらいます。
     項と型の構文の必要な拡張は提示しておきました。
     また、読者が、自分の定義が期待された通りに動作するかをテストすることができるように、いくつかの例を示しておきました。
     読者は定義の残りの部分を埋め、それに合わせて証明を拡張しなさい。
  
-    （訳注：節構成がまぎらわしいですが、この章のここ以降はすべてこの練習問題の内部のようです。
+    （訳注：この章のここ以降はすべてこの練習問題の内部です。
     埋めるのはその中の「ここを埋めなさい」という部分です。
     なお、以下の記述はCoq記述内の埋め込みコメントを読まないと理解できない部分があると思いますが、HTML化したものでは埋め込みコメントが表示されていないかもしれません。
     その場合はHTML化前のCoqソースを見てください。）
  
     取りかかるために、以下のものに関しては実装しておきました:
       - 数値
-      - 直積とUnit型
       - 直和
       - リスト
+      - Unit型
  
     読者は、以下のものに関する実装を完成させなさい:
+      - 直積
       - let (束縛を含む)
       - [fix]
  
-    よい戦略は、ファイルの最初から最後までを1パスで行おうとせずに、複数回のパスで拡張項目を一つづつやることです。
+    よい戦略は、ファイルの最初から最後までを1パスで行おうとせずに、2パスで拡張項目を一つづつやることです。
     定義または証明のそれぞれについて、提示されたパーツを注意深く読むことから始めなさい。
-    その際に、ハイレベルの直観については[Stlc]章のテキストを参照し、詳細の機構については、埋め込まれたコメントを参照しなさい。
-*)
+    その際に、ハイレベルの直観については[Stlc]章のテキストを参照し、詳細の機構については、埋め込まれたコメントを参照しなさい。 *)
 
 Module STLCExtended.
 
-(* ###################################################################### *)
+(* ----------------------------------------------------------------- *)
 (*
-(** *** Syntax and Operational Semantics *)
+(** *** Syntax *)
 *)
-(** *** 構文と操作的意味 *)
+(** *** 構文 *)
 
 Inductive ty : Type :=
   | TArrow : ty -> ty -> ty
@@ -1762,12 +1837,6 @@ Inductive ty : Type :=
   | TProd  : ty -> ty -> ty
   | TSum   : ty -> ty -> ty
   | TList  : ty -> ty.
-
-Tactic Notation "T_cases" tactic(first) ident(c) :=
-  first;
-  [ Case_aux c "TArrow" | Case_aux c "TNat"
-  | Case_aux c "TProd" | Case_aux c "TUnit"
-  | Case_aux c "TSum" | Case_aux c "TList"  ].
 
 Inductive tm : Type :=
   (* pure STLC *)
@@ -1802,7 +1871,7 @@ Inductive tm : Type :=
 (** <<
   (* let *)
 >> *)
-  | tlet : id -> tm -> tm -> tm 
+  | tlet : id -> tm -> tm -> tm
           (* i.e., [let x = t1 in t2] *)
           (** <<
           (* 例えば、[let x = t1 in t2] *)
@@ -1813,7 +1882,7 @@ Inductive tm : Type :=
 >> *)
   | tinl : ty -> tm -> tm
   | tinr : ty -> tm -> tm
-  | tcase : tm -> id -> tm -> id -> tm -> tm  
+  | tcase : tm -> id -> tm -> id -> tm -> tm
           (* i.e., [case t0 of inl x1 => t1 | inr x2 => t2] *)
 (** <<
           (* 例えば、[case t0 of inl x1 => t1 | inr x2 => t2] *)
@@ -1824,10 +1893,10 @@ Inductive tm : Type :=
 >> *)
   | tnil : ty -> tm
   | tcons : tm -> tm -> tm
-  | tlcase : tm -> tm -> id -> id -> tm -> tm 
-          (* i.e., [lcase t1 of | nil -> t2 | x::y -> t3] *)
+  | tlcase : tm -> tm -> id -> id -> tm -> tm
+           (* i.e., [lcase t1 of | nil -> t2 | x::y -> t3] *)
 (** <<
-          (* つまり、[lcase t1 of | nil -> t2 | x::y -> t3] *)
+           (* つまり、[lcase t1 of | nil -> t2 | x::y -> t3] *)
 >> *)
   (* fix *)
 (** <<
@@ -1839,15 +1908,14 @@ Inductive tm : Type :=
 (** Note that, for brevity, we've omitted booleans and instead
     provided a single [if0] form combining a zero test and a
     conditional.  That is, instead of writing
-<<
+
        if x = 0 then ... else ...
->>
+
     we'll write this:
-<<
+
        if0 x then ... else ...
->>
 *)
-*)
+ *)
 (** なお、簡潔にするため、ブール値をなくし、その代わりゼロテストと条件分岐を組み合わせた [if0] 構文を提供しています。
     つまり、
 <<
@@ -1857,20 +1925,9 @@ Inductive tm : Type :=
 <<
        if0 x then ... else ... 
 >>
-*)
+ *)
 
-Tactic Notation "t_cases" tactic(first) ident(c) :=
-  first;
-  [ Case_aux c "tvar" | Case_aux c "tapp" | Case_aux c "tabs"
-  | Case_aux c "tnat" | Case_aux c "tsucc" | Case_aux c "tpred"
-  | Case_aux c "tmult" | Case_aux c "tif0"
-  | Case_aux c "tpair" | Case_aux c "tfst" | Case_aux c "tsnd"
-  | Case_aux c "tunit" | Case_aux c "tlet" 
-  | Case_aux c "tinl" | Case_aux c "tinr" | Case_aux c "tcase"
-  | Case_aux c "tnil" | Case_aux c "tcons" | Case_aux c "tlcase"
-  | Case_aux c "tfix" ].
-
-(* ###################################################################### *)
+(* ----------------------------------------------------------------- *)
 (*
 (** *** Substitution *)
 *)
@@ -1878,56 +1935,54 @@ Tactic Notation "t_cases" tactic(first) ident(c) :=
 
 Fixpoint subst (x:id) (s:tm) (t:tm) : tm :=
   match t with
-  | tvar y => 
-      if eq_id_dec x y then s else t
-  | tabs y T t1 => 
-      tabs y T (if eq_id_dec x y then t1 else (subst x s t1))
-  | tapp t1 t2 => 
+  | tvar y =>
+      if beq_id x y then s else t
+  | tabs y T t1 =>
+      tabs y T (if beq_id x y then t1 else (subst x s t1))
+  | tapp t1 t2 =>
       tapp (subst x s t1) (subst x s t2)
-  | tnat n => 
+  | tnat n =>
       tnat n
-  | tsucc t1 => 
+  | tsucc t1 =>
       tsucc (subst x s t1)
-  | tpred t1 => 
+  | tpred t1 =>
       tpred (subst x s t1)
-  | tmult t1 t2 => 
+  | tmult t1 t2 =>
       tmult (subst x s t1) (subst x s t2)
-  | tif0 t1 t2 t3 => 
+  | tif0 t1 t2 t3 =>
       tif0 (subst x s t1) (subst x s t2) (subst x s t3)
-  | tpair t1 t2 => 
-      tpair (subst x s t1) (subst x s t2)
-  | tfst t1 => 
-      tfst (subst x s t1)
-  | tsnd t1 => 
-      tsnd (subst x s t1)
+  (* FILL IN HERE *)
+(** <<
+  (* ここを埋めなさい *)
+>> *)
   | tunit => tunit
   (* FILL IN HERE *)
 (** <<
   (* ここを埋めなさい *)
 >> *)
-  | tinl T t1 => 
+  | tinl T t1 =>
       tinl T (subst x s t1)
-  | tinr T t1 => 
+  | tinr T t1 =>
       tinr T (subst x s t1)
-  | tcase t0 y1 t1 y2 t2 => 
-      tcase (subst x s t0) 
-         y1 (if eq_id_dec x y1 then t1 else (subst x s t1))
-         y2 (if eq_id_dec x y2 then t2 else (subst x s t2))
-  | tnil T => 
+  | tcase t0 y1 t1 y2 t2 =>
+      tcase (subst x s t0)
+         y1 (if beq_id x y1 then t1 else (subst x s t1))
+         y2 (if beq_id x y2 then t2 else (subst x s t2))
+  | tnil T =>
       tnil T
-  | tcons t1 t2 => 
+  | tcons t1 t2 =>
       tcons (subst x s t1) (subst x s t2)
-  | tlcase t1 t2 y1 y2 t3 => 
+  | tlcase t1 t2 y1 y2 t3 =>
       tlcase (subst x s t1) (subst x s t2) y1 y2
-        (if eq_id_dec x y1 then 
-           t3 
-         else if eq_id_dec x y2 then t3 
+        (if beq_id x y1 then
+           t3
+         else if beq_id x y2 then t3
               else (subst x s t3))
-(* FILL IN HERE *)
+  (* FILL IN HERE *)
 (** <<
-(* ここを埋めなさい *)
+  (* ここを埋めなさい *)
 >> *)
-  | _ => t  (* ... and delete this line *) 
+  | _ => t  (* ... and delete this line *)
 (** <<
   (* ...そして上の行を消しなさい。 *)
 >> *)
@@ -1936,7 +1991,7 @@ Fixpoint subst (x:id) (s:tm) (t:tm) : tm :=
 Notation "'[' x ':=' s ']' t" := (subst x s t) (at level 20).
 
 
-(* ###################################################################### *)
+(* ----------------------------------------------------------------- *)
 (*
 (** *** Reduction *)
 *)
@@ -1962,10 +2017,10 @@ Inductive value : tm -> Prop :=
   | v_unit : value tunit
   (* A tagged value is a value:  *)
   | v_inl : forall v T,
-      value v -> 
+      value v ->
       value (tinl T v)
   | v_inr : forall v T,
-      value v -> 
+      value v ->
       value (tinr T v)
   (* A list is a value iff its head and tail are values: *)
   | v_lnil : forall T, value (tnil T)
@@ -2018,27 +2073,10 @@ Inductive step : tm -> tm -> Prop :=
   | ST_If0Nonzero : forall n t2 t3,
        (tif0 (tnat (S n)) t2 t3) ==> t3
   (* pairs *)
-  | ST_Pair1 : forall t1 t1' t2,
-        t1 ==> t1' ->
-        (tpair t1 t2) ==> (tpair t1' t2)
-  | ST_Pair2 : forall v1 t2 t2',
-        value v1 ->
-        t2 ==> t2' ->
-        (tpair v1 t2) ==> (tpair v1 t2')
-  | ST_Fst1 : forall t1 t1',
-        t1 ==> t1' ->
-        (tfst t1) ==> (tfst t1')
-  | ST_FstPair : forall v1 v2,
-        value v1 ->
-        value v2 ->
-        (tfst (tpair v1 v2)) ==> v1
-  | ST_Snd1 : forall t1 t1',
-        t1 ==> t1' ->
-        (tsnd t1) ==> (tsnd t1')
-  | ST_SndPair : forall v1 v2,
-        value v1 ->
-        value v2 ->
-        (tsnd (tpair v1 v2)) ==> v2
+  (* FILL IN HERE *)
+(** <<
+  (* ここを埋めなさい *)
+>> *)
   (* let *)
   (* FILL IN HERE *)
 (** <<
@@ -2055,10 +2093,10 @@ Inductive step : tm -> tm -> Prop :=
         t0 ==> t0' ->
         (tcase t0 x1 t1 x2 t2) ==> (tcase t0' x1 t1 x2 t2)
   | ST_CaseInl : forall v0 x1 t1 x2 t2 T,
-        value v0 -> 
+        value v0 ->
         (tcase (tinl T v0) x1 t1 x2 t2) ==> [x1:=v0]t1
   | ST_CaseInr : forall v0 x1 t1 x2 t2 T,
-        value v0 -> 
+        value v0 ->
         (tcase (tinr T v0) x1 t1 x2 t2) ==> [x2:=v0]t2
   (* lists *)
   | ST_Cons1 : forall t1 t1' t2,
@@ -2078,44 +2116,19 @@ Inductive step : tm -> tm -> Prop :=
        value vl  ->
        (tlcase (tcons v1 vl) t2 x1 x2 t3) ==> (subst x2 vl (subst x1 v1 t3))
   (* fix *)
-(* FILL IN HERE *)
+  (* FILL IN HERE *)
 (** <<
-(* ここを埋めなさい *)
+  (* ここを埋めなさい *)
 >> *)
 
 where "t1 '==>' t2" := (step t1 t2).
-
-Tactic Notation "step_cases" tactic(first) ident(c) :=
-  first;
-  [ Case_aux c "ST_AppAbs" | Case_aux c "ST_App1" | Case_aux c "ST_App2"
-  | Case_aux c "ST_Succ1" | Case_aux c "ST_SuccNat"
-    | Case_aux c "ST_Pred1" | Case_aux c "ST_PredNat"
-    | Case_aux c "ST_Mult1" | Case_aux c "ST_Mult2"
-    | Case_aux c "ST_MultNats" | Case_aux c "ST_If01"
-    | Case_aux c "ST_If0Zero" | Case_aux c "ST_If0Nonzero"
-  | Case_aux c "ST_Pair1" | Case_aux c "ST_Pair2"
-    | Case_aux c "ST_Fst1" | Case_aux c "ST_FstPair"
-    | Case_aux c "ST_Snd1" | Case_aux c "ST_SndPair"
-    (* FILL IN HERE *)
-(** <<
-    (* ここを埋めなさい *)
->> *)
-  | Case_aux c "ST_Inl" | Case_aux c "ST_Inr" | Case_aux c "ST_Case"
-    | Case_aux c "ST_CaseInl" | Case_aux c "ST_CaseInr"
-  | Case_aux c "ST_Cons1" | Case_aux c "ST_Cons2" | Case_aux c "ST_Lcase1"
-    | Case_aux c "ST_LcaseNil" | Case_aux c "ST_LcaseCons"
-(* FILL IN HERE *)
-(** <<
-(* ここを埋めなさい *)
->> *)
-  ].
 
 Notation multistep := (multi step).
 Notation "t1 '==>*' t2" := (multistep t1 t2) (at level 40).
 
 Hint Constructors step.
 
-(* ###################################################################### *)
+(* ----------------------------------------------------------------- *)
 (*
 (** *** Typing *)
 *)
@@ -2138,11 +2151,11 @@ Inductive has_type : context -> tm -> ty -> Prop :=
       Gamma x = Some T ->
       Gamma |- (tvar x) \in T
   | T_Abs : forall Gamma x T11 T12 t12,
-      (extend Gamma x T11) |- t12 \in T12 -> 
+      (update Gamma x T11) |- t12 \in T12 ->
       Gamma |- (tabs x T11 t12) \in (TArrow T11 T12)
   | T_App : forall T1 T2 Gamma t1 t2,
-      Gamma |- t1 \in (TArrow T1 T2) -> 
-      Gamma |- t2 \in T1 -> 
+      Gamma |- t1 \in (TArrow T1 T2) ->
+      Gamma |- t2 \in T1 ->
       Gamma |- (tapp t1 t2) \in T2
   (* nats *)
   | T_Nat : forall Gamma n1,
@@ -2163,23 +2176,17 @@ Inductive has_type : context -> tm -> ty -> Prop :=
       Gamma |- t3 \in T1 ->
       Gamma |- (tif0 t1 t2 t3) \in T1
   (* pairs *)
-  | T_Pair : forall Gamma t1 t2 T1 T2,
-      Gamma |- t1 \in T1 ->
-      Gamma |- t2 \in T2 ->
-      Gamma |- (tpair t1 t2) \in (TProd T1 T2)
-  | T_Fst : forall Gamma t T1 T2,
-      Gamma |- t \in (TProd T1 T2) ->
-      Gamma |- (tfst t) \in T1
-  | T_Snd : forall Gamma t T1 T2,
-      Gamma |- t \in (TProd T1 T2) ->
-      Gamma |- (tsnd t) \in T2
+  (* FILL IN HERE *)
+(** <<
+  (* ここを埋めなさい *)
+>> *)
   (* unit *)
   | T_Unit : forall Gamma,
       Gamma |- tunit \in TUnit
   (* let *)
-(* FILL IN HERE *)
+  (* FILL IN HERE *)
 (** <<
-(* ここを埋めなさい *)
+  (* ここを埋めなさい *)
 >> *)
   (* sums *)
   | T_Inl : forall Gamma t1 T1 T2,
@@ -2189,9 +2196,9 @@ Inductive has_type : context -> tm -> ty -> Prop :=
       Gamma |- t2 \in T2 ->
       Gamma |- (tinr T1 t2) \in (TSum T1 T2)
   | T_Case : forall Gamma t0 x1 T1 t1 x2 T2 t2 T,
-      Gamma |- t0 \in (TSum T1 T2) -> 
-      (extend Gamma x1 T1) |- t1 \in T ->
-      (extend Gamma x2 T2) |- t2 \in T -> 
+      Gamma |- t0 \in (TSum T1 T2) ->
+      (update Gamma x1 T1) |- t1 \in T ->
+      (update Gamma x2 T2) |- t2 \in T ->
       Gamma |- (tcase t0 x1 t1 x2 t2) \in T
   (* lists *)
   | T_Nil : forall Gamma T,
@@ -2203,40 +2210,19 @@ Inductive has_type : context -> tm -> ty -> Prop :=
   | T_Lcase : forall Gamma t1 T1 t2 x1 x2 t3 T2,
       Gamma |- t1 \in (TList T1) ->
       Gamma |- t2 \in T2 ->
-      (extend (extend Gamma x2 (TList T1)) x1 T1) |- t3 \in T2 ->
+      (update (update Gamma x2 (TList T1)) x1 T1) |- t3 \in T2 ->
       Gamma |- (tlcase t1 t2 x1 x2 t3) \in T2
   (* fix *)
-(* FILL IN HERE *)
+  (* FILL IN HERE *)
 (** <<
-(* ここを埋めなさい *)
+  (* ここを埋めなさい *)
 >> *)
 
 where "Gamma '|-' t '\in' T" := (has_type Gamma t T).
 
 Hint Constructors has_type.
 
-Tactic Notation "has_type_cases" tactic(first) ident(c) :=
-  first;
-  [ Case_aux c "T_Var" | Case_aux c "T_Abs" | Case_aux c "T_App" 
-  | Case_aux c "T_Nat" | Case_aux c "T_Succ" | Case_aux c "T_Pred"
-  | Case_aux c "T_Mult" | Case_aux c "T_If0"
-  | Case_aux c "T_Pair" | Case_aux c "T_Fst" | Case_aux c "T_Snd"
-  | Case_aux c "T_Unit" 
-(* let *)
-(* FILL IN HERE *)
-(** <<
-(* ここを埋めなさい *)
->> *)
-  | Case_aux c "T_Inl" | Case_aux c "T_Inr" | Case_aux c "T_Case"
-  | Case_aux c "T_Nil" | Case_aux c "T_Cons" | Case_aux c "T_Lcase" 
-(* fix *)
-(* FILL IN HERE *)
-(** <<
-(* ここを埋めなさい *)
->> *)
-].
-
-(* ###################################################################### *)
+(* ================================================================= *)
 (*
 (** ** Examples *)
 *)
@@ -2260,6 +2246,7 @@ Tactic Notation "has_type_cases" tactic(first) ident(c) :=
 
 Module Examples.
 
+(* ----------------------------------------------------------------- *)
 (*
 (** *** Preliminaries *)
 *)
@@ -2270,23 +2257,23 @@ Module Examples.
 *)
 (** 最初に、いくつか変数名を定義しましょう: *)
 
-Notation a := (Id 0).
-Notation f := (Id 1).
-Notation g := (Id 2).
-Notation l := (Id 3).
-Notation k := (Id 6).
-Notation i1 := (Id 7).
-Notation i2 := (Id 8).
-Notation x := (Id 9).
-Notation y := (Id 10).
-Notation processSum := (Id 11).
-Notation n := (Id 12).
-Notation eq := (Id 13).
-Notation m := (Id 14).
-Notation evenodd := (Id 15).
-Notation even := (Id 16).
-Notation odd := (Id 17).
-Notation eo := (Id 18).
+Notation x := (Id "x").
+Notation y := (Id "y").
+Notation a := (Id "a").
+Notation f := (Id "f").
+Notation g := (Id "g").
+Notation l := (Id "l").
+Notation k := (Id "k").
+Notation i1 := (Id "i1").
+Notation i2 := (Id "i2").
+Notation processSum := (Id "processSum").
+Notation n := (Id "n").
+Notation eq := (Id "eq").
+Notation m := (Id "m").
+Notation evenodd := (Id "evenodd").
+Notation even := (Id "even").
+Notation odd := (Id "odd").
+Notation eo := (Id "eo").
 
 (*
 (** Next, a bit of Coq hackery to automate searching for typing
@@ -2316,26 +2303,13 @@ Notation eo := (Id 18).
     またヒントに、等号による比較の形のゴールを解く場合に「より困難なことを試しなさい」ということも追加します。
     これは、[T_Var]（これは事前条件に等号による比較を含みます）を自動的に使用するのに便利です。*)
 
-Hint Extern 2 (has_type _ (tapp _ _) _) => 
+Hint Extern 2 (has_type _ (tapp _ _) _) =>
   eapply T_App; auto.
-(* You'll want to uncomment the following line once 
-   you've defined the [T_Lcase] constructor for the typing
-   relation: *)
-(** <<
-(* 型関係に[T_Lcase]を定義した後では、次の部分のコメントをはずすのが良いでしょう。 *)
->> *)
-(* 
-Hint Extern 2 (has_type _ (tlcase _ _ _ _ _) _) => 
+Hint Extern 2 (has_type _ (tlcase _ _ _ _ _) _) =>
   eapply T_Lcase; auto.
-*)
-(** <<
-(*
-Hint Extern 2 (has_type _ (tlcase _ _ _ _ _) _) => 
-  eapply T_Lcase; auto. 
-*)
->> *)
 Hint Extern 2 (_ = _) => compute; reflexivity.
 
+(* ----------------------------------------------------------------- *)
 (*
 (** *** Numbers *)
 *)
@@ -2349,12 +2323,12 @@ Module Numtest.
 >>
 *)
 Definition test :=
-  tif0 
+  tif0
     (tpred
       (tsucc
-        (tpred 
-          (tmult 
-            (tnat 2) 
+        (tpred
+          (tmult
+            (tnat 2)
             (tnat 0)))))
     (tnat 5)
     (tnat 6).
@@ -2367,12 +2341,13 @@ Definition test :=
 
 (* 
 Example typechecks :
-  (@empty ty) |- test \in TNat.
+  empty |- test \in TNat.
 Proof.
   unfold test.
-  (* This typing derivation is quite deep, so we need to increase the
-     max search depth of [auto] from the default 5 to 10. *)
-  auto 10. 
+  (* This typing derivation is quite deep, so we need 
+     to increase the max search depth of [auto] from the 
+     default 5 to 10. *)
+  auto 10.
 Qed.
 
 Example numtest_reduces :
@@ -2382,9 +2357,9 @@ Proof.
 Qed.
 *)
 (** <<
-(*
+(* 
 Example typechecks : 
-  has_type (@empty ty) test ty_Nat. 
+  empty |- test \in TNat. 
 Proof. 
   unfold test. 
   (* この型導出は非常に深く、そのため[auto]の最大探索深度を、
@@ -2393,15 +2368,16 @@ Proof.
 Qed. 
  
 Example numtest_reduces : 
-  test ==>* tm_nat 5. 
+  test ==>* tnat 5. 
 Proof. 
   unfold test. normalize. 
 Qed. 
-*)
+ *)
 >> *)
 
 End Numtest.
 
+(* ----------------------------------------------------------------- *)
 (*
 (** *** Products *)
 *)
@@ -2419,13 +2395,13 @@ Definition test :=
     (tfst
       (tpair
         (tpair
-          (tnat 5) 
+          (tnat 5)
           (tnat 6))
         (tnat 7))).
 
 (* 
 Example typechecks :
-  (@empty ty) |- test \in TNat.
+  empty |- test \in TNat.
 Proof. unfold test. eauto 15. Qed.
 
 Example reduces :
@@ -2435,17 +2411,18 @@ Proof. unfold test. normalize. Qed.
 (** <<
 (*
 Example typechecks : 
-  has_type (@empty ty) test ty_Nat. 
+  empty |- test \in TNat. 
 Proof. unfold test. eauto 15. Qed. 
  
 Example reduces : 
-  test ==>* tm_nat 6. 
+  test ==>* tnat 6. 
 Proof. unfold test. normalize. Qed. 
-*)
+*) 
 >> *)
 
 End Prodtest.
 
+(* ----------------------------------------------------------------- *)
 (** *** [let] *)
 
 Module LetTest.
@@ -2463,7 +2440,7 @@ Definition test :=
 
 (* 
 Example typechecks :
-  (@empty ty) |- test \in TNat.
+  empty |- test \in TNat.
 Proof. unfold test. eauto 15. Qed.
 
 Example reduces :
@@ -2473,17 +2450,18 @@ Proof. unfold test. normalize. Qed.
 (** <<
 (*
 Example typechecks : 
-  has_type (@empty ty) test ty_Nat. 
+  empty |- test \in TNat. 
 Proof. unfold test. eauto 15. Qed. 
  
 Example reduces : 
-  test ==>* tm_nat 6. 
+  test ==>* tnat 6. 
 Proof. unfold test. normalize. Qed. 
-*)
+*) 
 >> *)
 
 End LetTest.
 
+(* ----------------------------------------------------------------- *)
 (*
 (** *** Sums *)
 *)
@@ -2508,7 +2486,7 @@ Definition test :=
 
 (* 
 Example typechecks :
-  (@empty ty) |- test \in TNat.
+  empty |- test \in TNat.
 Proof. unfold test. eauto 15. Qed.
 
 Example reduces :
@@ -2518,13 +2496,13 @@ Proof. unfold test. normalize. Qed.
 (** <<
 (*
 Example typechecks : 
-  has_type (@empty ty) test ty_Nat. 
+  empty |- test \in TNat. 
 Proof. unfold test. eauto 15. Qed. 
  
 Example reduces : 
-  test ==>* (tm_nat 5). 
+  test ==>* (tnat 5). 
 Proof. unfold test. normalize. Qed. 
-*)
+*) 
 >> *)
 
 End Sumtest1.
@@ -2560,7 +2538,7 @@ Definition test :=
 
 (* 
 Example typechecks :
-  (@empty ty) |- test \in (TProd TNat TNat).
+  empty |- test \in (TProd TNat TNat).
 Proof. unfold test. eauto 15. Qed.
 
 Example reduces :
@@ -2570,17 +2548,18 @@ Proof. unfold test. normalize. Qed.
 (** <<
 (*
 Example typechecks : 
-  has_type (@empty ty) test (ty_prod ty_Nat ty_Nat). 
+  empty |- test \in (TProd TNat TNat). 
 Proof. unfold test. eauto 15. Qed. 
  
 Example reduces : 
-  test ==>* (tm_pair (tm_nat 5) (tm_nat 0)). 
+  test ==>* (tpair (tnat 5) (tnat 0)). 
 Proof. unfold test. normalize. Qed. 
-*)
+*) 
 >> *)
 
 End Sumtest2.
 
+(* ----------------------------------------------------------------- *)
 (*
 (** *** Lists *)
 *)
@@ -2609,7 +2588,7 @@ Definition test :=
 
 (* 
 Example typechecks :
-  (@empty ty) |- test \in TNat.
+  empty |- test \in TNat.
 Proof. unfold test. eauto 20. Qed.
 
 Example reduces :
@@ -2619,24 +2598,25 @@ Proof. unfold test. normalize. Qed.
 (** <<
 (*
 Example typechecks : 
-  has_type (@empty ty) test ty_Nat. 
+  empty |- test \in TNat. 
 Proof. unfold test. eauto 20. Qed. 
  
 Example reduces : 
-  test ==>* (tm_nat 25). 
+  test ==>* (tnat 25). 
 Proof. unfold test. normalize. Qed. 
-*)
+*) 
 >> *)
 
 End ListTest.
 
+(* ----------------------------------------------------------------- *)
 (** *** [fix] *)
 
 Module FixTest1.
 
 (* fact := fix
              (\f:nat->nat.
-                \a:nat. 
+                \a:nat.
                    if a=0 then 1 else a * (f (pred a))) *)
 (** <<
    fact := fix
@@ -2649,11 +2629,11 @@ Definition fact :=
   tfix
     (tabs f (TArrow TNat TNat)
       (tabs a TNat
-        (tif0 
-           (tvar a) 
-           (tnat 1) 
-           (tmult 
-              (tvar a) 
+        (tif0
+           (tvar a)
+           (tnat 1)
+           (tmult
+              (tvar a)
               (tapp (tvar f) (tpred (tvar a))))))).
 
 (*
@@ -2664,30 +2644,30 @@ Definition fact :=
 
 (* 
 Example fact_typechecks :
-  (@empty ty) |- fact \in (TArrow TNat TNat).
-Proof. unfold fact. auto 10. 
+  empty |- fact \in (TArrow TNat TNat).
+Proof. unfold fact. auto 10.
 Qed.
 *)
 (** <<
 (*
 Example fact_typechecks : 
-  has_type (@empty ty) fact (ty_arrow ty_Nat ty_Nat). 
+  empty |- fact \in (TArrow TNat TNat). 
 Proof. unfold fact. auto 10. 
 Qed. 
-*)
+*) 
 >> *)
 
 (* 
-Example fact_example: 
+Example fact_example:
   (tapp fact (tnat 4)) ==>* (tnat 24).
 Proof. unfold fact. normalize. Qed.
 *)
 (** <<
 (*
 Example fact_example: 
-  (tm_app fact (tm_nat 4)) ==>* (tm_nat 24). 
+  (tapp fact (tnat 4)) ==>* (tnat 24). 
 Proof. unfold fact. normalize. Qed. 
-*)
+*) 
 >> *)
 
 End FixTest1.
@@ -2698,10 +2678,10 @@ Module FixTest2.
      \g:nat->nat.
        fix
          (\f:[nat]->[nat].
-            \l:[nat]. 
+            \l:[nat].
                case l of
                | [] -> []
-               | x::l -> (g x)::(f l)) *) 
+               | x::l -> (g x)::(f l)) *)
 (** <<
    map :=
      \g:nat->nat. 
@@ -2718,16 +2698,16 @@ Definition map :=
       (tabs f (TArrow (TList TNat) (TList TNat))
         (tabs l (TList TNat)
           (tlcase (tvar l)
-            (tnil TNat) 
-            a l (tcons (tapp (tvar g) (tvar a)) 
+            (tnil TNat)
+            a l (tcons (tapp (tvar g) (tvar a))
                          (tapp (tvar f) (tvar l))))))).
 
 (* 
 (* Make sure you've uncommented the last [Hint Extern] above... *)
 Example map_typechecks :
-  empty |- map \in 
+  empty |- map \in
     (TArrow (TArrow TNat TNat)
-      (TArrow (TList TNat) 
+      (TArrow (TList TNat)
         (TList TNat))).
 Proof. unfold map. auto 10. Qed.
 
@@ -2738,32 +2718,32 @@ Example map_example :
 Proof. unfold map. normalize. Qed.
 *)
 (** <<
-(* 
+(*
 (* 上記の最後の [Hint Extern] のコメントが外されていることを確認すること... *)
 Example map_typechecks : 
-  has_type empty map 
-    (ty_arrow (ty_arrow ty_Nat ty_Nat) 
-      (ty_arrow (ty_List ty_Nat) 
-        (ty_List ty_Nat))). 
+  empty |- map \in 
+    (TArrow (TArrow TNat TNat) 
+      (TArrow (TList TNat) 
+        (TList TNat))). 
 Proof. unfold map. auto 10. Qed. 
  
 Example map_example : 
-  tm_app (tm_app map (tm_abs a ty_Nat (tm_succ (tm_var a)))) 
-         (tm_cons (tm_nat 1) (tm_cons (tm_nat 2) (tm_nil ty_Nat))) 
-  ==>* (tm_cons (tm_nat 2) (tm_cons (tm_nat 3) (tm_nil ty_Nat))). 
+  tapp (tapp map (tabs a TNat (tsucc (tvar a)))) 
+         (tcons (tnat 1) (tcons (tnat 2) (tnil TNat))) 
+  ==>* (tcons (tnat 2) (tcons (tnat 3) (tnil TNat))). 
 Proof. unfold map. normalize. Qed. 
-*)
+*) 
 >> *)
 
 End FixTest2.
 
 Module FixTest3.
 
-(* equal = 
-      fix 
+(* equal =
+      fix
         (\eq:Nat->Nat->Bool.
            \m:Nat. \n:Nat.
-             if0 m then (if0 n then 1 else 0) 
+             if0 m then (if0 n then 1 else 0)
              else if0 n then 0
              else eq (pred m) (pred n))   *)
 (** <<
@@ -2780,31 +2760,31 @@ Definition equal :=
   tfix
     (tabs eq (TArrow TNat (TArrow TNat TNat))
       (tabs m TNat
-        (tabs n TNat 
-          (tif0 (tvar m) 
+        (tabs n TNat
+          (tif0 (tvar m)
             (tif0 (tvar n) (tnat 1) (tnat 0))
-            (tif0 (tvar n) 
-              (tnat 0) 
-              (tapp (tapp (tvar eq) 
+            (tif0 (tvar n)
+              (tnat 0)
+              (tapp (tapp (tvar eq)
                               (tpred (tvar m)))
                       (tpred (tvar n)))))))).
 
 (** <<
 (* 
 Example equal_typechecks :
-  (@empty ty) |- equal \in (TArrow TNat (TArrow TNat TNat)).
-Proof. unfold equal. auto 10. 
+  empty |- equal \in (TArrow TNat (TArrow TNat TNat)).
+Proof. unfold equal. auto 10.
 Qed.
 *)
 
 (* 
-Example equal_example1: 
+Example equal_example1:
   (tapp (tapp equal (tnat 4)) (tnat 4)) ==>* (tnat 1).
 Proof. unfold equal. normalize. Qed.
 *)
 
 (* 
-Example equal_example2: 
+Example equal_example2:
   (tapp (tapp equal (tnat 4)) (tnat 5)) ==>* (tnat 0).
 Proof. unfold equal. normalize. Qed.
 *)
@@ -2814,8 +2794,8 @@ End FixTest3.
 
 Module FixTest4.
 
-(* let evenodd = 
-         fix 
+(* let evenodd =
+         fix
            (\eo: (Nat->Nat * Nat->Nat).
               let e = \n:Nat. if0 n then 1 else eo.snd (pred n) in
               let o = \n:Nat. if0 n then 0 else eo.fst (pred n) in
@@ -2835,37 +2815,37 @@ Module FixTest4.
     let odd  = evenodd.snd in 
     (even 3, even 4) 
 >>
-*)
+ *)
 
 Definition eotest :=
-  tlet evenodd 
+  tlet evenodd
     (tfix
       (tabs eo (TProd (TArrow TNat TNat) (TArrow TNat TNat))
         (tpair
           (tabs n TNat
-            (tif0 (tvar n) 
+            (tif0 (tvar n)
               (tnat 1)
               (tapp (tsnd (tvar eo)) (tpred (tvar n)))))
           (tabs n TNat
-            (tif0 (tvar n) 
+            (tif0 (tvar n)
               (tnat 0)
               (tapp (tfst (tvar eo)) (tpred (tvar n))))))))
   (tlet even (tfst (tvar evenodd))
   (tlet odd (tsnd (tvar evenodd))
-  (tpair 
+  (tpair
     (tapp (tvar even) (tnat 3))
     (tapp (tvar even) (tnat 4))))).
 
 (** <<
 (* 
 Example eotest_typechecks :
-  (@empty ty) |- eotest \in (TProd TNat TNat).
-Proof. unfold eotest. eauto 30. 
+  empty |- eotest \in (TProd TNat TNat).
+Proof. unfold eotest. eauto 30.
 Qed.
 *)
 
 (* 
-Example eotest_example1: 
+Example eotest_example1:
   eotest ==>* (tpair (tnat 0) (tnat 1)).
 Proof. unfold eotest. normalize. Qed.
 *)
@@ -2875,28 +2855,28 @@ End FixTest4.
 
 End Examples.
 
-(* ###################################################################### *)
+(* ================================================================= *)
 (*
 (** ** Properties of Typing *)
 *)
 (** ** 型付けの性質 *)
 
 (*
-(** The proofs of progress and preservation for this system are
-    essentially the same (though of course somewhat longer) as for the
-    pure simply typed lambda-calculus. *)
+(** The proofs of progress and preservation for this enriched system
+    are essentially the same (though of course longer) as for the pure
+    STLC. *)
 *)
-(** このシステムの進行と保存の証明は、純粋な単純型付きラムダ計算のものと本質的に同じです（もちろんいくらか長くはなりますが）。 *)
+(** 拡張したシステムの進行と保存の証明は、純粋な単純型付きラムダ計算のものと本質的に同じです（もちろん長くはなりますが）。 *)
 
-(* ###################################################################### *)
+(* ----------------------------------------------------------------- *)
 (*
 (** *** Progress *)
 *)
 (** *** 進行 *)
 
-Theorem progress : forall t T, 
+Theorem progress : forall t T,
      empty |- t \in T ->
-     value t \/ exists t', t ==> t'. 
+     value t \/ exists t', t ==> t'.
 Proof with eauto.
   (* Theorem: Suppose empty |- t : T.  Then either
        1. t is a value, or
@@ -2909,34 +2889,33 @@ Proof with eauto.
      証明: 与えられた型導出についての帰納法によって。 *)
 >> *)
   intros t T Ht.
-  remember (@empty ty) as Gamma.
+  remember empty as Gamma.
   generalize dependent HeqGamma.
-  has_type_cases (induction Ht) Case; intros HeqGamma; subst.
-  Case "T_Var".
-    (* The final rule in the given typing derivation cannot be [T_Var],
-       since it can never be the case that [empty |- x : T] (since the
-       context is empty). *)
+  induction Ht; intros HeqGamma; subst.
+  - (* T_Var *)
+    (* The final rule in the given typing derivation cannot be 
+       [T_Var], since it can never be the case that 
+       [empty |- x : T] (since the context is empty). *)
 (** <<
     (* 与えられた型導出の最後の規則が [T_Var] ではあり得ない。
        なぜなら、この規則では [empty |- x : T] にならないので
        (コンテキストが empty ではない)。*)
 >> *)
     inversion H.
-  Case "T_Abs".
-    (* If the [T_Abs] rule was the last used, then [t = tabs x T11 t12],
-       which is a value. *)
+  - (* T_Abs *)
+    (* If the [T_Abs] rule was the last used, then 
+       [t = tabs x T11 t12], which is a value. *)
 (** <<
-    (* もし [T_Abs] が最後の規則ならば、[t = tm_abs x T11 t12] となるが、
-       これは値である。 *)
+    (* もし [T_Abs] が最後の規則ならば、[t = tm_abs x T11 t12] となるが、これは値である。 *)
 >> *)
     left...
-  Case "T_App".
-    (* If the last rule applied was T_App, then [t = t1 t2], and we know 
-       from the form of the rule that
+  - (* T_App *)
+    (* If the last rule applied was T_App, then [t = t1 t2], 
+       and we know from the form of the rule that
          [empty |- t1 : T1 -> T2]
          [empty |- t2 : T1]
-       By the induction hypothesis, each of t1 and t2 either is a value 
-       or can take a step. *)
+       By the induction hypothesis, each of t1 and t2 either is 
+       a value or can take a step. *)
 (** <<
     (* 最後の規則が T_App ならば、[t = t1 t2] である。規則の形から
          [empty |- t1 : T1 -> T2]
@@ -2945,172 +2924,149 @@ Proof with eauto.
 >> *)
     right.
     destruct IHHt1; subst...
-    SCase "t1 is a value".
+    + (* t1 is a value *)
       destruct IHHt2; subst...
-      SSCase "t2 is a value".
-      (* If both [t1] and [t2] are values, then we know that 
-         [t1 = tabs x T11 t12], since abstractions are the only values
-         that can have an arrow type.  But 
-         [(tabs x T11 t12) t2 ==> [x:=t2]t12] by [ST_AppAbs]. *)
+      * (* t2 is a value *)
+        (* If both [t1] and [t2] are values, then we know that
+           [t1 = tabs x T11 t12], since abstractions are the 
+           only values that can have an arrow type.  But
+           [(tabs x T11 t12) t2 ==> [x:=t2]t12] by [ST_AppAbs]. *)
 (** <<
-      (* [t1] と [t2] がどちらも値のとき、[t1 = tm_abs x T11 t12] となる。
-         なぜなら関数抽象は、関数型を持つ唯一の値であるから。しかし、[ST_AppAbs]より
-         [(tabs x T11 t12) t2 ==> [x:=t2]t12] となる。 *)
+        (* [t1] と [t2] がどちらも値のとき、[t1 = tm_abs x T11 t12] となる。
+           なぜなら関数抽象は、関数型を持つ唯一の値であるから。しかし、[ST_AppAbs]より
+           [(tabs x T11 t12) t2 ==> [x:=t2]t12] となる。 *)
 >> *)
-        inversion H; subst; try (solve by inversion).
+        inversion H; subst; try solve_by_invert.
         exists (subst x t2 t12)...
-      SSCase "t2 steps".
-        (* If [t1] is a value and [t2 ==> t2'], then [t1 t2 ==> t1 t2'] 
-           by [ST_App2]. *)
+      * (* t2 steps *)
+        (* If [t1] is a value and [t2 ==> t2'], 
+           then [t1 t2 ==> t1 t2'] by [ST_App2]. *)
 (** <<
         (* もし [t1] が値で [t2 ==> t2'] ならば、
            [ST_App2]より [t1 t2 ==> t1 t2'] である。 *)
 >> *)
         inversion H0 as [t2' Hstp]. exists (tapp t1 t2')...
-    SCase "t1 steps".
-      (* Finally, If [t1 ==> t1'], then [t1 t2 ==> t1' t2] by [ST_App1]. *)
+    + (* t1 steps *)
+      (* Finally, If [t1 ==> t1'], then [t1 t2 ==> t1' t2] 
+         by [ST_App1]. *)
 (** <<
       (* 最後に、もし [t1 ==> t1'] ならば、
          [ST_App1] より [t1 t2 ==> t1' t2] である。 *)
 >> *)
       inversion H as [t1' Hstp]. exists (tapp t1' t2)...
-  Case "T_Nat".
+  - (* T_Nat *)
     left...
-  Case "T_Succ".
+  - (* T_Succ *)
     right.
     destruct IHHt...
-    SCase "t1 is a value".
-      inversion H; subst; try solve by inversion.
+    + (* t1 is a value *)
+      inversion H; subst; try solve_by_invert.
       exists (tnat (S n1))...
-    SCase "t1 steps".
+    + (* t1 steps *)
       inversion H as [t1' Hstp].
       exists (tsucc t1')...
-  Case "T_Pred".
+  - (* T_Pred *)
     right.
     destruct IHHt...
-    SCase "t1 is a value".
-      inversion H; subst; try solve by inversion.
+    + (* t1 is a value *)
+      inversion H; subst; try solve_by_invert.
       exists (tnat (pred n1))...
-    SCase "t1 steps".
+    + (* t1 steps *)
       inversion H as [t1' Hstp].
       exists (tpred t1')...
-  Case "T_Mult".
+  - (* T_Mult *)
     right.
     destruct IHHt1...
-    SCase "t1 is a value".
+    + (* t1 is a value *)
       destruct IHHt2...
-      SSCase "t2 is a value".
-        inversion H; subst; try solve by inversion.
-        inversion H0; subst; try solve by inversion.
+      * (* t2 is a value *)
+        inversion H; subst; try solve_by_invert.
+        inversion H0; subst; try solve_by_invert.
         exists (tnat (mult n1 n0))...
-      SSCase "t2 steps".
+      * (* t2 steps *)
         inversion H0 as [t2' Hstp].
         exists (tmult t1 t2')...
-    SCase "t1 steps".
+    + (* t1 steps *)
       inversion H as [t1' Hstp].
       exists (tmult t1' t2)...
-  Case "T_If0".
+  - (* T_If0 *)
     right.
     destruct IHHt1...
-    SCase "t1 is a value".
-      inversion H; subst; try solve by inversion.
+    + (* t1 is a value *)
+      inversion H; subst; try solve_by_invert.
       destruct n1 as [|n1'].
-      SSCase "n1=0".
+      * (* n1=0 *)
         exists t2...
-      SSCase "n1<>0".
+      * (* n1<>0 *)
         exists t3...
-    SCase "t1 steps".
+    + (* t1 steps *)
       inversion H as [t1' H0].
       exists (tif0 t1' t2 t3)...
-  Case "T_Pair".
-    destruct IHHt1...
-    SCase "t1 is a value".
-      destruct IHHt2...
-      SSCase "t2 steps".
-        right.  inversion H0 as [t2' Hstp].
-        exists (tpair t1 t2')...
-    SCase "t1 steps".
-      right. inversion H as [t1' Hstp].
-      exists (tpair t1' t2)...
-  Case "T_Fst".
-    right.
-    destruct IHHt...
-    SCase "t1 is a value".
-      inversion H; subst; try solve by inversion.
-      exists v1...
-    SCase "t1 steps".
-      inversion H as [t1' Hstp].
-      exists (tfst t1')...
-  Case "T_Snd".
-    right.
-    destruct IHHt...
-    SCase "t1 is a value".
-      inversion H; subst; try solve by inversion.
-      exists v2...
-    SCase "t1 steps".
-      inversion H as [t1' Hstp].
-      exists (tsnd t1')...
-  Case "T_Unit".
-    left...
-(* let *)
-(* FILL IN HERE *)
+  (* FILL IN HERE *)
 (** <<
-(* ここを埋めなさい *)
+  (* ここを埋めなさい *)
 >> *)
-  Case "T_Inl".
-    destruct IHHt... 
-    SCase "t1 steps". 
-      right. inversion H as [t1' Hstp]... 
-      (* exists (tinl _ t1')... *)
-  Case "T_Inr".
-    destruct IHHt... 
-    SCase "t1 steps". 
-      right. inversion H as [t1' Hstp]... 
-      (* exists (tinr _ t1')... *)
-  Case "T_Case".
-    right. 
-    destruct IHHt1...
-    SCase "t0 is a value".
-      inversion H; subst; try solve by inversion.
-      SSCase "t0 is inl".
-        exists ([x1:=v]t1)...  
-      SSCase "t0 is inr".        
-        exists ([x2:=v]t2)...
-    SCase "t0 steps".
-      inversion H as [t0' Hstp]. 
-      exists (tcase t0' x1 t1 x2 t2)...
-  Case "T_Nil".
+  - (* T_Unit *)
     left...
-  Case "T_Cons".
+  (* let *)
+  (* FILL IN HERE *)
+(** <<
+  (* ここを埋めなさい *)
+>> *)
+  - (* T_Inl *)
+    destruct IHHt...
+    + (* t1 steps *)
+      right. inversion H as [t1' Hstp]...
+      (* exists (tinl _ t1')... *)
+  - (* T_Inr *)
+    destruct IHHt...
+    + (* t1 steps *)
+      right. inversion H as [t1' Hstp]...
+      (* exists (tinr _ t1')... *)
+  - (* T_Case *)
+    right.
     destruct IHHt1...
-    SCase "head is a value".
+    + (* t0 is a value *)
+      inversion H; subst; try solve_by_invert.
+      * (* t0 is inl *)
+        exists ([x1:=v]t1)...
+      * (* t0 is inr *)
+        exists ([x2:=v]t2)...
+    + (* t0 steps *)
+      inversion H as [t0' Hstp].
+      exists (tcase t0' x1 t1 x2 t2)...
+  - (* T_Nil *)
+    left...
+  - (* T_Cons *)
+    destruct IHHt1...
+    + (* head is a value *)
       destruct IHHt2...
-      SSCase "tail steps".
+      * (* tail steps *)
         right. inversion H0 as [t2' Hstp].
         exists (tcons t1 t2')...
-    SCase "head steps".
+    + (* head steps *)
       right. inversion H as [t1' Hstp].
       exists (tcons t1' t2)...
-  Case "T_Lcase".
+  - (* T_Lcase *)
     right.
-    destruct IHHt1... 
-    SCase "t1 is a value".
-      inversion H; subst; try solve by inversion.
-      SSCase "t1=tnil".
+    destruct IHHt1...
+    + (* t1 is a value *)
+      inversion H; subst; try solve_by_invert.
+      * (* t1=tnil *)
         exists t2...
-      SSCase "t1=tcons v1 vl".
+      * (* t1=tcons v1 vl *)
         exists ([x2:=vl]([x1:=v1]t3))...
-    SCase "t1 steps".
+    + (* t1 steps *)
       inversion H as [t1' Hstp].
       exists (tlcase t1' t2 x1 x2 t3)...
-(* fix *)
-(* FILL IN HERE *)
+  (* fix *)
+  (* FILL IN HERE *)
 (** <<
-(* ここを埋めなさい *)
+  (* ここを埋めなさい *)
 >> *)
 Qed.
 
-(* ###################################################################### *)
+(* ----------------------------------------------------------------- *)
 (*
 (** *** Context Invariance *)
 *)
@@ -3132,40 +3088,32 @@ Inductive appears_free_in : id -> tm -> Prop :=
      appears_free_in x t ->
      appears_free_in x (tsucc t)
   | afi_pred : forall x t,
-     appears_free_in x t -> 
+     appears_free_in x t ->
      appears_free_in x (tpred t)
   | afi_mult1 : forall x t1 t2,
-     appears_free_in x t1 -> 
+     appears_free_in x t1 ->
      appears_free_in x (tmult t1 t2)
   | afi_mult2 : forall x t1 t2,
-     appears_free_in x t2 -> 
+     appears_free_in x t2 ->
      appears_free_in x (tmult t1 t2)
   | afi_if01 : forall x t1 t2 t3,
-     appears_free_in x t1 -> 
+     appears_free_in x t1 ->
      appears_free_in x (tif0 t1 t2 t3)
   | afi_if02 : forall x t1 t2 t3,
-     appears_free_in x t2 -> 
+     appears_free_in x t2 ->
      appears_free_in x (tif0 t1 t2 t3)
   | afi_if03 : forall x t1 t2 t3,
-     appears_free_in x t3 -> 
+     appears_free_in x t3 ->
      appears_free_in x (tif0 t1 t2 t3)
   (* pairs *)
-  | afi_pair1 : forall x t1 t2,
-      appears_free_in x t1 ->
-      appears_free_in x (tpair t1 t2)
-  | afi_pair2 : forall x t1 t2,
-      appears_free_in x t2 ->
-      appears_free_in x (tpair t1 t2)
-  | afi_fst : forall x t,
-      appears_free_in x t ->
-      appears_free_in x (tfst t)
-  | afi_snd : forall x t,
-      appears_free_in x t ->
-      appears_free_in x (tsnd t)
-  (* let *)
-(* FILL IN HERE *)
+  (* FILL IN HERE *)
 (** <<
-(* ここを埋めなさい *)
+  (* ここを埋めなさい *)
+>> *)
+  (* let *)
+  (* FILL IN HERE *)
+(** <<
+  (* ここを埋めなさい *)
 >> *)
   (* sums *)
   | afi_inl : forall x t T,
@@ -3178,11 +3126,11 @@ Inductive appears_free_in : id -> tm -> Prop :=
       appears_free_in x t0 ->
       appears_free_in x (tcase t0 x1 t1 x2 t2)
   | afi_case1 : forall x t0 x1 t1 x2 t2,
-      x1 <> x -> 
+      x1 <> x ->
       appears_free_in x t1 ->
       appears_free_in x (tcase t0 x1 t1 x2 t2)
   | afi_case2 : forall x t0 x1 t1 x2 t2,
-      x2 <> x -> 
+      x2 <> x ->
       appears_free_in x t2 ->
       appears_free_in x (tcase t0 x1 t1 x2 t2)
   (* lists *)
@@ -3204,11 +3152,11 @@ Inductive appears_free_in : id -> tm -> Prop :=
      appears_free_in x t3 ->
      appears_free_in x (tlcase t1 t2 y1 y2 t3)
   (* fix *)
-(* FILL IN HERE *)
+  (* FILL IN HERE *)
 (** <<
-(* ここを埋めなさい *)
+  (* ここを埋めなさい *)
 >> *)
-  .
+.
 
 Hint Constructors appears_free_in.
 
@@ -3218,40 +3166,43 @@ Lemma context_invariance : forall Gamma Gamma' t S,
      Gamma' |- t \in S.
 Proof with eauto.
   intros. generalize dependent Gamma'.
-  has_type_cases (induction H) Case; 
+  induction H;
     intros Gamma' Heqv...
-  Case "T_Var".
+  - (* T_Var *)
     apply T_Var... rewrite <- Heqv...
-  Case "T_Abs".
+  - (* T_Abs *)
     apply T_Abs... apply IHhas_type. intros y Hafi.
-    unfold extend. 
-    destruct (eq_id_dec x y)...
-  Case "T_Mult".
+    unfold update, t_update.
+    destruct (beq_idP x y)...
+  - (* T_Mult *)
     apply T_Mult...
-  Case "T_If0".
+  - (* T_If0 *)
     apply T_If0...
-  Case "T_Pair". 
-    apply T_Pair...
-(* let *)
-(* FILL IN HERE *)
+  (* pair *)
+  (* FILL IN HERE *)
 (** <<
-(* ここを埋めなさい *)
+  (* ここを埋めなさい *)
 >> *)
-  Case "T_Case".
-    eapply T_Case... 
-     apply IHhas_type2. intros y Hafi.
-       unfold extend.
-       destruct (eq_id_dec x1 y)... 
-     apply IHhas_type3. intros y Hafi.
-       unfold extend.
-       destruct (eq_id_dec x2 y)...
-  Case "T_Cons".
+  (* let *)
+  (* FILL IN HERE *)
+(** <<
+  (* ここを埋めなさい *)
+>> *)
+  - (* T_Case *)
+    eapply T_Case...
+    + apply IHhas_type2. intros y Hafi.
+      unfold update, t_update.
+      destruct (beq_idP x1 y)...
+    + apply IHhas_type3. intros y Hafi.
+      unfold update, t_update.
+      destruct (beq_idP x2 y)...
+  - (* T_Cons *)
     apply T_Cons...
-  Case "T_Lcase".
+  - (* T_Lcase *)
     eapply T_Lcase... apply IHhas_type3. intros y Hafi.
-    unfold extend. 
-    destruct (eq_id_dec x1 y)...
-    destruct (eq_id_dec x2 y)...
+    unfold update, t_update.
+    destruct (beq_idP x1 y)...
+    destruct (beq_idP x2 y)...
 Qed.
 
 Lemma free_in_context : forall x t T Gamma,
@@ -3260,65 +3211,69 @@ Lemma free_in_context : forall x t T Gamma,
    exists T', Gamma x = Some T'.
 Proof with eauto.
   intros x t T Gamma Hafi Htyp.
-  has_type_cases (induction Htyp) Case; inversion Hafi; subst...
-  Case "T_Abs".
+  induction Htyp; inversion Hafi; subst...
+  - (* T_Abs *)
     destruct IHHtyp as [T' Hctx]... exists T'.
-    unfold extend in Hctx. 
-    rewrite neq_id in Hctx...
-(* let *)
-(* FILL IN HERE *)
-  Case "T_Case".
-    SCase "left".
-      destruct IHHtyp2 as [T' Hctx]... exists T'. 
-      unfold extend in Hctx. 
-      rewrite neq_id in Hctx...
-    SCase "right".
-      destruct IHHtyp3 as [T' Hctx]... exists T'. 
-      unfold extend in Hctx. 
-      rewrite neq_id in Hctx...
-  Case "T_Lcase".
+    unfold update, t_update in Hctx.
+    rewrite false_beq_id in Hctx...
+  (* let *)
+  (* FILL IN HERE *)
+(** <<
+  (* ここを埋めなさい *)
+>> *)
+  (* T_Case *)
+  - (* left *)
+    destruct IHHtyp2 as [T' Hctx]... exists T'.
+    unfold update, t_update in Hctx.
+    rewrite false_beq_id in Hctx...
+  - (* right *)
+    destruct IHHtyp3 as [T' Hctx]... exists T'.
+    unfold update, t_update in Hctx.
+    rewrite false_beq_id in Hctx...
+  - (* T_Lcase *)
     clear Htyp1 IHHtyp1 Htyp2 IHHtyp2.
     destruct IHHtyp3 as [T' Hctx]... exists T'.
-    unfold extend in Hctx.
-    rewrite neq_id in Hctx... rewrite neq_id in Hctx... 
+    unfold update, t_update in Hctx.
+    rewrite false_beq_id in Hctx...
+    rewrite false_beq_id in Hctx...
 Qed.
 
-(* ###################################################################### *)
+(* ----------------------------------------------------------------- *)
 (*
 (** *** Substitution *)
 *)
 (** *** 置換 *)
 
 Lemma substitution_preserves_typing : forall Gamma x U v t S,
-     (extend Gamma x U) |- t \in S  ->
+     (update Gamma x U) |- t \in S  ->
      empty |- v \in U   ->
      Gamma |- ([x:=v]t) \in S.
 Proof with eauto.
-  (* Theorem: If Gamma,x:U |- t : S and empty |- v : U, then 
+  (* Theorem: If Gamma,x:U |- t : S and empty |- v : U, then
      Gamma |- [x:=v]t : S. *)
 (** <<
   (* 定理: もし Gamma,x:U |- t : S かつ empty |- v : U ならば、
-     Gamma |- [x:=v]t S. である。 *)
+     Gamma |- [x:=v]t : S. である。 *)
 >> *)
-  intros Gamma x U v t S Htypt Htypv. 
+  intros Gamma x U v t S Htypt Htypv.
   generalize dependent Gamma. generalize dependent S.
-  (* Proof: By induction on the term t.  Most cases follow directly
-     from the IH, with the exception of tvar and tabs.
-     The former aren't automatic because we must reason about how the
-     variables interact. *)
+  (* Proof: By induction on the term t.  Most cases follow 
+     directly from the IH, with the exception of tvar
+     and tabs. These aren't automatic because we must
+     reason about how the variables interact. *)
+  induction t;
 (** <<
   (* 証明: 項 t についての帰納法を使う。ほとんどの場合は、帰納仮定から直接示される。
      tvar と tabs だけが例外である。
-     前者は自動化できない。変数がどのように相互作用するか推論しなければならないからである。 *)
+     これらは自動化できない。変数がどのように相互作用するか推論しなければならないからである。 *)
 >> *)
-  t_cases (induction t) Case;
     intros S Gamma Htypt; simpl; inversion Htypt; subst...
-  Case "tvar".
+  - (* tvar *)
     simpl. rename i into y.
     (* If t = y, we know that
          [empty |- v : U] and
          [Gamma,x:U |- y : S]
-       and, by inversion, [extend Gamma x U y = Some S].  We want to
+       and, by inversion, [update Gamma x U y = Some S].  We want to
        show that [Gamma |- [x:=v]y : S].
 
        There are two cases to consider: either [x=y] or [x<>y]. *)
@@ -3326,48 +3281,50 @@ Proof with eauto.
     (* もし t = y ならば、次が成立する:
          [empty |- v : U] and
          [Gamma,x:U |- y : S]
-       そして、inversion から [extend Gamma x U y = Some S] となる。
+       そして、inversion から [update Gamma x U y = Some S] となる。
        示したいのは [Gamma |- [x:=v]y : S] である。
-
+ 
        考慮するのは2つの場合、[x=y] の場合と [x<>y] の場合である。 *)
 >> *)
-    destruct (eq_id_dec x y).
-    SCase "x=y".
-    (* If [x = y], then we know that [U = S], and that [[x:=v]y = v].
-       So what we really must show is that if [empty |- v : U] then
-       [Gamma |- v : U].  We have already proven a more general version
-       of this theorem, called context invariance. *)
+    unfold update, t_update in H1.
+    destruct (beq_idP x y).
+    + (* x=y *)
+      (* If [x = y], then we know that [U = S], and that 
+         [[x:=v]y = v].  So what we really must show is 
+         that if [empty |- v : U] then [Gamma |- v : U].  
+         We have already proven a more general version
+         of this theorem, called context invariance. *)
 (** <<
-    (* もし [x = y] ならば、[U = S] であり、また [[x:=v]y = v] である。
-       これから実際に示さなければならないことは、
-       もし [empty |- v : U] ならば [Gamma |- v : U] である、ということである。
-       この定理のより一般化されたバージョンを既に証明している。それはコンテキスト不変性である。 *)
+      (* もし [x = y] ならば、[U = S] であり、また [[x:=v]y = v] である。
+         これから実際に示さなければならないことは、
+         もし [empty |- v : U] ならば [Gamma |- v : U] である、ということである。
+         この定理のより一般化されたバージョンを既に証明している。それはコンテキスト不変性である。 *)
 >> *)
       subst.
-      unfold extend in H1. rewrite eq_id in H1. 
       inversion H1; subst. clear H1.
       eapply context_invariance...
       intros x Hcontra.
-      destruct (free_in_context _ _ S empty Hcontra) as [T' HT']...
+      destruct (free_in_context _ _ S empty Hcontra)
+        as [T' HT']...
       inversion HT'.
-    SCase "x<>y".
+    + (* x<>y *)
     (* If [x <> y], then [Gamma y = Some S] and the substitution has no
        effect.  We can show that [Gamma |- y : S] by [T_Var]. *)
 (** <<
     (* もし [x <> y] ならば、[Gamma y = Some S] で、置換は何も影響しない。
        [T_Var] より [Gamma |- y : S] を示すことができる。 *)
 >> *)
-      apply T_Var... unfold extend in H1. rewrite neq_id in H1...
-  Case "tabs".
+      apply T_Var...
+  - (* tabs *)
     rename i into y. rename t into T11.
     (* If [t = tabs y T11 t0], then we know that
          [Gamma,x:U |- tabs y T11 t0 : T11->T12]
          [Gamma,x:U,y:T11 |- t0 : T12]
          [empty |- v : U]
-       As our IH, we know that forall S Gamma, 
+       As our IH, we know that forall S Gamma,
          [Gamma,x:U |- t0 : S -> Gamma |- [x:=v]t0 : S].
-    
-       We can calculate that 
+
+       We can calculate that
          [x:=v]t = tabs y T11 (if beq_id x y then t0 else [x:=v]t0)
        And we must show that [Gamma |- [x:=v]t : T11->T12].  We know
        we will do so using [T_Abs], so it remains to be shown that:
@@ -3375,30 +3332,28 @@ Proof with eauto.
        We consider two cases: [x = y] and [x <> y].
     *)
 (** <<
-    (* もし [t = tm_abs y T11 t0] ならば、次が成立する:
-         [Gamma,x:U |- tm_abs y T11 t0 : T11->T12]
+    (* もし [t = tabs y T11 t0] ならば、次が成立する:
+         [Gamma,x:U |- tabs y T11 t0 : T11->T12]
          [Gamma,x:U,y:T11 |- t0 : T12]
          [empty |- v : U]
-       帰納仮定より、すべての S Gamma について
-         [Gamma,x:U |- t0 : S -> Gamma |- subst x v t0 S] となる。
-
+       帰納仮定より、すべての S と Gamma について
+         [Gamma,x:U |- t0 : S -> Gamma |- [x:=v]t0 : S] となる。
+ 
        次の計算ができる:
-         subst x v t = tm_abs y T11 (if beq_id x y
-                                      then t0
-                                      else subst x v t0)
-       そして、示すべきことは [Gamma |- subst x v t : T11->T12] である。
+         [x:=v]t = tabs y T11 (if beq_id x y then t0 else [x:=v]t0) 
+       そして、示すべきことは [Gamma |- [x:=v]t : T11->T12] である。
        [T_Abs] を使うためには、残っているのは次を示すことである:
-         [Gamma,y:T11 |- if beq_id x y then t0 else subst x v t0 : T12]
+         [Gamma,y:T11 |- if beq_id x y then t0 else [x:=v]t0 : T12] 
        2つの場合、[x = y] の場合と [x <> y] の場合を考える。
     *)
 >> *)
     apply T_Abs...
-    destruct (eq_id_dec x y).
-    SCase "x=y".
+    destruct (beq_idP x y) as [Hxy|Hxy].
+    + (* x=y *)
     (* If [x = y], then the substitution has no effect.  Context
        invariance shows that [Gamma,y:U,y:T11] and [Gamma,y:T11] are
-       equivalent.  Since the former context shows that [t0 : T12], so
-       does the latter. *)
+       equivalent.  Since the former context shows that 
+       [t0 : T12], so does the latter. *)
 (** <<
     (* もし [x = y] ならば、置換は何も影響しない。
        コンテキスト不変性より [Gamma,y:U,y:T11] と [Gamma,y:T11] 
@@ -3407,82 +3362,84 @@ Proof with eauto.
 >> *)
       eapply context_invariance...
       subst.
-      intros x Hafi. unfold extend.
-      destruct (eq_id_dec y x)...
-    SCase "x<>y".
-    (* If [x <> y], then the IH and context invariance allow us to show that
-         [Gamma,x:U,y:T11 |- t0 : T12]       =>
-         [Gamma,y:T11,x:U |- t0 : T12]       =>
-         [Gamma,y:T11 |- [x:=v]t0 : T12] *)
+      intros x Hafi. unfold update, t_update.
+      destruct (beq_id y x)...
+    + (* x<>y *)
+      (* If [x <> y], then the IH and context invariance allow 
+         us to show that
+           [Gamma,x:U,y:T11 |- t0 : T12]       =>
+           [Gamma,y:T11,x:U |- t0 : T12]       =>
+           [Gamma,y:T11 |- [x:=v]t0 : T12] *)
 (** <<
-    (* もし [x <> y] ならば、帰納仮定とコンテキスト不変性より次が示される:
-         [Gamma,x:U,y:T11 |- t0 : T12]       =>
-         [Gamma,y:T11,x:U |- t0 : T12]       =>
-         [Gamma,y:T11 |- [x:=v]t0 : T12] *)
+      (* もし [x <> y] ならば、帰納仮定とコンテキスト不変性より次が示される:
+           [Gamma,x:U,y:T11 |- t0 : T12]       =>
+           [Gamma,y:T11,x:U |- t0 : T12]       =>
+           [Gamma,y:T11 |- [x:=v]t0 : T12] *)
 >> *)
       apply IHt. eapply context_invariance...
-      intros z Hafi. unfold extend.
-      destruct (eq_id_dec y z)...
-      subst. rewrite neq_id...
-(* let *)
-(* FILL IN HERE *)
+      intros z Hafi. unfold update, t_update.
+      destruct (beq_idP y z) as [Hyz|Hyz]...
+      subst.
+      rewrite false_beq_id...
+  (* let *)
+  (* FILL IN HERE *)
 (** <<
-(* ここを埋めなさい *)
+  (* ここを埋めなさい *)
 >> *)
-  Case "tcase".
+  - (* tcase *)
     rename i into x1. rename i0 into x2.
     eapply T_Case...
-      SCase "left arm".
-       destruct (eq_id_dec x x1).
-       SSCase "x = x1".
+    + (* left arm *)
+      destruct (beq_idP x x1) as [Hxx1|Hxx1].
+      * (* x = x1 *)
         eapply context_invariance...
         subst.
-        intros z Hafi. unfold extend.
-        destruct (eq_id_dec x1 z)...
-       SSCase "x <> x1". 
-         apply IHt2. eapply context_invariance...
-         intros z Hafi.  unfold extend.
-         destruct (eq_id_dec x1 z)...
-           subst. rewrite neq_id...
-      SCase "right arm".
-       destruct (eq_id_dec x x2).
-       SSCase "x = x2".
+        intros z Hafi. unfold update, t_update.
+        destruct (beq_id x1 z)...
+      * (* x <> x1 *)
+        apply IHt2. eapply context_invariance...
+        intros z Hafi.  unfold update, t_update.
+        destruct (beq_idP x1 z) as [Hx1z|Hx1z]...
+        subst. rewrite false_beq_id...
+    + (* right arm *)
+      destruct (beq_idP x x2) as [Hxx2|Hxx2].
+      * (* x = x2 *)
         eapply context_invariance...
         subst.
-        intros z Hafi. unfold extend.
-        destruct (eq_id_dec x2 z)...
-       SSCase "x <> x2". 
-         apply IHt3. eapply context_invariance...
-         intros z Hafi.  unfold extend.
-         destruct (eq_id_dec x2 z)...
-           subst. rewrite neq_id...
-  Case "tlcase".
+        intros z Hafi. unfold update, t_update.
+        destruct (beq_id x2 z)...
+      * (* x <> x2 *)
+        apply IHt3. eapply context_invariance...
+        intros z Hafi.  unfold update, t_update.
+        destruct (beq_idP x2 z)...
+        subst. rewrite false_beq_id...
+  - (* tlcase *)
     rename i into y1. rename i0 into y2.
-    eapply T_Lcase... 
-    destruct (eq_id_dec x y1).
-    SCase "x=y1".
-      simpl.  
+    eapply T_Lcase...
+    destruct (beq_idP x y1).
+    + (* x=y1 *)
+      simpl.
       eapply context_invariance...
       subst.
-      intros z Hafi. unfold extend.
-      destruct (eq_id_dec y1 z)... 
-    SCase "x<>y1".
-      destruct (eq_id_dec x y2).
-      SSCase "x=y2".
+      intros z Hafi. unfold update, t_update.
+      destruct (beq_idP y1 z)...
+    + (* x<>y1 *)
+      destruct (beq_idP x y2).
+      * (* x=y2 *)
         eapply context_invariance...
-        subst. 
-        intros z Hafi. unfold extend.
-        destruct (eq_id_dec y2 z)...
-      SSCase "x<>y2".
+        subst.
+        intros z Hafi. unfold update, t_update.
+        destruct (beq_idP y2 z)...
+      * (* x<>y2 *)
         apply IHt3. eapply context_invariance...
-        intros z Hafi. unfold extend.
-        destruct (eq_id_dec y1 z)...
-        subst. rewrite neq_id... 
-        destruct (eq_id_dec y2 z)...
-        subst. rewrite neq_id... 
+        intros z Hafi. unfold update, t_update.
+        destruct (beq_idP y1 z)...
+        subst. rewrite false_beq_id...
+        destruct (beq_idP y2 z)...
+        subst. rewrite false_beq_id...
 Qed.
 
-(* ###################################################################### *)
+(* ----------------------------------------------------------------- *)
 (** *** Preservation *)
 
 Theorem preservation : forall t t' T,
@@ -3491,93 +3448,95 @@ Theorem preservation : forall t t' T,
      empty |- t' \in T.
 Proof with eauto.
   intros t t' T HT.
-  (* Theorem: If [empty |- t : T] and [t ==> t'], then [empty |- t' : T]. *)
+  (* Theorem: If [empty |- t : T] and [t ==> t'], then 
+     [empty |- t' : T]. *)
 (** <<
   (* 定理: もし [empty |- t : T] かつ [t ==> t'] ならば、[empty |- t' : T] である。 *)
 >> *)
-  remember (@empty ty) as Gamma. generalize dependent HeqGamma.
+  remember empty as Gamma. generalize dependent HeqGamma.
   generalize dependent t'.
-  (* Proof: By induction on the given typing derivation.  Many cases are
-     contradictory ([T_Var], [T_Abs]).  We show just the interesting ones. *)
+  (* Proof: By induction on the given typing derivation.  Many 
+     cases are contradictory ([T_Var], [T_Abs]).  We show just 
+     the interesting ones. *)
 (** <<
-  (* 証明: 与えられた型導出についての帰納法を使う。ほとんどの場合は、
-     [T_Var] と [T_Abs] の矛盾である(contradictory ([T_Var], [T_Abs]))。
+  (* 証明: 与えられた型導出についての帰納法を使う。
+     ほとんどの場合は、 [T_Var] と [T_Abs] の矛盾である。
      興味深いものだけを示す。 *)
 >> *)
-  has_type_cases (induction HT) Case; 
+  induction HT;
     intros t' HeqGamma HE; subst; inversion HE; subst...
-  Case "T_App".
-    (* If the last rule used was [T_App], then [t = t1 t2], and three rules
-       could have been used to show [t ==> t']: [ST_App1], [ST_App2], and 
-       [ST_AppAbs]. In the first two cases, the result follows directly from 
-       the IH. *)
+  - (* T_App *)
+    (* If the last rule used was [T_App], then [t = t1 t2], and 
+       three rules could have been used to show [t ==> t']: 
+       [ST_App1], [ST_App2], and [ST_AppAbs]. In the first two 
+       cases, the result follows directly from the IH. *)
 (** <<
     (* もし最後の規則が [T_App] ならば、[t = t1 t2] である。
-       [t ==> t'] を示すのに使うことができる規則は3つ、[ST_App1]、[ST_App2]、[ST_AppAbs]
-       である。最初の2つについては、結果は帰納仮定から直ぐに導かれる。 *)
+       [t ==> t'] を示すのに使うことができる規則は3つ、[ST_App1]、[ST_App2]、[ST_AppAbs]である。
+       最初の2つについては、結果は帰納仮定から直ぐに導かれる。 *)
 >> *)
     inversion HE; subst...
-    SCase "ST_AppAbs".
-      (* For the third case, suppose 
+    + (* ST_AppAbs *)
+      (* For the third case, suppose
            [t1 = tabs x T11 t12]
          and
-           [t2 = v2].  
-         We must show that [empty |- [x:=v2]t12 : T2]. 
+           [t2 = v2].
+         We must show that [empty |- [x:=v2]t12 : T2].
          We know by assumption that
              [empty |- tabs x T11 t12 : T1->T2]
          and by inversion
              [x:T1 |- t12 : T2]
-         We have already proven that substitution_preserves_typing and 
+         We have already proven that substitution preserves 
+         typing, and
              [empty |- v2 : T1]
          by assumption, so we are done. *)
 (** <<
       (* 3つ目の場合、
-           [t1 = tm_abs x T11 t12]
+           [t1 = tabs x T11 t12] 
          かつ
-           [t2 = v2]
+           [t2 = v2] 
          と仮定する。示すべきは [empty |- [x:=v2]t12 : T2] である。
          仮定から
-             [empty |- tabs x T11 t12 : T1->T2]
+             [empty |- tabs x T11 t12 : T1->T2] 
          であり、inversion から
-             [x:T1 |- t12 : T2]
+             [x:T1 |- t12 : T2] 
          となる。
          substitution_preserves_typing を既に証明しており、また仮定から
-             [empty |- v2 : T1]
+             [empty |- v2 : T1] 
          である。これで証明された。 *)
 >> *)
       apply substitution_preserves_typing with T1...
       inversion HT1...
-  Case "T_Fst".
-    inversion HT...
-  Case "T_Snd".
-    inversion HT...
-(* let *)
-(* FILL IN HERE *)
+  (* fst and snd *)
+  (* FILL IN HERE *)
 (** <<
-(* ここを埋めなさい *)
+  (* ここを埋めなさい *)
 >> *)
-  Case "T_Case".
-    SCase "ST_CaseInl".
-      inversion HT1; subst. 
-      eapply substitution_preserves_typing...
-    SCase "ST_CaseInr".
-      inversion HT1; subst. 
-      eapply substitution_preserves_typing...
-  Case "T_Lcase".
-    SCase "ST_LcaseCons".
+  (* let *)
+  (* FILL IN HERE *)
+(** <<
+  (* ここを埋めなさい *)
+>> *)
+  (* T_Case *)
+  - (* ST_CaseInl *)
+    inversion HT1; subst.
+    eapply substitution_preserves_typing...
+  - (* ST_CaseInr *)
+    inversion HT1; subst.
+    eapply substitution_preserves_typing...
+  - (* T_Lcase *)
+    + (* ST_LcaseCons *)
       inversion HT1; subst.
       apply substitution_preserves_typing with (TList T1)...
       apply substitution_preserves_typing with T1...
-(* fix *)
-(* FILL IN HERE *)
+  (* fix *)
+  (* FILL IN HERE *)
 (** <<
-(* ここを埋めなさい *)
+  (* ここを埋めなさい *)
 >> *)
 Qed.
-(** [] *)
 
 End STLCExtended.
+(** [] *)
 
-(* $Date: 2014-12-01 15:15:02 -0500 (Mon, 01 Dec 2014) $ *)
-
-
+(* $Date: 2016-12-17 23:53:20 -0500 (Sat, 17 Dec 2016) $ *)

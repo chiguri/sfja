@@ -1,73 +1,85 @@
+(** * PE: 部分評価 *)
 (*
 (** * PE: Partial Evaluation *)
 *)
-(** * PE: 部分評価 *)
 
-(* Chapter author/maintainer: Chung-chieh Shan *)
+(* Chapter written and maintained by Chung-chieh Shan *)
 
 (*
-(** Equiv.v introduced constant folding as an example of a program
-    transformation and proved that it preserves the meaning of the
-    program.  Constant folding operates on manifest constants such
-    as [ANum] expressions.  For example, it simplifies the command
-    [Y ::= APlus (ANum 3) (ANum 1)] to the command [Y ::= ANum 4].
-    However, it does not propagate known constants along data flow.
-    For example, it does not simplify the sequence
-        X ::= ANum 3;; Y ::= APlus (AId X) (ANum 1)
+(** The [Equiv] chapter introduced constant folding as an example of a
+    program transformation and proved that it preserves the meaning of
+    programs.  Constant folding operates on manifest constants such as
+    [ANum] expressions.  For example, it simplifies the command [Y ::=
+    APlus (ANum 3) (ANum 1)] to the command [Y ::= ANum 4].  However,
+    it does not propagate known constants along data flow.  For
+    example, it does not simplify the sequence
+
+      X ::= ANum 3;; Y ::= APlus (AId X) (ANum 1)
+
     to
-        X ::= ANum 3;; Y ::= ANum 4
+
+      X ::= ANum 3;; Y ::= ANum 4
+
     because it forgets that [X] is [3] by the time it gets to [Y].
 
-    We naturally want to enhance constant folding so that it
+    We might naturally want to enhance constant folding so that it
     propagates known constants and uses them to simplify programs.
     Doing so constitutes a rudimentary form of _partial evaluation_.
-    As we will see, partial evaluation is so called because it is
-    like running a program, except only part of the program can be
+    As we will see, partial evaluation is so called because it is like
+    running a program, except only part of the program can be
     evaluated because only part of the input to the program is known.
     For example, we can only simplify the program
-        X ::= ANum 3;; Y ::= AMinus (APlus (AId X) (ANum 1)) (AId Y)
+
+      X ::= ANum 3;; Y ::= AMinus (APlus (AId X) (ANum 1)) (AId Y)
+
     to
-        X ::= ANum 3;; Y ::= AMinus (ANum 4) (AId Y)
+
+      X ::= ANum 3;; Y ::= AMinus (ANum 4) (AId Y)
+
     without knowing the initial value of [Y]. *)
 *)
-(** Equiv.v ではプログラム変換の例として定数畳み込みを紹介し、
-    そして、それがプログラムの意味を保存することを証明しました。
-    定数畳み込みは[ANum]式のようなマニフェスト定数を処理します。
-    例えば、コマンド [Y ::= APlus (ANum 3) (ANum 1)] をコマンド 
-    [Y ::= ANum 4] に単純化します。
-    しかしながら、この操作は、
-    定数とわかったことをデータフローに沿って伝播することは行いません。
+(** [Equiv] の章ではプログラム変換の例として定数畳み込みを紹介し、それがプログラムの意味を保存することを証明しました。
+    定数畳み込みは[ANum]式のような明らかな定数を処理します。
+    例えば、コマンド [Y ::= APlus (ANum 3) (ANum 1)] をコマンド [Y ::= ANum 4] に単純化します。
+    しかしながら、この操作は、定数とわかったことをデータフローに沿って伝播することは行いません。
     例えば、次の列
 [[
-        X ::= ANum 3; Y ::= APlus (AId X) (ANum 1)
+        X ::= ANum 3; Y ::= APlus (AId X) (ANum 1) 
 ]]
     を
 [[
-        X ::= ANum 3; Y ::= ANum 4
+        X ::= ANum 3; Y ::= ANum 4 
 ]]
     に単純化することはありません。なぜなら、[X]が[3]であったことは、
     [Y]に渡された時には忘れられてしまうからです。
-
-    定数畳み込みを強化して、定数と分かったことを伝播し、
-    それを使ってプログラムを単純化するようにしたいと思うのは自然なことです。
-    そうすることは、部分評価(_partial evaluation_)の初歩的な形となります。 
+ 
+    定数畳み込みを強化して、定数と分かったことを伝播し、それを使ってプログラムを単純化したいと思うのは自然なことです。
+    これは「部分評価(_partial evaluation_)」の初歩的な形となります。 
     これから見るように、これを部分評価と呼ぶのは、プログラムを走らせることと似ているからです。
-    ただ違うのは、プログラムの一部だけが評価されることです。
-    その理由はプログラムの入力の一部だけがわかっているからです。
-    例えば、[Y]の初期値がわからないとき、プログラム
+    ただ違うのは、プログラムの入力の一部だけが分かってる状態から始めるため、プログラムの一部だけが評価されることです。
+    例えば、プログラム
 [[
-        X ::= ANum 3; Y ::= AMinus (APlus (AId X) (ANum 1)) (AId Y)
+        X ::= ANum 3; Y ::= AMinus (APlus (AId X) (ANum 1)) (AId Y) 
 ]]
-    を単純化できるのは
+    を
 [[
-        X ::= ANum 3; Y ::= AMinus (ANum 4) (AId Y)
+        X ::= ANum 3; Y ::= AMinus (ANum 4) (AId Y) 
 ]]
-    までです。 *)
+    まで単純化するのに、[Y]の初期値を知る必要はありません。 *)
 
-Require Export Imp.
-Require Import FunctionalExtensionality.
+Require Import Coq.Bool.Bool.
+Require Import Coq.Arith.Arith.
+Require Import Coq.Arith.EqNat.
+Require Import Coq.omega.Omega.
+Require Import Coq.Logic.FunctionalExtensionality.
+Require Import Coq.Lists.List.
+Import ListNotations.
 
-(* ####################################################### *)
+Require Import Maps.
+Require Import Imp.
+Require Import Smallstep.
+
+(* ################################################################# *)
 (*
 (** * Generalizing Constant Folding *)
 *)
@@ -83,6 +95,7 @@ Require Import FunctionalExtensionality.
     例えば上述の2つの代入において、部分評価器は[X]が[3]であることだけを知っており、
     他の変数については何も知らないでしょう。 *)
 
+(* ================================================================= *)
 (*
 (** ** Partial States *)
 *)
@@ -126,7 +139,7 @@ Definition pe_state := list (id * nat).
 Fixpoint pe_lookup (pe_st : pe_state) (V:id) : option nat :=
   match pe_st with
   | [] => None
-  | (V',n')::pe_st => if eq_id_dec V V' then Some n'
+  | (V',n')::pe_st => if beq_id V V' then Some n'
                       else pe_lookup pe_st V
   end.
 
@@ -144,39 +157,36 @@ Definition empty_pe_state : pe_state := [].
     contain some [id], then that [pe_state] must map that [id] to
     [None].  Before we prove this fact, we first define a useful
     tactic for reasoning with [id] equality.  The tactic
-        compare V V' SCase
-    means to reason by cases over [eq_id_dec V V'].
-    In the case where [V = V'], the tactic 
+
+      compare V V'
+
+    means to reason by cases over [beq_id V V'].
+    In the case where [V = V'], the tactic
     substitutes [V] for [V'] throughout. *)
 *)
-(** より一般に、もし[pe_state]を表現する[list]が、ある[id]を含まないならば、
-    [pe_state]は[id]を[None]に写像しなければなりません。
-    この事実を証明する前に、まず[id]の等号関係の推論に関する便利なタクティックを定義します。
+(** より一般に、もし[pe_state]を表現する[list]がある[id]を含まないならば、[pe_state]は[id]を[None]に写像しなければなりません。
+    この事実を証明する前に、まず[id]の等価関係の推論に関する便利なタクティックを定義します。
     タクティック
 [[
-        compare V V' SCase
+      compare V V' 
 ]]
     は [beq_id V V'] が[true]か[false]かで場合分けする推論をすることを意味します。
-    [beq_id V V' = true] の場合、このタクティックは一貫して[V]を[V']に置換します。 *)
+    [V = V'] の場合、このタクティックは全ての場所で[V]を[V']に置換します。 *)
 
-Tactic Notation "compare" ident(i) ident(j) ident(c) :=
+Tactic Notation "compare" ident(i) ident(j) :=
   let H := fresh "Heq" i j in
-  destruct (eq_id_dec i j); 
-  [ Case_aux c "equal"; subst j
-  | Case_aux c "not equal" ].
+  destruct (beq_idP i j);
+  [ subst j | ].
 
 Theorem pe_domain: forall pe_st V n,
   pe_lookup pe_st V = Some n ->
-  In V (map (@fst _ _) pe_st). 
+  In V (map (@fst _ _) pe_st).
 Proof. intros pe_st V n H. induction pe_st as [| [V' n'] pe_st].
-  Case "[]". inversion H.
-  Case "::". simpl in H. simpl. compare V V' SCase; auto. Qed.
+  - (* [] *) inversion H.
+  - (* :: *) simpl in H. simpl. compare V V'; auto. Qed.
 
-(** *** Aside on [In].
-
-    We will make heavy use of the [In] predicate from the standard library.
-    [In] is equivalent to the [appears_in] predicate introduced in Logic.v, but
-    defined using a [Fixpoint] rather than an [Inductive]. *)
+(** In what follows, we will make heavy use of the [In] property from
+    the standard library, also defined in [Logic.v]: *)
 
 Print In.
 (* ===> Fixpoint In {A:Type} (a: A) (l:list A) : Prop :=
@@ -186,23 +196,41 @@ Print In.
             end
         : forall A : Type, A -> list A -> Prop *)
 
-(**    [In] comes with various useful lemmas.  *)
-
-Check in_or_app.
-(* ===>  in_or_app: forall (A : Type) (l m : list A) (a : A), 
-                In a l \/ In a m -> In a (l ++ m) *)
+(** Besides the various lemmas about [In] that we've already come
+    across, the following one (taken from the standard library) will
+    also be useful: *)
 
 Check filter_In.
 (* ===> filter_In : forall (A : Type) (f : A -> bool) (x : A) (l : list A),
-                 In x (filter f l) <-> In x l /\ f x = true  *)
+            In x (filter f l) <-> In x l /\ f x = true  *)
 
-Check in_dec.
-(* ===> in_dec : forall A : Type,
-             (forall x y : A, {x = y} + {x <> y}) ->
-             forall (a : A) (l : list A), {In a l} + {~ In a l}] *)
+(** If a type [A] has an operator [beq] for testing equality of its
+    elements, we can compute a boolean [inb beq a l] for testing
+    whether [In a l] holds or not. *)
 
-(**  Note that we can compute with [in_dec], just as with [eq_id_dec]. *)
+Fixpoint inb {A : Type} (beq : A -> A -> bool) (a : A) (l : list A) :=
+  match l with
+  | [] => false
+  | a'::l' => beq a a' || inb beq a l'
+  end.
 
+(** It is easy to relate [inb] to [In] with the [reflect] property: *)
+
+Lemma inbP : forall A : Type, forall beq : A->A->bool,
+  (forall a1 a2, reflect (a1 = a2) (beq a1 a2)) ->
+  forall a l, reflect (In a l) (inb beq a l).
+Proof.
+  intros A beq beqP a l.
+  induction l as [|a' l' IH].
+  - constructor. intros [].
+  - simpl. destruct (beqP a a').
+    + subst. constructor. left. reflexivity.
+    + simpl. destruct IH; constructor.
+      * right. trivial.
+      * intros [H1 | H2]; congruence.
+Qed.
+
+(* ================================================================= *)
 (*
 (** ** Arithmetic Expressions *)
 *)
@@ -230,7 +258,7 @@ Fixpoint pe_aexp (pe_st : pe_state) (a : aexp) : aexp :=
       | (ANum n1, ANum n2) => ANum (n1 + n2)
       | (a1', a2') => APlus a1' a2'
       end
-  | AMinus a1 a2 => 
+  | AMinus a1 a2 =>
       match (pe_aexp pe_st a1, pe_aexp pe_st a2) with
       | (ANum n1, ANum n2) => ANum (n1 - n2)
       | (a1', a2') => AMinus a1' a2'
@@ -280,34 +308,44 @@ Definition pe_consistent (st:state) (pe_st:pe_state) :=
 Theorem pe_aexp_correct_weak: forall st pe_st, pe_consistent st pe_st ->
   forall a, aeval st a = aeval st (pe_aexp pe_st a).
 Proof. unfold pe_consistent. intros st pe_st H a.
-  aexp_cases (induction a) Case; simpl;
+  induction a; simpl;
     try reflexivity;
     try (destruct (pe_aexp pe_st a1);
          destruct (pe_aexp pe_st a2);
          rewrite IHa1; rewrite IHa2; reflexivity).
   (* Compared to fold_constants_aexp_sound,
      the only interesting case is AId *)
-  Case "AId".
+  - (* AId *)
     remember (pe_lookup pe_st i) as l. destruct l.
-    SCase "Some". rewrite H with (n:=n) by apply Heql. reflexivity.
-    SCase "None". reflexivity.
+    + (* Some *) rewrite H with (n:=n) by apply Heql. reflexivity.
+    + (* None *) reflexivity.
 Qed.
 
 (*
 (** However, we will soon want our partial evaluator to remove
     assignments.  For example, it will simplify
-        X ::= ANum 3;; Y ::= AMinus (AId X) (AId Y);; X ::= ANum 4
+
+    X ::= ANum 3;; Y ::= AMinus (AId X) (AId Y);; X ::= ANum 4
+
     to just
-        Y ::= AMinus (ANum 3) (AId Y);; X ::= ANum 4
+
+    Y ::= AMinus (ANum 3) (AId Y);; X ::= ANum 4
+
     by delaying the assignment to [X] until the end.  To accomplish
     this simplification, we need the result of partial evaluating
-        pe_aexp [(X,3)] (AMinus (AId X) (AId Y))
+
+    pe_aexp [(X,3)] (AMinus (AId X) (AId Y))
+
     to be equal to [AMinus (ANum 3) (AId Y)] and _not_ the original
     expression [AMinus (AId X) (AId Y)].  After all, it would be
     incorrect, not just inefficient, to transform
-        X ::= ANum 3;; Y ::= AMinus (AId X) (AId Y);; X ::= ANum 4
+
+    X ::= ANum 3;; Y ::= AMinus (AId X) (AId Y);; X ::= ANum 4
+
     to
-        Y ::= AMinus (AId X) (AId Y);; X ::= ANum 4
+
+    Y ::= AMinus (AId X) (AId Y);; X ::= ANum 4
+
     even though the output expressions [AMinus (ANum 3) (AId Y)] and
     [AMinus (AId X) (AId Y)] both satisfy the correctness criterion
     that we just proved.  Indeed, if we were to just define [pe_aexp
@@ -326,91 +364,82 @@ Qed.
 (** しかしながらすぐに、部分評価器で代入を削除することも行いたくなるでしょう。
     例えば、
 [[
-        X ::= ANum 3; Y ::= AMinus (AId X) (AId Y); X ::= ANum 4
+        X ::= ANum 3; Y ::= AMinus (AId X) (AId Y); X ::= ANum 4 
 ]]
     を簡単化するには、[X]の代入を最後に遅らせることで、単に
 [[
-        Y ::= AMinus (ANum 3) (AId Y); X ::= ANum 4
+        Y ::= AMinus (ANum 3) (AId Y); X ::= ANum 4 
 ]]
     となります。
     この単純化を達成するためには、
 [[
-        pe_aexp [(X,3)] (AMinus (AId X) (AId Y))
+        pe_aexp [(X,3)] (AMinus (AId X) (AId Y)) 
 ]]
-    を部分評価した結果は [AMinus (ANum 3) (AId Y)] であるべきで、オリジナルの式
-    [AMinus (AId X) (AId Y)] ではありません。
+    を部分評価した結果は [AMinus (ANum 3) (AId Y)] であるべきで、オリジナルの式 [AMinus (AId X) (AId Y)] ではありません。
     何といっても、
 [[
-        X ::= ANum 3; Y ::= AMinus (AId X) (AId Y); X ::= ANum 4
+        X ::= ANum 3; Y ::= AMinus (AId X) (AId Y); X ::= ANum 4 
 ]]
     を
 [[
-        Y ::= AMinus (AId X) (AId Y); X ::= ANum 4
+        Y ::= AMinus (AId X) (AId Y); X ::= ANum 4 
 ]]
     に変換することは、非効率であるだけではなく、間違っています。
-    出力式 [AMinus (ANum 3) (AId Y)] と [AMinus (AId X) (AId Y)] 
-    は両方とも正しさの基準を満たすにもかかわらずです。
-    実のところ、単に [pe_aexp pe_st a = a] と定義したとしても、定理[pe_aexp_correct']
-    は成立してしまいます。
-
+    出力式 [AMinus (ANum 3) (AId Y)] と [AMinus (AId X) (AId Y)]  は両方とも正しさの基準を満たすにもかかわらずです。
+    実のところ、単に [pe_aexp pe_st a = a] と定義したとしても、定理 [pe_aexp_correct'] は成立してしまいます。
+ 
     その代わりに、[pe_aexp]がより強い意味で正しいことを証明します。
-    つまり、
-    部分評価によって生成された式を評価したもの([aeval st (pe_aexp pe_st a)])は、
-    完全状態[st]の、部分状態[pe_st]によって特定された部分に依存しない、という意味でです。
+    つまり、部分評価によって生成された式を評価したもの([aeval st (pe_aexp pe_st a)])は、完全状態[st]の、部分状態[pe_st]によって特定された部分に依存しない、という意味でです。
     より正確にするために、関数[pe_override]を、[st]を[pe_st]の内容に更新するものとして定義します。
-    言い換えると、[pe_override]は[st]より優先して[pe_st]にリストアップされた代入を行うということです。
-    *)
+    言い換えると、[pe_override]は[st]より優先して[pe_st]にリストアップされた代入を行うということです。 *)
 
-Fixpoint pe_override (st:state) (pe_st:pe_state) : state :=
+Fixpoint pe_update (st:state) (pe_st:pe_state) : state :=
   match pe_st with
   | [] => st
-  | (V,n)::pe_st => update (pe_override st pe_st) V n
+  | (V,n)::pe_st => t_update (pe_update st pe_st) V n
   end.
 
-Example test_pe_override:
-  pe_override (update empty_state Y 1) [(X,3);(Z,2)]
-  = update (update (update empty_state Y 1) Z 2) X 3.
+Example test_pe_update:
+  pe_update (t_update empty_state Y 1) [(X,3);(Z,2)]
+  = t_update (t_update (t_update empty_state Y 1) Z 2) X 3.
 Proof. reflexivity. Qed.
 
 (*
-(** Although [pe_override] operates on a concrete [list] representing
+(** Although [pe_update] operates on a concrete [list] representing
     a [pe_state], its behavior is defined entirely by the [pe_lookup]
     interpretation of the [pe_state]. *)
 *)
-(** [pe_override]が[pe_state]を表現する具体的[list]を操作するにもかかわらず、
-    そのふるまいは[pe_state]の[pe_lookup]解釈によって完全に定義されます。 *)
+(** [pe_update]が[pe_state]を表現する具体的[list]を操作するにもかかわらず、そのふるまいは[pe_state]の[pe_lookup]解釈によって完全に定義されます。 *)
 
-Theorem pe_override_correct: forall st pe_st V0,
-  pe_override st pe_st V0 =
+Theorem pe_update_correct: forall st pe_st V0,
+  pe_update st pe_st V0 =
   match pe_lookup pe_st V0 with
   | Some n => n
   | None => st V0
   end.
 Proof. intros. induction pe_st as [| [V n] pe_st]. reflexivity.
-  simpl in *. unfold update. 
-  compare V0 V Case; auto. rewrite eq_id; auto. rewrite neq_id; auto. Qed.
+  simpl in *. unfold t_update.
+  compare V0 V; auto. rewrite <- beq_id_refl; auto. rewrite false_beq_id; auto. Qed.
 
 (*
-(** We can relate [pe_consistent] to [pe_override] in two ways.
+(** We can relate [pe_consistent] to [pe_update] in two ways.
     First, overriding a state with a partial state always gives a
     state that is consistent with the partial state.  Second, if a
     state is already consistent with a partial state, then overriding
     the state with the partial state gives the same state. *)
 *)
-(** [pe_consistent]と[pe_override]とは2つの方法で関係付けることができます。
-    1つ目は、状態を部分状態でオーバーライド(上書き)したものは、
-    常にその部分状態と整合的な状態となるということです。
-    2つ目は、状態がもし部分状態と整合的ならば、その状態をその部分状態でオーバーライドしたものは、
-    もとの状態と同じということです。 *)
+(** [pe_consistent]と[pe_update]とは2つの方法で関係付けることができます。
+    1つ目は、状態を部分状態でオーバーライド(上書き)したものは、常にその部分状態と整合的な状態となるということです。
+    2つ目は、状態がもし部分状態と整合的ならば、その状態をその部分状態でオーバーライドしたものは、もとの状態と同じということです。 *)
 
-Theorem pe_override_consistent: forall st pe_st,
-  pe_consistent (pe_override st pe_st) pe_st.
-Proof. intros st pe_st V n H. rewrite pe_override_correct.
+Theorem pe_update_consistent: forall st pe_st,
+  pe_consistent (pe_update st pe_st) pe_st.
+Proof. intros st pe_st V n H. rewrite pe_update_correct.
   destruct (pe_lookup pe_st V); inversion H. reflexivity. Qed.
 
-Theorem pe_consistent_override: forall st pe_st,
-  pe_consistent st pe_st -> forall V, st V = pe_override st pe_st V.
-Proof. intros st pe_st H V. rewrite pe_override_correct.
+Theorem pe_consistent_update: forall st pe_st,
+  pe_consistent st pe_st -> forall V, st V = pe_update st pe_st V.
+Proof. intros st pe_st H V. rewrite pe_update_correct.
   remember (pe_lookup pe_st V) as l. destruct l; auto. Qed.
 
 (*
@@ -430,7 +459,7 @@ Proof. intros st pe_st H V. rewrite pe_override_correct.
 *)
 (** いよいよ、[pe_aexp]がより強い意味で正しいことを主張し証明します。
     このことはこれから部分評価器の残りを定義する助けになります。
-
+ 
     直観的には、部分評価を使ったプログラムの実行は2つのステージから成る過程です。
     第一の「静的」ステージでは、与えられたプログラムをある部分状態のもとで部分評価し、
     「残留」プログラムを得ます。第二の「動的」ステージは、残留プログラムを残りの状態で評価します。
@@ -439,19 +468,20 @@ Proof. intros st pe_st H V. rewrite pe_override_correct.
     部分状態にリストアップされた代入をもとのプログラムの前に追加したものと同値になります。 *)
 
 Theorem pe_aexp_correct: forall (pe_st:pe_state) (a:aexp) (st:state),
-  aeval (pe_override st pe_st) a = aeval st (pe_aexp pe_st a).
+  aeval (pe_update st pe_st) a = aeval st (pe_aexp pe_st a).
 Proof.
   intros pe_st a st.
-  aexp_cases (induction a) Case; simpl;
+  induction a; simpl;
     try reflexivity;
     try (destruct (pe_aexp pe_st a1);
          destruct (pe_aexp pe_st a2);
          rewrite IHa1; rewrite IHa2; reflexivity).
-  (* Compared to fold_constants_aexp_sound, the only 
+  (* Compared to fold_constants_aexp_sound, the only
      interesting case is AId. *)
-  rewrite pe_override_correct. destruct (pe_lookup pe_st i); reflexivity.
+  rewrite pe_update_correct. destruct (pe_lookup pe_st i); reflexivity.
 Qed.
 
+(* ================================================================= *)
 (*
 (** ** Boolean Expressions *)
 *)
@@ -469,17 +499,17 @@ Fixpoint pe_bexp (pe_st : pe_state) (b : bexp) : bexp :=
   match b with
   | BTrue        => BTrue
   | BFalse       => BFalse
-  | BEq a1 a2 => 
+  | BEq a1 a2 =>
       match (pe_aexp pe_st a1, pe_aexp pe_st a2) with
       | (ANum n1, ANum n2) => if beq_nat n1 n2 then BTrue else BFalse
       | (a1', a2') => BEq a1' a2'
       end
   | BLe a1 a2 =>
       match (pe_aexp pe_st a1, pe_aexp pe_st a2) with
-      | (ANum n1, ANum n2) => if ble_nat n1 n2 then BTrue else BFalse
+      | (ANum n1, ANum n2) => if leb n1 n2 then BTrue else BFalse
       | (a1', a2') => BLe a1' a2'
       end
-  | BNot b1 => 
+  | BNot b1 =>
       match (pe_bexp pe_st b1) with
       | BTrue => BFalse
       | BFalse => BTrue
@@ -512,26 +542,26 @@ Proof. intros b H. rewrite -> H. reflexivity. Qed.
 (** [pe_bexp]の正しさは上述の[pe_aexp]の正しさと同様です。 *)
 
 Theorem pe_bexp_correct: forall (pe_st:pe_state) (b:bexp) (st:state),
-  beval (pe_override st pe_st) b = beval st (pe_bexp pe_st b).
+  beval (pe_update st pe_st) b = beval st (pe_bexp pe_st b).
 Proof.
   intros pe_st b st.
-  bexp_cases (induction b) Case; simpl;
+  induction b; simpl;
     try reflexivity;
     try (remember (pe_aexp pe_st a) as a';
          remember (pe_aexp pe_st a0) as a0';
-         assert (Ha: aeval (pe_override st pe_st) a = aeval st a');
-         assert (Ha0: aeval (pe_override st pe_st) a0 = aeval st a0');
+         assert (Ha: aeval (pe_update st pe_st) a = aeval st a');
+         assert (Ha0: aeval (pe_update st pe_st) a0 = aeval st a0');
            try (subst; apply pe_aexp_correct);
          destruct a'; destruct a0'; rewrite Ha; rewrite Ha0;
-         simpl; try destruct (beq_nat n n0); try destruct (ble_nat n n0);
-         reflexivity);
+         simpl; try destruct (beq_nat n n0);
+         try destruct (leb n n0); reflexivity);
     try (destruct (pe_bexp pe_st b); rewrite IHb; reflexivity);
     try (destruct (pe_bexp pe_st b1);
          destruct (pe_bexp pe_st b2);
          rewrite IHb1; rewrite IHb2; reflexivity).
 Qed.
 
-(* ####################################################### *)
+(* ################################################################# *)
 (*
 (** * Partial Evaluation of Commands, Without Loops *)
 *)
@@ -567,54 +597,50 @@ Qed.
     partial state.  To model this non-termination, just as with the
     full evaluation of commands, we use an inductively defined
     relation.  We write
-        c1 / st || c1' / st'
+
+      c1 / st \\ c1' / st'
+
     to mean that partially evaluating the source command [c1] in the
     initial partial state [st] yields the residual command [c1'] and
     the final partial state [st'].  For example, we want something like
-        (X ::= ANum 3 ;; Y ::= AMult (AId Z) (APlus (AId X) (AId X)))
-        / [] || (Y ::= AMult (AId Z) (ANum 6)) / [(X,3)]
+
+      (X ::= ANum 3 ;; Y ::= AMult (AId Z) (APlus (AId X) (AId X)))
+      / [] \\ (Y ::= AMult (AId Z) (ANum 6)) / [(X,3)]
+
     to hold.  The assignment to [X] appears in the final partial state,
     not the residual command. *)
 *)
 (** コマンドの部分評価はどうなるでしょうか？
     部分評価と完全評価の対応関係は続きます。
-    コマンドの完全評価が初期状態を終了状態に変換するのと同じように、
-    コマンドの部分評価は初期部分状態を終了部分状態に変換します。
-    違いは、状態が完全ではないことから、
-    コマンドのある部分が静的ステージでは実行可能でない可能性があることです。
-    上記の[pe_aexp]が残留[aexp]を返し、[pe_bexp]が残留[bexp]を返すように、
-    コマンドを部分評価すると残留コマンドとなります。
-
-    部分評価器が完全評価器と似ている別の点は、
-    すべてのコマンドに対して停止するとは限らないということです。
+    コマンドの完全評価が初期状態を終了状態に変換するのと同じように、コマンドの部分評価は初期部分状態を終了部分状態に変換します。
+    違いは、状態が完全ではないことから、コマンドのある部分が静的ステージでは実行可能でない可能性があることです。
+    上記の[pe_aexp]が残留[aexp]を返し、[pe_bexp]が残留[bexp]を返すように、コマンドを部分評価すると残留コマンドとなります。
+ 
+    部分評価器が完全評価器と似ている別の点は、すべてのコマンドに対して停止するとは限らないということです。
     すべてのコマンドに対して停止する部分評価器を構築することは難しくはありません。
-    難しいのは、すべてのコマンドに対して停止し、かつ、
-    ループの展開のような最適化を自動的に行う部分評価器を構築することです。
-    しばしば、ソースプログラムの書き方を変えて、
-    静的情報と動的情報の区別をより明確にしてやることで、
-    部分評価器がより多くの場合に停止し、
-    より良い最適化をしてくれるように誘導することができます。
-    そのような誘導は「束縛時改良術」(the art of _binding-time improvement_)です。
-    変数の束縛の時が、その値が「静的」("static")か「動的」("dynamic")かがわかる時です。
-
-    とにかく、今のところは、対象とする部分評価器は、
-    ソースコマンドと初期部分状態から残留コマンドと最終部分状態への全関数ではない、
-    という事実を受け入れておきます。
+    難しいのは、すべてのコマンドに対して停止し、かつ、ループの展開のような最適化を自動的に行う部分評価器を構築することです。
+    しばしば、ソースプログラムの書き方を変えて、静的情報と動的情報の区別をより明確にしてやることで、部分評価器がより多くの場合に停止し、より良い最適化をしてくれるように誘導することができます。
+    そのような誘導は「束縛時改良術(the art of _binding-time improvement_)」です。
+    変数を束縛するタイミングが、その値がいつわかるかを表します。
+    「静的("static")」にか「動的("dynamic")」にか、です。
+ 
+    とにかく、今のところは、対象とする部分評価器は、ソースコマンドと初期部分状態から残留コマンドと最終部分状態への全関数ではない、という事実を受け入れておきます。
     この非停止性をモデル化するため、コマンドの完全評価と同様、帰納的に定義された関係を使います。
     次の記述:
 [[
-        c1 / st || c1' / st'
+      c1 / st \\ c1' / st' 
 ]]
     は、
     ソースコマンド[c1]を初期部分状態[st]のもとで部分評価すると、
     残留コマンド[c1']と最終部分状態[st']になることを意味します。
     例えば、次のようなことが成立することを期待するでしょう:
 [[
-        (X ::= ANum 3 ; Y ::= AMult (AId Z) (APlus (AId X) (AId X)))
-        / [] || (Y ::= AMult (AId Z) (ANum 6)) / [(X,3)]
+      (X ::= ANum 3 ;; Y ::= AMult (AId Z) (APlus (AId X) (AId X))) 
+      / [] \\ (Y ::= AMult (AId Z) (ANum 6)) / [(X,3)] 
 ]]
     [X]への代入は残留コマンドではなく、最終部分状態に現れます。 *)
 
+(* ================================================================= *)
 (*
 (** ** Assignment *)
 *)
@@ -632,7 +658,7 @@ Qed.
     not simplify to a constant, so we should leave it in the residual
     code and remove [Y], if present, from our partial state.  To
     implement these two cases, we define the functions [pe_add] and
-    [pe_remove].  Like [pe_override] above, these functions operate on
+    [pe_remove].  Like [pe_update] above, these functions operate on
     a concrete [list] representing a [pe_state], but the theorems
     [pe_add_correct] and [pe_remove_correct] specify their behavior by
     the [pe_lookup] interpretation of the [pe_state]. *)
@@ -647,7 +673,7 @@ Qed.
     右辺は定数に単純化されることはありません。これから、この代入は残留コードに残され、
     [Y]がもし部分状態に存在していたなら、その[Y]が除去されます。
     この2つの場合を実装するために、関数[pe_add]と[pe_remove]を定義します。
-    上述の[pe_override]のように、
+    上述の[pe_update]のように、
     これらの関数は[pe_state]を表現する具体的な[list]を操作しますが、
     定理[pe_add_correct]と[pe_remove_correct]はこれらの関数のふるまいを
     [pe_state]の[pe_lookup]による解釈にもとづいて規定します。 *)
@@ -655,21 +681,22 @@ Qed.
 Fixpoint pe_remove (pe_st:pe_state) (V:id) : pe_state :=
   match pe_st with
   | [] => []
-  | (V',n')::pe_st => if eq_id_dec V V' then pe_remove pe_st V
+  | (V',n')::pe_st => if beq_id V V' then pe_remove pe_st V
                       else (V',n') :: pe_remove pe_st V
   end.
 
 Theorem pe_remove_correct: forall pe_st V V0,
   pe_lookup (pe_remove pe_st V) V0
-  = if eq_id_dec V V0 then None else pe_lookup pe_st V0.
+  = if beq_id V V0 then None else pe_lookup pe_st V0.
 Proof. intros pe_st V V0. induction pe_st as [| [V' n'] pe_st].
-  Case "[]". destruct (eq_id_dec V V0); reflexivity.
-  Case "::". simpl. compare V V' SCase.
-    SCase "equal". rewrite IHpe_st.
-      destruct (eq_id_dec V V0).  reflexivity.  rewrite neq_id; auto. 
-    SCase "not equal". simpl. compare V0 V' SSCase.
-      SSCase "equal". rewrite neq_id; auto. 
-      SSCase "not equal". rewrite IHpe_st. reflexivity.
+  - (* [] *) destruct (beq_id V V0); reflexivity.
+  - (* :: *) simpl. compare V V'.
+    + (* equal *) rewrite IHpe_st.
+      destruct (beq_idP V V0).  reflexivity.  
+      rewrite false_beq_id; auto.
+    + (* not equal *) simpl. compare V0 V'.
+      * (* equal *) rewrite false_beq_id; auto.
+      * (* not equal *) rewrite IHpe_st. reflexivity.
 Qed.
 
 Definition pe_add (pe_st:pe_state) (V:id) (n:nat) : pe_state :=
@@ -677,11 +704,12 @@ Definition pe_add (pe_st:pe_state) (V:id) (n:nat) : pe_state :=
 
 Theorem pe_add_correct: forall pe_st V n V0,
   pe_lookup (pe_add pe_st V n) V0
-  = if eq_id_dec V V0 then Some n else pe_lookup pe_st V0.
-Proof. intros pe_st V n V0. unfold pe_add. simpl. 
-  compare V V0 Case.
-  Case "equal". rewrite eq_id; auto. 
-  Case "not equal". rewrite pe_remove_correct. repeat rewrite neq_id; auto. 
+  = if beq_id V V0 then Some n else pe_lookup pe_st V0.
+Proof. intros pe_st V n V0. unfold pe_add. simpl.
+  compare V V0.
+  - (* equal *) rewrite <- beq_id_refl; auto.
+  - (* not equal *) rewrite pe_remove_correct. 
+    repeat rewrite false_beq_id; auto.
 Qed.
 
 (*
@@ -692,20 +720,22 @@ Qed.
 (** 以下の2つ定理は、
     定義する部分評価器が動的代入と静的代入をそれぞれ正しく扱うことを示すのに使われます。 *)
 
-Theorem pe_override_update_remove: forall st pe_st V n,
-  update (pe_override st pe_st) V n =
-  pe_override (update st V n) (pe_remove pe_st V).
-Proof. intros st pe_st V n. apply functional_extensionality. intros V0.
-  unfold update. rewrite !pe_override_correct. rewrite pe_remove_correct.
-  destruct (eq_id_dec V V0); reflexivity. Qed.
+Theorem pe_update_update_remove: forall st pe_st V n,
+  t_update (pe_update st pe_st) V n =
+  pe_update (t_update st V n) (pe_remove pe_st V).
+Proof. intros st pe_st V n. apply functional_extensionality. 
+  intros V0. unfold t_update. rewrite !pe_update_correct.
+  rewrite pe_remove_correct. destruct (beq_id V V0); reflexivity.
+  Qed.
 
-Theorem pe_override_update_add: forall st pe_st V n,
-  update (pe_override st pe_st) V n =
-  pe_override st (pe_add pe_st V n).
+Theorem pe_update_update_add: forall st pe_st V n,
+  t_update (pe_update st pe_st) V n =
+  pe_update st (pe_add pe_st V n).
 Proof. intros st pe_st V n. apply functional_extensionality. intros V0.
-  unfold update. rewrite !pe_override_correct. rewrite pe_add_correct.
-  destruct (eq_id_dec V V0); reflexivity. Qed.
+  unfold t_update. rewrite !pe_update_correct. rewrite pe_add_correct.
+  destruct (beq_id V V0); reflexivity. Qed.
 
+(* ================================================================= *)
 (*
 (** ** Conditional *)
 *)
@@ -720,11 +750,13 @@ Proof. intros st pe_st V n. apply functional_extensionality. intros V0.
     partial state may differ between the two branches!
 
     The following program illustrates the difficulty:
-        X ::= ANum 3;;
-        IFB BLe (AId Y) (ANum 4) THEN
-            Y ::= ANum 4;;
-            IFB BEq (AId X) (AId Y) THEN Y ::= ANum 999 ELSE SKIP FI
-        ELSE SKIP FI
+
+      X ::= ANum 3;;
+      IFB BLe (AId Y) (ANum 4) THEN
+          Y ::= ANum 4;;
+          IFB BEq (AId X) (AId Y) THEN Y ::= ANum 999 ELSE SKIP FI
+      ELSE SKIP FI
+
     Suppose the initial partial state is empty.  We don't know
     statically how [Y] compares to [4], so we must partially evaluate
     both branches of the (outer) conditional.  On the [THEN] branch,
@@ -740,12 +772,13 @@ Proof. intros st pe_st V n. apply functional_extensionality. intros V0.
     compensate for forgetting that [Y] is [4], we need to add an
     assignment [Y ::= ANum 4] to the end of the [THEN] branch.  So,
     the residual program will be something like
-        SKIP;;
-        IFB BLe (AId Y) (ANum 4) THEN
-            SKIP;;
-            SKIP;;
-            Y ::= ANum 4
-        ELSE SKIP FI
+
+      SKIP;;
+      IFB BLe (AId Y) (ANum 4) THEN
+          SKIP;;
+          SKIP;;
+          Y ::= ANum 4
+      ELSE SKIP FI
 
     Programming this case in Coq calls for several auxiliary
     functions: we need to compute the intersection of two [pe_state]s
@@ -756,51 +789,45 @@ Proof. intros st pe_st V n. apply functional_extensionality. intros V0.
     prove that two [pe_state]s can only disagree at variables that
     appear in at least one of them. *)
 *)
-(** 部分評価について代入よりトリッキーなのは条件分岐 [IFB b1 THEN c1 ELSE c2 FI]
-    です。もし[b1]が[BTrue]または[BFalse]に単純化されるならば、簡単です。
-    どちらの選択肢が選ばれるか分かっているのですから、その選択肢を考えるだけです。
+(** 部分評価について代入よりトリッキーなのは条件分岐 [IFB b1 THEN c1 ELSE c2 FI] です。
+    もし[b1]が[BTrue]または[BFalse]に単純化されるならば、簡単です。
+    どちらの選択肢が選ばれるか分かっているのですから、その選択肢を残すだけです。
     もし[b1]が定数に単純化されないならば、両方の選択肢を考える必要があります。
     そして、最終部分状態は2つの選択肢で違うかもしれません!
-
+ 
     次のプログラムは、問題の難しさを表します:
 [[
-        X ::= ANum 3;;
-        IFB BLe (AId Y) (ANum 4) THEN
-            Y ::= ANum 4;;
-            IFB BEq (AId X) (AId Y) THEN Y ::= ANum 999 ELSE SKIP FI
-        ELSE SKIP FI
+      X ::= ANum 3;; 
+      IFB BLe (AId Y) (ANum 4) THEN 
+          Y ::= ANum 4;; 
+          IFB BEq (AId X) (AId Y) THEN Y ::= ANum 999 ELSE SKIP FI 
+      ELSE SKIP FI 
 ]]
-    初期部分状態が空とします。静的に[Y]を[4]と比較する方法を知りません。
-    これから、(外側の)条件分岐の両方の選択肢を部分評価しなければなりません。
+    初期部分状態が空とします。
+    静的に[Y]を[4]と比較する方法はありませんから、（外側の）条件分岐の両方の選択肢を部分評価しなければなりません。
     [THEN]の側では、[Y]が[4]になり、コードを単純化する知識をいくらか使うことができるでしょう。
     [ELSE]の側では最後の段階で未だに[Y]の値が確定しません。
     最終部分状態と残留プログラムはどうなるべきでしょうか？
-
-    このような動的条件分岐を扱う一つの方法は、
-    2つの選択肢の最終部分状態の共通部分をとるというものです。
+ 
+    このような動的条件分岐を扱う一つの方法は、2つの選択肢の最終部分状態の共通部分をとるというものです。
     この例では、[(Y,4),(X,3)] と [(X,3)] の共通部分をとります。
     従って、全体の最終部分状態は [(X,3)] です。
-    [Y]が[4]であるという情報を失なった代償として、[THEN]選択肢の最後に代入
-    [Y ::= ANum 4] を追加する必要があります。
+    [Y]が[4]であるという情報を失なった代償として、[THEN]選択肢の最後に代入 [Y ::= ANum 4] を追加する必要があります。
     結局、残留プログラムは次のようなものになります:
 [[
-        SKIP;;
-        IFB BLe (AId Y) (ANum 4) THEN
-            SKIP;;
-            SKIP;;
-            Y ::= ANum 4
-        ELSE SKIP FI
+      SKIP;; 
+      IFB BLe (AId Y) (ANum 4) THEN 
+          SKIP;; 
+          SKIP;; 
+          Y ::= ANum 4 
+      ELSE SKIP FI 
 ]]
-
     Coqでこの場合をプログラミングするには、いくつものさらなる関数が必要です。
     2つの[pe_state]の共通部分を計算する必要があります。
     また、2つの[pe_state]の違いを代入に変換する必要もあります。
-
-    最初に、
-    2つの[pe_state]が特定の変数について不一致かどうかを計算する方法を示します。
-    定理[pe_disagree_domain]において、
-    2つの[pe_state]が変数について不一致になるのは、
-    少なくとも一方にその変数が現れるときだけであることを証明します。 *)
+ 
+    最初に、2つの[pe_state]が特定の変数について不一致かどうかを計算する方法を示します。
+    定理[pe_disagree_domain]において、2つの[pe_state]が変数について不一致になるのは、少なくとも一方にその変数が現れるときだけであることを証明します。 *)
 
 Definition pe_disagree_at (pe_st1 pe_st2 : pe_state) (V:id) : bool :=
   match pe_lookup pe_st1 V, pe_lookup pe_st2 V with
@@ -809,12 +836,11 @@ Definition pe_disagree_at (pe_st1 pe_st2 : pe_state) (V:id) : bool :=
   | _, _ => true
   end.
 
-
 Theorem pe_disagree_domain: forall (pe_st1 pe_st2 : pe_state) (V:id),
   true = pe_disagree_at pe_st1 pe_st2 V ->
   In V (map (@fst _ _) pe_st1 ++ map (@fst _ _) pe_st2).
 Proof. unfold pe_disagree_at. intros pe_st1 pe_st2 V H.
-  apply in_or_app.
+  apply in_app_iff.
   remember (pe_lookup pe_st1 V) as lookup1.
   destruct lookup1 as [n1|]. left.  apply pe_domain with n1. auto.
   remember (pe_lookup pe_st2 V) as lookup2.
@@ -830,31 +856,30 @@ Proof. unfold pe_disagree_at. intros pe_st1 pe_st2 V H.
     eliminate duplicates from the list. *)
 *)
 (** 2つの与えられた[pe_state]の不一致の変数をリストアップする関数[pe_compare]を定義します。
-    このリストはまさに、定理[pe_compare_correct]に従うならば、
-    このリストにある変数が現れることと、
-    与えられた2つの[pe_state]がその変数で不一致であることが同値である、というものです。
+    このリストはまさに、定理[pe_compare_correct]に従うならば、このリストにある変数が現れることと、与えられた2つの[pe_state]がその変数で不一致であることが同値である、というものです。
     さらに、リストから重複を除去するために[pe_unique]関数を使います。 *)
 
 Fixpoint pe_unique (l : list id) : list id :=
   match l with
   | [] => []
-  | x::l => x :: filter (fun y => if eq_id_dec x y then false else true) (pe_unique l)
+  | x::l =>
+      x :: filter (fun y => if beq_id x y then false else true) (pe_unique l)
   end.
 
 Theorem pe_unique_correct: forall l x,
   In x l <-> In x (pe_unique l).
 Proof. intros l x. induction l as [| h t]. reflexivity.
-  simpl in *. split. 
-  Case "->". 
-    intros. inversion H; clear H. 
-      left. assumption. 
-      destruct (eq_id_dec h x). 
+  simpl in *. split.
+  - (* -> *)
+    intros. inversion H; clear H.
+      left. assumption.
+      destruct (beq_idP h x).
          left.  assumption.
-         right.  apply filter_In. split. 
+         right.  apply filter_In. split.
            apply IHt. assumption.
-           rewrite neq_id; auto. 
-  Case "<-". 
-    intros. inversion H; clear H. 
+           rewrite false_beq_id; auto.
+  - (* <- *)
+    intros. inversion H; clear H.
        left. assumption.
        apply filter_In in H0.  inversion H0. right. apply IHt. assumption.
 Qed.
@@ -869,22 +894,22 @@ Theorem pe_compare_correct: forall pe_st1 pe_st2 V,
 Proof. intros pe_st1 pe_st2 V.
   unfold pe_compare. rewrite <- pe_unique_correct. rewrite filter_In.
   split; intros Heq.
-  Case "->".
+  - (* -> *)
     intro. destruct H. unfold pe_disagree_at in H0. rewrite Heq in H0.
     destruct (pe_lookup pe_st2 V).
-    rewrite <- beq_nat_refl in H0. inversion H0. 
-    inversion H0. 
-  Case "<-".
+    rewrite <- beq_nat_refl in H0. inversion H0.
+    inversion H0.
+  - (* <- *)
     assert (Hagree: pe_disagree_at pe_st1 pe_st2 V = false).
-      SCase "Proof of assertion".
+    { (* Proof of assertion *)
       remember (pe_disagree_at pe_st1 pe_st2 V) as disagree.
       destruct disagree; [| reflexivity].
       apply  pe_disagree_domain in Heqdisagree.
-      apply ex_falso_quodlibet. apply Heq. split. assumption. reflexivity.
+      exfalso. apply Heq. split. assumption. reflexivity. }
     unfold pe_disagree_at in Hagree.
     destruct (pe_lookup pe_st1 V) as [n1|];
     destruct (pe_lookup pe_st2 V) as [n2|];
-      try reflexivity; try solve by inversion.
+      try reflexivity; try solve_by_invert.
     rewrite negb_false_iff in Hagree.
     apply beq_nat_true in Hagree. subst. reflexivity. Qed.
 
@@ -897,21 +922,21 @@ Proof. intros pe_st1 pe_st2 V.
     The theorem [pe_compare_removes] testifies that the [pe_lookup]
     interpretation of the result of this intersection operation is the
     same no matter which of the two partial states we remove the
-    variables from.  Because [pe_override] only depends on the
-    [pe_lookup] interpretation of partial states, [pe_override] also
+    variables from.  Because [pe_update] only depends on the
+    [pe_lookup] interpretation of partial states, [pe_update] also
     does not care which of the two partial states we remove the
-    variables from; that theorem [pe_compare_override] is used in the
+    variables from; that theorem [pe_compare_update] is used in the
     correctness proof shortly. *)
 *)
 (** 2つの部分状態の共通部分は、どちらか一方から、不一致の変数のすべてを除去したものです。
     このような変数のリスト全体の除去を一度に行う関数[pe_removes]を、
     上述の[pe_remove]を使って定義します。
-
+ 
     定理[pe_compare_removes]は、
     共通部分をとる操作の結果の[pe_lookup]による解釈が、
     変数を除去する元として2つの部分状態のどちらを使っても同じであることを述べます。
-    [pe_override]は部分状態の[pe_lookup]による解釈だけに依存していることから、
-    [pe_override]もまた2つの部分状態のどちらから変数を除去するかに関係ないことが言えます。
+    [pe_update]は部分状態の[pe_lookup]による解釈だけに依存していることから、
+    [pe_update]もまた2つの部分状態のどちらから変数を除去するかに関係ないことが言えます。
     定理[pe_compare_override]は正しさの証明の中で簡単に使われます。 *)
 
 Fixpoint pe_removes (pe_st:pe_state) (ids : list id) : pe_state :=
@@ -922,28 +947,28 @@ Fixpoint pe_removes (pe_st:pe_state) (ids : list id) : pe_state :=
 
 Theorem pe_removes_correct: forall pe_st ids V,
   pe_lookup (pe_removes pe_st ids) V =
-  if in_dec eq_id_dec V ids then None else pe_lookup pe_st V.
+  if inb beq_id V ids then None else pe_lookup pe_st V.
 Proof. intros pe_st ids V. induction ids as [| V' ids]. reflexivity.
   simpl. rewrite pe_remove_correct. rewrite IHids.
-  compare V' V Case. 
-    reflexivity. 
-    destruct (in_dec eq_id_dec V ids);  
-      reflexivity.
+  compare V' V.
+  - rewrite <- beq_id_refl. reflexivity.
+  - rewrite false_beq_id; try congruence. reflexivity.
 Qed.
 
 Theorem pe_compare_removes: forall pe_st1 pe_st2 V,
   pe_lookup (pe_removes pe_st1 (pe_compare pe_st1 pe_st2)) V =
   pe_lookup (pe_removes pe_st2 (pe_compare pe_st1 pe_st2)) V.
-Proof. intros pe_st1 pe_st2 V. rewrite !pe_removes_correct.
-  destruct (in_dec eq_id_dec V (pe_compare pe_st1 pe_st2)).
-    reflexivity.
-    apply pe_compare_correct. auto. Qed.
+Proof.
+  intros pe_st1 pe_st2 V. rewrite !pe_removes_correct.
+  destruct (inbP _ _ beq_idP V (pe_compare pe_st1 pe_st2)).
+  - reflexivity.
+  - apply pe_compare_correct. auto. Qed.
 
-Theorem pe_compare_override: forall pe_st1 pe_st2 st,
-  pe_override st (pe_removes pe_st1 (pe_compare pe_st1 pe_st2)) =
-  pe_override st (pe_removes pe_st2 (pe_compare pe_st1 pe_st2)).
+Theorem pe_compare_update: forall pe_st1 pe_st2 st,
+  pe_update st (pe_removes pe_st1 (pe_compare pe_st1 pe_st2)) =
+  pe_update st (pe_removes pe_st2 (pe_compare pe_st1 pe_st2)).
 Proof. intros. apply functional_extensionality. intros V.
-  rewrite !pe_override_correct. rewrite pe_compare_removes. reflexivity.
+  rewrite !pe_update_correct. rewrite pe_compare_removes. reflexivity.
 Qed.
 
 (*
@@ -980,7 +1005,7 @@ Fixpoint assign (pe_st : pe_state) (ids : list id) : com :=
     生成された代入の列が部分状態からの変数の除去を完全に補償することを保証します。 *)
 
 Definition assigned (pe_st:pe_state) (ids : list id) (st:state) : state :=
-  fun V => if in_dec eq_id_dec V ids then
+  fun V => if inb beq_id V ids then
                 match pe_lookup pe_st V with
                 | Some n => n
                 | None => st V
@@ -988,35 +1013,38 @@ Definition assigned (pe_st:pe_state) (ids : list id) (st:state) : state :=
            else st V.
 
 Theorem assign_removes: forall pe_st ids st,
-  pe_override st pe_st =
-  pe_override (assigned pe_st ids st) (pe_removes pe_st ids).
+  pe_update st pe_st =
+  pe_update (assigned pe_st ids st) (pe_removes pe_st ids).
 Proof. intros pe_st ids st. apply functional_extensionality. intros V.
-  rewrite !pe_override_correct. rewrite pe_removes_correct. unfold assigned.
-  destruct (in_dec eq_id_dec V ids); destruct (pe_lookup pe_st V); reflexivity.
+  rewrite !pe_update_correct. rewrite pe_removes_correct. unfold assigned.
+  destruct (inbP _ _ beq_idP V ids); destruct (pe_lookup pe_st V); reflexivity.
 Qed.
 
 Lemma ceval_extensionality: forall c st st1 st2,
-  c / st || st1 -> (forall V, st1 V = st2 V) -> c / st || st2.
+  c / st \\ st1 -> (forall V, st1 V = st2 V) -> c / st \\ st2.
 Proof. intros c st st1 st2 H Heq.
   apply functional_extensionality in Heq. rewrite <- Heq. apply H. Qed.
 
 Theorem eval_assign: forall pe_st ids st,
-  assign pe_st ids / st || assigned pe_st ids st.
+  assign pe_st ids / st \\ assigned pe_st ids st.
 Proof. intros pe_st ids st. induction ids as [| V ids]; simpl.
-  Case "[]". eapply ceval_extensionality. apply E_Skip. reflexivity.
-  Case "V::ids".
+  - (* [] *) eapply ceval_extensionality. apply E_Skip. reflexivity.
+  - (* V::ids *)
     remember (pe_lookup pe_st V) as lookup. destruct lookup.
-    SCase "Some". eapply E_Seq. apply IHids. unfold assigned. simpl.
+    + (* Some *) eapply E_Seq. apply IHids. unfold assigned. simpl.
       eapply ceval_extensionality. apply E_Ass. simpl. reflexivity.
-      intros V0. unfold update.  compare V V0 SSCase.
-      SSCase "equal". rewrite <- Heqlookup. reflexivity. 
-      SSCase "not equal". destruct (in_dec eq_id_dec V0 ids); auto.  
-    SCase "None". eapply ceval_extensionality. apply IHids.
-      unfold assigned. intros V0. simpl. compare V V0 SSCase.
-      SSCase "equal". rewrite <- Heqlookup. 
-        destruct (in_dec eq_id_dec V ids); reflexivity.
-      SSCase "not equal". destruct (in_dec eq_id_dec V0 ids); reflexivity. Qed.
+      intros V0. unfold t_update.  compare V V0.
+      * (* equal *) rewrite <- Heqlookup. rewrite <- beq_id_refl. reflexivity.
+      * (* not equal *) rewrite false_beq_id; simpl; congruence.
+    + (* None *) eapply ceval_extensionality. apply IHids.
+      unfold assigned. intros V0. simpl. compare V V0.
+      * (* equal *) rewrite <- Heqlookup.
+        rewrite <- beq_id_refl.
+        destruct (inbP _ _ beq_idP V ids); reflexivity.
+      * (* not equal *) rewrite false_beq_id; simpl; congruence.
+Qed.
 
+(* ================================================================= *)
 (*
 (** ** The Partial Evaluation Relation *)
 *)
@@ -1030,58 +1058,52 @@ Proof. intros pe_st ids st. induction ids as [| V ids]; simpl.
     correctness. *)
 *)
 (** 遂に、ループ以外のコマンドに対する部分評価器を、帰納的関係として定義することができます!
-    [PE_AssDynamic]と[PE_If]における非等号([<>])条件は、
+    [PE_AssDynamic]と[PE_If]における非等号（[<>]）条件は、
     部分評価器に決定性を持たせるためのものです。
-    これらは正しさのためには必要ありません。 *)
+    これらは正当性には必要ありません。 *)
 
-Reserved Notation "c1 '/' st '||' c1' '/' st'"
+Reserved Notation "c1 '/' st '\\' c1' '/' st'"
   (at level 40, st at level 39, c1' at level 39).
 
 Inductive pe_com : com -> pe_state -> com -> pe_state -> Prop :=
   | PE_Skip : forall pe_st,
-      SKIP / pe_st || SKIP / pe_st
+      SKIP / pe_st \\ SKIP / pe_st
   | PE_AssStatic : forall pe_st a1 n1 l,
       pe_aexp pe_st a1 = ANum n1 ->
-      (l ::= a1) / pe_st || SKIP / pe_add pe_st l n1
+      (l ::= a1) / pe_st \\ SKIP / pe_add pe_st l n1
   | PE_AssDynamic : forall pe_st a1 a1' l,
       pe_aexp pe_st a1 = a1' ->
       (forall n, a1' <> ANum n) ->
-      (l ::= a1) / pe_st || (l ::= a1') / pe_remove pe_st l
+      (l ::= a1) / pe_st \\ (l ::= a1') / pe_remove pe_st l
   | PE_Seq : forall pe_st pe_st' pe_st'' c1 c2 c1' c2',
-      c1 / pe_st  || c1' / pe_st' ->
-      c2 / pe_st' || c2' / pe_st'' ->
-      (c1 ;; c2) / pe_st || (c1' ;; c2') / pe_st''
+      c1 / pe_st  \\ c1' / pe_st' ->
+      c2 / pe_st' \\ c2' / pe_st'' ->
+      (c1 ;; c2) / pe_st \\ (c1' ;; c2') / pe_st''
   | PE_IfTrue : forall pe_st pe_st' b1 c1 c2 c1',
       pe_bexp pe_st b1 = BTrue ->
-      c1 / pe_st || c1' / pe_st' ->
-      (IFB b1 THEN c1 ELSE c2 FI) / pe_st || c1' / pe_st'
+      c1 / pe_st \\ c1' / pe_st' ->
+      (IFB b1 THEN c1 ELSE c2 FI) / pe_st \\ c1' / pe_st'
   | PE_IfFalse : forall pe_st pe_st' b1 c1 c2 c2',
       pe_bexp pe_st b1 = BFalse ->
-      c2 / pe_st || c2' / pe_st' ->
-      (IFB b1 THEN c1 ELSE c2 FI) / pe_st || c2' / pe_st'
+      c2 / pe_st \\ c2' / pe_st' ->
+      (IFB b1 THEN c1 ELSE c2 FI) / pe_st \\ c2' / pe_st'
   | PE_If : forall pe_st pe_st1 pe_st2 b1 c1 c2 c1' c2',
       pe_bexp pe_st b1 <> BTrue ->
       pe_bexp pe_st b1 <> BFalse ->
-      c1 / pe_st || c1' / pe_st1 ->
-      c2 / pe_st || c2' / pe_st2 ->
+      c1 / pe_st \\ c1' / pe_st1 ->
+      c2 / pe_st \\ c2' / pe_st2 ->
       (IFB b1 THEN c1 ELSE c2 FI) / pe_st
-        || (IFB pe_bexp pe_st b1
+        \\ (IFB pe_bexp pe_st b1
              THEN c1' ;; assign pe_st1 (pe_compare pe_st1 pe_st2)
              ELSE c2' ;; assign pe_st2 (pe_compare pe_st1 pe_st2) FI)
             / pe_removes pe_st1 (pe_compare pe_st1 pe_st2)
 
-  where "c1 '/' st '||' c1' '/' st'" := (pe_com c1 st c1' st').
-
-Tactic Notation "pe_com_cases" tactic(first) ident(c) :=
-  first;
-  [ Case_aux c "PE_Skip"
-  | Case_aux c "PE_AssStatic" | Case_aux c "PE_AssDynamic"
-  | Case_aux c "PE_Seq"
-  | Case_aux c "PE_IfTrue" | Case_aux c "PE_IfFalse" | Case_aux c "PE_If" ].
+  where "c1 '/' st '\\' c1' '/' st'" := (pe_com c1 st c1' st').
 
 Hint Constructors pe_com.
 Hint Constructors ceval.
 
+(* ================================================================= *)
 (*
 (** ** Examples *)
 *)
@@ -1100,13 +1122,13 @@ Hint Constructors ceval.
 
 Example pe_example1:
   (X ::= ANum 3 ;; Y ::= AMult (AId Z) (APlus (AId X) (AId X)))
-  / [] || (SKIP;; Y ::= AMult (AId Z) (ANum 6)) / [(X,3)].
+  / [] \\ (SKIP;; Y ::= AMult (AId Z) (ANum 6)) / [(X,3)].
 Proof. eapply PE_Seq. eapply PE_AssStatic. reflexivity.
   eapply PE_AssDynamic. reflexivity. intros n H. inversion H. Qed.
 
 Example pe_example2:
   (X ::= ANum 3 ;; IFB BLe (AId X) (ANum 4) THEN X ::= ANum 4 ELSE SKIP FI)
-  / [] || (SKIP;; SKIP) / [(X,4)].
+  / [] \\ (SKIP;; SKIP) / [(X,4)].
 Proof. eapply PE_Seq. eapply PE_AssStatic. reflexivity.
   eapply PE_IfTrue. reflexivity.
   eapply PE_AssStatic. reflexivity. Qed.
@@ -1117,18 +1139,19 @@ Example pe_example3:
      Y ::= ANum 4;;
      IFB BEq (AId X) (AId Y) THEN Y ::= ANum 999 ELSE SKIP FI
    ELSE SKIP FI) / []
-  || (SKIP;;
+  \\ (SKIP;;
        IFB BLe (AId Y) (ANum 4) THEN
          (SKIP;; SKIP);; (SKIP;; Y ::= ANum 4)
        ELSE SKIP;; SKIP FI)
       / [(X,3)].
-Proof. erewrite f_equal2 with (f := fun c st => _ / _ || c / st).
+Proof. erewrite f_equal2 with (f := fun c st => _ / _ \\ c / st).
   eapply PE_Seq. eapply PE_AssStatic. reflexivity.
-  eapply PE_If; intuition eauto; try solve by inversion.
+  eapply PE_If; intuition eauto; try solve_by_invert.
   econstructor. eapply PE_AssStatic. reflexivity.
   eapply PE_IfFalse. reflexivity. econstructor.
   reflexivity. reflexivity. Qed.
 
+(* ================================================================= *)
 (*
 (** ** Correctness of Partial Evaluation *)
 *)
@@ -1139,78 +1162,78 @@ Proof. erewrite f_equal2 with (f := fun c st => _ / _ || c / st).
 *)
 (** 最後に、定義した部分評価器が正しいことを証明しましょう! *)
 
-Reserved Notation "c' '/' pe_st' '/' st '||' st''"
+Reserved Notation "c' '/' pe_st' '/' st '\\' st''"
   (at level 40, pe_st' at level 39, st at level 39).
 
 Inductive pe_ceval
   (c':com) (pe_st':pe_state) (st:state) (st'':state) : Prop :=
   | pe_ceval_intro : forall st',
-    c' / st || st' ->
-    pe_override st' pe_st' = st'' ->
-    c' / pe_st' / st || st''
-  where "c' '/' pe_st' '/' st '||' st''" := (pe_ceval c' pe_st' st st'').
+    c' / st \\ st' ->
+    pe_update st' pe_st' = st'' ->
+    c' / pe_st' / st \\ st''
+  where "c' '/' pe_st' '/' st '\\' st''" := (pe_ceval c' pe_st' st st'').
 
 Hint Constructors pe_ceval.
 
 Theorem pe_com_complete:
-  forall c pe_st pe_st' c', c / pe_st || c' / pe_st' ->
+  forall c pe_st pe_st' c', c / pe_st \\ c' / pe_st' ->
   forall st st'',
-  (c / pe_override st pe_st || st'') ->
-  (c' / pe_st' / st || st'').
+  (c / pe_update st pe_st \\ st'') ->
+  (c' / pe_st' / st \\ st'').
 Proof. intros c pe_st pe_st' c' Hpe.
-  pe_com_cases (induction Hpe) Case; intros st st'' Heval;
+  induction Hpe; intros st st'' Heval;
   try (inversion Heval; subst;
-       try (rewrite -> pe_bexp_correct, -> H in *; solve by inversion);
+       try (rewrite -> pe_bexp_correct, -> H in *; solve_by_invert);
        []);
   eauto.
-  Case "PE_AssStatic". econstructor. econstructor.
-    rewrite -> pe_aexp_correct. rewrite <- pe_override_update_add.
+  - (* PE_AssStatic *) econstructor. econstructor.
+    rewrite -> pe_aexp_correct. rewrite <- pe_update_update_add.
     rewrite -> H. reflexivity.
-  Case "PE_AssDynamic". econstructor. econstructor. reflexivity.
-    rewrite -> pe_aexp_correct. rewrite <- pe_override_update_remove.
+  - (* PE_AssDynamic *) econstructor. econstructor. reflexivity.
+    rewrite -> pe_aexp_correct. rewrite <- pe_update_update_remove.
     reflexivity.
-  Case "PE_Seq".
+  - (* PE_Seq *)
     edestruct IHHpe1. eassumption. subst.
     edestruct IHHpe2. eassumption.
     eauto.
-  Case "PE_If". inversion Heval; subst.
-    SCase "E'IfTrue". edestruct IHHpe1. eassumption.
+  - (* PE_If *) inversion Heval; subst.
+    + (* E'IfTrue *) edestruct IHHpe1. eassumption.
       econstructor. apply E_IfTrue. rewrite <- pe_bexp_correct. assumption.
       eapply E_Seq. eassumption. apply eval_assign.
       rewrite <- assign_removes. eassumption.
-    SCase "E_IfFalse". edestruct IHHpe2. eassumption.
+    + (* E_IfFalse *) edestruct IHHpe2. eassumption.
       econstructor. apply E_IfFalse. rewrite <- pe_bexp_correct. assumption.
       eapply E_Seq. eassumption. apply eval_assign.
-      rewrite -> pe_compare_override.
+      rewrite -> pe_compare_update.
       rewrite <- assign_removes. eassumption.
 Qed.
 
 Theorem pe_com_sound:
-  forall c pe_st pe_st' c', c / pe_st || c' / pe_st' ->
+  forall c pe_st pe_st' c', c / pe_st \\ c' / pe_st' ->
   forall st st'',
-  (c' / pe_st' / st || st'') ->
-  (c / pe_override st pe_st || st'').
+  (c' / pe_st' / st \\ st'') ->
+  (c / pe_update st pe_st \\ st'').
 Proof. intros c pe_st pe_st' c' Hpe.
-  pe_com_cases (induction Hpe) Case;
+  induction Hpe;
     intros st st'' [st' Heval Heq];
     try (inversion Heval; []; subst); auto.
-  Case "PE_AssStatic". rewrite <- pe_override_update_add. apply E_Ass.
+  - (* PE_AssStatic *) rewrite <- pe_update_update_add. apply E_Ass.
     rewrite -> pe_aexp_correct. rewrite -> H. reflexivity.
-  Case "PE_AssDynamic". rewrite <- pe_override_update_remove. apply E_Ass.
+  - (* PE_AssDynamic *) rewrite <- pe_update_update_remove. apply E_Ass.
     rewrite <- pe_aexp_correct. reflexivity.
-  Case "PE_Seq". eapply E_Seq; eauto.
-  Case "PE_IfTrue". apply E_IfTrue.
+  - (* PE_Seq *) eapply E_Seq; eauto.
+  - (* PE_IfTrue *) apply E_IfTrue.
     rewrite -> pe_bexp_correct. rewrite -> H. reflexivity. eauto.
-  Case "PE_IfFalse". apply E_IfFalse.
+  - (* PE_IfFalse *) apply E_IfFalse.
     rewrite -> pe_bexp_correct. rewrite -> H. reflexivity. eauto.
-  Case "PE_If".
+  - (* PE_If *)
     inversion Heval; subst; inversion H7;
       (eapply ceval_deterministic in H8; [| apply eval_assign]); subst.
-    SCase "E_IfTrue".
+    + (* E_IfTrue *)
       apply E_IfTrue. rewrite -> pe_bexp_correct. assumption.
       rewrite <- assign_removes. eauto.
-    SCase "E_IfFalse".
-      rewrite -> pe_compare_override.
+    + (* E_IfFalse *)
+      rewrite -> pe_compare_update.
       apply E_IfFalse. rewrite -> pe_bexp_correct. assumption.
       rewrite <- assign_removes. eauto.
 Qed.
@@ -1218,19 +1241,19 @@ Qed.
 (*
 (** The main theorem. Thanks to David Menendez for this formulation! *)
 *)
-(** メインの定理です。この形式化について David Menendez に感謝します! *)
+(** メインの定理です。この言明化について David Menendez に感謝します! *)
 
 Corollary pe_com_correct:
-  forall c pe_st pe_st' c', c / pe_st || c' / pe_st' ->
+  forall c pe_st pe_st' c', c / pe_st \\ c' / pe_st' ->
   forall st st'',
-  (c / pe_override st pe_st || st'') <->
-  (c' / pe_st' / st || st'').
+  (c / pe_update st pe_st \\ st'') <->
+  (c' / pe_st' / st \\ st'').
 Proof. intros c pe_st pe_st' c' H st st''. split.
-  Case "->". apply pe_com_complete. apply H.
-  Case "<-". apply pe_com_sound. apply H.
+  - (* -> *) apply pe_com_complete. apply H.
+  - (* <- *) apply pe_com_sound. apply H.
 Qed.
 
-(* ####################################################### *)
+(* ################################################################# *)
 (*
 (** * Partial Evaluation of Loops *)
 *)
@@ -1241,17 +1264,21 @@ Qed.
     evaluation relation [pe_com] above to loops.  Indeed, many loops
     are easy to deal with.  Considered this repeated-squaring loop,
     for example:
-        WHILE BLe (ANum 1) (AId X) DO
-            Y ::= AMult (AId Y) (AId Y);;
-            X ::= AMinus (AId X) (ANum 1)
-        END
+
+      WHILE BLe (ANum 1) (AId X) DO
+          Y ::= AMult (AId Y) (AId Y);;
+          X ::= AMinus (AId X) (ANum 1)
+      END
+
     If we know neither [X] nor [Y] statically, then the entire loop is
     dynamic and the residual command should be the same.  If we know
     [X] but not [Y], then the loop can be unrolled all the way and the
-    residual command should be
-        Y ::= AMult (AId Y) (AId Y);;
-        Y ::= AMult (AId Y) (AId Y);;
-        Y ::= AMult (AId Y) (AId Y)
+    residual command should be, for example,
+
+      Y ::= AMult (AId Y) (AId Y);;
+      Y ::= AMult (AId Y) (AId Y);;
+      Y ::= AMult (AId Y) (AId Y)
+
     if [X] is initially [3] (and finally [0]).  In general, a loop is
     easy to partially evaluate if the final partial state of the loop
     body is equal to the initial state, or if its guard condition is
@@ -1259,24 +1286,28 @@ Qed.
 
     But there are other loops for which it is hard to express the
     residual program we want in Imp.  For example, take this program
-    for checking if [Y] is even or odd:
-        X ::= ANum 0;;
-        WHILE BLe (ANum 1) (AId Y) DO
-            Y ::= AMinus (AId Y) (ANum 1);;
-            X ::= AMinus (ANum 1) (AId X)
-        END
+    for checking whether [Y] is even or odd:
+
+      X ::= ANum 0;;
+      WHILE BLe (ANum 1) (AId Y) DO
+          Y ::= AMinus (AId Y) (ANum 1);;
+          X ::= AMinus (ANum 1) (AId X)
+      END
+
     The value of [X] alternates between [0] and [1] during the loop.
     Ideally, we would like to unroll this loop, not all the way but
     _two-fold_, into something like
-        WHILE BLe (ANum 1) (AId Y) DO
-            Y ::= AMinus (AId Y) (ANum 1);;
-            IF BLe (ANum 1) (AId Y) THEN
-                Y ::= AMinus (AId Y) (ANum 1)
-            ELSE
-                X ::= ANum 1;; EXIT
-            FI
-        END;;
-        X ::= ANum 0
+
+      WHILE BLe (ANum 1) (AId Y) DO
+          Y ::= AMinus (AId Y) (ANum 1);;
+          IF BLe (ANum 1) (AId Y) THEN
+              Y ::= AMinus (AId Y) (ANum 1)
+          ELSE
+              X ::= ANum 1;; EXIT
+          FI
+      END;;
+      X ::= ANum 0
+
     Unfortunately, there is no [EXIT] command in Imp.  Without
     extending the range of control structures available in our
     language, the best we can do is to repeat loop-guard tests or add
@@ -1291,165 +1322,155 @@ Qed.
     実際、多くのループは扱うのは簡単です。
     例えば次の、二乗を繰り返すループを考えます:
 [[
-        WHILE BLe (ANum 1) (AId X) DO
-            Y ::= AMult (AId Y) (AId Y);;
-            X ::= AMinus (AId X) (ANum 1)
-        END
+      WHILE BLe (ANum 1) (AId X) DO 
+          Y ::= AMult (AId Y) (AId Y);; 
+          X ::= AMinus (AId X) (ANum 1) 
+      END 
 ]]
     [X]も[Y]も静的には分からないとき、ループ全体が動的で、残留コマンドはループ全体と同じです。
     [X]が分かり[Y]が分からないときは、ループは完全に展開でき、
     もし[X]が最初は[3](で最後は[0])だとすると、残留コマンドは
 [[
-        Y ::= AMult (AId Y) (AId Y);;
-        Y ::= AMult (AId Y) (AId Y);;
-        Y ::= AMult (AId Y) (AId Y)
+      Y ::= AMult (AId Y) (AId Y);; 
+      Y ::= AMult (AId Y) (AId Y);; 
+      Y ::= AMult (AId Y) (AId Y) 
 ]]
     となります。一般にループは、
     ループ本体の最終部分状態が初期状態と同じである場合、
     または、ガード条件が静的である場合には、部分評価は簡単です。
-
+ 
     しかし、Impには、残留プログラムを示すのが難しい別のループが存在します。
     例えば、[Y]が偶数か奇数かをチェックする次のプログラムを考えます:
 [[
-        X ::= ANum 0;;
-        WHILE BLe (ANum 1) (AId Y) DO
-            Y ::= AMinus (AId Y) (ANum 1);;
-            X ::= AMinus (ANum 1) (AId X)
-        END
+      X ::= ANum 0;; 
+      WHILE BLe (ANum 1) (AId Y) DO 
+          Y ::= AMinus (AId Y) (ANum 1);; 
+          X ::= AMinus (ANum 1) (AId X) 
+      END 
 ]]
     [X]の値はループの間、[0]と[1]を交互にとります。
     理想的には、ループを完全にではなく2段階展開したいところです。
     次のような感じです:
 [[
-        WHILE BLe (ANum 1) (AId Y) DO
-            Y ::= AMinus (AId Y) (ANum 1);;
-            IF BLe (ANum 1) (AId Y) THEN
-                Y ::= AMinus (AId Y) (ANum 1)
-            ELSE
-                X ::= ANum 1;; EXIT
-            FI
-        END;;
-        X ::= ANum 0
+      WHILE BLe (ANum 1) (AId Y) DO 
+          Y ::= AMinus (AId Y) (ANum 1);; 
+          IF BLe (ANum 1) (AId Y) THEN 
+              Y ::= AMinus (AId Y) (ANum 1) 
+          ELSE 
+              X ::= ANum 1;; EXIT 
+          FI 
+      END;; 
+      X ::= ANum 0 
 ]]
     残念ながら、Impには[EXIT]コマンドはありません。
-    言語の制御構造を拡張しない範囲では、できることは、
-    ループのガードのテストを繰り返すか、フラグ変数を追加することです。
+    言語の制御構造を拡張しない範囲では、できることは、ループのガードのテストを繰り返すか、フラグ変数を追加することです。
     どちらにしても、ひどいものです。
-
+ 
     それでも、本筋から逸れますが、以下はImpコマンドに部分評価を行おうとする試みです。
     [pe_com]関係にもう1つコマンド引数[c'']を追加して、展開するループを追跡します。 *)
 
 Module Loop.
 
-Reserved Notation "c1 '/' st '||' c1' '/' st' '/' c''"
+Reserved Notation "c1 '/' st '\\' c1' '/' st' '/' c''"
   (at level 40, st at level 39, c1' at level 39, st' at level 39).
 
 Inductive pe_com : com -> pe_state -> com -> pe_state -> com -> Prop :=
   | PE_Skip : forall pe_st,
-      SKIP / pe_st || SKIP / pe_st / SKIP
+      SKIP / pe_st \\ SKIP / pe_st / SKIP
   | PE_AssStatic : forall pe_st a1 n1 l,
       pe_aexp pe_st a1 = ANum n1 ->
-      (l ::= a1) / pe_st || SKIP / pe_add pe_st l n1 / SKIP
+      (l ::= a1) / pe_st \\ SKIP / pe_add pe_st l n1 / SKIP
   | PE_AssDynamic : forall pe_st a1 a1' l,
       pe_aexp pe_st a1 = a1' ->
       (forall n, a1' <> ANum n) ->
-      (l ::= a1) / pe_st || (l ::= a1') / pe_remove pe_st l / SKIP
+      (l ::= a1) / pe_st \\ (l ::= a1') / pe_remove pe_st l / SKIP
   | PE_Seq : forall pe_st pe_st' pe_st'' c1 c2 c1' c2' c'',
-      c1 / pe_st  || c1' / pe_st' / SKIP ->
-      c2 / pe_st' || c2' / pe_st'' / c'' ->
-      (c1 ;; c2) / pe_st || (c1' ;; c2') / pe_st'' / c''
+      c1 / pe_st  \\ c1' / pe_st' / SKIP ->
+      c2 / pe_st' \\ c2' / pe_st'' / c'' ->
+      (c1 ;; c2) / pe_st \\ (c1' ;; c2') / pe_st'' / c''
   | PE_IfTrue : forall pe_st pe_st' b1 c1 c2 c1' c'',
       pe_bexp pe_st b1 = BTrue ->
-      c1 / pe_st || c1' / pe_st' / c'' ->
-      (IFB b1 THEN c1 ELSE c2 FI) / pe_st || c1' / pe_st' / c''
+      c1 / pe_st \\ c1' / pe_st' / c'' ->
+      (IFB b1 THEN c1 ELSE c2 FI) / pe_st \\ c1' / pe_st' / c''
   | PE_IfFalse : forall pe_st pe_st' b1 c1 c2 c2' c'',
       pe_bexp pe_st b1 = BFalse ->
-      c2 / pe_st || c2' / pe_st' / c'' ->
-      (IFB b1 THEN c1 ELSE c2 FI) / pe_st || c2' / pe_st' / c''
+      c2 / pe_st \\ c2' / pe_st' / c'' ->
+      (IFB b1 THEN c1 ELSE c2 FI) / pe_st \\ c2' / pe_st' / c''
   | PE_If : forall pe_st pe_st1 pe_st2 b1 c1 c2 c1' c2' c'',
       pe_bexp pe_st b1 <> BTrue ->
       pe_bexp pe_st b1 <> BFalse ->
-      c1 / pe_st || c1' / pe_st1 / c'' ->
-      c2 / pe_st || c2' / pe_st2 / c'' ->
+      c1 / pe_st \\ c1' / pe_st1 / c'' ->
+      c2 / pe_st \\ c2' / pe_st2 / c'' ->
       (IFB b1 THEN c1 ELSE c2 FI) / pe_st
-        || (IFB pe_bexp pe_st b1
+        \\ (IFB pe_bexp pe_st b1
              THEN c1' ;; assign pe_st1 (pe_compare pe_st1 pe_st2)
              ELSE c2' ;; assign pe_st2 (pe_compare pe_st1 pe_st2) FI)
             / pe_removes pe_st1 (pe_compare pe_st1 pe_st2)
             / c''
   | PE_WhileEnd : forall pe_st b1 c1,
       pe_bexp pe_st b1 = BFalse ->
-      (WHILE b1 DO c1 END) / pe_st || SKIP / pe_st / SKIP
+      (WHILE b1 DO c1 END) / pe_st \\ SKIP / pe_st / SKIP
   | PE_WhileLoop : forall pe_st pe_st' pe_st'' b1 c1 c1' c2' c2'',
       pe_bexp pe_st b1 = BTrue ->
-      c1 / pe_st || c1' / pe_st' / SKIP ->
-      (WHILE b1 DO c1 END) / pe_st' || c2' / pe_st'' / c2'' ->
+      c1 / pe_st \\ c1' / pe_st' / SKIP ->
+      (WHILE b1 DO c1 END) / pe_st' \\ c2' / pe_st'' / c2'' ->
       pe_compare pe_st pe_st'' <> [] ->
-      (WHILE b1 DO c1 END) / pe_st || (c1';;c2') / pe_st'' / c2''
+      (WHILE b1 DO c1 END) / pe_st \\ (c1';;c2') / pe_st'' / c2''
   | PE_While : forall pe_st pe_st' pe_st'' b1 c1 c1' c2' c2'',
       pe_bexp pe_st b1 <> BFalse ->
       pe_bexp pe_st b1 <> BTrue ->
-      c1 / pe_st || c1' / pe_st' / SKIP ->
-      (WHILE b1 DO c1 END) / pe_st' || c2' / pe_st'' / c2'' ->
+      c1 / pe_st \\ c1' / pe_st' / SKIP ->
+      (WHILE b1 DO c1 END) / pe_st' \\ c2' / pe_st'' / c2'' ->
       pe_compare pe_st pe_st'' <> [] ->
       (c2'' = SKIP \/ c2'' = WHILE b1 DO c1 END) ->
       (WHILE b1 DO c1 END) / pe_st
-        || (IFB pe_bexp pe_st b1
+        \\ (IFB pe_bexp pe_st b1
              THEN c1';; c2';; assign pe_st'' (pe_compare pe_st pe_st'')
              ELSE assign pe_st (pe_compare pe_st pe_st'') FI)
             / pe_removes pe_st (pe_compare pe_st pe_st'')
             / c2''
   | PE_WhileFixedEnd : forall pe_st b1 c1,
       pe_bexp pe_st b1 <> BFalse ->
-      (WHILE b1 DO c1 END) / pe_st || SKIP / pe_st / (WHILE b1 DO c1 END)
+      (WHILE b1 DO c1 END) / pe_st \\ SKIP / pe_st / (WHILE b1 DO c1 END)
   | PE_WhileFixedLoop : forall pe_st pe_st' pe_st'' b1 c1 c1' c2',
       pe_bexp pe_st b1 = BTrue ->
-      c1 / pe_st || c1' / pe_st' / SKIP ->
+      c1 / pe_st \\ c1' / pe_st' / SKIP ->
       (WHILE b1 DO c1 END) / pe_st'
-        || c2' / pe_st'' / (WHILE b1 DO c1 END) ->
+        \\ c2' / pe_st'' / (WHILE b1 DO c1 END) ->
       pe_compare pe_st pe_st'' = [] ->
       (WHILE b1 DO c1 END) / pe_st
-        || (WHILE BTrue DO SKIP END) / pe_st / SKIP
+        \\ (WHILE BTrue DO SKIP END) / pe_st / SKIP
       (* Because we have an infinite loop, we should actually
          start to throw away the rest of the program:
          (WHILE b1 DO c1 END) / pe_st
-         || SKIP / pe_st / (WHILE BTrue DO SKIP END) *)
+         \\ SKIP / pe_st / (WHILE BTrue DO SKIP END) *)
   | PE_WhileFixed : forall pe_st pe_st' pe_st'' b1 c1 c1' c2',
       pe_bexp pe_st b1 <> BFalse ->
       pe_bexp pe_st b1 <> BTrue ->
-      c1 / pe_st || c1' / pe_st' / SKIP ->
+      c1 / pe_st \\ c1' / pe_st' / SKIP ->
       (WHILE b1 DO c1 END) / pe_st'
-        || c2' / pe_st'' / (WHILE b1 DO c1 END) ->
+        \\ c2' / pe_st'' / (WHILE b1 DO c1 END) ->
       pe_compare pe_st pe_st'' = [] ->
       (WHILE b1 DO c1 END) / pe_st
-        || (WHILE pe_bexp pe_st b1 DO c1';; c2' END) / pe_st / SKIP
+        \\ (WHILE pe_bexp pe_st b1 DO c1';; c2' END) / pe_st / SKIP
 
-  where "c1 '/' st '||' c1' '/' st' '/' c''" := (pe_com c1 st c1' st' c'').
-
-Tactic Notation "pe_com_cases" tactic(first) ident(c) :=
-  first;
-  [ Case_aux c "PE_Skip"
-  | Case_aux c "PE_AssStatic" | Case_aux c "PE_AssDynamic"
-  | Case_aux c "PE_Seq"
-  | Case_aux c "PE_IfTrue" | Case_aux c "PE_IfFalse" | Case_aux c "PE_If"
-  | Case_aux c "PE_WhileEnd" | Case_aux c "PE_WhileLoop"
-  | Case_aux c "PE_While" | Case_aux c "PE_WhileFixedEnd"
-  | Case_aux c "PE_WhileFixedLoop" | Case_aux c "PE_WhileFixed" ].
+  where "c1 '/' st '\\' c1' '/' st' '/' c''" := (pe_com c1 st c1' st' c'').
 
 Hint Constructors pe_com.
 
+(* ================================================================= *)
 (*
 (** ** Examples *)
 *)
 (** ** 例 *)
 
 Ltac step i :=
-  (eapply i; intuition eauto; try solve by inversion);
+  (eapply i; intuition eauto; try solve_by_invert);
   repeat (try eapply PE_Seq;
           try (eapply PE_AssStatic; simpl; reflexivity);
           try (eapply PE_AssDynamic;
                [ simpl; reflexivity
-               | intuition eauto; solve by inversion ])).
+               | intuition eauto; solve_by_invert])).
 
 Definition square_loop: com :=
   WHILE BLe (ANum 1) (AId X) DO
@@ -1459,22 +1480,22 @@ Definition square_loop: com :=
 
 Example pe_loop_example1:
   square_loop / []
-  || (WHILE BLe (ANum 1) (AId X) DO
+  \\ (WHILE BLe (ANum 1) (AId X) DO
          (Y ::= AMult (AId Y) (AId Y);;
           X ::= AMinus (AId X) (ANum 1));; SKIP
        END) / [] / SKIP.
-Proof. erewrite f_equal2 with (f := fun c st => _ / _ || c / st / SKIP).
+Proof. erewrite f_equal2 with (f := fun c st => _ / _ \\ c / st / SKIP).
   step PE_WhileFixed. step PE_WhileFixedEnd. reflexivity.
   reflexivity. reflexivity. Qed.
 
 Example pe_loop_example2:
   (X ::= ANum 3;; square_loop) / []
-  || (SKIP;;
+  \\ (SKIP;;
        (Y ::= AMult (AId Y) (AId Y);; SKIP);;
        (Y ::= AMult (AId Y) (AId Y);; SKIP);;
        (Y ::= AMult (AId Y) (AId Y);; SKIP);;
        SKIP) / [(X,0)] / SKIP.
-Proof. erewrite f_equal2 with (f := fun c st => _ / _ || c / st / SKIP).
+Proof. erewrite f_equal2 with (f := fun c st => _ / _ \\ c / st / SKIP).
   eapply PE_Seq. eapply PE_AssStatic. reflexivity.
   step PE_WhileLoop.
   step PE_WhileLoop.
@@ -1485,7 +1506,7 @@ Proof. erewrite f_equal2 with (f := fun c st => _ / _ || c / st / SKIP).
 
 Example pe_loop_example3:
   (Z ::= ANum 3;; subtract_slowly) / []
-  || (SKIP;;
+  \\ (SKIP;;
        IFB BNot (BEq (AId X) (ANum 0)) THEN
          (SKIP;; X ::= AMinus (AId X) (ANum 1));;
          IFB BNot (BEq (AId X) (ANum 0)) THEN
@@ -1499,7 +1520,7 @@ Example pe_loop_example3:
            ELSE SKIP;; Z ::= ANum 1 FI;; SKIP
          ELSE SKIP;; Z ::= ANum 2 FI;; SKIP
        ELSE SKIP;; Z ::= ANum 3 FI) / [] / SKIP.
-Proof. erewrite f_equal2 with (f := fun c st => _ / _ || c / st / SKIP).
+Proof. erewrite f_equal2 with (f := fun c st => _ / _ \\ c / st / SKIP).
   eapply PE_Seq. eapply PE_AssStatic. reflexivity.
   step PE_While.
   step PE_While.
@@ -1513,18 +1534,19 @@ Example pe_loop_example4:
   (X ::= ANum 0;;
    WHILE BLe (AId X) (ANum 2) DO
      X ::= AMinus (ANum 1) (AId X)
-   END) / [] || (SKIP;; WHILE BTrue DO SKIP END) / [(X,0)] / SKIP.
-Proof. erewrite f_equal2 with (f := fun c st => _ / _ || c / st / SKIP).
+   END) / [] \\ (SKIP;; WHILE BTrue DO SKIP END) / [(X,0)] / SKIP.
+Proof. erewrite f_equal2 with (f := fun c st => _ / _ \\ c / st / SKIP).
   eapply PE_Seq. eapply PE_AssStatic. reflexivity.
   step PE_WhileFixedLoop.
   step PE_WhileLoop.
   step PE_WhileFixedEnd.
   inversion H. reflexivity. reflexivity. reflexivity. Qed.
 
+(* ================================================================= *)
 (*
 (** ** Correctness *)
 *)
-(** ** 正しさ *)
+(** ** 正当性 *)
 
 (*
 (** Because this partial evaluator can unroll a loop n-fold where n is
@@ -1537,48 +1559,42 @@ Proof. erewrite f_equal2 with (f := fun c st => _ / _ || c / st / SKIP).
     このため、正しさを示すためには、動的評価の構造についての帰納法ではなく、
     動的評価がループの本体に入る回数についての帰納法が必要です。 *)
 
-Reserved Notation "c1 '/' st '||' st' '#' n"
+Reserved Notation "c1 '/' st '\\' st' '#' n"
   (at level 40, st at level 39, st' at level 39).
 
 Inductive ceval_count : com -> state -> state -> nat -> Prop :=
   | E'Skip : forall st,
-      SKIP / st || st # 0
+      SKIP / st \\ st # 0
   | E'Ass  : forall st a1 n l,
       aeval st a1 = n ->
-      (l ::= a1) / st || (update st l n) # 0
+      (l ::= a1) / st \\ (t_update st l n) # 0
   | E'Seq : forall c1 c2 st st' st'' n1 n2,
-      c1 / st  || st'  # n1 ->
-      c2 / st' || st'' # n2 ->
-      (c1 ;; c2) / st || st'' # (n1 + n2)
+      c1 / st  \\ st'  # n1 ->
+      c2 / st' \\ st'' # n2 ->
+      (c1 ;; c2) / st \\ st'' # (n1 + n2)
   | E'IfTrue : forall st st' b1 c1 c2 n,
       beval st b1 = true ->
-      c1 / st || st' # n ->
-      (IFB b1 THEN c1 ELSE c2 FI) / st || st' # n
+      c1 / st \\ st' # n ->
+      (IFB b1 THEN c1 ELSE c2 FI) / st \\ st' # n
   | E'IfFalse : forall st st' b1 c1 c2 n,
       beval st b1 = false ->
-      c2 / st || st' # n ->
-      (IFB b1 THEN c1 ELSE c2 FI) / st || st' # n
+      c2 / st \\ st' # n ->
+      (IFB b1 THEN c1 ELSE c2 FI) / st \\ st' # n
   | E'WhileEnd : forall b1 st c1,
       beval st b1 = false ->
-      (WHILE b1 DO c1 END) / st || st # 0
+      (WHILE b1 DO c1 END) / st \\ st # 0
   | E'WhileLoop : forall st st' st'' b1 c1 n1 n2,
       beval st b1 = true ->
-      c1 / st || st' # n1 ->
-      (WHILE b1 DO c1 END) / st' || st'' # n2 ->
-      (WHILE b1 DO c1 END) / st || st'' # S (n1 + n2)
+      c1 / st \\ st' # n1 ->
+      (WHILE b1 DO c1 END) / st' \\ st'' # n2 ->
+      (WHILE b1 DO c1 END) / st \\ st'' # S (n1 + n2)
 
-  where "c1 '/' st '||' st' # n" := (ceval_count c1 st st' n).
-
-Tactic Notation "ceval_count_cases" tactic(first) ident(c) :=
-  first;
-  [ Case_aux c "E'Skip" | Case_aux c "E'Ass" | Case_aux c "E'Seq"
-  | Case_aux c "E'IfTrue" | Case_aux c "E'IfFalse"
-  | Case_aux c "E'WhileEnd" | Case_aux c "E'WhileLoop" ].
+  where "c1 '/' st '\\' st' # n" := (ceval_count c1 st st' n).
 
 Hint Constructors ceval_count.
 
 Theorem ceval_count_complete: forall c st st',
-  c / st || st' -> exists n, c / st || st' # n.
+  c / st \\ st' -> exists n, c / st \\ st' # n.
 Proof. intros c st st' Heval.
   induction Heval;
     try inversion IHHeval1;
@@ -1587,7 +1603,7 @@ Proof. intros c st st' Heval.
     eauto. Qed.
 
 Theorem ceval_count_sound: forall c st st' n,
-  c / st || st' # n -> c / st || st'.
+  c / st \\ st' # n -> c / st \\ st'.
 Proof. intros c st st' n Heval. induction Heval; eauto. Qed.
 
 Theorem pe_compare_nil_lookup: forall pe_st1 pe_st2,
@@ -1597,207 +1613,207 @@ Proof. intros pe_st1 pe_st2 H V.
   apply (pe_compare_correct pe_st1 pe_st2 V).
   rewrite H. intro. inversion H0. Qed.
 
-Theorem pe_compare_nil_override: forall pe_st1 pe_st2,
+Theorem pe_compare_nil_update: forall pe_st1 pe_st2,
   pe_compare pe_st1 pe_st2 = [] ->
-  forall st, pe_override st pe_st1 = pe_override st pe_st2.
+  forall st, pe_update st pe_st1 = pe_update st pe_st2.
 Proof. intros pe_st1 pe_st2 H st.
   apply functional_extensionality. intros V.
-  rewrite !pe_override_correct.
+  rewrite !pe_update_correct.
   apply pe_compare_nil_lookup with (V:=V) in H.
   rewrite H. reflexivity. Qed.
 
-Reserved Notation "c' '/' pe_st' '/' c'' '/' st '||' st'' '#' n"
+Reserved Notation "c' '/' pe_st' '/' c'' '/' st '\\' st'' '#' n"
   (at level 40, pe_st' at level 39, c'' at level 39,
    st at level 39, st'' at level 39).
 
 Inductive pe_ceval_count (c':com) (pe_st':pe_state) (c'':com)
                          (st:state) (st'':state) (n:nat) : Prop :=
   | pe_ceval_count_intro : forall st' n',
-    c' / st || st' ->
-    c'' / pe_override st' pe_st' || st'' # n' ->
+    c' / st \\ st' ->
+    c'' / pe_update st' pe_st' \\ st'' # n' ->
     n' <= n ->
-    c' / pe_st' / c'' / st || st'' # n
-  where "c' '/' pe_st' '/' c'' '/' st '||' st'' '#' n" :=
+    c' / pe_st' / c'' / st \\ st'' # n
+  where "c' '/' pe_st' '/' c'' '/' st '\\' st'' '#' n" :=
         (pe_ceval_count c' pe_st' c'' st st'' n).
 
 Hint Constructors pe_ceval_count.
 
 Lemma pe_ceval_count_le: forall c' pe_st' c'' st st'' n n',
   n' <= n ->
-  c' / pe_st' / c'' / st || st'' # n' ->
-  c' / pe_st' / c'' / st || st'' # n.
+  c' / pe_st' / c'' / st \\ st'' # n' ->
+  c' / pe_st' / c'' / st \\ st'' # n.
 Proof. intros c' pe_st' c'' st st'' n n' Hle H. inversion H.
   econstructor; try eassumption. omega. Qed.
 
 Theorem pe_com_complete:
-  forall c pe_st pe_st' c' c'', c / pe_st || c' / pe_st' / c'' ->
+  forall c pe_st pe_st' c' c'', c / pe_st \\ c' / pe_st' / c'' ->
   forall st st'' n,
-  (c / pe_override st pe_st || st'' # n) ->
-  (c' / pe_st' / c'' / st || st'' # n).
+  (c / pe_update st pe_st \\ st'' # n) ->
+  (c' / pe_st' / c'' / st \\ st'' # n).
 Proof. intros c pe_st pe_st' c' c'' Hpe.
-  pe_com_cases (induction Hpe) Case; intros st st'' n Heval;
+  induction Hpe; intros st st'' n Heval;
   try (inversion Heval; subst;
-       try (rewrite -> pe_bexp_correct, -> H in *; solve by inversion);
+       try (rewrite -> pe_bexp_correct, -> H in *; solve_by_invert);
        []);
   eauto.
-  Case "PE_AssStatic". econstructor. econstructor.
-    rewrite -> pe_aexp_correct. rewrite <- pe_override_update_add.
+  - (* PE_AssStatic *) econstructor. econstructor.
+    rewrite -> pe_aexp_correct. rewrite <- pe_update_update_add.
     rewrite -> H. apply E'Skip. auto.
-  Case "PE_AssDynamic". econstructor. econstructor. reflexivity.
-    rewrite -> pe_aexp_correct. rewrite <- pe_override_update_remove.
+  - (* PE_AssDynamic *) econstructor. econstructor. reflexivity.
+    rewrite -> pe_aexp_correct. rewrite <- pe_update_update_remove.
     apply E'Skip. auto.
-  Case "PE_Seq".
+  - (* PE_Seq *)
     edestruct IHHpe1 as [? ? ? Hskip ?]. eassumption.
     inversion Hskip. subst.
     edestruct IHHpe2. eassumption.
     econstructor; eauto. omega.
-  Case "PE_If". inversion Heval; subst.
-    SCase "E'IfTrue". edestruct IHHpe1. eassumption.
+  - (* PE_If *) inversion Heval; subst.
+    + (* E'IfTrue *) edestruct IHHpe1. eassumption.
       econstructor. apply E_IfTrue. rewrite <- pe_bexp_correct. assumption.
       eapply E_Seq. eassumption. apply eval_assign.
       rewrite <- assign_removes. eassumption. eassumption.
-    SCase "E_IfFalse". edestruct IHHpe2. eassumption.
+    + (* E_IfFalse *) edestruct IHHpe2. eassumption.
       econstructor. apply E_IfFalse. rewrite <- pe_bexp_correct. assumption.
       eapply E_Seq. eassumption. apply eval_assign.
-      rewrite -> pe_compare_override.
+      rewrite -> pe_compare_update.
       rewrite <- assign_removes. eassumption. eassumption.
-  Case "PE_WhileLoop".
+  - (* PE_WhileLoop *)
     edestruct IHHpe1 as [? ? ? Hskip ?]. eassumption.
     inversion Hskip. subst.
     edestruct IHHpe2. eassumption.
     econstructor; eauto. omega.
-  Case "PE_While". inversion Heval; subst.
-    SCase "E_WhileEnd". econstructor. apply E_IfFalse.
+  - (* PE_While *) inversion Heval; subst.
+    + (* E_WhileEnd *) econstructor. apply E_IfFalse.
       rewrite <- pe_bexp_correct. assumption.
       apply eval_assign.
       rewrite <- assign_removes. inversion H2; subst; auto.
       auto.
-    SCase "E_WhileLoop".
+    + (* E_WhileLoop *)
       edestruct IHHpe1 as [? ? ? Hskip ?]. eassumption.
       inversion Hskip. subst.
       edestruct IHHpe2. eassumption.
       econstructor. apply E_IfTrue.
       rewrite <- pe_bexp_correct. assumption.
       repeat eapply E_Seq; eauto. apply eval_assign.
-      rewrite -> pe_compare_override, <- assign_removes. eassumption.
+      rewrite -> pe_compare_update, <- assign_removes. eassumption.
       omega.
-  Case "PE_WhileFixedLoop". apply ex_falso_quodlibet.
+  - (* PE_WhileFixedLoop *) exfalso.
     generalize dependent (S (n1 + n2)). intros n.
-    clear - Case H H0 IHHpe1 IHHpe2. generalize dependent st.
+    clear - H H0 IHHpe1 IHHpe2. generalize dependent st.
     induction n using lt_wf_ind; intros st Heval. inversion Heval; subst.
-    SCase "E'WhileEnd". rewrite pe_bexp_correct, H in H7. inversion H7.
-    SCase "E'WhileLoop".
+    + (* E'WhileEnd *) rewrite pe_bexp_correct, H in H7. inversion H7.
+    + (* E'WhileLoop *)
       edestruct IHHpe1 as [? ? ? Hskip ?]. eassumption.
       inversion Hskip. subst.
       edestruct IHHpe2. eassumption.
-      rewrite <- (pe_compare_nil_override _ _ H0) in H7.
+      rewrite <- (pe_compare_nil_update _ _ H0) in H7.
       apply H1 in H7; [| omega]. inversion H7.
-  Case "PE_WhileFixed". generalize dependent st.
+  - (* PE_WhileFixed *) generalize dependent st.
     induction n using lt_wf_ind; intros st Heval. inversion Heval; subst.
-    SCase "E'WhileEnd". rewrite pe_bexp_correct in H8. eauto.
-    SCase "E'WhileLoop". rewrite pe_bexp_correct in H5.
+    + (* E'WhileEnd *) rewrite pe_bexp_correct in H8. eauto.
+    + (* E'WhileLoop *) rewrite pe_bexp_correct in H5.
       edestruct IHHpe1 as [? ? ? Hskip ?]. eassumption.
       inversion Hskip. subst.
       edestruct IHHpe2. eassumption.
-      rewrite <- (pe_compare_nil_override _ _ H1) in H8.
+      rewrite <- (pe_compare_nil_update _ _ H1) in H8.
       apply H2 in H8; [| omega]. inversion H8.
       econstructor; [ eapply E_WhileLoop; eauto | eassumption | omega].
 Qed.
 
 Theorem pe_com_sound:
-  forall c pe_st pe_st' c' c'', c / pe_st || c' / pe_st' / c'' ->
+  forall c pe_st pe_st' c' c'', c / pe_st \\ c' / pe_st' / c'' ->
   forall st st'' n,
-  (c' / pe_st' / c'' / st || st'' # n) ->
-  (c / pe_override st pe_st || st'').
+  (c' / pe_st' / c'' / st \\ st'' # n) ->
+  (c / pe_update st pe_st \\ st'').
 Proof. intros c pe_st pe_st' c' c'' Hpe.
-  pe_com_cases (induction Hpe) Case;
+  induction Hpe;
     intros st st'' n [st' n' Heval Heval' Hle];
     try (inversion Heval; []; subst);
     try (inversion Heval'; []; subst); eauto.
-  Case "PE_AssStatic". rewrite <- pe_override_update_add. apply E_Ass.
+  - (* PE_AssStatic *) rewrite <- pe_update_update_add. apply E_Ass.
     rewrite -> pe_aexp_correct. rewrite -> H. reflexivity.
-  Case "PE_AssDynamic". rewrite <- pe_override_update_remove. apply E_Ass.
+  - (* PE_AssDynamic *) rewrite <- pe_update_update_remove. apply E_Ass.
     rewrite <- pe_aexp_correct. reflexivity.
-  Case "PE_Seq". eapply E_Seq; eauto.
-  Case "PE_IfTrue". apply E_IfTrue.
+  - (* PE_Seq *) eapply E_Seq; eauto.
+  - (* PE_IfTrue *) apply E_IfTrue.
     rewrite -> pe_bexp_correct. rewrite -> H. reflexivity.
     eapply IHHpe. eauto.
-  Case "PE_IfFalse". apply E_IfFalse.
+  - (* PE_IfFalse *) apply E_IfFalse.
     rewrite -> pe_bexp_correct. rewrite -> H. reflexivity.
     eapply IHHpe. eauto.
-  Case "PE_If". inversion Heval; subst; inversion H7; subst; clear H7.
-    SCase "E_IfTrue".
+  - (* PE_If *) inversion Heval; subst; inversion H7; subst; clear H7.
+    + (* E_IfTrue *)
       eapply ceval_deterministic in H8; [| apply eval_assign]. subst.
       rewrite <- assign_removes in Heval'.
       apply E_IfTrue. rewrite -> pe_bexp_correct. assumption.
       eapply IHHpe1. eauto.
-    SCase "E_IfFalse".
+    + (* E_IfFalse *)
       eapply ceval_deterministic in H8; [| apply eval_assign]. subst.
-      rewrite -> pe_compare_override in Heval'.
+      rewrite -> pe_compare_update in Heval'.
       rewrite <- assign_removes in Heval'.
       apply E_IfFalse. rewrite -> pe_bexp_correct. assumption.
       eapply IHHpe2. eauto.
-  Case "PE_WhileEnd". apply E_WhileEnd.
+  - (* PE_WhileEnd *) apply E_WhileEnd.
     rewrite -> pe_bexp_correct. rewrite -> H. reflexivity.
-  Case "PE_WhileLoop". eapply E_WhileLoop.
+  - (* PE_WhileLoop *) eapply E_WhileLoop.
     rewrite -> pe_bexp_correct. rewrite -> H. reflexivity.
     eapply IHHpe1. eauto. eapply IHHpe2. eauto.
-  Case "PE_While". inversion Heval; subst.
-    SCase "E_IfTrue".
+  - (* PE_While *) inversion Heval; subst.
+    + (* E_IfTrue *)
       inversion H9. subst. clear H9.
       inversion H10. subst. clear H10.
       eapply ceval_deterministic in H11; [| apply eval_assign]. subst.
-      rewrite -> pe_compare_override in Heval'.
+      rewrite -> pe_compare_update in Heval'.
       rewrite <- assign_removes in Heval'.
       eapply E_WhileLoop. rewrite -> pe_bexp_correct. assumption.
       eapply IHHpe1. eauto.
       eapply IHHpe2. eauto.
-    SCase "E_IfFalse". apply ceval_count_sound in Heval'.
+    + (* E_IfFalse *) apply ceval_count_sound in Heval'.
       eapply ceval_deterministic in H9; [| apply eval_assign]. subst.
       rewrite <- assign_removes in Heval'.
       inversion H2; subst.
-      SSCase "c2'' = SKIP". inversion Heval'. subst. apply E_WhileEnd.
+      * (* c2'' = SKIP *) inversion Heval'. subst. apply E_WhileEnd.
         rewrite -> pe_bexp_correct. assumption.
-      SSCase "c2'' = WHILE b1 DO c1 END". assumption.
-  Case "PE_WhileFixedEnd". eapply ceval_count_sound. apply Heval'.
-  Case "PE_WhileFixedLoop".
+      * (* c2'' = WHILE b1 DO c1 END *) assumption.
+  - (* PE_WhileFixedEnd *) eapply ceval_count_sound. apply Heval'.
+  - (* PE_WhileFixedLoop *)
     apply loop_never_stops in Heval. inversion Heval.
-  Case "PE_WhileFixed".
-    clear - Case H1 IHHpe1 IHHpe2 Heval.
+  - (* PE_WhileFixed *)
+    clear - H1 IHHpe1 IHHpe2 Heval.
     remember (WHILE pe_bexp pe_st b1 DO c1';; c2' END) as c'.
-    ceval_cases (induction Heval) SCase;
+    induction Heval;
       inversion Heqc'; subst; clear Heqc'.
-    SCase "E_WhileEnd". apply E_WhileEnd.
+    + (* E_WhileEnd *) apply E_WhileEnd.
       rewrite pe_bexp_correct. assumption.
-    SCase "E_WhileLoop".
+    + (* E_WhileLoop *)
       assert (IHHeval2' := IHHeval2 (refl_equal _)).
       apply ceval_count_complete in IHHeval2'. inversion IHHeval2'.
       clear IHHeval1 IHHeval2 IHHeval2'.
       inversion Heval1. subst.
       eapply E_WhileLoop. rewrite pe_bexp_correct. assumption. eauto.
       eapply IHHpe2. econstructor. eassumption.
-      rewrite <- (pe_compare_nil_override _ _ H1). eassumption. apply le_n.
+      rewrite <- (pe_compare_nil_update _ _ H1). eassumption. apply le_n.
 Qed.
 
 Corollary pe_com_correct:
-  forall c pe_st pe_st' c', c / pe_st || c' / pe_st' / SKIP ->
+  forall c pe_st pe_st' c', c / pe_st \\ c' / pe_st' / SKIP ->
   forall st st'',
-  (c / pe_override st pe_st || st'') <->
-  (exists st', c' / st || st' /\ pe_override st' pe_st' = st'').
+  (c / pe_update st pe_st \\ st'') <->
+  (exists st', c' / st \\ st' /\ pe_update st' pe_st' = st'').
 Proof. intros c pe_st pe_st' c' H st st''. split.
-  Case "->". intros Heval.
+  - (* -> *) intros Heval.
     apply ceval_count_complete in Heval. inversion Heval as [n Heval'].
     apply pe_com_complete with (st:=st) (st'':=st'') (n:=n) in H.
     inversion H as [? ? ? Hskip ?]. inversion Hskip. subst. eauto.
     assumption.
-  Case "<-". intros [st' [Heval Heq]]. subst st''.
+  - (* <- *) intros [st' [Heval Heq]]. subst st''.
     eapply pe_com_sound in H. apply H.
     econstructor. apply Heval. apply E'Skip. apply le_n.
 Qed.
 
 End Loop.
 
-(* ####################################################### *)
+(* ################################################################# *)
 (*
 (** * Partial Evaluation of Flowchart Programs *)
 *)
@@ -1823,6 +1839,7 @@ End Loop.
     ただし、これは一般にできるわけではありません。
     ここではこのことは追求しません。 *)
 
+(* ================================================================= *)
 (*
 (** ** Basic blocks *)
 *)
@@ -1848,10 +1865,6 @@ Inductive block (Label:Type) : Type :=
   | Goto : Label -> block Label
   | If : bexp -> Label -> Label -> block Label
   | Assign : id -> aexp -> block Label -> block Label.
-
-Tactic Notation "block_cases" tactic(first) ident(c) :=
-  first;
-  [ Case_aux c "Goto" | Case_aux c "If" | Case_aux c "Assign" ].
 
 Arguments Goto {Label} _.
 Arguments If   {Label} _ _ _.
@@ -1900,14 +1913,15 @@ Fixpoint keval {L:Type} (st:state) (k : block L) : state * L :=
   match k with
   | Goto l => (st, l)
   | If b l1 l2 => (st, if beval st b then l1 else l2)
-  | Assign i a k => keval (update st i (aeval st a)) k
+  | Assign i a k => keval (t_update st i (aeval st a)) k
   end.
 
 Example keval_example:
   keval empty_state parity_body
-  = (update (update empty_state Y 0) X 1, loop).
+  = (t_update (t_update empty_state Y 0) X 1, loop).
 Proof. reflexivity. Qed.
 
+(* ================================================================= *)
 (*
 (** ** Flowchart programs *)
 *)
@@ -1960,15 +1974,12 @@ Proof. erewrite f_equal with (f := fun st => peval _ _ _ st _).
   eapply E_Some. reflexivity. reflexivity.
   eapply E_Some. reflexivity. reflexivity.
   apply E_None. reflexivity.
-  apply functional_extensionality. intros i. rewrite update_same; auto.
+  apply functional_extensionality. intros i. rewrite t_update_same; auto.
 Qed.
 
-Tactic Notation "peval_cases" tactic(first) ident(c) :=
-  first;
-  [ Case_aux c "E_None" | Case_aux c "E_Some" ].
-
+(* ================================================================= *)
 (*
-(** ** Partial evaluation of basic blocks and flowchart programs *)
+(** ** Partial Evaluation of Basic Blocks and Flowchart Programs *)
 *)
 (** ** 基本ブロックとフローチャートプログラムの部分評価 *)
 
@@ -1984,12 +1995,9 @@ Tactic Notation "peval_cases" tactic(first) ident(c) :=
 *)
 (** 部分評価はラベルの型を体系的に変更します。
     もとのラベルの型が[L]ならば、[pe_state * L] になります。
-    そして、オリジナルプログラムと同じラベルが、異なる部分状態と対にされることで、
-    複数のラベルに拡大されます。
-    例えば、[parity]プログラムのラベル[loop]は2つのラベル:
-    [([(X,0)], loop)] と [([(X,1)], loop)] になります。
-    このラベルの型の変更は以前に定義した [pe_block] と [pe_program] の型に反映されます。
-    *)
+    そして、オリジナルプログラムと同じラベルが、異なる部分状態と対にされることで、複数のラベルに拡大されます。
+    例えば、[parity]プログラムのラベル[loop]は2つのラベル [([(X,0)], loop)] と [([(X,1)], loop)] になります。
+    このラベルの型の変更は以前に定義した [pe_block] と [pe_program] の型に反映されます。 *)
 
 Fixpoint pe_block {L:Type} (pe_st:pe_state) (k : block L)
   : block (pe_state * L) :=
@@ -2015,27 +2023,27 @@ Proof. reflexivity. Qed.
 
 Theorem pe_block_correct: forall (L:Type) st pe_st k st' pe_st' (l':L),
   keval st (pe_block pe_st k) = (st', (pe_st', l')) ->
-  keval (pe_override st pe_st) k = (pe_override st' pe_st', l').
+  keval (pe_update st pe_st) k = (pe_update st' pe_st', l').
 Proof. intros. generalize dependent pe_st. generalize dependent st.
-  block_cases (induction k as [l | b l1 l2 | i a k]) Case;
+  induction k as [l | b l1 l2 | i a k];
     intros st pe_st H.
-  Case "Goto". inversion H; reflexivity.
-  Case "If".
+  - (* Goto *) inversion H; reflexivity.
+  - (* If *)
     replace (keval st (pe_block pe_st (If b l1 l2)))
        with (keval st (If (pe_bexp pe_st b) (pe_st, l1) (pe_st, l2)))
        in H by (simpl; destruct (pe_bexp pe_st b); reflexivity).
     simpl in *. rewrite pe_bexp_correct.
     destruct (beval st (pe_bexp pe_st b)); inversion H; reflexivity.
-  Case "Assign".
+  - (* Assign *)
     simpl in *. rewrite pe_aexp_correct.
     destruct (pe_aexp pe_st a); simpl;
-      try solve [rewrite pe_override_update_add; apply IHk; apply H];
-      solve [rewrite pe_override_update_remove; apply IHk; apply H].
+      try solve [rewrite pe_update_update_add; apply IHk; apply H];
+      solve [rewrite pe_update_update_remove; apply IHk; apply H].
 Qed.
 
 Definition pe_program {L:Type} (p : program L)
   : program (pe_state * L) :=
-  fun pe_l => match pe_l with (pe_st, l) =>
+  fun pe_l => match pe_l with | (pe_st, l) =>
                 option_map (pe_block pe_st) (p l)
               end.
 
@@ -2043,24 +2051,24 @@ Inductive pe_peval {L:Type} (p : program L)
   (st:state) (pe_st:pe_state) (l:L) (st'o:state) (l':L) : Prop :=
   | pe_peval_intro : forall st' pe_st',
     peval (pe_program p) st (pe_st, l) st' (pe_st', l') ->
-    pe_override st' pe_st' = st'o ->
+    pe_update st' pe_st' = st'o ->
     pe_peval p st pe_st l st'o l'.
 
 Theorem pe_program_correct:
   forall (L:Type) (p : program L) st pe_st l st'o l',
-  peval p (pe_override st pe_st) l st'o l' <->
+  peval p (pe_update st pe_st) l st'o l' <->
   pe_peval p st pe_st l st'o l'.
 Proof. intros.
-  split; [Case "->" | Case "<-"].
-  Case "->". intros Heval.
-    remember (pe_override st pe_st) as sto.
+  split.
+  - (* -> *) intros Heval.
+    remember (pe_update st pe_st) as sto.
     generalize dependent pe_st. generalize dependent st.
-    peval_cases (induction Heval as
-      [ sto l Hlookup | sto l k st'o l' st''o l'' Hlookup Hkeval Heval ])
-      SCase; intros st pe_st Heqsto; subst sto.
-    SCase "E_None". eapply pe_peval_intro. apply E_None.
+    induction Heval as
+      [ sto l Hlookup | sto l k st'o l' st''o l'' Hlookup Hkeval Heval ];
+      intros st pe_st Heqsto; subst sto.
+    + (* E_None *) eapply pe_peval_intro. apply E_None.
       simpl. rewrite Hlookup. reflexivity. reflexivity.
-    SCase "E_Some".
+    + (* E_Some *)
       remember (keval st (pe_block pe_st k)) as x.
       destruct x as [st' [pe_st' l'_]].
       symmetry in Heqx. erewrite pe_block_correct in Hkeval by apply Heqx.
@@ -2068,22 +2076,22 @@ Proof. intros.
       edestruct IHHeval. reflexivity. subst st''o. clear IHHeval.
       eapply pe_peval_intro; [| reflexivity]. eapply E_Some; eauto.
       simpl. rewrite Hlookup. reflexivity.
-  Case "<-". intros [st' pe_st' Heval Heqst'o].
+  - (* <- *) intros [st' pe_st' Heval Heqst'o].
     remember (pe_st, l) as pe_st_l.
     remember (pe_st', l') as pe_st'_l'.
     generalize dependent pe_st. generalize dependent l.
-    peval_cases (induction Heval as
+    induction Heval as
       [ st [pe_st_ l_] Hlookup
       | st [pe_st_ l_] pe_k st' [pe_st'_ l'_] st'' [pe_st'' l'']
-        Hlookup Hkeval Heval ])
-      SCase; intros l pe_st Heqpe_st_l;
+        Hlookup Hkeval Heval ];
+      intros l pe_st Heqpe_st_l;
       inversion Heqpe_st_l; inversion Heqpe_st'_l'; repeat subst.
-    SCase "E_None". apply E_None. simpl in Hlookup.
+    + (* E_None *) apply E_None. simpl in Hlookup.
       destruct (p l'); [ solve [ inversion Hlookup ] | reflexivity ].
-    SCase "E_Some".
+    + (* E_Some *)
       simpl in Hlookup. remember (p l) as k.
       destruct k as [k|]; inversion Hlookup; subst.
       eapply E_Some; eauto. apply pe_block_correct. apply Hkeval.
 Qed.
 
-(** $Date: 2014-12-31 11:17:56 -0500 (Wed, 31 Dec 2014) $ *)
+(** $Date: 2017-01-30 19:42:52 -0500 (Mon, 30 Jan 2017) $ *)

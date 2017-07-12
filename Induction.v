@@ -1,207 +1,52 @@
+(** * Induction: 帰納法による証明 *)
 (*
 (** * Induction: Proof by Induction *)
 *)
-(** * Induction: 帰納法による証明 *)
- 
 
 (*
-(** The next line imports all of our definitions from the
-    previous chapter. *)
+(** Before getting started, we need to import all of our
+    definitions from the previous chapter: *)
 *)
-(** 次の行は、前の章の定義をインポートする命令です。 *)
+(** 始める前に、前の章の定義をここに持ってきます。 *)
 
 Require Export Basics.
 
 (*
-(** For it to work, you need to use [coqc] to compile [Basics.v]
-    into [Basics.vo].  (This is like making a .class file from a .java
-    file, or a .o file from a .c file.)
-  
-    Here are two ways to compile your code:
-  
-     - CoqIDE:
-   
-         Open [Basics.v].
-         In the "Compile" menu, click on "Compile Buffer".
-   
-     - Command line:
-   
-         Run [coqc Basics.v]
+(** For the [Require Export] to work, you first need to use
+    [coqc] to compile [Basics.v] into [Basics.vo].  This is like
+    making a .class file from a .java file, or a .o file from a .c
+    file.  There are two ways to do it:
 
-    *)
+     - In CoqIDE:
+
+         Open [Basics.v].  In the "Compile" menu, click on "Compile
+         Buffer".
+
+     - From the command line:
+
+         [coqc Basics.v]
+
+   If you have trouble (e.g., if you get complaints about missing
+   identifiers later in the file), it may be because the "load path"
+   for Coq is not set up correctly.  The [Print LoadPath.] command may
+   be helpful in sorting out such issues. *)
 *)
-(** これを動かすには、[coqc]で[Basics.v]をコンパイルして[Basics.vo]を作る必要があります。
-    （.javaのファイルから.classを作ったり、.cのファイルから.oを作ったりするのと同じです。）
-   
+(** [Require Export]を動かすには、[coqc]で[Basics.v]をコンパイルして[Basics.vo]を作る必要があります。
+    ちょうど .java のファイルから .class を作ったり、 .c のファイルから .o を作ったりするのと同じです。
     コンパイルする方法を二つ紹介します。
-   
+ 
      - CoqIDEを使って：
-    
+ 
          CoqIDEで[Basics.v]を開き、メニューの"Compile"から"Compile Buffer"を選びます。
-   
+ 
      - コマンドラインで：
-    
-         [coqc Basics.v]を実行します。（訳注：Windowsの場合、[coqc]のあるフォルダにパスを通すのを忘れないでください。）
  
-     *)
-
-
-(* ###################################################################### *)
-(*
-(** * Naming Cases *)
-*)
-(** * 場合分けの名前付け *)
-
-(*
-(** The fact that there is no explicit command for moving from
-    one branch of a case analysis to the next can make proof scripts
-    rather hard to read.  In larger proofs, with nested case analyses,
-    it can even become hard to stay oriented when you're sitting with
-    Coq and stepping through the proof.  (Imagine trying to remember
-    that the first five subgoals belong to the inner case analysis and
-    the remaining seven cases are what remains of the outer one...)
-    Disciplined use of indentation and comments can help, but a better
-    way is to use the [Case] tactic. *)
-*)
-(** 場合分けにおいて、一つが終わってから次に移るようなコマンドがないため、証明スクリプトは読みづらいものとなっています。
-    証明が長くなり、場合分けが増えてくると、証明の方針を維持し続けることも難しくなってきます。
-    （例えば、最初の5つはあるゴールからさらに分岐したもので、残りの7つは外側の分岐であるとき、を考えてみてください。5つが終わった瞬間に外側に意識を向けることはまず無理でしょう。）
-    インデントを付けたりコメントを付けたりすることで多少はマシになりますが、より良い方法として[Case]タクティックを定義します。 *)
-
-(*
-(** [Case] is not built into Coq: we need to define it ourselves.
-    There is no need to understand how it works -- you can just skip
-    over the definition to the example that follows.  It uses some
-    facilities of Coq that we have not discussed -- the string
-    library (just for the concrete syntax of quoted strings) and the
-    [Ltac] command, which allows us to declare custom tactics.  Kudos
-    to Aaron Bohannon for this nice hack! *)
-*)
-(** [Case]タクティックはCoq組み込みではありません。
-    つまり、我々自身で定義しなければなりません。
-    これがどう動くのかを理解する必要はありません。
-    以下の定義や利用例などを飛ばしても大丈夫です。
-    この定義にはまだ説明していない、文字列(string)ライブラリ（ダブルクオートで囲む記法のためだけですが）や、タクティックを定義する[Ltac]コマンドが使われています。
-    この素晴らしい手法を編み出したAaron Bohannonに拍手を！ *)
-
-Require String. Open Scope string_scope.
-
-Ltac move_to_top x :=
-  match reverse goal with
-  | H : _ |- _ => try move x after H
-  end.
-
-Tactic Notation "assert_eq" ident(x) constr(v) :=
-  let H := fresh in
-  assert (x = v) as H by reflexivity;
-  clear H.
-
-Tactic Notation "Case_aux" ident(x) constr(name) :=
-  first [
-    set (x := name); move_to_top x
-  | assert_eq x name; move_to_top x
-  | fail 1 "because we are working on a different case" ].
-
-Tactic Notation "Case" constr(name) := Case_aux Case name.
-Tactic Notation "SCase" constr(name) := Case_aux SCase name.
-Tactic Notation "SSCase" constr(name) := Case_aux SSCase name.
-Tactic Notation "SSSCase" constr(name) := Case_aux SSSCase name.
-Tactic Notation "SSSSCase" constr(name) := Case_aux SSSSCase name.
-Tactic Notation "SSSSSCase" constr(name) := Case_aux SSSSSCase name.
-Tactic Notation "SSSSSSCase" constr(name) := Case_aux SSSSSSCase name.
-Tactic Notation "SSSSSSSCase" constr(name) := Case_aux SSSSSSSCase name.
-(*
-(** Here's an example of how [Case] is used.  Step through the
-   following proof and observe how the context changes. *)
-*)
-(** [Case]の使用例は以下の通りになります。
-   一歩ずつ、文脈の変化を追ってみてください。 *)
-
-Theorem andb_true_elim1 : forall b c : bool,
-  andb b c = true -> b = true.
-Proof.
-  intros b c H.
-  destruct b.
-  Case "b = true".  (* <----- here *)
-    reflexivity.
-  Case "b = false".  (* <---- and here *)
-    rewrite <- H. 
-    reflexivity.  
-Qed.
-
-(*
-(** [Case] does something very straightforward: It simply adds a
-    string that we choose (tagged with the identifier "Case") to the
-    context for the current goal.  When subgoals are generated, this
-    string is carried over into their contexts.  When the last of
-    these subgoals is finally proved and the next top-level goal
-    becomes active, this string will no longer appear in the context
-    and we will be able to see that the case where we introduced it is
-    complete.  Also, as a sanity check, if we try to execute a new
-    [Case] tactic while the string left by the previous one is still
-    in the context, we get a nice clear error message.
-
-    For nested case analyses (e.g., when we want to use a [destruct]
-    to solve a goal that has itself been generated by a [destruct]),
-    there is an [SCase] ("subcase") tactic. *)
-*)
-(** [Case]タクティックがやっていることは単純です。
-    単に、[Case]と名付けた変数で、与えた文字列をタグ付けして、文脈に入れているだけです。
-    サブゴールに分かれた場合にも、この情報は引き継がれます。
-    また、分かれたサブゴールを全て証明すると次のゴールが対象となりますが、その文脈には指定した文字列がないので、[Case]を使ったゴールの証明が終わったことがわかります。
-    もし文字列が残っているのに[Case]タクティックを呼び出すと、わかりやすいエラーメッセージでそれを指摘します。
+         [coqc Basics.v]を実行します。（訳注：[coqc]のあるフォルダにパスを通すのを忘れないでください。）
  
-    場合分けの中の場合分け（[destruct]でゴールを分岐させた後にさらに[destruct]で分岐させるような場合）で使うために、[SCase]タクティック（"S"は"Subcase"）を用意しています。
-    （Sは7つまで付けられます。） *)
+   もし識別子が見つからないなどのエラーが出たりしたら、Coqの"load path"が正しく設定されていないせいかもしれません。
+   [Print LoadPath.]と言うコマンドで正しく設定されているか確認してみてください。 *)
 
-
-(*
-(** **** Exercise: 2 stars (andb_true_elim2)  *)
-*)
-(** **** 練習問題: ★★ (andb_true_elim2)  *)
-(*
-(** Prove [andb_true_elim2], marking cases (and subcases) when
-    you use [destruct]. *)
-*)
-(** [andb_true_elim2]を証明しなさい。
-    その中で[destruct]を使ったら、場合分け毎に名前を付けること。 *)
-
-Theorem andb_true_elim2 : forall b c : bool,
-  andb b c = true -> c = true.
-Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
-
-(*
-(** There are no hard and fast rules for how proofs should be
-    formatted in Coq -- in particular, where lines should be broken
-    and how sections of the proof should be indented to indicate their
-    nested structure.  However, if the places where multiple subgoals
-    are generated are marked with explicit [Case] tactics placed at
-    the beginning of lines, then the proof will be readable almost no
-    matter what choices are made about other aspects of layout.
-
-    This is a good place to mention one other piece of (possibly
-    obvious) advice about line lengths.  Beginning Coq users sometimes
-    tend to the extremes, either writing each tactic on its own line
-    or entire proofs on one line.  Good style lies somewhere in the
-    middle.  In particular, one reasonable convention is to limit
-    yourself to 80-character lines.  Lines longer than this are hard
-    to read and can be inconvenient to display and print.  Many
-    editors have features that help enforce this. *)
-*)
-(** Coqでの証明の書き方の、厳格なルールというものはありません。
-    特に、どこで行を折り返すか、証明のどの単位で字下げをするか、などは全く決まっていません。
-    ただし、複数のサブゴールに分かれるときに[Case]タクティックで分岐を明示すれば、どんな表記規則を取ったとしても読みやすくなるはずです。
- 
-    一行の長さについて少し語っておきます。
-    Coq初心者の中には極端な人がいて、一行に一つのタクティックしか書かない人や、一行に全ての証明を詰め込む人がいます。
-    好い加減というのは、大体その間にあります。
-    一行を80文字に押さえるというのは扱いやすい慣習の一つです。
-    これより長いと大体読みづらいですし、画面表示や印刷も不便になりがちです。
-    多くのエディタは一行80文字制限を強制させる機能を持っています。 *)
-
-(* ###################################################################### *)
+(* ################################################################# *)
 (*
 (** * Proof by Induction *)
 *)
@@ -209,18 +54,19 @@ Proof.
 
 (*
 (** We proved in the last chapter that [0] is a neutral element
-    for [+] on the left using a simple argument.  The fact that it is
+    for [+] on the left, using an easy argument based on
+    simplification.  We also observed that proving the fact that it is
     also a neutral element on the _right_... *)
 *)
 (** 前の章では、[0]が[+]に対する左単位元であることを証明しました。
     実際には、[0]は「右(_right_)」単位元でもあるのですが... *)
 
-Theorem plus_0_r_firsttry : forall n:nat,
-  n + 0 = n.
+Theorem plus_n_O_firsttry : forall n:nat,
+  n = n + 0.
 
 (*
-(** ... cannot be proved in the same simple way.  Just applying
-  [reflexivity] doesn't work: the [n] in [n + 0] is an arbitrary
+(** ... can't be done in the same simple way.  Just applying
+  [reflexivity] doesn't work, since the [n] in [n + 0] is an arbitrary
   unknown number, so the [match] in the definition of [+] can't be
   simplified.  *)
 *)
@@ -233,111 +79,128 @@ Proof.
   simpl. (* Does nothing! *)
 Abort.
 
-(** *** *)
-
 (*
 (** And reasoning by cases using [destruct n] doesn't get us much
-   further: the branch of the case analysis where we assume [n = 0]
-   goes through, but in the branch where [n = S n'] for some [n'] we
-   get stuck in exactly the same way.  We could use [destruct n'] to
-   get one step further, but since [n] can be arbitrarily large, if we
-   try to keep on like this we'll never be done. *)
+    further: the branch of the case analysis where we assume [n = 0]
+    goes through fine, but in the branch where [n = S n'] for some [n'] we
+    get stuck in exactly the same way. *)
 *)
 (** [destruct n]を使った場合分けもやはり先には進められません。
-   [n = 0]のときはいいのですが、[n = S n']のときは同じ理由で詰まってしまいます。
-   もちろん[destruct n']を使って進められますが、[n]が非常に大きい場合もありうるので、このやり方ではいつまで経っても終わりません。 *)
+    [n = 0]のときはいいのですが、[n = S n']のときは同じ理由で詰まってしまいます。 *)
 
-Theorem plus_0_r_secondtry : forall n:nat,
-  n + 0 = n.
+Theorem plus_n_O_secondtry : forall n:nat,
+  n = n + 0.
 Proof.
   intros n. destruct n as [| n'].
-  Case "n = 0".
+  - (* n = 0 *)
     reflexivity. (* so far so good... *)
-  Case "n = S n'".
+  - (* n = S n' *)
     simpl.       (* ...but here we are stuck again *)
 Abort.
 
-(** *** *)
+(*
+(** We could use [destruct n'] to get one step further, but,
+    since [n] can be arbitrarily large, if we just go on like this
+    we'll never finish. *)
+*)
+(** [destruct n']を使って進められますが、[n]が非常に大きい場合もありうるので、このやり方ではいつまで経っても終わりません。 *)
 
 (*
-(** To prove such facts -- indeed, to prove most interesting
-    facts about numbers, lists, and other inductively defined sets --
-    we need a more powerful reasoning principle: _induction_.
+(** To prove interesting facts about numbers, lists, and other
+    inductively defined sets, we usually need a more powerful
+    reasoning principle: _induction_.
 
-    Recall (from high school) the principle of induction over natural
-    numbers: If [P(n)] is some proposition involving a natural number
-    [n] and we want to show that P holds for _all_ numbers [n], we can
-    reason like this:
+    Recall (from high school, a discrete math course, etc.) the
+    _principle of induction over natural numbers_: If [P(n)] is some
+    proposition involving a natural number [n] and we want to show
+    that [P] holds for all numbers [n], we can reason like this:
          - show that [P(O)] holds;
          - show that, for any [n'], if [P(n')] holds, then so does
            [P(S n')];
          - conclude that [P(n)] holds for all [n].
 
-    In Coq, the steps are the same but the order is backwards: we
-    begin with the goal of proving [P(n)] for all [n] and break it
-    down (by applying the [induction] tactic) into two separate
-    subgoals: first showing [P(O)] and then showing [P(n') -> P(S
-    n')].  Here's how this works for the theorem we are trying to
-    prove at the moment: *)
+    In Coq, the steps are the same: we begin with the goal of proving
+    [P(n)] for all [n] and break it down (by applying the [induction]
+    tactic) into two separate subgoals: one where we must show [P(O)]
+    and another where we must show [P(n') -> P(S n')].  Here's how
+    this works for the theorem at hand: *)
 *)
 (** これらの、大体の数やリストなどの帰納的に定義された集合に関する性質を示すには、より強力な道具、「帰納法(_induction_)」が必要になります。
  
-    高校で習ったと思いますが、自然数に関する帰納法（数学的帰納法）の原理をおさらいしておきましょう。
-    もし[P(n)]が自然数[n]に関する命題だったとすると、「任意の(_all_)」数[n]に対し[P]が成り立つことを、次のように示すのでした。
+    高校や離散数学の講義などで習ったと思いますが、「自然数に関する帰納法（数学的帰納法）の原理」をおさらいしておきましょう。
+    もし[P(n)]が自然数[n]に関する命題だったとすると、任意の数[n]に対し[P]が成り立つことを、次のように示すのでした。
          - [P(O)]が成り立つことを示す。
          - どんな[n']についても、[P(n')]が成り立つならば、[P(S n')]が成り立つことを示す。
          - 以上から、任意の[n]について[P(n)]が成り立つと言える。
  
-    Coqではこれを同じようにしますが、順番は逆になります。
-    任意の[n]で[P(n)]が成り立つことをゴールとして示したい場合に、それを（[induction]タクティックを使うことで）、二つのサブゴールに分けます。
+    Coqではこれを同じようにします。
+    任意の[n]で[P(n)]が成り立つことをゴールとして示すときに、それを（[induction]タクティックを使うことで）、二つのサブゴールに分けます。
     一つ目は[P(O)]の証明、そして次は[P(n') -> P(S n')]の証明です。
     どのようになるのかを例を使って見ていきましょう。 *)
 
-(** *** *)
-
-Theorem plus_0_r : forall n:nat, n + 0 = n.
+Theorem plus_n_O : forall n:nat, n = n + 0.
 Proof.
-  intros n. induction n as [| n'].
-  Case "n = 0".     reflexivity.
-  Case "n = S n'".  simpl. rewrite -> IHn'. reflexivity.  Qed.
+  intros n. induction n as [| n' IHn'].
+  - (* n = 0 *)    reflexivity.
+  - (* n = S n' *) simpl. rewrite <- IHn'. reflexivity.  Qed.
 
 (*
 (** Like [destruct], the [induction] tactic takes an [as...]
     clause that specifies the names of the variables to be introduced
-    in the subgoals.  In the first branch, [n] is replaced by [0] and
-    the goal becomes [0 + 0 = 0], which follows by simplification.  In
-    the second, [n] is replaced by [S n'] and the assumption [n' + 0 =
-    n'] is added to the context (with the name [IHn'], i.e., the
-    Induction Hypothesis for [n']).  The goal in this case becomes [(S
-    n') + 0 = S n'], which simplifies to [S (n' + 0) = S n'], which in
-    turn follows from the induction hypothesis. *)
+    in the subgoals.  Since there are two subgoals, the [as...] clause
+    has two parts, separated by [|].  (Strictly speaking, we can omit
+    the [as...] clause and Coq will choose names for us.  In practice,
+    this is a bad idea, as Coq's automatic choices tend to be
+    confusing.)
+
+    In the first subgoal, [n] is replaced by [0].  No new variables
+    are introduced (so the first part of the [as...] is empty), and
+    the goal becomes [0 + 0 = 0], which follows by simplification.
+
+    In the second subgoal, [n] is replaced by [S n'], and the
+    assumption [n' + 0 = n'] is added to the context with the name
+    [IHn'] (i.e., the Induction Hypothesis for [n']).  These two names
+    are specified in the second part of the [as...] clause.  The goal
+    in this case becomes [(S n') + 0 = S n'], which simplifies to
+    [S (n' + 0) = S n'], which in turn follows from [IHn']. *)
 *)
 (** [destruct]タクティックと同様に、[induction]タクティックには、サブゴールで使う変数を指定する[as...]節を使うことができます。
-    最初の分岐では、[n]は[0]に置き換えられて、ゴールは[0 + 0 = 0]となります。
-    これは簡約すれば示せます。
-    二つ目の分岐では、[n]は[S n']に置き換えられ、仮定として[n' + 0 = n']が文脈に追加されます。
-    （名前が[IHn']となっていますが、これは[n']に関する帰納法の仮定(Induction Hypothesis)のことです。）
-    ゴールは[(S n') + 0 = S n']となっていますが、簡約すると[S (n' + 0) = S n']になります。
-    これは帰納法の仮定から示せます。 *)
+    二つに分かれているので、[as...]節も[|]で二つに分かれています。
+    （厳密に言うと、ここでは[as...]節は省略できて、その場合Coqが名前を付けてくれます。
+    ただし、実際には、これはあまりいい方法ではありません。
+    というのも、Coqが自動で付ける名前では混乱しがちだからです。）
+ 
+    一つ目のサブゴールでは、[n]は[0]に置き換えられています。
+    新しい変数は特に導入されていません（そのため[as...]の一つ目は空になっています）。
+    ゴールは[0 = 0 + 0]となっていて、これは簡約すれば示せます。
+ 
+    二つ目のサブゴールでは、[n]は[S n']に置き換えられ、仮定として[IHn']という名前（つまり[n']に関する帰納法の仮定(Induction Hypothesis)）で[n' = n' + 0]が文脈に追加されます。
+    [n']と[IHn']という二つの名前は[as...]節の二つ目で指定しています。
+    ゴールは[S n' = (S n') + 0]となっていますが、簡約すると[S n' = S (n' + 0)]になります。
+    これは帰納法の仮定である[IHn']から示せます。 *)
 
 Theorem minus_diag : forall n,
   minus n n = 0.
 Proof.
   (* WORKED IN CLASS *)
-  intros n. induction n as [| n'].
-  Case "n = 0".
+  intros n. induction n as [| n' IHn'].
+  - (* n = 0 *)
     simpl. reflexivity.
-  Case "n = S n'".
+  - (* n = S n' *)
     simpl. rewrite -> IHn'. reflexivity.  Qed.
 
-(*
-(** **** Exercise: 2 stars (basic_induction)  *)
-*)
-(** **** 練習問題: ★★ (basic_induction)  *)
+(** (The use of the [intros] tactic in these proofs is actually
+    redundant.  When applied to a goal that contains quantified
+    variables, the [induction] tactic will automatically move them
+    into the context as needed.) *)
 
 (*
-(** Prove the following lemmas using induction. You might need
-    previously proven results. *)
+(** **** Exercise: 2 stars, recommended (basic_induction)  *)
+*)
+(** **** 練習問題: ★★, recommended (basic_induction)  *)
+(*
+(** Prove the following using induction. You might need previously
+    proven results. *)
 *)
 (** 以下の定理を帰納法で証明しなさい。
     証明には、前に示した内容を使う必要があるかもしれません。 *)
@@ -347,17 +210,15 @@ Theorem mult_0_r : forall n:nat,
 Proof.
   (* FILL IN HERE *) Admitted.
 
-Theorem plus_n_Sm : forall n m : nat, 
+Theorem plus_n_Sm : forall n m : nat,
   S (n + m) = n + (S m).
-Proof. 
+Proof.
   (* FILL IN HERE *) Admitted.
-
 
 Theorem plus_comm : forall n m : nat,
   n + m = m + n.
 Proof.
   (* FILL IN HERE *) Admitted.
-
 
 Theorem plus_assoc : forall n m p : nat,
   n + (m + p) = (n + m) + p.
@@ -369,7 +230,6 @@ Proof.
 (** **** Exercise: 2 stars (double_plus)  *)
 *)
 (** **** 練習問題: ★★ (double_plus)  *)
-
 (*
 (** Consider the following function, which doubles its argument: *)
 *)
@@ -387,53 +247,62 @@ Fixpoint double (n:nat) :=
 (** 帰納法を使って、[double]に関する以下の性質を証明しなさい。 *)
 
 Lemma double_plus : forall n, double n = n + n .
-Proof.  
+Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
+(** **** Exercise: 2 stars, optional (evenb_S)  *)
+(** One inconveninent aspect of our definition of [evenb n] is the
+    recursive call on [n - 2]. This makes proofs about [evenb n]
+    harder when done by induction on [n], since we may need an
+    induction hypothesis about [n - 2]. The following lemma gives an
+    alternative characterization of [evenb (S n)] that works better
+    with induction: *)
+
+Theorem evenb_S : forall n : nat,
+  evenb (S n) = negb (evenb n).
+Proof.
+  (* FILL IN HERE *) Admitted.
+(** [] *)
 
 (*
-(** **** Exercise: 1 star (destruct_induction)  *)
+(** **** Exercise: 1 starM (destruct_induction)  *)
 *)
 (** **** 練習問題: ★ (destruct_induction)  *)
 (*
-(** Briefly explain the difference between the tactics
-    [destruct] and [induction].  
+(** Briefly explain the difference between the tactics [destruct]
+    and [induction].
 
 (* FILL IN HERE *)
-
 *)
   *)
 (** [destruct]と[induction]の違いについて大まかに説明しなさい。
  
 (* FILL IN HERE *)
- 
  *)
 (** [] *)
 
-
-(* ###################################################################### *)
+(* ################################################################# *)
 (*
 (** * Proofs Within Proofs *)
 *)
 (** * 証明の中の証明 *)
 
-
 (*
-(** In Coq, as in informal mathematics, large proofs are very
-    often broken into a sequence of theorems, with later proofs
-    referring to earlier theorems.  Occasionally, however, a proof
-    will need some miscellaneous fact that is too trivial (and of too
-    little general interest) to bother giving it its own top-level
-    name.  In such cases, it is convenient to be able to simply state
-    and prove the needed "sub-theorem" right at the point where it is
-    used.  The [assert] tactic allows us to do this.  For example, our
-    earlier proof of the [mult_0_plus] theorem referred to a previous
-    theorem named [plus_O_n].  We can also use [assert] to state and
+(** In Coq, as in informal mathematics, large proofs are often
+    broken into a sequence of theorems, with later proofs referring to
+    earlier theorems.  But sometimes a proof will require some
+    miscellaneous fact that is too trivial and of too little general
+    interest to bother giving it its own top-level name.  In such
+    cases, it is convenient to be able to simply state and prove the
+    needed "sub-theorem" right at the point where it is used.  The
+    [assert] tactic allows us to do this.  For example, our earlier
+    proof of the [mult_0_plus] theorem referred to a previous theorem
+    named [plus_O_n].  We could instead use [assert] to state and
     prove [plus_O_n] in-line: *)
 *)
 (** Coqでは、通常の数学のように、大きな証明を複数の定理の列に分割して、後ろの証明で前の定理を利用する、ということをします。
-    しかし、その結果、明だったり全く一般的でなかったりするような内容が自明だったり全く一般的でなかったりするような定理が現れます。
+    しかし、このように分割した定理の中には、内容が自明だったり全く一般的でなかったりするため、全体に見える名前を付けるのが面倒になるものも現れます。
     こういう場合、その場所でだけ使うように「副定理」を記述、証明できると便利です。
     これを可能にするのが[assert]タクティックです。
     例えば、前に証明した[mult_0_plus]という定理では[plus_O_n]という名前の定理を使っていました。
@@ -443,135 +312,361 @@ Theorem mult_0_plus' : forall n m : nat,
   (0 + n) * m = n * m.
 Proof.
   intros n m.
-  assert (H: 0 + n = n). 
-    Case "Proof of assertion". reflexivity.
+  assert (H: 0 + n = n). { reflexivity. }
   rewrite -> H.
   reflexivity.  Qed.
 
 (*
 (** The [assert] tactic introduces two sub-goals.  The first is
     the assertion itself; by prefixing it with [H:] we name the
-    assertion [H].  (Note that we could also name the assertion with
-    [as] just as we did above with [destruct] and [induction], i.e.,
-    [assert (0 + n = n) as H].  Also note that we mark the proof of
-    this assertion with a [Case], both for readability and so that,
-    when using Coq interactively, we can see when we're finished
-    proving the assertion by observing when the ["Proof of assertion"]
-    string disappears from the context.)  The second goal is the same
-    as the one at the point where we invoke [assert], except that, in
-    the context, we have the assumption [H] that [0 + n = n].  That
-    is, [assert] generates one subgoal where we must prove the
-    asserted fact and a second subgoal where we can use the asserted
-    fact to make progress on whatever we were trying to prove in the
-    first place. *)
+    assertion [H].  (We can also name the assertion with [as] just as
+    we did above with [destruct] and [induction], i.e., [assert (0 + n
+    = n) as H].)  Note that we surround the proof of this assertion
+    with curly braces [{ ... }], both for readability and so that,
+    when using Coq interactively, we can see more easily when we have
+    finished this sub-proof.  The second goal is the same as the one
+    at the point where we invoke [assert] except that, in the context,
+    we now have the assumption [H] that [0 + n = n].  That is,
+    [assert] generates one subgoal where we must prove the asserted
+    fact and a second subgoal where we can use the asserted fact to
+    make progress on whatever we were trying to prove in the first
+    place. *)
 *)
 (** [assert]タクティックは二つのサブゴールを作ります。
     一つ目は表明したものそのものです。
     [H:]という記述は、表明したものを[H]と名付けることを意味します。
-    （[destruct]や[induction]同様に、[as]を使って[assert (0 + n = n) as H]と書くこともできます。
-    また、表明に[Case]を付けたのは、読みやすさ以外に、証明が終わったときに["Proof of assertion"]という文字列が文脈から消えるという利点のためでもあります。）
+    （[destruct]や[induction]同様に、[as]を使って[assert (0 + n = n) as H]と書くこともできます。）
+    ここで、表明の証明を波括弧[{ ... }]で囲ったのは、可読性のためという理由の他に、Coqの対話環境では、この部分の証明が終わったことがわかりやすくなるという理由もあります。
     二つ目のゴールは[assert]を実行したものと同じですが、文脈に[H]という名前で[0 + n = n]の仮定が入っています。
     つまり、[assert]は一つのサブゴールで表明した内容を証明させ、二つ目のサブゴールで元の場所に戻り、表明した内容を使って証明を進めさせるのです。 *)
 
 (*
-(** Actually, [assert] will turn out to be handy in many sorts of
-    situations.  For example, suppose we want to prove that [(n + m)
-    + (p + q) = (m + n) + (p + q)]. The only difference between the
-    two sides of the [=] is that the arguments [m] and [n] to the
-    first inner [+] are swapped, so it seems we should be able to
-    use the commutativity of addition ([plus_comm]) to rewrite one
-    into the other.  However, the [rewrite] tactic is a little stupid
-    about _where_ it applies the rewrite.  There are three uses of
-    [+] here, and it turns out that doing [rewrite -> plus_comm]
-    will affect only the _outer_ one. *)
+(** Another example of [assert]... *)
 *)
-(** 実際、[assert]は様々な場面で有用です。
-    例えば、[(n + m) + (p + q) = (m + n) + (p + q)]を示す必要があったとき、[=]の左右での差は[m]と[n]の位置が[+]の間で入れ替わっているだけですから、加算の可換律（[plus_comm]）で書き換えれば簡単に示せます。
+(** [assert]の他の使用例です。 *)
+
+(*
+(** For example, suppose we want to prove that [(n + m) + (p + q)
+    = (m + n) + (p + q)]. The only difference between the two sides of
+    the [=] is that the arguments [m] and [n] to the first inner [+]
+    are swapped, so it seems we should be able to use the
+    commutativity of addition ([plus_comm]) to rewrite one into the
+    other.  However, the [rewrite] tactic is not very smart about
+    _where_ it applies the rewrite.  There are three uses of [+] here,
+    and it turns out that doing [rewrite -> plus_comm] will affect
+    only the _outer_ one... *)
+*)
+(** 例えば、[(n + m) + (p + q) = (m + n) + (p + q)]を示す必要があったとします。
+    [=]の左右での差は[m]と[n]の位置が[+]の間で入れ替わっているだけですから、加算の可換律（[plus_comm]）で書き換えれば簡単に示せるはずです。
     ただ、[rewrite]タクティックは「どこを」書き換えるかに関してはあまり賢くないので、今回は[rewrite -> plus_comm]を実行しても、3箇所存在する[+]のうち「外側」のものを書き換えてしまいます。 *)
 
 Theorem plus_rearrange_firsttry : forall n m p q : nat,
   (n + m) + (p + q) = (m + n) + (p + q).
 Proof.
   intros n m p q.
-  (* We just need to swap (n + m) for (m + n)...
-     it seems like plus_comm should do the trick! *)
+  (* We just need to swap (n + m) for (m + n)... seems
+     like plus_comm should do the trick! *)
   rewrite -> plus_comm.
   (* Doesn't work...Coq rewrote the wrong plus! *)
 Abort.
 
 (*
-(** To get [plus_comm] to apply at the point where we want it, we can
-    introduce a local lemma stating that [n + m = m + n] (for
-    the particular [m] and [n] that we are talking about here), prove
-    this lemma using [plus_comm], and then use this lemma to do the
-    desired rewrite. *)
+(** To use [plus_comm] at the point where we need it, we can introduce
+    a local lemma stating that [n + m = m + n] (for the particular [m]
+    and [n] that we are talking about here), prove this lemma using
+    [plus_comm], and then use it to do the desired rewrite. *)
 *)
 (** [plus_comm]を必要な場所に使うために、[n + m = m + n]（ただし[m]と[n]は今の文脈にある変数）を[assert]を使って補題として作る方法があります。
-    この補題を[plus_comm]で示し、それを使って目的の式を書き換えるのです。 *)
+    この補題を[plus_comm]で示し、それを使って意図通りに式を書き換えるのです。 *)
 
 Theorem plus_rearrange : forall n m p q : nat,
   (n + m) + (p + q) = (m + n) + (p + q).
 Proof.
   intros n m p q.
   assert (H: n + m = m + n).
-    Case "Proof of assertion".
-    rewrite -> plus_comm. reflexivity.
+  { rewrite -> plus_comm. reflexivity. }
   rewrite -> H. reflexivity.  Qed.
 
+(* ################################################################# *)
 (*
-(** **** Exercise: 4 stars (mult_comm)  *)
+(** * Formal vs. Informal Proof *)
 *)
-(** **** 練習問題: ★★★★ (mult_comm)  *)
-(*
-(** Use [assert] to help prove this theorem.  You shouldn't need to
-    use induction. *)
-*)
-(** [assert]を使い、次の定理を示しなさい。
-    ここでは[induction]を使ってはいけません。 *)
+(** * 形式的証明　対　非形式的証明 *)
 
-Theorem plus_swap : forall n m p : nat, 
-  n + (m + p) = m + (n + p).
+(*
+(** "_Informal proofs are algorithms; formal proofs are code_." *)
+*)
+(** 「非形式的証明はアルゴリズムで、形式的証明はコードだ。」 *)
+
+(*
+(** What constitutes a successful proof of a mathematical claim?
+    The question has challenged philosophers for millennia, but a
+    rough and ready definition could be this: A proof of a
+    mathematical proposition [P] is a written (or spoken) text that
+    instills in the reader or hearer the certainty that [P] is true --
+    an unassailable argument for the truth of [P].  That is, a proof
+    is an act of communication.
+
+    Acts of communication may involve different sorts of readers.  On
+    one hand, the "reader" can be a program like Coq, in which case
+    the "belief" that is instilled is that [P] can be mechanically
+    derived from a certain set of formal logical rules, and the proof
+    is a recipe that guides the program in checking this fact.  Such
+    recipes are _formal_ proofs.
+
+    Alternatively, the reader can be a human being, in which case the
+    proof will be written in English or some other natural language,
+    and will thus necessarily be _informal_.  Here, the criteria for
+    success are less clearly specified.  A "valid" proof is one that
+    makes the reader believe [P].  But the same proof may be read by
+    many different readers, some of whom may be convinced by a
+    particular way of phrasing the argument, while others may not be.
+    Some readers may be particularly pedantic, inexperienced, or just
+    plain thick-headed; the only way to convince them will be to make
+    the argument in painstaking detail.  But other readers, more
+    familiar in the area, may find all this detail so overwhelming
+    that they lose the overall thread; all they want is to be told the
+    main ideas, since it is easier for them to fill in the details for
+    themselves than to wade through a written presentation of them.
+    Ultimately, there is no universal standard, because there is no
+    single way of writing an informal proof that is guaranteed to
+    convince every conceivable reader.
+
+    In practice, however, mathematicians have developed a rich set of
+    conventions and idioms for writing about complex mathematical
+    objects that -- at least within a certain community -- make
+    communication fairly reliable.  The conventions of this stylized
+    form of communication give a fairly clear standard for judging
+    proofs good or bad.
+
+    Because we are using Coq in this course, we will be working
+    heavily with formal proofs.  But this doesn't mean we can
+    completely forget about informal ones!  Formal proofs are useful
+    in many ways, but they are _not_ very efficient ways of
+    communicating ideas between human beings. *)
+*)
+(** 数学的な言明に対して「よい証明」とは一体何でしょうか？この
+    問いは、数千年に渡り議論されていますが、大まかに合意されている定義は次のようになります。
+    「数学的命題[P]に対する証明とは、読み手（聞き手）が確かに[P]は正しいと信じるに足るような記述（発言）、すなわち[P]の正しさを否定できないような議論である。」
+    つまり、証明とはコミュニケーションであるということです。
+ 
+    コミュニケーションは、様々な「読み手」と行われます。
+    あるときには、この「読み手」はCoqのようなプログラムでしょう。
+    この場合、信じさせるための「信条」は[P]が形式的に定義された論理規則から導出できるということであり、証明はこれを確かめるためにプログラムを案内するレシピということになります。
+    このレシピを「形式的(_formal_)」証明といいます。
+ 
+    また別のときには、「読み手」が人間であることもあるでしょう。
+    この場合、証明は英語や日本語などの自然言語で書かれることになり、結果として「非形式的(_informal_)」になります。
+    こちらは、コミュニケーション時の戦略はそこまではっきりとはしません。
+    「妥当な」証明ならば、読み手が[P]を信じるでしょう。
+    しかし、読み手には、ある特定の書き方でないと信じない人もいれば、その書き方では信じられない人もいます。
+    もしその読み手が、特別融通が利かなかったり、過度に未熟だったり、頭の回転が非常に鈍い人だったりすると、信じさせるには綿密に詳細を記述しなければならないでしょう。
+    一方で、その分野に詳しい人がその証明を読んだ場合、あまりの詳細の記述に全体の流れを追えなくなってしまうでしょう。
+    そのような読み手が知りたいのは証明における主なアイディアです。
+    なぜなら、その人にとっては、ひたすら書かれた記述を理解するよりも、細部を自分で埋める方が楽なのです。
+    究極的には、証明の記述方法の普遍的標準などありません。
+    あり得る読み手全員が信じるに足るような非形式的証明の記述方法が存在しないからです。
+ 
+    ただし実際には、複雑な内容を記述するための、多彩な慣習や慣用表現が作られています。
+    これらを用いることで、少なくとも特定のコミュニティの中では、コミュニケーションをかなり円滑に進めることができます。
+    こう言った慣習は、かなり明確に証明の良し悪しを判定する基準があります。
+ 
+    この講義ではCoqを使っていますので、かなり形式的証明を扱うことになります。
+    しかし、だからといって非形式的証明を忘れていいわけではありません！
+    形式的証明は様々な点で有用なのですが、他の人とアイディアを交わしたりといったことには全くもって非効率的です。 *)
+
+(*
+(** For example, here is a proof that addition is associative: *)
+*)
+(** 例えば、次の証明は加算が結合的であることを示しています。 *)
+
+Theorem plus_assoc' : forall n m p : nat,
+  n + (m + p) = (n + m) + p.
+Proof. intros n m p. induction n as [| n' IHn']. reflexivity.
+  simpl. rewrite -> IHn'. reflexivity.  Qed.
+
+(*
+(** Coq is perfectly happy with this.  For a human, however, it
+    is difficult to make much sense of it.  We can use comments and
+    bullets to show the structure a little more clearly... *)
+*)
+(** この証明はCoqにとっては完璧です。
+    しかし人間からすると、直観的に理解することは難しいものです。
+    コメントやbulletを使って証明の構成を記述すれば、少し読みやすくなります。 *)
+
+Theorem plus_assoc'' : forall n m p : nat,
+  n + (m + p) = (n + m) + p.
 Proof.
-  (* FILL IN HERE *) Admitted.
-
+  intros n m p. induction n as [| n' IHn'].
+  - (* n = 0 *)
+    reflexivity.
+  - (* n = S n' *)
+    simpl. rewrite -> IHn'. reflexivity.   Qed.
 
 (*
-(** Now prove commutativity of multiplication.  (You will probably
-    need to define and prove a separate subsidiary theorem to be used
-    in the proof of this one.)  You may find that [plus_swap] comes in
-    handy. *)
-*)
-(** 次に乗算の可換律を示しなさい。
-    （補助定理を一つ示す必要があるでしょう。）
-    [plus_swap]を使うといいかもしれません。 *)
+(** ... and if you're used to Coq you may be able to step
+    through the tactics one after the other in your mind and imagine
+    the state of the context and goal stack at each point, but if the
+    proof were even a little bit more complicated this would be next
+    to impossible.
 
-Theorem mult_comm : forall m n : nat,
- m * n = n * m.
-Proof.
-  (* FILL IN HERE *) Admitted.
+    A (pedantic) mathematician might write the proof something like
+    this: *)
+*)
+(** Coqに慣れている人なら、タクティックを一つずつ進めるように文脈とゴールを頭の中に作ることも可能かもしれません。
+    しかし、ほんの少し証明が複雑になるだけでほぼ不可能になります。
+ 
+    （こと細かな）数学者がこの証明を書くとしたら、大体次のようになるでしょう。 *)
+
+(*
+(** - _Theorem_: For any [n], [m] and [p],
+
+      n + (m + p) = (n + m) + p.
+
+    _Proof_: By induction on [n].
+
+    - First, suppose [n = 0].  We must show
+
+        0 + (m + p) = (0 + m) + p.
+
+      This follows directly from the definition of [+].
+
+    - Next, suppose [n = S n'], where
+
+        n' + (m + p) = (n' + m) + p.
+
+      We must show
+
+        (S n') + (m + p) = ((S n') + m) + p.
+
+      By the definition of [+], this follows from
+
+        S (n' + (m + p)) = S ((n' + m) + p),
+
+      which is immediate from the induction hypothesis.  _Qed_. *)
+*)
+(** - 定理： 任意の[n]、[m]、[p]について、以下が成立する。
+[[
+      n + (m + p) = (n + m) + p.
+]]
+    証明： [n]に関する帰納法による。
+
+    - [n = 0]の場合、示す命題は
+[[
+        0 + (m + p) = (0 + m) + p
+]]
+      である。これは[+]の定義から明らかである。
+ 
+    - [n = S n']の場合で、帰納法の仮定として
+[[
+        n' + (m + p) = (n' + m) + p
+]]
+      が成り立つとする。示す命題は
+[[
+        (S n') + (m + p) = ((S n') + m) + p
+]]
+      である。[+]の定義より、次の形に変形される。
+[[
+        S (n' + (m + p)) = S ((n' + m) + p)
+]]
+      これは帰納法の仮定から明らかである。
+      証明終了 *)
+(*
+(** The overall form of the proof is basically similar, and of
+    course this is no accident: Coq has been designed so that its
+    [induction] tactic generates the same sub-goals, in the same
+    order, as the bullet points that a mathematician would write.  But
+    there are significant differences of detail: the formal proof is
+    much more explicit in some ways (e.g., the use of [reflexivity])
+    but much less explicit in others (in particular, the "proof state"
+    at any given point in the Coq proof is completely implicit,
+    whereas the informal proof reminds the reader several times where
+    things stand). *)
+*)
+(** 証明の大まかな形式は似ていますが、当然これは偶然ではありません。
+    Coqの[induction]は、数学者版の箇条書きされたものと同じサブゴールを、同じ順で作るように設定されています。
+    しかし、細部は大きく違います。
+    形式的証明ではいくつかの手順がより明示的になっています（例えば[reflexivity]の使用など）が、逆に明示されていない箇所もあります（特に「証明する命題」はCoqの証明上には全く現れませんが、非形式的証明では現状確認のために明示されています）。 *)
+
+(*
+(** **** Exercise: 2 stars, advanced, recommendedM (plus_comm_informal)  *)
+*)
+(** **** 練習問題: ★★, advanced, recommended (plus_comm_informal)  *)
+(*
+(** Translate your solution for [plus_comm] into an informal proof:
+
+    Theorem: Addition is commutative.
+
+    Proof: (* FILL IN HERE *)
+*)
+ *)
+(** [plus_comm]の（課題として解いた）証明を非形式的証明で書きなさい。
+ 
+    定理： 加算は可換律を満たす。
+  
+    証明： (* FILL IN HERE *)
+ *)
 (** [] *)
 
 (*
-(** **** Exercise: 2 stars, optional (evenb_n__oddb_Sn)  *)
+(** **** Exercise: 2 stars, optionalM (beq_nat_refl_informal)  *)
 *)
-(** **** 練習問題: ★★, optional (evenb_n__oddb_Sn)  *)
-
+(** **** 練習問題: ★★, optional (beq_nat_refl_informal)  *)
 (*
-(** Prove the following simple fact: *)
+(** Write an informal proof of the following theorem, using the
+    informal proof of [plus_assoc] as a model.  Don't just
+    paraphrase the Coq tactics into English!
+
+    Theorem: [true = beq_nat n n] for any [n].
+
+    Proof: (* FILL IN HERE *)
+[] *)
 *)
-(** 次の簡単な性質を示しなさい。 *)
+(** [plus_assoc]の非形式的証明を参考に、次の定理の非形式的証明を書きなさい。
+    Coqのタクティックを日本語に変換するだけではだめです！
+  
+    定理： 任意の[n]について、[true = beq_nat n n]が成立する。
+     
+    証明： (* FILL IN HERE *) 
+[]  *)
 
-Theorem evenb_n__oddb_Sn : forall n : nat,
-  evenb n = negb (evenb (S n)).
-Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
-
-(* ###################################################################### *)
+(* ################################################################# *)
 (*
 (** * More Exercises *)
 *)
 (** * 発展課題 *)
+
+(*
+(** **** Exercise: 3 stars, recommended (mult_comm)  *)
+*)
+(** **** 練習問題: ★★★★, recommended (mult_comm)  *)
+(*
+(** Use [assert] to help prove this theorem.  You shouldn't need to
+    use induction on [plus_swap]. *)
+*)
+(** [assert]を使い、次の定理を示しなさい。
+    ここでは[plus_swap]に対して[induction]を使ってはいけません。 *)
+
+Theorem plus_swap : forall n m p : nat,
+  n + (m + p) = m + (n + p).
+Proof.
+  (* FILL IN HERE *) Admitted.
+
+(*
+(** Now prove commutativity of multiplication.  (You will probably
+    need to define and prove a separate subsidiary theorem to be used
+    in the proof of this one.  You may find that [plus_swap] comes in
+    handy.) *)
+*)
+(** 次に乗算の可換律を示しなさい。
+    （補助定理を一つ示す必要があるでしょう。
+    [plus_swap]を使うといいかもしれません。） *)
+
+Theorem mult_comm : forall m n : nat,
+  m * n = n * m.
+Proof.
+  (* FILL IN HERE *) Admitted.
+(** [] *)
 
 (*
 (** **** Exercise: 3 stars, optional (more_exercises)  *)
@@ -584,7 +679,7 @@ Proof.
     analysis ([destruct]), or (c) it also requires induction.  Write
     down your prediction.  Then fill in the proof.  (There is no need
     to turn in your piece of paper; this is just to encourage you to
-    reflect before hacking!) *)
+    reflect before you hack!) *)
 *)
 (** 紙を準備し、以下の定理のそれぞれに対して、
     (a)簡約と書き換えだけで示せるか、
@@ -596,8 +691,8 @@ Proof.
     手を動かす前に一度考えてもらうために使ったのです。） *)
 (* 訳注：最後の括弧書きは「提出しなくて構いません」なのだが、web公開のテキストに提出も何もないので意訳。 *)
 
-Theorem ble_nat_refl : forall n:nat,
-  true = ble_nat n n.
+Theorem leb_refl : forall n:nat,
+  true = leb n n.
 Proof.
   (* FILL IN HERE *) Admitted.
 
@@ -611,8 +706,8 @@ Theorem andb_false_r : forall b : bool,
 Proof.
   (* FILL IN HERE *) Admitted.
 
-Theorem plus_ble_compat_l : forall n m p : nat, 
-  ble_nat n m = true -> ble_nat (p + n) (p + m) = true.
+Theorem plus_ble_compat_l : forall n m p : nat,
+  leb n m = true -> leb (p + n) (p + m) = true.
 Proof.
   (* FILL IN HERE *) Admitted.
 
@@ -650,17 +745,17 @@ Proof.
 *)
 (** **** 練習問題: ★★, optional (beq_nat_refl)  *)
 (*
-(** Prove the following theorem.  Putting [true] on the left-hand side
-of the equality may seem odd, but this is how the theorem is stated in
-the standard library, so we follow suit.  Since rewriting 
-works equally well in either direction, we will have no 
-problem using the theorem no matter which way we state it. *)
+(** Prove the following theorem.  (Putting the [true] on the left-hand
+    side of the equality may look odd, but this is how the theorem is
+    stated in the Coq standard library, so we follow suit.  Rewriting
+    works equally well in either direction, so we will have no problem
+    using the theorem no matter which way we state it.) *)
 *)
 (** 次の定理を示しなさい。
-    [true]を統合の左辺に置くのは奇妙に見えるかもしれませんが、これは標準ライブラリにある定理に合わせたためです。
-    書き換えは両方向で可能なので、どちらで記述しても問題はありません。 *)
+    （[true]を統合の左辺に置くのは奇妙に見えるかもしれませんが、これは標準ライブラリにある定理に合わせたためです。
+    書き換えは両方向で可能なので、どちらで記述しても問題はありません。） *)
 
-Theorem beq_nat_refl : forall n : nat, 
+Theorem beq_nat_refl : forall n : nat,
   true = beq_nat n n.
 Proof.
   (* FILL IN HERE *) Admitted.
@@ -672,67 +767,86 @@ Proof.
 (** **** 練習問題: ★★, optional (plus_swap')  *)
 (*
 (** The [replace] tactic allows you to specify a particular subterm to
-   rewrite and what you want it rewritten to.  More precisely,
-   [replace (t) with (u)] replaces (all copies of) expression [t] in
-   the goal by expression [u], and generates [t = u] as an additional
-   subgoal. This is often useful when a plain [rewrite] acts on the wrong
-   part of the goal.  
+   rewrite and what you want it rewritten to: [replace (t) with (u)]
+   replaces (all copies of) expression [t] in the goal by expression
+   [u], and generates [t = u] as an additional subgoal. This is often
+   useful when a plain [rewrite] acts on the wrong part of the goal.
 
    Use the [replace] tactic to do a proof of [plus_swap'], just like
-   [plus_swap] but without needing [assert (n + m = m + n)]. 
+   [plus_swap] but without needing [assert (n + m = m + n)]. *)
 *)
- *)
-(** [replace]タクティックは、部分式を別の式に書き換えるのに使います。
-   より正確には、[replace (t) with (u)]の形で、ゴールに存在する[t]を全て[u]に書き換え、サブゴールとして[t = u]を作ります。
+(** [replace]タクティックは、特定の部分式を指定した別の式に書き換えるのに使います。
+   [replace (t) with (u)]の形で、ゴールに存在する[t]を全て[u]に書き換え、サブゴールとして[t = u]を作ります。
    [rewrite]での書き換えが意図通りに行えないときに便利です。
  
    [replace]を使って次の[plus_swap']を証明しなさい。
-   証明はほとんど[plus_swap]と同じですが、[assert (n + m = m + n)]を書かないようにしなさい *)
+   証明はほとんど[plus_swap]と同じですが、[assert (n + m = m + n)]を書かないようにしなさい。 *)
 
-Theorem plus_swap' : forall n m p : nat, 
+Theorem plus_swap' : forall n m p : nat,
   n + (m + p) = m + (n + p).
 Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-
 (*
-(** **** Exercise: 3 stars (binary_commute)  *)
+(** **** Exercise: 3 stars, recommendedM (binary_commute)  *)
 *)
-(** **** 練習問題: ★★★ (binary_commute)  *)
+(** **** 練習問題: ★★★, recommended (binary_commute)  *)
 (*
-(** Recall the [increment] and [binary-to-unary] functions that you
+(** Recall the [incr] and [bin_to_nat] functions that you
     wrote for the [binary] exercise in the [Basics] chapter.  Prove
-    that these functions commute -- that is, incrementing a binary
-    number and then converting it to unary yields the same result as
-    first converting it to unary and then incrementing.
-    Name your theorem [bin_to_nat_pres_incr].
+    that the following diagram commutes:
 
-    (Before you start working on this exercise, please copy the
-    definitions from your solution to the [binary] exercise here so
-    that this file can be graded on its own.  If you find yourself
-    wanting to change your original definitions to make the property
-    easier to prove, feel free to do so.) *)
+                            incr
+              bin ----------------------> bin
+               |                           |
+    bin_to_nat |                           |  bin_to_nat
+               |                           |
+               v                           v
+              nat ----------------------> nat
+                             S
+
+    That is, incrementing a binary number and then converting it to
+    a (unary) natural number yields the same result as first converting
+    it to a natural number and then incrementing.
+    Name your theorem [bin_to_nat_pres_incr] ("pres" for "preserves").
+
+    Before you start working on this exercise, copy the definitions
+    from your solution to the [binary] exercise here so that this file
+    can be graded on its own.  If you want to change your original
+    definitions to make the property easier to prove, feel free to
+    do so! *)
 *)
-(** [Basics]の章で書いた[increment]と[binary-to-unary]関数に関してです。
-    これらの関数が可換であること、つまり2進数を1増やしてから1進数に変換した結果と、変換を先にしてから1増やした結果が一致することを示しなさい。
-    名前は[bin_to_nat_pres_incr]とします。
+(** [Basics]の章の[binary]という課題で書いた、[increment]と[bin_to_nat]関数に関してです。
+    以下の図が可換であることを示しなさい。
+<<
+                            incr 
+              bin ----------------------> bin 
+               |                           | 
+    bin_to_nat |                           |  bin_to_nat 
+               |                           | 
+               v                           v 
+              nat ----------------------> nat 
+                             S 
+>>
+    つまり、2進数を1増やしてから（1進の）自然数に変換した結果と、変換を先にしてから1増やした結果が一致するということです。
+    名前は[bin_to_nat_pres_incr]とします（presは保存(preserve)です）。
  
-    （[Basics]に書いた定義から証明しやすい形に変更しても構いません。） *)
+    始める前に、[binary]に書いた定義から証明しやすい形に変更しても構いません。 *)
 (* 訳注：括弧書きに「このファイル単体で評価できるようにコピーしてください」と書いてあるが無関係なので消去 *)
 
 (* FILL IN HERE *)
 (** [] *)
 
-
 (*
-(** **** Exercise: 5 stars, advanced (binary_inverse)  *)
+(** **** Exercise: 5 stars, advancedM (binary_inverse)  *)
 *)
 (** **** 練習問題: ★★★★★, advanced (binary_inverse)  *)
 (*
 (** This exercise is a continuation of the previous exercise about
     binary numbers.  You will need your definitions and theorems from
-    the previous exercise to complete this one.
+    there to complete this one; please copy them to this file to make
+    it self contained for grading.
 
     (a) First, write a function to convert natural numbers to binary
         numbers.  Then prove that starting with any natural number,
@@ -742,7 +856,7 @@ Proof.
     (b) You might naturally think that we should also prove the
         opposite direction: that starting with a binary number,
         converting to a natural, and then back to binary yields the
-        same number we started with.  However, it is not true!
+        same number we started with.  However, this is not true!
         Explain what the problem is.
 
     (c) Define a "direct" normalization function -- i.e., a function
@@ -752,9 +866,8 @@ Proof.
         part is tricky!)
 
     Again, feel free to change your earlier definitions if this helps
-    here. 
+    here. *)
 *)
- *)
 (** この課題は一つ前の続きになります。
     したがって、一つ前の課題で使った定義や定理が必要です。
  
@@ -776,229 +889,4 @@ Proof.
 (* FILL IN HERE *)
 (** [] *)
 
-(* ###################################################################### *)
-(*
-(** * Formal vs. Informal Proof (Advanced) *)
-*)
-(** * 発展：形式的証明　対　非形式的証明 *)
-
-(*
-(** "Informal proofs are algorithms; formal proofs are code." *)
-*)
-(** 「非形式的証明はアルゴリズムで、形式的証明はコードだ。」 *)
-
-(*
-(** The question of what, exactly, constitutes a "proof" of a
-    mathematical claim has challenged philosophers for millennia.  A
-    rough and ready definition, though, could be this: a proof of a
-    mathematical proposition [P] is a written (or spoken) text that
-    instills in the reader or hearer the certainty that [P] is true.
-    That is, a proof is an act of communication.
-
-    Now, acts of communication may involve different sorts of readers.
-    On one hand, the "reader" can be a program like Coq, in which case
-    the "belief" that is instilled is a simple mechanical check that
-    [P] can be derived from a certain set of formal logical rules, and
-    the proof is a recipe that guides the program in performing this
-    check.  Such recipes are _formal_ proofs.
-
-    Alternatively, the reader can be a human being, in which case the
-    proof will be written in English or some other natural language,
-    thus necessarily _informal_.  Here, the criteria for success are
-    less clearly specified.  A "good" proof is one that makes the
-    reader believe [P].  But the same proof may be read by many
-    different readers, some of whom may be convinced by a particular
-    way of phrasing the argument, while others may not be.  One reader
-    may be particularly pedantic, inexperienced, or just plain
-    thick-headed; the only way to convince them will be to make the
-    argument in painstaking detail.  But another reader, more familiar
-    in the area, may find all this detail so overwhelming that they
-    lose the overall thread.  All they want is to be told the main
-    ideas, because it is easier to fill in the details for themselves.
-    Ultimately, there is no universal standard, because there is no
-    single way of writing an informal proof that is guaranteed to
-    convince every conceivable reader.  In practice, however,
-    mathematicians have developed a rich set of conventions and idioms
-    for writing about complex mathematical objects that, within a
-    certain community, make communication fairly reliable.  The
-    conventions of this stylized form of communication give a fairly
-    clear standard for judging proofs good or bad.
-
-    Because we are using Coq in this course, we will be working
-    heavily with formal proofs.  But this doesn't mean we can ignore
-    the informal ones!  Formal proofs are useful in many ways, but
-    they are _not_ very efficient ways of communicating ideas between
-    human beings. *)
-*)
-(** 数学的な言明に対する「証明」とは一体何であるのか、という問いは、数千年に渡り議論されています。
-    とはいえ、大まかに合意されている定義は次のようになります。
-    「数学的命題[P]に対する証明とは、読み手（聞き手）が確かに[P]は正しいと信じるに足るような記述（発言）である。」
-    つまり、証明とはコミュニケーションであるということです。
- 
-    コミュニケーションは、様々な「読み手」と行われます。
-    あるときには、この「読み手」はCoqのようなプログラムでしょう。
-    この場合、信じさせるための「信条」は[P]が形式的に定義された論理規則から導出されるかの検査であり、証明はこの検査を実行可能な形で書かれたレシピということになります。
-    このレシピを「形式的(_formal_)」証明といいます。
- 
-    また別のときには、「読み手」が人間であることもあるでしょう。
-    この場合、証明は英語や日本語などの自然言語で書かれることになり、結果として「非形式的(_informal_)」になります。
-    こちらは、コミュニケーション時の戦略はそこまではっきりとはしません。
-    「よい」証明ならば、ある読み手が[P]を信じるでしょう。
-    しかし、読み手には、ある特定の書き方でないと信じない人もいれば、そうでない人もいます。
-    もしその読み手が、特別融通が利かなかったり、過度に未熟だったり、頭の回転が非常に鈍い人だったりすると、信じさせるには綿密に詳細を記述しなければならないでしょう。
-    一方で、その分野に詳しい人がその証明を読んだ場合、あまりの詳細の記述に全体の流れを追えなくなってしまうでしょう。
-    そのような読み手が知りたいのは証明における主なアイディアであって、簡単に自分で埋められるような細かな部分ではありません。
-    究極的には、証明の記述方法の普遍的標準などありません。
-    あり得る読み手全員が信じるに足るような非形式的証明の記述方法が存在しないからです。
-    ただし実際には、複雑な内容を記述するための、多彩な慣習や慣用表現が作られています。
-    これらを用いることで、特定のコミュニティの中では、コミュニケーションをかなり円滑に進めることができます。
-    こう言った慣習は、かなり明確に証明の良し悪しを判定する基準があります。
- 
-    この講義ではCoqを使っていますので、かなり形式的証明を扱うことになります。
-    しかし、だからといって非形式的証明を無視するわけではありません！
-    形式的証明は様々な点で有用なのですが、他の人とアイディアを交わしたりといったことには非効率的です。 *)
-
-(*
-(** For example, here is a proof that addition is associative: *)
-*)
-(** 例えば、次の証明は加算が結合的であることを示しています。 *)
-
-Theorem plus_assoc' : forall n m p : nat,
-  n + (m + p) = (n + m) + p.
-Proof. intros n m p. induction n as [| n']. reflexivity. 
-  simpl. rewrite -> IHn'. reflexivity.  Qed.
-
-(*
-(** Coq is perfectly happy with this as a proof.  For a human,
-    however, it is difficult to make much sense of it.  If you're used
-    to Coq you can probably step through the tactics one after the
-    other in your mind and imagine the state of the context and goal
-    stack at each point, but if the proof were even a little bit more
-    complicated this would be next to impossible.  Instead, a
-    mathematician might write it something like this: *)
-*)
-(** この証明はCoqにとっては完璧です。
-    しかし人間からすると、直観的に理解することは難しいものです。
-    Coqに慣れている人なら、タクティックを一つずつ進めるように文脈とゴールを頭の中に作って考えることも可能でしょうが、少し複雑になるだけでほぼ不可能になります。
-    もし数学者がこの証明を書くとしたら、大体次のようになるでしょう。 *)
-(*
-(** - _Theorem_: For any [n], [m] and [p],
-      n + (m + p) = (n + m) + p.
-    _Proof_: By induction on [n].
-
-    - First, suppose [n = 0].  We must show 
-        0 + (m + p) = (0 + m) + p.  
-      This follows directly from the definition of [+].
-
-    - Next, suppose [n = S n'], where
-        n' + (m + p) = (n' + m) + p.
-      We must show
-        (S n') + (m + p) = ((S n') + m) + p.
-      By the definition of [+], this follows from
-        S (n' + (m + p)) = S ((n' + m) + p),
-      which is immediate from the induction hypothesis. *)
-*)
-(** - 定理： 任意の[n]、[m]、[p]について、以下が成立する。
-[[
-      n + (m + p) = (n + m) + p.
-]]
-    証明： [n]に関する帰納法による。
-
-    - [n = 0]の場合、示す命題は
-[[
-        0 + (m + p) = (0 + m) + p
-]]
-      である。これは[+]の定義から明らかである。
- 
-    - [n = S n']の場合で、帰納法の仮定として
-[[
-        n' + (m + p) = (n' + m) + p
-]]
-      が成り立つとする。示す命題は
-[[
-        (S n') + (m + p) = ((S n') + m) + p
-]]
-      である。[+]の定義より、次の形に変形される。
-[[
-        S (n' + (m + p)) = S ((n' + m) + p)
-]]
-      これは帰納法の仮定から明らかである。 *)
-(** _Qed_ *)
-
-(*
-(** The overall form of the proof is basically similar.  This is
-    no accident: Coq has been designed so that its [induction] tactic
-    generates the same sub-goals, in the same order, as the bullet
-    points that a mathematician would write.  But there are
-    significant differences of detail: the formal proof is much more
-    explicit in some ways (e.g., the use of [reflexivity]) but much
-    less explicit in others (in particular, the "proof state" at any
-    given point in the Coq proof is completely implicit, whereas the
-    informal proof reminds the reader several times where things
-    stand). *)
-*)
-(** 証明の大まかな形式は似ています。
-    これは偶然ではありません。
-    Coqの[induction]は、箇条書きされたものと同じサブゴールを、同じ順で作るように設定されています。
-    しかし、細部は大きく違います。
-    形式的証明ではいくつかの手順がより明示的になっています（例えば[reflexivity]の使用など）が、逆に明示されていない箇所もあります（特に「証明する命題」はCoqの証明上には全く現れませんが、非形式的証明では確認のために明示されています）。 *)
-
-(*
-(** Here is a formal proof that shows the structure more
-    clearly: *)
-*)
-(** 形式的証明でより構造を明示すると次のようになります。 *)
-
-Theorem plus_assoc'' : forall n m p : nat,
-  n + (m + p) = (n + m) + p.
-Proof.
-  intros n m p. induction n as [| n']. 
-  Case "n = 0".
-    reflexivity. 
-  Case "n = S n'".
-    simpl. rewrite -> IHn'. reflexivity.   Qed.
-
-(*
-(** **** Exercise: 2 stars, advanced (plus_comm_informal)  *)
-*)
-(** **** 練習問題: ★★, advanced (plus_comm_informal)  *)
-(*
-(** Translate your solution for [plus_comm] into an informal proof. *)
-*)
-(** [plus_comm]の（課題として解いた）証明を非形式的証明で書きなさい。 *)
-
-(*
-(** Theorem: Addition is commutative.
- 
-    Proof: (* FILL IN HERE *)
-*)
- *)
-(** 定理： 加算は可換律を満たす。
-  
-    証明： (* FILL IN HERE *)
- *)
-(** [] *)
-
-(*
-(** **** Exercise: 2 stars, optional (beq_nat_refl_informal)  *)
-*)
-(** **** 練習問題: ★★, optional (beq_nat_refl_informal)  *)
-(*
-(** Write an informal proof of the following theorem, using the
-    informal proof of [plus_assoc] as a model.  Don't just
-    paraphrase the Coq tactics into English!
- 
-    Theorem: [true = beq_nat n n] for any [n].
-    
-    Proof: (* FILL IN HERE *) 
-[] *)
-*)
-(** [plus_assoc]の非形式的証明を参考に、次の定理の非形式的証明を書きなさい。
-    Coqのタクティックを日本語に変換するだけではだめです！
-  
-    定理： 任意の[n]について、[true = beq_nat n n]が成立する。
-     
-    証明： (* FILL IN HERE *) 
-[]  *)
-
-(** $Date: 2014-12-31 15:31:47 -0500 (Wed, 31 Dec 2014) $ *)
+(** $Date: 2016-10-07 14:01:19 -0400 (Fri, 07 Oct 2016) $ *)
