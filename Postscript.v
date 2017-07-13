@@ -394,7 +394,7 @@
             - Foundations for Programming Languages, by John C. Mitchell [Mitchell 1996]
  
        - Coqについて: 
-           - Verified Functional Algorithms, by Andrew Appel [Chlipala 2013]
+           - Verified Functional Algorithms, by Andrew Appel [Appel 2017]
            - Certified Programming with Dependent Types, by Adam Chlipala [Chlipala 2013]
            - Interactive Theorem Proving and Program Development: Coq'Art: The Calculus of Inductive Constructions,
              by Yves Bertot and Pierre Casteran [Bertot 2004]
