@@ -6,3 +6,6 @@ html/
 *.gz
 *.ml
 *.mli
+*.aux
+!impdriver.ml
+!normdriver.ml
