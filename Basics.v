@@ -1481,9 +1481,12 @@ Proof.
     + reflexivity.
 Qed.
 
+(*
 (** Each pair of calls to [reflexivity] corresponds to the
     subgoals that were generated after the execution of the [destruct c]
     line right above it. *)
+*)
+(** 2つ並んだ[reflexivity]は、その直前の行の[destruct c]を実行することで作られたサブゴールに対応しています。 *)
 
 (** Besides [-] and [+], we can use [*] (asterisk) as a third kind of
     bullet.  We can also enclose sub-proofs in curly braces, which is
