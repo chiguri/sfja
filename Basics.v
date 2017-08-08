@@ -57,11 +57,11 @@
     _Gallina_.  The second half introduces some basic _tactics_ that
     can be used to prove properties of Coq programs. *)
 *)
-(** 関数型プログラミングスタイルはプログラミングを単純で数学的直観を基礎としています。
+(** 関数型プログラミングスタイルは単純な数学的直観を基礎としています。
     手続きやメソッドが副作用を持たなければ、（効率を無視すれば）理解に必要なのは入力をどの出力に割り当てるかだけです。
-    つまり、これは数学的な関数を計算する具体的な手法として理解することとも考えられます。
+    つまり、手続きやメソッドを、数学的な関数を計算する具体的な手法として理解することとも考えられます。
     これが「関数型プログラミング(functional programming)」における「関数型(functional)」という語の意図の一つです。
-    プログラムと数学的な対象を直接関係づけることは、正しさの形式的証明やプログラムの挙動の健全で非形式的な解釈の両面で役に立ちます。
+    プログラムと数学的な対象を直接関係づけることは、正当性の形式的証明やプログラムの挙動の健全な非形式的解釈という両面で役に立ちます。
  
     もう一つの関数型プログラミングが「関数型」であるという意図は、関数（やメソッド）を「一級(_first class_)」値として扱うことから来ます。
     ここで、一級値であるとは、関数の引数にしたり、関数の結果として返したり、データ構造に含めたり、といったことができることを意味します。
@@ -97,7 +97,7 @@
     definitions we need in this course, rather than just getting them
     implicitly from the library. *)
 *)
-(** プログラミング言語Coqには、ほとんど何もビルトインされていません。
+(** Coqに組み込まれた機能は、「極限まで」小さいものです。
     ブール値や自然数、文字列といった基本データ型を提供する代わりに、Coqには新しい型やそれを処理するための強力な機構が用意されています。
     この機構により、よくあるデータ型は全て定義することができます。
  
@@ -137,9 +137,10 @@ Inductive day : Type :=
     days. *)
 *)
 (** 型の名前は[day]で、要素は[monday]、[tuesday]...などです。
-    それ以降の各行は次のようにも読めます。「[monday]は[day]、[tuesday]は[day]、などなど」といった具合です。
+    二行目以降は次のようにも読めます。
+    「[monday]は[day]、[tuesday]は[day]、などなど」といった具合です。
  
-    [day]が何かを定義できれば、それを利用した関数を書くこともできるでしょう。 *)
+    [day]が何かを定義できれば、それを利用した関数を書くこともできます。 *)
 
 
 Definition next_weekday (d:day) : day :=
@@ -193,7 +194,7 @@ Compute (next_weekday (next_weekday saturday)).
     Second, we can record what we _expect_ the result to be in the
     form of a Coq example: *)
 *)
-(** （もし今手元にコンピュータがあるなら、CoqのIDEのうち好きなもの（CoqIDEやProofGeneralなどから）を選んで起動し、実際に上のコマンドを入力し動かしてみるといいでしょう。
+(** （もし今手元にコンピュータがあるなら、CoqのIDEのうち好きなもの（CoqIdeやProofGeneralなど）を選んで起動し、実際に上のコマンドを入力し動かしてみるといいでしょう。
     この本に付随するCoqのソースから [Basics.v] を開き、上のサンプルを探してCoqに読み込ませ、結果を観察してください。）
  
     二番目の方法は、評価の結果として我々が期待しているものをCoqに対してあらかじめ以下のような形で例示しておくというものです。 *)
@@ -234,7 +235,7 @@ Proof. simpl. reflexivity.  Qed.
     to this topic in later chapters. *)
 *)
 (** この文について細かいことは今は置いておきますが（じきに戻ってきます）、本質的には以下のような意味になります。
-    「我々が作成した確認事項は等式の両辺が同じものに簡約されたことで証明できました。」
+    「我々が作成した確認事項は等式の両辺が同じものに簡約されることで証明できます。」
  
     三番目の方法は、Coqで（[Definition]を使って）定義したものから、もう少し普通の言語（OCamlやScheme、Haskell）のプログラムを「抽出(_extract_)」してしまうことです。
     この機能はGallinaで記述し、正しいと証明されたアルゴリズムを、効率的な機械語まで持っていくことができるという意味でとても興味深いものです。
@@ -244,8 +245,12 @@ Proof. simpl. reflexivity.  Qed.
     この話については後の章で詳しく見ます。 *)
 
 (* ================================================================= *)
+(*
 (** ** Homework Submission Guidelines *)
+*)
+(** ** 宿題提出のガイドライン *)
 
+(*
 (** If you are using Software Foundations in a course, your instructor
     may use automatic scripts to help grade your homework assignments.
     In order for these scripts to work correctly (so that you get full
@@ -261,6 +266,16 @@ Proof. simpl. reflexivity.  Qed.
         it is OK to leave a partial proof in your .v file, but in this
         case please make sure it ends with [Admitted] (not, for
         example [Abort]). *)
+*)
+(** ソフトウェアの基礎を講義で使用する場合、おそらく講師が宿題の採点用自動スクリプトを使うでしょう。
+    このスクリプトが正常に動くように（皆さんの解答が適切に採点されるように）、以下の規則を守ってください。
+      - 採点スクリプトは、.vファイルのなかから、マークのついた箇所を抜き出して採点します。
+        演習問題についている「マーク付け」を変更しないでください。
+        マークは、演習問題のヘッダ、名前、末尾の「空の角括弧」などです。
+        これらのマークを編集したりしないでください。
+      - 演習問題自体を消さないでください。
+        もし（オプションとなっていたり、解けなかったりして）演習問題を飛ばしたとしても、そのまま.vのなかに残して問題ありません。
+        ただし、この場合は（[Abort]などではなく）[Admitted]で終わるようにしてください。 *)
 
 (* ================================================================= *)
 (*
@@ -335,9 +350,13 @@ Proof. simpl. reflexivity.  Qed.
 Example test_orb4:  (orb true  true)  = true.
 Proof. simpl. reflexivity.  Qed.
 
+(*
 (** We can also introduce some familiar syntax for the boolean
     operations we have just defined. The [Infix] command defines a new
     symbolic notation for an existing definition. *)
+*)
+(** これらのブール演算に見慣れた表記法を導入することができます。
+    [Infix]コマンドで、定義したものに記号表記を割り当てることができます。 *)
 
 Infix "&&" := andb.
 Infix "||" := orb.
@@ -752,6 +771,19 @@ Compute (plus 3 2).
 ==> [S (S (S (S (S O))))]
       by the first clause of the [match]
 *)
+(**
+[[
+    plus (S (S (S O))) (S (S O))
+==> S (plus (S (S O)) (S (S O)))
+      match の二つ目の節での置き換え
+==> S (S (plus (S O) (S (S O))))
+      match の二つ目の節での置き換え
+==> S (S (S (plus O (S (S O)))))
+      match の二つ目の節での置き換え
+==> S (S (S (S (S O))))
+      match の一つ目の節での置き換え
+]]
+ *)
 
 (*
 (** As a notational convenience, if two or more arguments have
@@ -974,6 +1006,7 @@ Theorem plus_O_n : forall n : nat, 0 + n = n.
 Proof.
   intros n. simpl. reflexivity.  Qed.
 
+(*
 (** (You may notice that the above statement looks different in
     the [.v] file in your IDE than it does in the HTML rendition in
     your browser, if you are viewing both. In [.v] files, we write the
@@ -989,6 +1022,14 @@ Proof.
     we could see the intermediate state -- after simplification but
     before finishing the proof.  Here is a shorter proof of the
     theorem: *)
+*)
+(** （訳注：原文ではここでHTMLと[.v]ファイルの見え方の違いが説明されているのですが、日本語訳では表記の変更を行わないようにしていますので、飛ばします）
+ 
+    [reflexivity]はこれまでの使い方よりももっと強力です。
+    ここまでの例では[simpl]を使っていましたが、実際にはこれは必要ではありません。
+    [reflexivity]は両辺が等しいかを確かめる際にある程度自動で簡約します。
+    [simpl]は単に、証明終了前の簡約後の途中状態をみるために書いています。
+    以下は証明をより短く書いたものです。 *)
 
 Theorem plus_O_n' : forall n : nat, 0 + n = n.
 Proof.
@@ -1068,6 +1109,7 @@ Proof.
 *)
 (** 定理の名前についている[_l]という接尾辞は、「左の」と読みます。 *)
 
+(*
 (** It is worth stepping through these proofs to observe how the
     context and the goal change.  You may want to add calls to [simpl]
     before [reflexivity] to see the simplifications that Coq performs
@@ -1077,11 +1119,17 @@ Proof.
     general facts, there are many statements that cannot be handled by
     simplification alone.  For instance, we cannot use it to prove
     that [0] is also a neutral element for [+] _on the right_. *)
+*)
+(** 文脈やゴールがどのように変化していくかを見ていきましょう。
+    [simpl]を[reflexivity]の前に呼ぶことで、等価かを判定する前に簡約できます。
+ 
+    簡約は簡単な事実なら示せますが、ほとんどの言明は簡約だけでは証明できません。
+    例えば、[0]が[+]の「右零元」であることは示せません。 *)
 
 Theorem plus_n_O : forall n, n = n + 0.
 Proof.
   intros n. simpl. (* Doesn't do anything! *)
-(** (* なにも変わりません！ *) *)
+(** (#*#%*% なにも変わりません！ %*%#*#) *)
 (*
 (** (Can you explain why this happens?  Step through both proofs
     with Coq and notice how the goal and context change.)
@@ -1095,9 +1143,13 @@ Proof.
     もし証明の途中で行き詰まったら、[Abort]コマンドを使って諦めましょう。 *)
 Abort.
 
+(*
 (** The next chapter will introduce _induction_, a powerful
     technique that can be used for proving this goal.  For the moment,
     though, let's look at a few more simple tactics. *)
+*)
+(** 次章では、このゴールの証明を可能にする「帰納法(_induction_)」について述べます。
+    とりあえずここでは、簡単なタクティックをもう少し見ていきましょう。 *)
 
 (* ################################################################# *)
 (*
