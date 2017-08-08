@@ -1298,7 +1298,7 @@ Proof.
 (*
 (** * Proof by Case Analysis *)
 *)
-(** * Case分析による証明 *)
+(** * 場合分け(Case Analysis)による証明 *)
 
 (*
 (** Of course, not everything can be proved by simple
