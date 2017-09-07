@@ -18,19 +18,17 @@
     to the Examples section at the very end to get the punchline. *)
 
 
-(* DROP *)
-
-(* ################################################################# *)
-(** * Internals *)
-
+Set Warnings "-notation-overridden,-parsing,-deprecated-implicit-arguments".
 Require Import Coq.Strings.String.
 Require Import Coq.Strings.Ascii.
 Require Import Coq.Arith.Arith.
 Require Import Coq.Arith.EqNat.
 Require Import Coq.Lists.List.
 Import ListNotations.
-Require Import Maps.
-Require Import Imp.
+From LF Require Import Maps Imp.
+
+(* ################################################################# *)
+(** * Internals *)
 
 (* ================================================================= *)
 (** ** Lexical Analysis *)
@@ -395,7 +393,7 @@ with parseSequencedCommand (steps:nat)
       DO (c, rest) <==
         parseSimpleCommand steps' xs;
       DO (c', rest') <--
-        firstExpect ";" 
+        firstExpect ";;" 
           (parseSequencedCommand steps') rest;
         SomeE(c ;; c', rest')
       OR
@@ -492,6 +490,4 @@ Compute parse "
      []).
 *)
 
-(* /DROP *)
-
-(** $Date: 2017-01-31 19:12:59 -0500 (Tue, 31 Jan 2017) $ *)
+(** $Date: 2017-08-24 17:13:02 -0400 (Thu, 24 Aug 2017) $ *)

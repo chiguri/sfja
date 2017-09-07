@@ -3,7 +3,9 @@
 (* Final reminder: Please do not put solutions to the exercises in
    publicly accessible places.  Thank you!! *)
 
-Require Export Lists.
+(* Suppress some annoying warnings from Coq: *)
+Set Warnings "-notation-overridden,-parsing".
+From LF Require Export Lists.
 
 (* ################################################################# *)
 (** * Polymorphism *)
@@ -58,14 +60,39 @@ Inductive list (X:Type) : Type :=
     the type [list X] is an [Inductive]ly defined set of lists whose
     elements are of type [X]. *)
 
-(** With this definition, when we use the constructors [nil] and
-    [cons] to build lists, we need to tell Coq the type of the
-    elements in the lists we are building -- that is, [nil] and [cons]
-    are now _polymorphic constructors_.  Observe the types of these
-    constructors: *)
+Check list.
+(* ===> list : Type -> Type *)
+
+(** The parameter [X] in the definition of [list] becomes a parameter
+    to the constructors [nil] and [cons] -- that is, [nil] and [cons]
+    are now polymorphic constructors, that need to be supplied with
+    the type of the list they are building. As an example, [nil nat]
+    constructs the empty list of type [nat]. *)
+
+Check (nil nat).
+(* ===> nil nat : list nat *)
+
+(** Similarly, [cons nat] adds an element of type [nat] to a list of
+    type [list nat]. Here is an example of forming a list containing
+    just the natural number 3.*)
+
+Check (cons nat 3 (nil nat)).
+(* ===> cons nat 3 (nil nat) : list nat *)
+
+(** What might the type of [nil] be? We can read off the type [list X]
+    from the definition, but this omits the binding for [X] which is
+    the parameter to [list]. [Type -> list X] does not explain the
+    meaning of [X]. [(X : Type) -> list X] comes closer. Coq's
+    notation for this situation is [forall X : Type, list X]. *)
 
 Check nil.
 (* ===> nil : forall X : Type, list X *)
+
+(** Similarly, the type of [cons] as read off from the definition is
+    [X -> list X -> list X], but using this convention to explain the
+    meaning of [X] results in the type [forall X, X -> list X -> list
+    X]. *)
+
 Check cons.
 (* ===> cons : forall X : Type, X -> list X -> list X *)
 
@@ -77,11 +104,9 @@ Check cons.
     "forall" in a few places.  This is just a quirk of typesetting:
     there is no difference in meaning.) *)
 
-(** The "[forall X]" in these types can be read as an additional
-    argument to the constructors that determines the expected types of
-    the arguments that follow.  When [nil] and [cons] are used, these
-    arguments are supplied in the same way as the others.  For
-    example, the list containing [2] and [1] is written like this: *)
+(** Having to supply a type argument for each use of a list
+    constructor may seem an awkward burden, but we will soon see
+    ways of reducing that burden. *) 
 
 Check (cons nat 2 (cons nat 1 (nil nat))).
 
@@ -100,7 +125,7 @@ Fixpoint repeat (X : Type) (x : X) (count : nat) : list X :=
   end.
 
 (** As with [nil] and [cons], we can use [repeat] by applying it
-    first to a type and then to its list argument: *)
+    first to a type and then to an element of this type (and a number): *)
 
 Example test_repeat1 :
   repeat nat 4 2 = cons nat 4 (cons nat 4 (nil nat)).
@@ -116,7 +141,7 @@ Proof. reflexivity.  Qed.
 
 Module MumbleGrumble.
 
-(** **** Exercise: 2 starsM (mumble_grumble)  *)
+(** **** Exercise: 2 stars (mumble_grumble)  *)
 (** Consider the following two inductively defined types. *)
 
 Inductive mumble : Type :=
@@ -212,7 +237,7 @@ Check repeat.
 
     to tell Coq to attempt to infer the missing information.
 
-    Using implicit arguments, the [count] function can be written like
+    Using implicit arguments, the [repeat] function can be written like
     this: *)
 
 Fixpoint repeat'' X x count : list X :=
@@ -270,12 +295,12 @@ Fixpoint repeat''' {X : Type} (x : X) (count : nat) : list X :=
     provide one!)
 
     We will use the latter style whenever possible, but we will
-    continue to use use explicit [Argument] declarations for
-    [Inductive] constructors.  The reason for this is that marking the
-    parameter of an inductive type as implicit causes it to become
-    implicit for the type itself, not just for its constructors.  For
-    instance, consider the following alternative definition of the
-    [list] type: *)
+    continue to use explicit [Argument] declarations for [Inductive]
+    constructors.  The reason for this is that marking the parameter
+    of an inductive type as implicit causes it to become implicit for
+    the type itself, not just for its constructors.  For instance,
+    consider the following alternative definition of the [list]
+    type: *)
 
 Inductive list' {X:Type} : Type :=
   | nil' : list'
@@ -461,7 +486,7 @@ Fixpoint combine {X Y : Type} (lx : list X) (ly : list Y)
   | x :: tx, y :: ty => (x, y) :: (combine tx ty)
   end.
 
-(** **** Exercise: 1 star, optionalM (combine_checks)  *)
+(** **** Exercise: 1 star, optional (combine_checks)  *)
 (** Try answering the following questions on paper and
     checking your answers in coq:
     - What is the type of [combine] (i.e., what does [Check
@@ -829,7 +854,7 @@ Example fold_example3 :
   fold app  [[1];[];[2;3];[4]] [] = [1;2;3;4].
 Proof. reflexivity. Qed.
 
-(** **** Exercise: 1 star, advancedM (fold_types_different)  *)
+(** **** Exercise: 1 star, advanced (fold_types_different)  *)
 (** Observe that the type of [fold] is parameterized by _two_ type
     variables, [X] and [Y], and the parameter [f] is a binary operator
     that takes an [X] and a [Y] and returns a [Y].  Can you think of a
@@ -909,7 +934,7 @@ Theorem fold_length_correct : forall X (l : list X),
 (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** **** Exercise: 3 starsM (fold_map)  *)
+(** **** Exercise: 3 stars (fold_map)  *)
 (** We can also define [map] in terms of [fold].  Finish [fold_map]
     below. *)
 
@@ -951,7 +976,7 @@ Definition prod_uncurry {X Y Z : Type}
 (** As a (trivial) example of the usefulness of currying, we can use it
     to shorten one of the examples that we saw above: *)
 
-Example test_map2: map (fun x => plus 3 x) [2;0;2] = [5;3;5].
+Example test_map1': map (plus 3) [2;0;2] = [5;3;5].
 Proof. reflexivity.  Qed.
 
 (** Thought exercise: before running the following commands, can you
@@ -974,7 +999,7 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** **** Exercise: 2 stars, advancedM (nth_error_informal)  *)
+(** **** Exercise: 2 stars, advanced (nth_error_informal)  *)
 (** Recall the definition of the [nth_error] function:
 
    Fixpoint nth_error {X : Type} (l : list X) (n : nat) : option X :=
@@ -1097,5 +1122,5 @@ End Church.
 
 End Exercises.
 
-(** $Date: 2016-12-17 23:53:20 -0500 (Sat, 17 Dec 2016) $ *)
+(** $Date: 2017-08-22 17:13:32 -0400 (Tue, 22 Aug 2017) $ *)
 

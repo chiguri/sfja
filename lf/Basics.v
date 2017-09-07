@@ -344,9 +344,8 @@ Inductive nat : Type :=
 (** The clauses of this definition can be read:
       - [O] is a natural number (note that this is the letter "[O],"
         not the numeral "[0]").
-      - [S] is a "constructor" that takes a natural number and yields
-        another one -- that is, if [n] is a natural number, then [S n]
-        is too. *)
+      - [S] can be put in front of a natural number to yield another
+        one -- if [n] is a natural number, then [S n] is too. *)
 
 (** Let's look at this in a little more detail.
 
@@ -519,10 +518,10 @@ Proof. simpl. reflexivity.  Qed.
     between them: *)
 
 Fixpoint minus (n m:nat) : nat :=
-  match n, m with
-  | O   , _    => O
-  | S _ , O    => n
-  | S n', S m' => minus n' m'
+  match (n, m) with
+  | (O   , _)    => O
+  | (S _ , O)    => n
+  | (S n', S m') => minus n' m'
   end.
 
 (** The _ in the first line is a _wildcard pattern_.  Writing _ in a
@@ -696,9 +695,9 @@ Proof.
     just a few differences.
 
     First, we've used the keyword [Theorem] instead of [Example].
-    This difference is purely a matter of style; the keywords
+    This difference is mostly a matter of style; the keywords
     [Example] and [Theorem] (and a few others, including [Lemma],
-    [Fact], and [Remark]) mean exactly the same thing to Coq.
+    [Fact], and [Remark]) mean pretty much the same thing to Coq.
 
     Second, we've added the quantifier [forall n:nat], so that our
     theorem talks about _all_ natural numbers [n].  Informally, to
@@ -744,6 +743,7 @@ Proof.
 
     When stuck in the middle of a proof, we can use the [Abort]
     command to give up on it for the moment. *)
+
 Abort.
 
 (** The next chapter will introduce _induction_, a powerful
@@ -838,8 +838,8 @@ Theorem mult_S_1 : forall n m : nat,
 Proof.
   (* FILL IN HERE *) Admitted.
 
-(* (N.b. This proof can actually be completed without using [rewrite],
-   but please do use [rewrite] for the sake of the exercise.) *)
+  (* (N.b. This proof can actually be completed without using [rewrite],
+     but please do use [rewrite] for the sake of the exercise.) *)
 (** [] *)
 
 (* ################################################################# *)
@@ -1141,7 +1141,7 @@ Fixpoint plus' (n : nat) (m : nat) : nat :=
 (* ################################################################# *)
 (** * More Exercises *)
 
-(** **** Exercise: 2 starsM (boolean_functions)  *)
+(** **** Exercise: 2 stars (boolean_functions)  *)
 (** Use the tactics you have learned so far to prove the following
     theorem about boolean functions. *)
 
@@ -1159,10 +1159,11 @@ Proof.
 (* FILL IN HERE *)
 (** [] *)
 
-(** **** Exercise: 2 stars (andb_eq_orb)  *)
-(** Prove the following theorem.  (You may want to first prove a
-    subsidiary lemma or two. Alternatively, remember that you do
-    not have to introduce all hypotheses at the same time.) *)
+(** **** Exercise: 3 stars, optional (andb_eq_orb)  *)
+(** Prove the following theorem.  (Hint: This one can be a bit tricky,
+    depending on how you approach it.  You will probably need both
+    [destruct] and [rewrite], but destructing everything in sight is
+    not the best way.) *)
 
 Theorem andb_eq_orb :
   forall (b c : bool),
@@ -1172,7 +1173,7 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** **** Exercise: 3 starsM (binary)  *)
+(** **** Exercise: 3 stars (binary)  *)
 (** Consider a different, more efficient representation of natural
     numbers using a binary rather than unary system.  That is, instead
     of saying that each natural number is either zero or the successor
@@ -1213,5 +1214,5 @@ Proof.
 (* FILL IN HERE *)
 (** [] *)
 
-(** $Date: 2016-11-22 16:39:52 -0500 (Tue, 22 Nov 2016) $ *)
+(** $Date: 2017-08-24 17:13:02 -0400 (Thu, 24 Aug 2017) $ *)
 

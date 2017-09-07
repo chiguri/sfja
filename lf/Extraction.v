@@ -1,16 +1,14 @@
 (** * Extraction: Extracting ML from Coq *)
 
-(* DROP *)
-
 (* ################################################################# *)
 (** * Basic Extraction *)
 
 (** In its simplest form, extracting an efficient program from one
-    written in Coq is completely straightforward. 
+    written in Coq is completely straightforward.
 
     First we say what language we want to extract into.  Options are
-    OCaml (the most mature), Haskell (which mostly works), and
-    Scheme (a bit out of date). *)
+    OCaml (the most mature), Haskell (mostly works), and Scheme (a bit
+    out of date). *)
 
 Extraction Language Ocaml.
 
@@ -19,7 +17,7 @@ Extraction Language Ocaml.
 
 Require Import Coq.Arith.Arith.
 Require Import Coq.Arith.EqNat.
-Require Import ImpCEvalFun.
+From LF Require Import ImpCEvalFun.
 
 (** Finally, we tell Coq the name of a definition to extract and the
     name of a file to put the extracted code into. *)
@@ -82,21 +80,12 @@ Extraction "imp2.ml" ceval_step.
     memory locations in the final state.
 
     Also, to make it easier to type in examples, let's extract a
-    parser from the [ImpParser] Coq module.  To do this, we need a few
-    magic declarations to set up the right correspondence between Coq
-    strings and lists of OCaml characters. *)
+    parser from the [ImpParser] Coq module.  To do this, we first need
+    to set up the right correspondence between Coq strings and lists
+    of OCaml characters. *)
 
-Require Import Ascii String.
-Extract Inductive ascii => char
-[
-"(* If this appears, you're using Ascii internals. Please don't *) (fun (b0,b1,b2,b3,b4,b5,b6,b7) -> let f b i = if b then 1 lsl i else 0 in Char.chr (f b0 0 + f b1 1 + f b2 2 + f b3 3 + f b4 4 + f b5 5 + f b6 6 + f b7 7))"
-]
-"(* If this appears, you're using Ascii internals. Please don't *) (fun f c -> let n = Char.code c in let h i = (n land (1 lsl i)) <> 0 in f (h 0) (h 1) (h 2) (h 3) (h 4) (h 5) (h 6) (h 7))".
-Extract Constant zero => "'\000'".
-Extract Constant one => "'\001'".
-Extract Constant shift =>
- "fun b c -> Char.chr (((Char.code c) lsl 1) land 255 + if b then 1 else 0)".
-Extract Inlined Constant ascii_dec => "(=)".
+Require Import ExtrOcamlBasic.
+Require Import ExtrOcamlString.
 
 (** We also need one more variant of booleans. *)
 
@@ -104,8 +93,8 @@ Extract Inductive sumbool => "bool" ["true" "false"].
 
 (** The extraction is the same as always. *)
 
-Require Import Imp.
-Require Import ImpParser.
+From LF Require Import Imp.
+From LF Require Import ImpParser.
 Extraction "imp.ml" empty_state ceval_step parse.
 
 (** Now let's run our generated Imp evaluator.  First, have a look at
@@ -129,6 +118,11 @@ Extraction "imp.ml" empty_state ceval_step parse.
     course, the parser we're using is not certified, since we didn't
     prove anything about it! *)
 
-(* /DROP *)
+(* ################################################################# *)
+(** * Going Further *)
 
-(** $Date: 2017-01-31 19:12:59 -0500 (Tue, 31 Jan 2017) $ *)
+(** Further details about extraction can be found in the Extract
+    chapter in _Verified Functional Algorithms_ (_Software
+    Foundations_ volume 3). *)
+
+(** $Date: 2017-08-24 17:13:02 -0400 (Thu, 24 Aug 2017) $ *)

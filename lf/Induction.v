@@ -3,7 +3,7 @@
 (** Before getting started, we need to import all of our
     definitions from the previous chapter: *)
 
-Require Export Basics.
+Require Export LF.Basics.
 
 (** For the [Require Export] to work, you first need to use
     [coqc] to compile [Basics.v] into [Basics.vo].  This is like
@@ -15,9 +15,13 @@ Require Export Basics.
          Open [Basics.v].  In the "Compile" menu, click on "Compile
          Buffer".
 
+         (N.b.: These instructions need to be updated to take the "-R
+         LF ." into account.  Can a CoqIDE expert tell me how this is
+         done, please?)
+
      - From the command line:
 
-         [coqc Basics.v]
+         [make Basics.vo]
 
    If you have trouble (e.g., if you get complaints about missing
    identifiers later in the file), it may be because the "load path"
@@ -99,14 +103,14 @@ Proof.
 
     In the first subgoal, [n] is replaced by [0].  No new variables
     are introduced (so the first part of the [as...] is empty), and
-    the goal becomes [0 + 0 = 0], which follows by simplification.
+    the goal becomes [0 = 0 + 0], which follows by simplification.
 
     In the second subgoal, [n] is replaced by [S n'], and the
     assumption [n' + 0 = n'] is added to the context with the name
     [IHn'] (i.e., the Induction Hypothesis for [n']).  These two names
     are specified in the second part of the [as...] clause.  The goal
-    in this case becomes [(S n') + 0 = S n'], which simplifies to
-    [S (n' + 0) = S n'], which in turn follows from [IHn']. *)
+    in this case becomes [S n' = (S n') + 0], which simplifies to
+    [S n' = S (n' + 0)], which in turn follows from [IHn']. *)
 
 Theorem minus_diag : forall n,
   minus n n = 0.
@@ -165,7 +169,7 @@ Proof.
 (** [] *)
 
 (** **** Exercise: 2 stars, optional (evenb_S)  *)
-(** One inconveninent aspect of our definition of [evenb n] is the
+(** One inconvenient aspect of our definition of [evenb n] is the
     recursive call on [n - 2]. This makes proofs about [evenb n]
     harder when done by induction on [n], since we may need an
     induction hypothesis about [n - 2]. The following lemma gives an
@@ -178,7 +182,7 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** **** Exercise: 1 starM (destruct_induction)  *)
+(** **** Exercise: 1 star (destruct_induction)  *)
 (** Briefly explain the difference between the tactics [destruct]
     and [induction].
 
@@ -376,7 +380,7 @@ Proof.
     whereas the informal proof reminds the reader several times where
     things stand). *)
 
-(** **** Exercise: 2 stars, advanced, recommendedM (plus_comm_informal)  *)
+(** **** Exercise: 2 stars, advanced, recommended (plus_comm_informal)  *)
 (** Translate your solution for [plus_comm] into an informal proof:
 
     Theorem: Addition is commutative.
@@ -385,7 +389,7 @@ Proof.
 *)
 (** [] *)
 
-(** **** Exercise: 2 stars, optionalM (beq_nat_refl_informal)  *)
+(** **** Exercise: 2 stars, optional (beq_nat_refl_informal)  *)
 (** Write an informal proof of the following theorem, using the
     informal proof of [plus_assoc] as a model.  Don't just
     paraphrase the Coq tactics into English!
@@ -426,6 +430,8 @@ Proof.
     down your prediction.  Then fill in the proof.  (There is no need
     to turn in your piece of paper; this is just to encourage you to
     reflect before you hack!) *)
+
+Check leb.
 
 Theorem leb_refl : forall n:nat,
   true = leb n n.
@@ -505,7 +511,7 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** **** Exercise: 3 stars, recommendedM (binary_commute)  *)
+(** **** Exercise: 3 stars, recommended (binary_commute)  *)
 (** Recall the [incr] and [bin_to_nat] functions that you
     wrote for the [binary] exercise in the [Basics] chapter.  Prove
     that the following diagram commutes:
@@ -533,7 +539,7 @@ Proof.
 (* FILL IN HERE *)
 (** [] *)
 
-(** **** Exercise: 5 stars, advancedM (binary_inverse)  *)
+(** **** Exercise: 5 stars, advanced (binary_inverse)  *)
 (** This exercise is a continuation of the previous exercise about
     binary numbers.  You will need your definitions and theorems from
     there to complete this one; please copy them to this file to make
@@ -562,4 +568,4 @@ Proof.
 (* FILL IN HERE *)
 (** [] *)
 
-(** $Date: 2016-10-07 14:01:19 -0400 (Fri, 07 Oct 2016) $ *)
+(** $Date: 2017-08-22 17:13:32 -0400 (Tue, 22 Aug 2017) $ *)

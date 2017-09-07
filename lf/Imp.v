@@ -1,40 +1,36 @@
 (** * Imp: Simple Imperative Programs *)
 
-(** In this chapter, we begin a new direction that will continue for
-    the rest of the course.  Up to now most of our attention has been
-    focused on various aspects of Coq itself, while from now on we'll
-    mostly be using Coq to formalize other things.  (We'll continue to
-    pause from time to time to introduce a few additional aspects of
-    Coq.)
+(** In this chapter, we'll take a more serious look at how to use Coq
+    to study interesting things outside of itself.  Our case study is
+    a _simple imperative programming language_ called Imp, embodying a
+    tiny core fragment of conventional mainstream languages such as C
+    and Java.  Here is a familiar mathematical function written in
+    Imp.
 
-    Our first case study is a _simple imperative programming language_
-    called Imp, embodying a tiny core fragment of conventional
-    mainstream languages such as C and Java.  Here is a familiar
-    mathematical function written in Imp.
-
-     Z ::= X;;
-     Y ::= 1;;
-     WHILE not (Z = 0) DO
-       Y ::= Y * Z;;
-       Z ::= Z - 1
+     Z ::= X;; 
+     Y ::= 1;; 
+     WHILE not (Z = 0) DO 
+       Y ::= Y * Z;; 
+       Z ::= Z - 1 
      END
 *)
 
 (** This chapter looks at how to define the _syntax_ and _semantics_
-    of Imp; the chapters that follow develop a theory of _program
-    equivalence_ and introduce _Hoare Logic_, a widely used logic for
-    reasoning about imperative programs. *)
+    of Imp; further chapters in _Programming Language
+    Foundations_ (_Software Foundations_, volume 2) develop a theory
+    of _program equivalence_ and introduce _Hoare Logic_, a widely
+    used logic for reasoning about imperative programs. *)
 
-(* IMPORTS *)
+Set Warnings "-notation-overridden,-parsing".
 Require Import Coq.Bool.Bool.
 Require Import Coq.Arith.Arith.
 Require Import Coq.Arith.EqNat.
 Require Import Coq.omega.Omega.
 Require Import Coq.Lists.List.
+Require Import Coq.omega.Omega.
 Import ListNotations.
 
-Require Import Maps.
-(* /IMPORTS *)
+From LF Require Import Maps.
 
 (* ################################################################# *)
 (** * Arithmetic and Boolean Expressions *)
@@ -351,7 +347,7 @@ Proof.
         IH.
 
         The interesting case is when [a1 = ANum n] for some [n].  If
-        [n = ANum 0], then
+        [n = 0], then
 
           optimize_0plus (APlus a1 a2) = optimize_0plus a2
 
@@ -470,27 +466,29 @@ Proof.
 (* ================================================================= *)
 (** ** Defining New Tactic Notations *)
 
-(** Coq also provides several ways of "programming" tactic scripts.
+(** Coq also provides several ways of "programming" tactic
+scripts.
 
-    - The [Tactic Notation] idiom illustrated below gives a handy way to
-      define "shorthand tactics" that bundle several tactics into a
+    - The [Tactic Notation] idiom illustrated below gives a handy way
+      to define "shorthand tactics" that bundle several tactics into a
       single command.
 
     - For more sophisticated programming, Coq offers a built-in
-      programming language called [Ltac] with primitives that can
-      examine and modify the proof state.  The details are a bit too
-      complicated to get into here (and it is generally agreed that
-      [Ltac] is not the most beautiful part of Coq's design!), but they
-      can be found in the reference manual and other books on Coq, and
-      there are many examples of [Ltac] definitions in the Coq standard
-      library that you can use as examples.
+      language called [Ltac] with primitives that can examine and
+      modify the proof state.  The details are a bit too complicated
+      to get into here (and it is generally agreed that [Ltac] is not
+      the most beautiful part of Coq's design!), but they can be found
+      in the reference manual and other books on Coq, and there are
+      many examples of [Ltac] definitions in the Coq standard library
+      that you can use as examples.
 
     - There is also an OCaml API, which can be used to build tactics
       that access Coq's internal structures at a lower level, but this
       is seldom worth the trouble for ordinary Coq users.
 
-    The [Tactic Notation] mechanism is the easiest to come to grips with,
-    and it offers plenty of power for many purposes.  Here's an example. *)
+    The [Tactic Notation] mechanism is the easiest to come to grips
+    with, and it offers plenty of power for many purposes.  Here's an
+    example. *)
 
 Tactic Notation "simpl_and_try" tactic(c) :=
   simpl;
@@ -515,14 +513,12 @@ Tactic Notation "simpl_and_try" tactic(c) :=
         and [pred]), and multiplication by constants (this is what
         makes it Presburger arithmetic),
 
-      - equality ([=] and [<>]) and inequality ([<=]), and
+      - equality ([=] and [<>]) and ordering ([<=]), and
 
       - the logical connectives [/\], [\/], [~], and [->],
 
     then invoking [omega] will either solve the goal or tell you that
     it is actually false. *)
-
-Require Import Coq.omega.Omega.
 
 Example silly_presburger_example : forall m n o p,
   m + n <= n + o /\ o + 3 = p + 3 ->
@@ -530,6 +526,8 @@ Example silly_presburger_example : forall m n o p,
 Proof.
   intros. omega.
 Qed.
+
+(** (Note the [Require Import Coq.omega.Omega.] at the top of the file.) *)
 
 (* ================================================================= *)
 (** ** A Few More Handy Tactics *)
@@ -564,7 +562,7 @@ Qed.
        applied to solve the current goal.  If one is found, behave
        like [apply c].
 
-    We'll see examples below. *)
+    We'll see examples as we go along. *)
 
 (* ################################################################# *)
 (** * Evaluation as a Relation *)
@@ -595,12 +593,7 @@ Inductive aevalR : aexp -> nat -> Prop :=
 
 (** It will be convenient to have an infix notation for
     [aevalR].  We'll write [e \\ n] to mean that arithmetic expression
-    [e] evaluates to value [n].  (This notation is one place where the
-    limitation to ASCII symbols becomes a little bothersome.  The
-    standard notation for the evaluation relation is a double
-    down-arrow.  We'll typeset it like this in the HTML version of the
-    notes and use a double slash as the closest approximation in [.v]
-    files.)  *)
+    [e] evaluates to value [n]. *)
 
 Notation "e '\\' n"
          := (aevalR e n)
@@ -640,7 +633,7 @@ Inductive aevalR : aexp -> nat -> Prop :=
     [aevalR] and similar relations in the more readable graphical form
     of _inference rules_, where the premises above the line justify
     the conclusion below the line (we have already seen them in the
-    [Prop] chapter). *)
+    [IndProp] chapter). *)
 
 (** For example, the constructor [E_APlus]...
 
@@ -937,7 +930,7 @@ Definition Z : id := Id "Z".
 (** (This convention for naming program variables ([X], [Y],
     [Z]) clashes a bit with our earlier use of uppercase letters for
     types.  Since we're not using polymorphism heavily in the chapters
-    devoped to Imp, this overloading should not cause confusion.) *)
+    developed to Imp, this overloading should not cause confusion.) *)
 
 (** The definition of [bexp]s is unchanged (except for using the new
     [aexp]s): *)
@@ -1206,13 +1199,13 @@ Fixpoint ceval_fun_no_while (st : state) (c : com)
                 IF b1 THEN c1 ELSE c2 FI / st \\ st'
 
                          beval st b = false
-                    ------------------------------                 (E_WhileEnd)
+                    ------------------------------               (E_WhileFalse)
                     WHILE b DO c END / st \\ st
 
                           beval st b = true
                            c / st \\ st'
                   WHILE b DO c END / st' \\ st''
-                  ---------------------------------               (E_WhileLoop)
+                  ---------------------------------               (E_WhileTrue)
                     WHILE b DO c END / st \\ st''
 *)
 
@@ -1240,10 +1233,10 @@ Inductive ceval : com -> state -> state -> Prop :=
       beval st b = false ->
       c2 / st \\ st' ->
       (IFB b THEN c1 ELSE c2 FI) / st \\ st'
-  | E_WhileEnd : forall b st c,
+  | E_WhileFalse : forall b st c,
       beval st b = false ->
       (WHILE b DO c END) / st \\ st
-  | E_WhileLoop : forall st st' st'' b c,
+  | E_WhileTrue : forall st st' st'' b c,
       beval st b = true ->
       c / st \\ st' ->
       (WHILE b DO c END) / st' \\ st'' ->
@@ -1337,13 +1330,13 @@ Proof.
     rewrite H in H5. inversion H5.
   - (* E_IfFalse, b1 evaluates to false *)
       apply IHE1. assumption.
-  - (* E_WhileEnd, b1 evaluates to false *)
+  - (* E_WhileFalse, b1 evaluates to false *)
     reflexivity.
-  - (* E_WhileEnd, b1 evaluates to true (contradiction) *)
+  - (* E_WhileFalse, b1 evaluates to true (contradiction) *)
     rewrite H in H2. inversion H2.
-  - (* E_WhileLoop, b1 evaluates to false (contradiction) *)
+  - (* E_WhileTrue, b1 evaluates to false (contradiction) *)
     rewrite H in H4. inversion H4.
-  - (* E_WhileLoop, b1 evaluates to true *)
+  - (* E_WhileTrue, b1 evaluates to true *)
       assert (st' = st'0) as EQ1.
       { (* Proof of assertion *) apply IHE1_1; assumption. }
       subst st'0.
@@ -1372,7 +1365,7 @@ Proof.
   inversion Heval. subst. clear Heval. simpl.
   apply t_update_eq.  Qed.
 
-(** **** Exercise: 3 stars, recommendedM (XtimesYinZ_spec)  *)
+(** **** Exercise: 3 stars, recommended (XtimesYinZ_spec)  *)
 (** State and prove a specification of [XtimesYinZ]. *)
 
 (* FILL IN HERE *)
@@ -1426,7 +1419,7 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** **** Exercise: 4 starsM (no_whiles_terminating)  *)
+(** **** Exercise: 4 stars (no_whiles_terminating)  *)
 (** Imp programs that don't involve while loops always terminate.
     State and prove a theorem [no_whiles_terminating] that says this. *)
 (** Use either [no_whiles] or [no_whilesR], as you prefer. *)
@@ -1726,8 +1719,8 @@ End BreakImp.
 (** **** Exercise: 4 stars, optional (add_for_loop)  *)
 (** Add C-style [for] loops to the language of commands, update the
     [ceval] definition to define the semantics of [for] loops, and add
-    cases for [for] loops as needed so that all the proofs in this file
-    are accepted by Coq.
+    cases for [for] loops as needed so that all the proofs in this
+    file are accepted by Coq.
 
     A [for] loop should be parameterized by (a) a statement executed
     initially, (b) a test that is run on each iteration of the loop to
@@ -1740,5 +1733,5 @@ End BreakImp.
 (* FILL IN HERE *)
 (** [] *)
 
-(* $Date: 2016-12-20 10:33:44 -0500 (Tue, 20 Dec 2016) $ *)
+(** $Date: 2017-08-25 14:01:35 -0400 (Fri, 25 Aug 2017) $ *)
 

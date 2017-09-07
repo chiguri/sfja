@@ -1,6 +1,6 @@
 (** * Lists: Working with Structured Data *)
 
-Require Export Induction.
+Require Export LF.Induction.
 Module NatList.
 
 (* ################################################################# *)
@@ -45,7 +45,7 @@ Notation "( x , y )" := (pair x y).
 
 (** The new pair notation can be used both in expressions and in
     pattern matches (indeed, we've actually seen this already in the
-    previous chapter, in the definition of the [minus] function --
+    [Basics] chapter, in the definition of the [minus] function --
     this works because the pair notation is also provided as part of
     the standard library): *)
 
@@ -251,6 +251,7 @@ Proof. reflexivity.  Qed.
 Example test_tl:              tl [1;2;3] = [2;3].
 Proof. reflexivity.  Qed.
 
+
 (* ----------------------------------------------------------------- *)
 (** *** Exercises *)
 
@@ -345,10 +346,10 @@ Example test_count1:              count 1 [1;2;3;1;4;1] = 3.
 Example test_count2:              count 6 [1;2;3;1;4;1] = 0.
  (* FILL IN HERE *) Admitted.
 
-(** Multiset [sum] is similar to set [union]: [sum a b] contains
-    all the elements of [a] and of [b].  (Mathematicians usually
-    define [union] on multisets a little bit differently, which
-    is why we don't use that name for this operation.)
+(** Multiset [sum] is similar to set [union]: [sum a b] contains all
+    the elements of [a] and of [b].  (Mathematicians usually define
+    [union] on multisets a little bit differently -- using max instead
+    of sum -- which is why we don't use that name for this operation.)
     For [sum] we're giving you a header that does not give explicit
     names to the arguments.  Moreover, it uses the keyword
     [Definition] instead of [Fixpoint], so even if you had names for
@@ -427,7 +428,7 @@ Example test_subset2:              subset [1;2;2] [2;1;4;1] = false.
  (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** **** Exercise: 3 stars, recommendedM (bag_theorem)  *)
+(** **** Exercise: 3 stars, recommended (bag_theorem)  *)
 (** Write down an interesting theorem [bag_theorem] about bags
     involving the functions [count] and [add], and prove it.  Note
     that, since this problem is somewhat open-ended, it's possible
@@ -457,9 +458,9 @@ Theorem nil_app : forall l:natlist,
 Proof. reflexivity. Qed.
 
 (** ... because the [[]] is substituted into the
-    "scrutinee" (the value being "scrutinized" by the match) in the
-    definition of [app], allowing the match itself to be
-    simplified. *)
+    "scrutinee" (the expression whose value is being "scrutinized" by
+    the match) in the definition of [app], allowing the match itself
+    to be simplified. *)
 
 (** Also, as with numbers, it is sometimes helpful to perform case
     analysis on the possible shapes (empty or non-empty) of an unknown
@@ -728,6 +729,8 @@ Proof.
     familiar with.  The more pedantic style is a good default for our
     present purposes. *)
 
+
+
 (* ================================================================= *)
 (** ** [Search] *)
 
@@ -754,7 +757,7 @@ Proof.
 (* ================================================================= *)
 (** ** List Exercises, Part 1 *)
 
-(** **** Exercise: 3 starsM (list_exercises)  *)
+(** **** Exercise: 3 stars (list_exercises)  *)
 (** More practice with lists: *)
 
 Theorem app_nil_r : forall l : natlist,
@@ -844,7 +847,7 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** **** Exercise: 3 stars, optionalM (bag_count_sum)  *)
+(** **** Exercise: 3 stars, optional (bag_count_sum)  *)
 (** Write down an interesting theorem [bag_count_sum] about bags
     involving the functions [count] and [sum], and prove it.  (You may
     find that the difficulty of the proof depends on how you defined
@@ -852,7 +855,7 @@ Proof.
 (* FILL IN HERE *)
 (** [] *)
 
-(** **** Exercise: 4 stars, advancedM (rev_injective)  *)
+(** **** Exercise: 4 stars, advanced (rev_injective)  *)
 (** Prove that the [rev] function is injective -- that is,
 
     forall (l1 l2 : natlist), rev l1 = rev l2 -> l1 = l2.
@@ -1059,7 +1062,7 @@ Proof.
 (** [] *)
 End PartialMap.
 
-(** **** Exercise: 2 starsM (baz_num_elts)  *)
+(** **** Exercise: 2 stars (baz_num_elts)  *)
 (** Consider the following inductive definition: *)
 
 Inductive baz : Type :=
@@ -1073,5 +1076,5 @@ Inductive baz : Type :=
 *)
 (** [] *)
 
-(** $Date: 2016-12-17 23:53:20 -0500 (Sat, 17 Dec 2016) $ *)
+(** $Date: 2017-08-24 10:54:05 -0400 (Thu, 24 Aug 2017) $ *)
 

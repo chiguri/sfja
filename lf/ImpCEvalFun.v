@@ -10,12 +10,9 @@
 (* ################################################################# *)
 (** * A Broken Evaluator *)
 
-(* IMPORTS *)
 Require Import Coq.omega.Omega.
 Require Import Coq.Arith.Arith.
-Require Import Imp.
-Require Import Maps.
-(* /IMPORTS *)
+From LF Require Import Imp Maps.
 
 (** Here was our first try at an evaluation function for commands,
     omitting [WHILE]. *)
@@ -273,14 +270,14 @@ Proof.
         * (* r = true *)
          destruct (ceval_step st c i') eqn:Heqr1.
          { (* r1 = Some s *)
-           apply E_WhileLoop with s. rewrite Heqr.
+           apply E_WhileTrue with s. rewrite Heqr.
            reflexivity.
            apply IHi'. rewrite Heqr1. reflexivity.
            apply IHi'. simpl in H1. assumption. }
          { (* r1 = None *) inversion H1. }
         * (* r = false *)
           inversion H1.
-          apply E_WhileEnd.
+          apply E_WhileFalse.
           rewrite <- Heqr. subst. reflexivity.  Qed.
 
 (** **** Exercise: 4 stars (ceval_step__ceval_inf)  *)
@@ -382,4 +379,4 @@ Proof.
   rewrite E1 in E2. inversion E2. reflexivity.
   omega. omega.  Qed.
 
-(** $Date: 2016-10-22 20:19:37 -0400 (Sat, 22 Oct 2016) $ *)
+(** $Date: 2017-08-24 17:13:02 -0400 (Thu, 24 Aug 2017) $ *)
