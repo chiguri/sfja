@@ -10,10 +10,11 @@
     of every modern functional programming language (including
     Coq!). *)
 
+Set Warnings "-notation-overridden,-parsing".
 Require Import Coq.Arith.Arith.
-Require Import Maps.
-Require Import Imp.
-Require Import Smallstep.
+From PLF Require Import Maps.
+From PLF Require Import Imp.
+From PLF Require Import Smallstep.
 
 Hint Constructors multi.
 
@@ -381,7 +382,7 @@ Proof with auto.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** **** Exercise: 3 stars, advancedM (finish_progress_informal)  *)
+(** **** Exercise: 3 stars, advanced (finish_progress_informal)  *)
 (** Complete the corresponding informal proof: *)
 
 (** _Theorem_: If [|- t \in T], then either [t] is a value or else
@@ -446,7 +447,7 @@ Proof with auto.
     (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** **** Exercise: 3 stars, advancedM (finish_preservation_informal)  *)
+(** **** Exercise: 3 stars, advanced (finish_preservation_informal)  *)
 (** Complete the following informal proof: *)
 
 (** _Theorem_: If [|- t \in T] and [t ==> t'], then [|- t' \in T]. *)
@@ -631,7 +632,7 @@ Tactic Notation "normalize" :=
 (* ================================================================= *)
 (** ** Additional Exercises *)
 
-(** **** Exercise: 2 stars, recommendedM (subject_expansion)  *)
+(** **** Exercise: 2 stars, recommended (subject_expansion)  *)
 (** Having seen the subject reduction property, one might
     wonder whether the opposity property -- subject _expansion_ --
     also holds.  That is, is it always the case that, if [t ==> t']
@@ -642,7 +643,7 @@ Tactic Notation "normalize" :=
     (* FILL IN HERE *)
 [] *)
 
-(** **** Exercise: 2 starsM (variation1)  *)
+(** **** Exercise: 2 stars (variation1)  *)
 (** Suppose, that we add this new rule to the typing relation:
 
       | T_SuccBool : forall t,
@@ -661,7 +662,7 @@ Tactic Notation "normalize" :=
 
 [] *)
 
-(** **** Exercise: 2 starsM (variation2)  *)
+(** **** Exercise: 2 stars (variation2)  *)
 (** Suppose, instead, that we add this new rule to the [step] relation:
 
       | ST_Funny1 : forall t2 t3,
@@ -724,8 +725,8 @@ Tactic Notation "normalize" :=
     break just one of the properties and leave the others alone.
 [] *)
 
-(** **** Exercise: 1 starM (remove_predzero)  *)
-(** The reduction rule [E_PredZero] is a bit counter-intuitive: we
+(** **** Exercise: 1 star (remove_predzero)  *)
+(** The reduction rule [ST_PredZero] is a bit counter-intuitive: we
     might feel that it makes more sense for the predecessor of zero to
     be undefined, rather than being defined to be zero.  Can we
     achieve this simply by removing the rule from the definition of
@@ -734,7 +735,7 @@ Tactic Notation "normalize" :=
 (* FILL IN HERE *)
 [] *)
 
-(** **** Exercise: 4 stars, advancedM (prog_pres_bigstep)  *)
+(** **** Exercise: 4 stars, advanced (prog_pres_bigstep)  *)
 (** Suppose our evaluation relation is defined in the big-step style.
     What are the appropriate analogs of the progress and preservation
     properties?  (You do not need to prove them.)
@@ -742,4 +743,4 @@ Tactic Notation "normalize" :=
 (* FILL IN HERE *)
 [] *)
 
-(** $Date: 2016-12-20 11:35:30 -0500 (Tue, 20 Dec 2016) $ *)
+(** $Date: 2017-08-22 17:13:32 -0400 (Tue, 22 Aug 2017) $ *)

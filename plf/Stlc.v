@@ -1,12 +1,5 @@
 (** * Stlc: The Simply Typed Lambda-Calculus *)
 
-Require Import Maps.
-Require Import Smallstep.
-Require Import Types.
-
-(* ################################################################# *)
-(** * The Simply Typed Lambda-Calculus *)
-
 (** The simply typed lambda-calculus (STLC) is a tiny core
     calculus embodying the key concept of _functional abstraction_,
     which shows up in pretty much every real-world programming
@@ -19,8 +12,13 @@ Require Import Types.
     _variable binding_ and _substitution_.  It which will take some
     work to deal with these. *)
 
-(* ================================================================= *)
-(** ** Overview *)
+Set Warnings "-notation-overridden,-parsing".
+From PLF Require Import Maps.
+From PLF Require Import Smallstep.
+From PLF Require Import Types.
+
+(* ################################################################# *)
+(** * Overview *)
 
 (** The STLC is built on some collection of _base types_: 
     booleans, numbers, strings, etc.  The exact choice of base types
@@ -139,22 +137,22 @@ Require Import Types.
       - [(\x:Bool. \y:Bool. x) false true] has type [Bool] *)
 
 
-(* ================================================================= *)
-(** ** Syntax *)
+(* ################################################################# *)
+(** * Syntax *)
 
 (** We next formalize the syntax of the STLC. *)
 
 Module STLC.
 
-(* ----------------------------------------------------------------- *)
-(** *** Types *)
+(* ================================================================= *)
+(** ** Types *)
 
 Inductive ty : Type :=
   | TBool  : ty
   | TArrow : ty -> ty -> ty.
 
-(* ----------------------------------------------------------------- *)
-(** *** Terms *)
+(* ================================================================= *)
+(** ** Terms *)
 
 Inductive tm : Type :=
   | tvar : id -> tm
@@ -175,6 +173,7 @@ Inductive tm : Type :=
 Definition x := (Id "x").
 Definition y := (Id "y").
 Definition z := (Id "z").
+
 Hint Unfold x.
 Hint Unfold y.
 Hint Unfold z.
@@ -207,8 +206,8 @@ Notation notB := (tabs x TBool (tif (tvar x) tfalse ttrue)).
 (** (We write these as [Notation]s rather than [Definition]s to make
     things easier for [auto].) *)
 
-(* ================================================================= *)
-(** ** Operational Semantics *)
+(* ################################################################# *)
+(** * Operational Semantics *)
 
 (** To define the small-step semantics of STLC terms, we begin,
     as always, by defining the set of values.  Next, we define the
@@ -216,8 +215,8 @@ Notation notB := (tabs x TBool (tif (tvar x) tfalse ttrue)).
     used in the reduction rule for application expressions.  And
     finally we give the small-step relation itself. *)
 
-(* ----------------------------------------------------------------- *)
-(** *** Values *)
+(* ================================================================= *)
+(** ** Values *)
 
 (** To define the values of the STLC, we have a few cases to consider.
 
@@ -277,8 +276,8 @@ Hint Constructors value.
     always be reducing programs "from the outside in," and that means
     the [step] relation will always be working with closed terms.  *)
 
-(* ----------------------------------------------------------------- *)
-(** *** Substitution *)
+(* ================================================================= *)
+(** ** Substitution *)
 
 (** Now we come to the heart of the STLC: the operation of
     substituting one term for a variable in another term.  This
@@ -399,8 +398,8 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(* ----------------------------------------------------------------- *)
-(** *** Reduction *)
+(* ================================================================= *)
+(** ** Reduction *)
 
 (** The small-step reduction relation for STLC now follows the
     same pattern as the ones we have seen before.  Intuitively, to
@@ -472,8 +471,8 @@ Hint Constructors step.
 Notation multistep := (multi step).
 Notation "t1 '==>*' t2" := (multistep t1 t2) (at level 40).
 
-(* ----------------------------------------------------------------- *)
-(** *** Examples *)
+(* ================================================================= *)
+(** ** Examples *)
 
 (** Example:
 
@@ -578,7 +577,7 @@ Lemma step_example4' :
   tapp idBB (tapp notB ttrue) ==>* tfalse.
 Proof. normalize.  Qed.
 
-(** **** Exercise: 2 stars (step_example3)  *)
+(** **** Exercise: 2 stars (step_example5)  *)
 (** Try to do this one both with and without [normalize]. *)
 
 Lemma step_example5 :
@@ -594,13 +593,13 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(* ================================================================= *)
-(** ** Typing *)
+(* ################################################################# *)
+(** * Typing *)
 
 (** Next we consider the typing relation of the STLC. *)
 
-(* ----------------------------------------------------------------- *)
-(** *** Contexts *)
+(* ================================================================= *)
+(** ** Contexts *)
 
 (** _Question_: What is the type of the term "[x y]"?
 
@@ -620,8 +619,8 @@ Proof.
 
 Definition context := partial_map ty.
 
-(* ----------------------------------------------------------------- *)
-(** *** Typing Relation *)
+(* ================================================================= *)
+(** ** Typing Relation *)
 
 (** 
                              Gamma x = T
@@ -680,8 +679,8 @@ where "Gamma '|-' t '\in' T" := (has_type Gamma t T).
 
 Hint Constructors has_type.
 
-(* ----------------------------------------------------------------- *)
-(** *** Examples *)
+(* ================================================================= *)
+(** ** Examples *)
 
 Example typing_example_1 :
   empty |- tabs x TBool (tvar x) \in TArrow TBool TBool.
@@ -754,7 +753,7 @@ Proof with auto.
     to the term [\x:Bool. \y:Bool, x y] -- i.e.,
 
     ~ exists T,
-        empty |- \x:Bool. \y:Bool, x y : T.
+        empty |- \x:Bool. \y:Bool, x y \in T.
 *)
 
 Example typing_nonexample_1 :
@@ -794,5 +793,5 @@ Proof.
 
 End STLC.
 
-(** $Date: 2016-12-20 12:03:19 -0500 (Tue, 20 Dec 2016) $ *)
+(** $Date: 2017-08-25 14:01:35 -0400 (Fri, 25 Aug 2017) $ *)
 

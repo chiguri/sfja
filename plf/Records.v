@@ -1,9 +1,10 @@
 (** * Records: Adding Records to STLC *)
 
-Require Import Maps.
-Require Import Imp.
-Require Import Smallstep.
-Require Import Stlc.
+Set Warnings "-notation-overridden,-parsing".
+From PLF Require Import Maps.
+From PLF Require Import Imp.
+From PLF Require Import Smallstep.
+From PLF Require Import Stlc.
 
 (* ################################################################# *)
 (** * Adding Records *)
@@ -37,9 +38,9 @@ Require Import Stlc.
 
    Reduction:
 
-                                 ti ==> ti'                            (ST_Rcd)
-    --------------------------------------------------------------------
-    {i1=v1, ..., im=vm, in=tn, ...} ==> {i1=v1, ..., im=vm, in=tn', ...}
+                               ti ==> ti'                            
+  -------------------------------------------------------------------- (ST_Rcd)
+  {i1=v1, ..., im=vm, in=tn, ...} ==> {i1=v1, ..., im=vm, in=tn', ...}
 
                                  t1 ==> t1'
                                --------------                        (ST_Proj1)
@@ -193,11 +194,11 @@ Inductive well_formed_ty : ty -> Prop :=
 
 Hint Constructors record_ty well_formed_ty.
 
-(** Note that [record_ty] and [record_tm] are not recursive -- they
-    just check the outermost constructor.  The [well_formed_ty]
-    property, on the other hand, verifies that the whole type is well
-    formed in the sense that the tail of every record (the second
-    argument to [TRCons]) is a record.
+(** Note that [record_ty] is not recursive -- it just checks the
+    outermost constructor.  The [well_formed_ty] property, on the
+    other hand, verifies that the whole type is well formed in the
+    sense that the tail of every record (the second argument to
+    [TRCons]) is a record.
 
     Of course, we should also be concerned about ill-formed terms, not
     just types; but typechecking can rules those out without the help
@@ -809,5 +810,5 @@ Qed.
 
 End STLCExtendedRecords.
 
-(** $Date: 2016-11-29 16:09:40 -0500 (Tue, 29 Nov 2016) $ *)
+(** $Date: 2017-08-24 17:13:02 -0400 (Thu, 24 Aug 2017) $ *)
 

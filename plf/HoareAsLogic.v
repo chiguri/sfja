@@ -15,10 +15,11 @@
     derivations_ in this new logic.
 
     This chapter is optional.  Before reading it, you'll want to read
-    the [ProofObjects] chapter. *)
+    the \CHAPV1{ProofObjects} chapter in _Logical
+    Foundations_ (_Software Foundations_, volume 1). *)
 
-Require Import Imp.
-Require Import Hoare.
+From PLF Require Import Imp.
+From PLF Require Import Hoare.
 
 (* ################################################################# *)
 (** * Definitions *)
@@ -289,4 +290,4 @@ Proof.
     section of chapter [Hoare2] on formalizing decorated programs
     shows how we can do even better. *)
 
-(** $Date: 2016-11-06 11:48:34 -0500 (Sun, 06 Nov 2016) $ *)
+(** $Date: 2017-08-22 17:13:32 -0400 (Tue, 22 Aug 2017) $ *)

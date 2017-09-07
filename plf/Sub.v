@@ -1,8 +1,9 @@
 (** * Sub: Subtyping *)
 
-Require Import Maps.
-Require Import Types.
-Require Import Smallstep.
+Set Warnings "-notation-overridden,-parsing".
+From PLF Require Import Maps.
+From PLF Require Import Types.
+From PLF Require Import Smallstep.
 
 (* ################################################################# *)
 (** * Concepts *)
@@ -24,8 +25,8 @@ Require Import Smallstep.
 
       (\r:Person. (r.age)+1) {name="Pat",age=21,gpa=1}
 
-   is not typable, since it applies a function that wants a one-field
-   record to an argument that actually provides two fields, while the
+   is not typable, since it applies a function that wants a two-field
+   record to an argument that actually provides three fields, while the
    [T_App] rule demands that the domain type of the function being
    applied must match the type of the argument precisely.
 
@@ -75,7 +76,7 @@ Require Import Smallstep.
     superinterface), plus possibly some more.
 
     The fact that an object from a subclass can be used in place of
-    one from a superclass provides a degree of flexibility that is is
+    one from a superclass provides a degree of flexibility that is 
     extremely handy for organizing complex libraries.  For example, a
     GUI toolkit like Java's Swing framework might define an abstract
     interface [Component] that collects together the common fields and
@@ -326,7 +327,7 @@ Require Import Smallstep.
       inheritance" of interfaces (i.e., permutation is allowed for
       interfaces). *)
 
-(** **** Exercise: 2 stars, recommendedM (arrow_sub_wrong)  *)
+(** **** Exercise: 2 stars, recommended (arrow_sub_wrong)  *)
 (** Suppose we had incorrectly defined subtyping as covariant on both
     the right and the left of arrow types:
 
@@ -435,7 +436,7 @@ Require Import Smallstep.
 
 [] *)
 
-(** **** Exercise: 2 starsM (subtype_order)  *)
+(** **** Exercise: 2 stars (subtype_order)  *)
 (** The following types happen to form a linear order with respect to subtyping:
     - [Top]
     - [Top -> Student]
@@ -449,7 +450,7 @@ Where does the type [Top->Top->Student] fit into this order?
 
 [] *)
 
-(** **** Exercise: 1 starM (subtype_instances_tf_2)  *)
+(** **** Exercise: 1 star (subtype_instances_tf_2)  *)
 (** Which of the following statements are true?  Write _true_ or
     _false_ after each one.
 
@@ -480,7 +481,7 @@ Where does the type [Top->Top->Student] fit into this order?
 
 [] *)
 
-(** **** Exercise: 1 starM (subtype_concepts_tf)  *)
+(** **** Exercise: 1 star (subtype_concepts_tf)  *)
 (** Which of the following statements are true, and which are false?
     - There exists a type that is a supertype of every other type.
 
@@ -510,7 +511,7 @@ Where does the type [Top->Top->Student] fit into this order?
 
 [] *)
 
-(** **** Exercise: 2 starsM (proper_subtypes)  *)
+(** **** Exercise: 2 stars (proper_subtypes)  *)
 (** Is the following statement true or false?  Briefly explain your
     answer.  (Here [TBase n] stands for a base type, where [n] is 
     a string standing for the name of the base type.  See the 
@@ -524,7 +525,7 @@ Where does the type [Top->Top->Student] fit into this order?
 [] *)
 
 
-(** **** Exercise: 2 starsM (small_large_1)  *)
+(** **** Exercise: 2 stars (small_large_1)  *)
 (**
    - What is the _smallest_ type [T] ("smallest" in the subtype
      relation) that makes the following assertion true?  (Assume we
@@ -538,7 +539,7 @@ Where does the type [Top->Top->Student] fit into this order?
 
 [] *)
 
-(** **** Exercise: 2 starsM (small_large_2)  *)
+(** **** Exercise: 2 stars (small_large_2)  *)
 (**
    - What is the _smallest_ type [T] that makes the following
      assertion true?
@@ -562,7 +563,7 @@ Where does the type [Top->Top->Student] fit into this order?
 
 [] *)
 
-(** **** Exercise: 2 starsM (small_large_4)  *)
+(** **** Exercise: 2 stars (small_large_4)  *)
 (**
    - What is the _smallest_ type [T] that makes the following
      assertion true?
@@ -576,7 +577,7 @@ Where does the type [Top->Top->Student] fit into this order?
 
 [] *)
 
-(** **** Exercise: 2 starsM (smallest_1)  *)
+(** **** Exercise: 2 stars (smallest_1)  *)
 (** What is the _smallest_ type [T] that makes the following
     assertion true?
 
@@ -585,7 +586,7 @@ Where does the type [Top->Top->Student] fit into this order?
 ]] 
 [] *)
 
-(** **** Exercise: 2 starsM (smallest_2)  *)
+(** **** Exercise: 2 stars (smallest_2)  *)
 (** What is the _smallest_ type [T] that makes the following
     assertion true?
 
@@ -602,7 +603,7 @@ Where does the type [Top->Top->Student] fit into this order?
 
 [] *)
 
-(** **** Exercise: 2 starsM (pair_permutation)  *)
+(** **** Exercise: 2 stars (pair_permutation)  *)
 (** The subtyping rule for product types
 
                             S1 <: T1    S2 <: T2
@@ -1492,7 +1493,7 @@ Qed.
 (* ================================================================= *)
 (** ** Exercises *)
 
-(** **** Exercise: 2 starsM (variations)  *)
+(** **** Exercise: 2 stars (variations)  *)
 (** Each part of this problem suggests a different way of changing the
     definition of the STLC with Unit and subtyping.  (These changes
     are not cumulative: each part starts from the original language.)
@@ -1604,8 +1605,8 @@ Inductive tm : Type :=
   | tfst : tm -> tm
   | tsnd : tm -> tm.
 
-(* Copy and extend and/or fill in required definitions and lemmas
-   here. *)
+(** Copy and extend and/or fill in required definitions and lemmas
+    here. *)
 
 Theorem progress : forall t T,
      empty |- t \in T ->
@@ -1623,5 +1624,5 @@ Proof.
 End ProductExtension.  
 (** [] *)
 
-(** $Date: 2016-12-20 13:03:18 -0500 (Tue, 20 Dec 2016) $ *)
+(** $Date: 2017-08-24 17:13:02 -0400 (Thu, 24 Aug 2017) $ *)
 

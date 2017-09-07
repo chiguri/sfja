@@ -42,9 +42,9 @@ Require Import Coq.Logic.FunctionalExtensionality.
 Require Import Coq.Lists.List.
 Import ListNotations.
 
-Require Import Maps.
-Require Import Imp.
-Require Import Smallstep.
+From PLF Require Import Maps.
+From PLF Require Import Imp.
+From PLF Require Import Smallstep.
 
 (* ################################################################# *)
 (** * Generalizing Constant Folding *)
@@ -1040,10 +1040,10 @@ Inductive pe_com : com -> pe_state -> com -> pe_state -> com -> Prop :=
              ELSE c2' ;; assign pe_st2 (pe_compare pe_st1 pe_st2) FI)
             / pe_removes pe_st1 (pe_compare pe_st1 pe_st2)
             / c''
-  | PE_WhileEnd : forall pe_st b1 c1,
+  | PE_WhileFalse : forall pe_st b1 c1,
       pe_bexp pe_st b1 = BFalse ->
       (WHILE b1 DO c1 END) / pe_st \\ SKIP / pe_st / SKIP
-  | PE_WhileLoop : forall pe_st pe_st' pe_st'' b1 c1 c1' c2' c2'',
+  | PE_WhileTrue : forall pe_st pe_st' pe_st'' b1 c1 c1' c2' c2'',
       pe_bexp pe_st b1 = BTrue ->
       c1 / pe_st \\ c1' / pe_st' / SKIP ->
       (WHILE b1 DO c1 END) / pe_st' \\ c2' / pe_st'' / c2'' ->
@@ -1127,10 +1127,10 @@ Example pe_loop_example2:
        SKIP) / [(X,0)] / SKIP.
 Proof. erewrite f_equal2 with (f := fun c st => _ / _ \\ c / st / SKIP).
   eapply PE_Seq. eapply PE_AssStatic. reflexivity.
-  step PE_WhileLoop.
-  step PE_WhileLoop.
-  step PE_WhileLoop.
-  step PE_WhileEnd.
+  step PE_WhileTrue.
+  step PE_WhileTrue.
+  step PE_WhileTrue.
+  step PE_WhileFalse.
   inversion H. inversion H. inversion H.
   reflexivity. reflexivity. Qed.
 
@@ -1168,7 +1168,7 @@ Example pe_loop_example4:
 Proof. erewrite f_equal2 with (f := fun c st => _ / _ \\ c / st / SKIP).
   eapply PE_Seq. eapply PE_AssStatic. reflexivity.
   step PE_WhileFixedLoop.
-  step PE_WhileLoop.
+  step PE_WhileTrue.
   step PE_WhileFixedEnd.
   inversion H. reflexivity. reflexivity. reflexivity. Qed.
 
@@ -1202,10 +1202,10 @@ Inductive ceval_count : com -> state -> state -> nat -> Prop :=
       beval st b1 = false ->
       c2 / st \\ st' # n ->
       (IFB b1 THEN c1 ELSE c2 FI) / st \\ st' # n
-  | E'WhileEnd : forall b1 st c1,
+  | E'WhileFalse : forall b1 st c1,
       beval st b1 = false ->
       (WHILE b1 DO c1 END) / st \\ st # 0
-  | E'WhileLoop : forall st st' st'' b1 c1 n1 n2,
+  | E'WhileTrue : forall st st' st'' b1 c1 n1 n2,
       beval st b1 = true ->
       c1 / st \\ st' # n1 ->
       (WHILE b1 DO c1 END) / st' \\ st'' # n2 ->
@@ -1299,18 +1299,18 @@ Proof. intros c pe_st pe_st' c' c'' Hpe.
       eapply E_Seq. eassumption. apply eval_assign.
       rewrite -> pe_compare_update.
       rewrite <- assign_removes. eassumption. eassumption.
-  - (* PE_WhileLoop *)
+  - (* PE_WhileTrue *)
     edestruct IHHpe1 as [? ? ? Hskip ?]. eassumption.
     inversion Hskip. subst.
     edestruct IHHpe2. eassumption.
     econstructor; eauto. omega.
   - (* PE_While *) inversion Heval; subst.
-    + (* E_WhileEnd *) econstructor. apply E_IfFalse.
+    + (* E_WhileFalse *) econstructor. apply E_IfFalse.
       rewrite <- pe_bexp_correct. assumption.
       apply eval_assign.
       rewrite <- assign_removes. inversion H2; subst; auto.
       auto.
-    + (* E_WhileLoop *)
+    + (* E_WhileTrue *)
       edestruct IHHpe1 as [? ? ? Hskip ?]. eassumption.
       inversion Hskip. subst.
       edestruct IHHpe2. eassumption.
@@ -1323,8 +1323,8 @@ Proof. intros c pe_st pe_st' c' c'' Hpe.
     generalize dependent (S (n1 + n2)). intros n.
     clear - H H0 IHHpe1 IHHpe2. generalize dependent st.
     induction n using lt_wf_ind; intros st Heval. inversion Heval; subst.
-    + (* E'WhileEnd *) rewrite pe_bexp_correct, H in H7. inversion H7.
-    + (* E'WhileLoop *)
+    + (* E'WhileFalse *) rewrite pe_bexp_correct, H in H7. inversion H7.
+    + (* E'WhileTrue *)
       edestruct IHHpe1 as [? ? ? Hskip ?]. eassumption.
       inversion Hskip. subst.
       edestruct IHHpe2. eassumption.
@@ -1332,14 +1332,14 @@ Proof. intros c pe_st pe_st' c' c'' Hpe.
       apply H1 in H7; [| omega]. inversion H7.
   - (* PE_WhileFixed *) generalize dependent st.
     induction n using lt_wf_ind; intros st Heval. inversion Heval; subst.
-    + (* E'WhileEnd *) rewrite pe_bexp_correct in H8. eauto.
-    + (* E'WhileLoop *) rewrite pe_bexp_correct in H5.
+    + (* E'WhileFalse *) rewrite pe_bexp_correct in H8. eauto.
+    + (* E'WhileTrue *) rewrite pe_bexp_correct in H5.
       edestruct IHHpe1 as [? ? ? Hskip ?]. eassumption.
       inversion Hskip. subst.
       edestruct IHHpe2. eassumption.
       rewrite <- (pe_compare_nil_update _ _ H1) in H8.
       apply H2 in H8; [| omega]. inversion H8.
-      econstructor; [ eapply E_WhileLoop; eauto | eassumption | omega].
+      econstructor; [ eapply E_WhileTrue; eauto | eassumption | omega].
 Qed.
 
 Theorem pe_com_sound:
@@ -1375,9 +1375,9 @@ Proof. intros c pe_st pe_st' c' c'' Hpe.
       rewrite <- assign_removes in Heval'.
       apply E_IfFalse. rewrite -> pe_bexp_correct. assumption.
       eapply IHHpe2. eauto.
-  - (* PE_WhileEnd *) apply E_WhileEnd.
+  - (* PE_WhileFalse *) apply E_WhileFalse.
     rewrite -> pe_bexp_correct. rewrite -> H. reflexivity.
-  - (* PE_WhileLoop *) eapply E_WhileLoop.
+  - (* PE_WhileTrue *) eapply E_WhileTrue.
     rewrite -> pe_bexp_correct. rewrite -> H. reflexivity.
     eapply IHHpe1. eauto. eapply IHHpe2. eauto.
   - (* PE_While *) inversion Heval; subst.
@@ -1387,14 +1387,14 @@ Proof. intros c pe_st pe_st' c' c'' Hpe.
       eapply ceval_deterministic in H11; [| apply eval_assign]. subst.
       rewrite -> pe_compare_update in Heval'.
       rewrite <- assign_removes in Heval'.
-      eapply E_WhileLoop. rewrite -> pe_bexp_correct. assumption.
+      eapply E_WhileTrue. rewrite -> pe_bexp_correct. assumption.
       eapply IHHpe1. eauto.
       eapply IHHpe2. eauto.
     + (* E_IfFalse *) apply ceval_count_sound in Heval'.
       eapply ceval_deterministic in H9; [| apply eval_assign]. subst.
       rewrite <- assign_removes in Heval'.
       inversion H2; subst.
-      * (* c2'' = SKIP *) inversion Heval'. subst. apply E_WhileEnd.
+      * (* c2'' = SKIP *) inversion Heval'. subst. apply E_WhileFalse.
         rewrite -> pe_bexp_correct. assumption.
       * (* c2'' = WHILE b1 DO c1 END *) assumption.
   - (* PE_WhileFixedEnd *) eapply ceval_count_sound. apply Heval'.
@@ -1405,14 +1405,14 @@ Proof. intros c pe_st pe_st' c' c'' Hpe.
     remember (WHILE pe_bexp pe_st b1 DO c1';; c2' END) as c'.
     induction Heval;
       inversion Heqc'; subst; clear Heqc'.
-    + (* E_WhileEnd *) apply E_WhileEnd.
+    + (* E_WhileFalse *) apply E_WhileFalse.
       rewrite pe_bexp_correct. assumption.
-    + (* E_WhileLoop *)
+    + (* E_WhileTrue *)
       assert (IHHeval2' := IHHeval2 (refl_equal _)).
       apply ceval_count_complete in IHHeval2'. inversion IHHeval2'.
       clear IHHeval1 IHHeval2 IHHeval2'.
       inversion Heval1. subst.
-      eapply E_WhileLoop. rewrite pe_bexp_correct. assumption. eauto.
+      eapply E_WhileTrue. rewrite pe_bexp_correct. assumption. eauto.
       eapply IHHpe2. econstructor. eassumption.
       rewrite <- (pe_compare_nil_update _ _ H1). eassumption. apply le_n.
 Qed.
@@ -1652,4 +1652,4 @@ Proof. intros.
       eapply E_Some; eauto. apply pe_block_correct. apply Hkeval.
 Qed.
 
-(** $Date: 2017-01-30 19:42:52 -0500 (Mon, 30 Jan 2017) $ *)
+(** $Date: 2017-08-24 17:13:02 -0400 (Thu, 24 Aug 2017) $ *)

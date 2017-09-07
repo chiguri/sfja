@@ -41,7 +41,7 @@
     entirely trivial to prove, since each reduction of a term can
     duplicate redexes in subterms. *)
 
-(** **** Exercise: 2 starsM (norm_fail)  *)
+(** **** Exercise: 2 stars (norm_fail)  *)
 (** Where do we fail if we attempt to prove normalization by a
     straightforward induction on the size of a well-typed term? *)
 
@@ -68,10 +68,11 @@
 (* ----------------------------------------------------------------- *)
 (** *** Syntax and Operational Semantics *)
 
-Require Import Coq.Lists.List.
-Import ListNotations.
-Require Import Maps.
-Require Import Smallstep.
+Set Warnings "-notation-overridden,-parsing".
+Require Import Coq.Lists.List. Import ListNotations.
+From PLF Require Import Maps.
+From PLF Require Import Smallstep.
+
 Hint Constructors multi.
 
 Inductive ty : Type :=
@@ -1141,6 +1142,8 @@ Proof.
 (* ----------------------------------------------------------------- *)
 (** *** Normalization Theorem *)
 
+(** And the final theorem: *)
+
 Theorem normalization : forall t T, has_type empty t T -> halts t.
 Proof.
   intros.
@@ -1150,4 +1153,4 @@ Proof.
   eapply V_nil.
 Qed.
 
-(** $Date: 2016-10-19 09:26:05 -0400 (Wed, 19 Oct 2016) $ *)
+(** $Date: 2017-08-24 17:13:02 -0400 (Thu, 24 Aug 2017) $ *)

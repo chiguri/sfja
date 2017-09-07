@@ -10,13 +10,23 @@
     various reasons, are not yet available by default in Coq.  These
     tactics are defined in the [LibTactics.v] file. *)
 
+Set Warnings "-notation-overridden,-parsing".
+
 Require Import Coq.Arith.Arith.
 
-Require Import Maps.
-Require Import Imp.
-Require Import Types.
-Require Import Smallstep.
-Require Import LibTactics.
+From PLF Require Import Maps.
+From PLF Require Import Imp.
+From PLF Require Import Types.
+From PLF Require Import Smallstep.
+From PLF Require Import LibTactics.
+
+From PLF Require Stlc.
+From PLF Require Equiv.
+From PLF Require Imp.
+From PLF Require References.
+From PLF Require Smallstep.
+From PLF Require Hoare.
+From PLF Require Sub.
 
 (** Remark: SSReflect is another package providing powerful tactics.
     The library "LibTactics" differs from "SSReflect" in two respects:
@@ -58,7 +68,7 @@ Require Import LibTactics.
 (** ** The Tactic [introv] *)
 
 Module IntrovExamples.
-  Require Import Stlc.
+  Import Stlc.
   Import Imp.
   Import STLC.
 
@@ -119,9 +129,9 @@ End IntrovExamples.
 (** ** The Tactic [inverts] *)
 
 Module InvertsExamples.
-  Require Import Stlc.
-  Require Import Equiv.
-  Require Import Imp.
+  Import Stlc.
+  Import Equiv.
+  Import Imp.
   Import STLC.
 
 (** The [inversion] tactic of Coq is not very satisfying for
@@ -289,10 +299,9 @@ End InvertsExamples.
     - [exists] for proving n-ary existentials. *)
 
 Module NaryExamples.
-  Require Import References.
-  Require Import Smallstep.
+  Import References.
+  Import Smallstep.
   Import STLCRef.
-
 
 (* ================================================================= *)
 (** ** The Tactic [splits] *)
@@ -552,7 +561,7 @@ End EqualityExamples.
 (** ** The Tactic [unfolds] *)
 
 Module UnfoldsExample.
-  Require Import Hoare.
+  Import Hoare.
 
 (** The tactic [unfolds] (without any argument) unfolds the
     head constant of the goal. This tactic saves the need to
@@ -622,7 +631,7 @@ Qed.
     this tactic takes the form [gen x y z]. *)
 
 Module GenExample.
-  Require Import Stlc.
+  Import Stlc.
   Import STLC.
 
 Lemma substitution_preserves_typing : forall Gamma x U v t S,
@@ -659,7 +668,7 @@ End GenExample.
     (e.g., [?24]), and which are typically introduced by [eapply]. *)
 
 Module SkipExample.
-  Require Import Stlc.
+  Import Stlc.
   Import STLC.
 
 Notation " t '/' st '==>a*' t' " := (multi (astep st) t t')
@@ -752,7 +761,7 @@ End SkipExample.
 (** ** The Tactic [sort] *)
 
 Module SortExamples.
-  Require Import Imp.
+  Import Imp.
 
 (** The tactic [sort] reorganizes the proof context by placing
     all the variables at the top and all the hypotheses at the
@@ -819,7 +828,7 @@ End SortExamples.
     the arguments provided. *)
 
 Module ExamplesLets.
-  Require Import Sub.
+  Import Sub.
 
 (* To illustrate the working of [lets], assume that we want to
    exploit the following lemma. *)
@@ -958,7 +967,7 @@ End ExamplesLets.
 (** ** Example of Instantiations *)
 
 Module ExamplesInstantiations.
-  Require Import Sub.
+  Import Sub.
 
 (** The following proof shows several examples where [lets] is used
     instead of [destruct], as well as examples where [applys] is used
@@ -1077,4 +1086,4 @@ End ExamplesInstantiations.
 
 *)
 
-(** $Date: 2017-01-30 19:42:52 -0500 (Mon, 30 Jan 2017) $ *)
+(** $Date: 2017-08-22 17:13:32 -0400 (Tue, 22 Aug 2017) $ *)

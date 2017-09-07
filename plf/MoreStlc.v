@@ -1,9 +1,10 @@
 (** * MoreStlc: More on the Simply Typed Lambda-Calculus *)
 
-Require Import Maps.
-Require Import Types.
-Require Import Smallstep.
-Require Import Stlc.
+Set Warnings "-notation-overridden,-parsing".
+From PLF Require Import Maps.
+From PLF Require Import Types.
+From PLF Require Import Smallstep.
+From PLF Require Import Stlc.
 
 (* ################################################################# *)
 (** * Simple Extensions to STLC *)
@@ -361,7 +362,7 @@ Require Import Stlc.
 (** Without this extra information, the typing rule [T_Inl], for
     example, would have to say that, once we have shown that [t1] is
     an element of type [T1], we can derive that [inl t1] is an element
-    of [T1 + T2] for _any_ type T2.  For example, we could derive both
+    of [T1 + T2] for _any_ type [T2].  For example, we could derive both
     [inl 5 : Nat + Nat] and [inl 5 : Nat + Bool] (and infinitely many
     other types).  This peculiarity (technically, a failure of
     uniqueness of types) would mean that we cannot build a
@@ -2157,4 +2158,4 @@ Qed.
 End STLCExtended.
 (** [] *)
 
-(* $Date: 2016-12-17 23:53:20 -0500 (Sat, 17 Dec 2016) $ *)
+(** $Date: 2017-08-24 17:13:02 -0400 (Thu, 24 Aug 2017) $ *)

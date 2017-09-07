@@ -1,12 +1,13 @@
 (** * Smallstep: Small-step Operational Semantics *)
 
+Set Warnings "-notation-overridden,-parsing".
 Require Import Coq.Arith.Arith.
 Require Import Coq.Arith.EqNat.
 Require Import Coq.omega.Omega.
 Require Import Coq.Lists.List.
 Import ListNotations.
-Require Import Maps.
-Require Import Imp.
+From PLF Require Import Maps.
+From PLF Require Import Imp. 
 
 (** The evaluators we have seen so far (for [aexp]s, [bexp]s,
     commands, ...) have been formulated in a "big-step" style: they
@@ -74,7 +75,7 @@ Require Import Imp.
 
 (** To save space in the discussion, let's go back to an
     incredibly simple language containing just constants and
-    addition.  (We use single letters -- [C] and [P] (for Command and
+    addition.  (We use single letters -- [C] and [P] (for Constant and
     Plus) -- as constructor names, for brevity.)  At the end of the
     chapter, we'll see how to apply the same techniques to the full
     Imp language.  *)
@@ -703,7 +704,7 @@ Inductive step : tm -> tm -> Prop :=
 
   where " t '==>' t' " := (step t t').
 
-(** **** Exercise: 1 starM (smallstep_bools)  *)
+(** **** Exercise: 1 star (smallstep_bools)  *)
 (** Which of the following propositions are provable?  (This is just a
     thought exercise, but for an extra challenge feel free to prove
     your answers in Coq.) *)
@@ -870,9 +871,9 @@ Inductive multi {X:Type} (R: relation X) : relation X :=
                     multi R y z ->
                     multi R x z.
 
-(** (In the [Rel] chapter and the Coq standard library, this relation
-    is called [clos_refl_trans_1n].  We give it a shorter name here
-    for the sake of readability.)
+(** (In the \CHAPV1{Rel} chapter of _Logical Foundations_ and the Coq standard 
+    library, this relation is called [clos_refl_trans_1n].  We give it a shorter 
+    name here for the sake of readability.)
 
     The effect of this definition is that [multi R] relates two
     elements [x] and [y] if 
@@ -1227,7 +1228,7 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** **** Exercise: 4 starsM (combined_properties)  *)
+(** **** Exercise: 4 stars (combined_properties)  *)
 (** We've considered arithmetic and conditional expressions
     separately.  This exercise explores how the two interact. *)
 
@@ -1644,7 +1645,7 @@ End CImp.
 (** * A Small-Step Stack Machine *)
 
 (** Our last example is a small-step semantics for the stack machine
-    example from the [Imp] chapter. *)
+    example from the \CHAPV1{Imp} chapter of _Logical Foundations_. *)
 
 Definition stack := list nat.
 Definition prog  := list sinstr.
@@ -1672,8 +1673,8 @@ Definition stack_multistep st := multi (stack_step st).
 
 (** **** Exercise: 3 stars, advanced (compiler_is_correct)  *)
 (** Remember the definition of [compile] for [aexp] given in the
-    [Imp] chapter. We want now to prove [compile] correct with respect
-    to the stack machine.
+    \CHAPV1{Imp} chapter of _Logical Foundations_. We want now to
+    prove [compile] correct with respect to the stack machine.
 
     State what it means for the compiler to be correct according to
     the stack machine small step semantics and then prove it. *)
@@ -1687,5 +1688,5 @@ Proof.
 (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** $Date: 2016-12-20 11:28:30 -0500 (Tue, 20 Dec 2016) $ *)
+(** $Date: 2017-08-23 17:25:07 -0400 (Wed, 23 Aug 2017) $ *)
 
