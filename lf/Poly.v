@@ -83,7 +83,7 @@ Inductive list (X:Type) : Type :=
     [list X].  (We can re-use the constructor names [nil] and [cons]
     because the earlier definition of [natlist] was inside of a
     [Module] definition that is now out of scope.)
-,,
+
     What sort of thing is [list] itself?  One good way to think
     about it is that [list] is a _function_ from [Type]s to
     [Inductive] definitions; or, to put it another way, [list] is a
