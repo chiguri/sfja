@@ -534,13 +534,12 @@ Inductive nat : Type :=
 (** The clauses of this definition can be read:
       - [O] is a natural number (note that this is the letter "[O],"
         not the numeral "[0]").
-      - [S] is a "constructor" that takes a natural number and yields
-        another one -- that is, if [n] is a natural number, then [S n]
-        is too. *)
+      - [S] can be put in front of a natural number to yield another
+        one -- if [n] is a natural number, then [S n] is too. *)
 *)
 (** この定義の各句は、以下のように解釈できます。
       - [O]は自然数である（[0]（数字のゼロ）ではなく[O]（アルファベットのオー）であることに注意）。
-      - [S]は自然数を引数にとり、別の自然数を生成する「コンストラクタ」である。このことは、[n]が自然数なら[S n]も自然数であることを示している。 *)
+      - [S]は自然数の前に置くことで別の自然数を生成できる。つまり、[n]が自然数なら[S n]も自然数である。 *)
 
 (*
 (** Let's look at this in a little more detail.
@@ -810,10 +809,10 @@ Proof. simpl. reflexivity.  Qed.
 (** matchに引数を与える際、複数の引数を次のようにカンマで区切って一度に渡すことができます。 *)
 
 Fixpoint minus (n m:nat) : nat :=
-  match n, m with
-  | O   , _    => O
-  | S _ , O    => n
-  | S n', S m' => minus n' m'
+  match (n, m) with
+  | (O   , _)    => O
+  | (S _ , O)    => n
+  | (S n', S m') => minus n' m'
   end.
 
 (*
@@ -1053,9 +1052,9 @@ Proof.
     just a few differences.
 
     First, we've used the keyword [Theorem] instead of [Example].
-    This difference is purely a matter of style; the keywords
+    This difference is mostly a matter of style; the keywords
     [Example] and [Theorem] (and a few others, including [Lemma],
-    [Fact], and [Remark]) mean exactly the same thing to Coq.
+    [Fact], and [Remark]) mean pretty much the same thing to Coq.
 
     Second, we've added the quantifier [forall n:nat], so that our
     theorem talks about _all_ natural numbers [n].  Informally, to
@@ -1080,7 +1079,7 @@ Proof.
     この定理と証明の様式は、以前示した例とほとんど同じですが、いくつか違いがあります。
  
     まず、[Example]の代わりに[Theorem]キーワードが使用されていることです。
-    単なるスタイルの違いで、[Example]と[Theorem]（他にも[Lemma]、[Fact]、[Remark]など）はCoqから見るとすべて同じ意味を持ちます。
+    これはほとんど単なるスタイルの違いで、[Example]と[Theorem]（他にも[Lemma]、[Fact]、[Remark]など）はCoqから見るとすべてほぼ同じ意味です。
  
     他に、量化子（[forall n:nat]）が加えられていることが挙げられます。
     これにより、定理は「全ての」自然数[n]について言及できます。
@@ -1141,6 +1140,7 @@ Proof.
     それぞれの証明を1ステップずつ見て、ゴールと文脈がどのように変化していくかを見てください。）
  
     もし証明の途中で行き詰まったら、[Abort]コマンドを使って諦めましょう。 *)
+
 Abort.
 
 (*
@@ -1289,9 +1289,9 @@ Theorem mult_S_1 : forall n m : nat,
 Proof.
   (* FILL IN HERE *) Admitted.
 
-(* (N.b. This proof can actually be completed without using [rewrite],
-   but please do use [rewrite] for the sake of the exercise.) *)
-(** （注意：この証明は[rewrite]なしにできますが、ここでは課題のためと思って[rewrite]を使ってください。） *)
+  (* (N.b. This proof can actually be completed without using [rewrite],
+     but please do use [rewrite] for the sake of the exercise.) *)
+  (** （注意：この証明は[rewrite]なしにできますが、ここでは課題のためと思って[rewrite]を使ってください。） *)
 (** [] *)
 
 (* ################################################################# *)
@@ -1729,7 +1729,7 @@ Fixpoint plus' (n : nat) (m : nat) : nat :=
 (** * 発展課題 *)
 
 (*
-(** **** Exercise: 2 starsM (boolean_functions)  *)
+(** **** Exercise: 2 stars (boolean_functions)  *)
 *)
 (** **** 練習問題: ★★ (boolean_functions)  *)
 (*
@@ -1757,17 +1757,18 @@ Proof.
 (** [] *)
 
 (*
-(** **** Exercise: 2 stars (andb_eq_orb)  *)
+(** **** Exercise: 3 stars, optional (andb_eq_orb)  *)
 *)
-(** **** 練習問題: ★★ (andb_eq_orb)  *)
+(** **** 練習問題: ★★★, optional (andb_eq_orb)  *)
 (*
-(** Prove the following theorem.  (You may want to first prove a
-    subsidiary lemma or two. Alternatively, remember that you do
-    not have to introduce all hypotheses at the same time.) *)
+(** Prove the following theorem.  (Hint: This one can be a bit tricky,
+    depending on how you approach it.  You will probably need both
+    [destruct] and [rewrite], but destructing everything in sight is
+    not the best way.) *)
 *)
 (** 次の定理を証明しなさい。
-    （補題を先に一つか二つ示したくなるかもしれません。
-    その代わりに、全ての仮定を同時に文脈に導入する必要はない、ということを覚えておいてください。） *)
+    （ヒント：証明方針によっては、かなりトリッキーな手法が必要になるでしょう。
+    [destruct]と[rewrite]のどちらも必要でしょうが、手当たり次第に展開するのは良策ではありません。） *)
 
 Theorem andb_eq_orb :
   forall (b c : bool),
@@ -1778,7 +1779,7 @@ Proof.
 (** [] *)
 
 (*
-(** **** Exercise: 3 starsM (binary)  *)
+(** **** Exercise: 3 stars (binary)  *)
 *)
 (** **** 練習問題: ★★★ (binary)  *)
 (*
@@ -1847,5 +1848,5 @@ Proof.
 (* FILL IN HERE *)
 (** [] *)
 
-(** $Date: 2016-11-22 16:39:52 -0500 (Tue, 22 Nov 2016) $ *)
+(** $Date: 2017-08-24 17:13:02 -0400 (Thu, 24 Aug 2017) $ *)
 

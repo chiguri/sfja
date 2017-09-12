@@ -8,7 +8,9 @@
 (* 最後にもう一度：誰でも見える場所に課題の答えを置かないでください。
    よろしくお願いします。 *)
 
-Require Export Lists.
+(* Suppress some annoying warnings from Coq: *)
+Set Warnings "-notation-overridden,-parsing".
+From LF Require Export Lists.
 
 (* ################################################################# *)
 (*
@@ -81,7 +83,7 @@ Inductive list (X:Type) : Type :=
     [list X].  (We can re-use the constructor names [nil] and [cons]
     because the earlier definition of [natlist] was inside of a
     [Module] definition that is now out of scope.)
-
+,,
     What sort of thing is [list] itself?  One good way to think
     about it is that [list] is a _function_ from [Type]s to
     [Inductive] definitions; or, to put it another way, [list] is a
@@ -98,18 +100,44 @@ Inductive list (X:Type) : Type :=
     あるいは「型を引数にとり、型を返す関数」と考えてもいいかもしれません。
     任意の型[X]について、[list X]という型は、帰納的に定義されたリストの集合で、その要素の型が[X]となっているものと考えることもできます。*)
 
+Check list.
+(* ===> list : Type -> Type *)
+
 (*
-(** With this definition, when we use the constructors [nil] and
-    [cons] to build lists, we need to tell Coq the type of the
-    elements in the lists we are building -- that is, [nil] and [cons]
-    are now _polymorphic constructors_.  Observe the types of these
-    constructors: *)
+(** The parameter [X] in the definition of [list] becomes a parameter
+    to the constructors [nil] and [cons] -- that is, [nil] and [cons]
+    are now polymorphic constructors, that need to be supplied with
+    the type of the list they are building. As an example, [nil nat]
+    constructs the empty list of type [nat]. *)
 *)
-(** この定義の下で、コンストラクタ[nil]や[cons]を使う際には、今作ろうとしているリストの要素の型を指定してやる必要があります。
-    なぜなら、今や[nil]も[cons]も多相的なコンストラクタとなっているからです。 *)
+(** 定義中の[list]のパラメータ[X]はコンストラクタである[nil]や[cons]の引数にもなります。
+    つまり、[nil]も[cons]も多相的なコンストラクタになっており、何のリストを作るかを受け取る必要があるためです。
+    例えば、[nil nat]は[nat]の空リストを構成します。 *)
+
+Check (nil nat).
+(* ===> nil nat : list nat *)
+
+(** Similarly, [cons nat] adds an element of type [nat] to a list of
+    type [list nat]. Here is an example of forming a list containing
+    just the natural number 3.*)
+
+Check (cons nat 3 (nil nat)).
+(* ===> cons nat 3 (nil nat) : list nat *)
+
+(** What might the type of [nil] be? We can read off the type [list X]
+    from the definition, but this omits the binding for [X] which is
+    the parameter to [list]. [Type -> list X] does not explain the
+    meaning of [X]. [(X : Type) -> list X] comes closer. Coq's
+    notation for this situation is [forall X : Type, list X]. *)
 
 Check nil.
 (* ===> nil : forall X : Type, list X *)
+
+(** Similarly, the type of [cons] as read off from the definition is
+    [X -> list X -> list X], but using this convention to explain the
+    meaning of [X] results in the type [forall X, X -> list X -> list
+    X]. *)
+
 Check cons.
 (* ===> cons : forall X : Type, X -> list X -> list X *)
 
@@ -122,14 +150,12 @@ Check cons.
     there is no difference in meaning.) *)
 
 (*
-(** The "[forall X]" in these types can be read as an additional
-    argument to the constructors that determines the expected types of
-    the arguments that follow.  When [nil] and [cons] are used, these
-    arguments are supplied in the same way as the others.  For
-    example, the list containing [2] and [1] is written like this: *)
+(** Having to supply a type argument for each use of a list
+    constructor may seem an awkward burden, but we will soon see
+    ways of reducing that burden. *) 
 *)
-(** ここで出てきた"[forall X]"というのは、コンストラクタに追加された引数で、後に続く引数で型を特定させるものです。
-    [nil]や[cons]が使われる際、例えば[2]と[1]を要素に持つリストは、以下のように表されます。  *)
+(** リストのコンストラクタに毎回型引数を与えることは無駄な手間だと感じるかもしれません。
+    すぐにこれを回避する方法について見ていきます。 *)
 
 Check (cons nat 2 (cons nat 1 (nil nat))).
 
@@ -156,9 +182,8 @@ Fixpoint repeat (X : Type) (x : X) (count : nat) : list X :=
   end.
 
 (** As with [nil] and [cons], we can use [repeat] by applying it
-    first to a type and then to its list argument: *)
-(** [nil]や[cons]と同様に、[repeat]も型を最初に適用してから他の引数に適用できます。 *)
-(* 訳注：元はlist argumentといっているが、おそらく変更前がlengthだった（＝引数がリストだった）ためで、現状とはずれている。 *)
+    first to a type and then to an element of this type (and a number): *)
+(** [nil]や[cons]と同様に、[repeat]も型を最初に適用してからその型の要素（そして続いて数）に適用できます。 *)
 
 Example test_repeat1 :
   repeat nat 4 2 = cons nat 4 (cons nat 4 (nil nat)).
@@ -178,7 +203,7 @@ Proof. reflexivity.  Qed.
 Module MumbleGrumble.
 
 (*
-(** **** Exercise: 2 starsM (mumble_grumble)  *)
+(** **** Exercise: 2 stars (mumble_grumble)  *)
 *)
 (** **** 練習問題: ★★ (mumble_grumble)  *)
 (*
@@ -317,7 +342,7 @@ Check repeat.
 
     to tell Coq to attempt to infer the missing information.
 
-    Using implicit arguments, the [count] function can be written like
+    Using implicit arguments, the [repeat] function can be written like
     this: *)
 *)
 (** 多相的な関数を使うには、通常の引数に加えて型を一つ以上渡さなければなりません。
@@ -423,12 +448,12 @@ Fixpoint repeat''' {X : Type} (x : X) (count : nat) : list X :=
     provide one!)
 
     We will use the latter style whenever possible, but we will
-    continue to use use explicit [Argument] declarations for
-    [Inductive] constructors.  The reason for this is that marking the
-    parameter of an inductive type as implicit causes it to become
-    implicit for the type itself, not just for its constructors.  For
-    instance, consider the following alternative definition of the
-    [list] type: *)
+    continue to use explicit [Argument] declarations for [Inductive]
+    constructors.  The reason for this is that marking the parameter
+    of an inductive type as implicit causes it to become implicit for
+    the type itself, not just for its constructors.  For instance,
+    consider the following alternative definition of the [list]
+    type: *)
 *)
 (** （ここで注意してほしいのは、再帰呼び出しの[repeat''']ではもうすでに型を引数で指定していない、ということです。
     また、渡そうとするのは誤りとなります。）
@@ -685,7 +710,7 @@ Fixpoint combine {X Y : Type} (lx : list X) (ly : list Y)
   end.
 
 (*
-(** **** Exercise: 1 star, optionalM (combine_checks)  *)
+(** **** Exercise: 1 star, optional (combine_checks)  *)
 *)
 (** **** 練習問題: ★ (combine_checks) *)
 (*
@@ -1233,7 +1258,7 @@ Example fold_example3 :
 Proof. reflexivity. Qed.
 
 (*
-(** **** Exercise: 1 star, advancedM (fold_types_different)  *)
+(** **** Exercise: 1 star, advanced (fold_types_different)  *)
 *)
 (** **** 練習問題: ★, advanced (fold_types_different)  *)
 (*
@@ -1353,7 +1378,7 @@ Theorem fold_length_correct : forall X (l : list X),
 (** [] *)
 
 (*
-(** **** Exercise: 3 starsM (fold_map)  *)
+(** **** Exercise: 3 stars (fold_map)  *)
 *)
 (** **** 練習問題: ★★★ (fold_map)  *)
 (*
@@ -1423,9 +1448,8 @@ Definition prod_uncurry {X Y Z : Type}
 
 (** As a (trivial) example of the usefulness of currying, we can use it
     to shorten one of the examples that we saw above: *)
-(* 訳注：curry化関係ないのでは *)
 
-Example test_map2: map (fun x => plus 3 x) [2;0;2] = [5;3;5].
+Example test_map1': map (plus 3) [2;0;2] = [5;3;5].
 Proof. reflexivity.  Qed.
 
 (*
@@ -1452,7 +1476,7 @@ Proof.
 (** [] *)
 
 (*
-(** **** Exercise: 2 stars, advancedM (nth_error_informal)  *)
+(** **** Exercise: 2 stars, advanced (nth_error_informal)  *)
 *)
 (** **** 練習問題: ★★, advanced (nth_error_informal)  *)
 (*
@@ -1639,5 +1663,5 @@ End Church.
 
 End Exercises.
 
-(** $Date: 2016-12-17 23:53:20 -0500 (Sat, 17 Dec 2016) $ *)
+(** $Date: 2017-08-22 17:13:32 -0400 (Tue, 22 Aug 2017) $ *)
 

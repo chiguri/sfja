@@ -12,7 +12,8 @@
       strengthening is required); and
     - more details on how to reason by case analysis. *)
 
-Require Export Poly.
+Set Warnings "-notation-overridden,-parsing".
+From LF Require Export Poly.
 
 (* ################################################################# *)
 (** * The [apply] Tactic *)
@@ -112,7 +113,7 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** **** Exercise: 1 star, optionalM (apply_rewrite)  *)
+(** **** Exercise: 1 star, optional (apply_rewrite)  *)
 (** Briefly explain the difference between the tactics [apply] and
     [rewrite].  What are the situations where both can usefully be
     applied?
@@ -568,7 +569,7 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** **** Exercise: 2 stars, advancedM (beq_nat_true_informal)  *)
+(** **** Exercise: 2 stars, advanced (beq_nat_true_informal)  *)
 (** Give a careful informal proof of [beq_nat_true], being as explicit
     as possible about quantifiers. *)
 
@@ -779,9 +780,9 @@ Abort.
     unfolding [bar (m+1)] leaves a [match] whose scrutinee is a
     function application (that, itself, cannot be simplified, even
     after unfolding the definition of [+]), so [simpl] leaves it
-    alone.
+    alone. *)
 
-    At this point, there are two ways to make progress.  One is to use
+(** At this point, there are two ways to make progress.  One is to use
     [destruct m] to break the proof into two cases, each focusing on a
     more concrete choice of [m] ([O] vs [S _]).  In each case, the
     [match] inside of [bar] can now make progress, and the proof is
@@ -797,9 +798,9 @@ Qed.
 
 (** This approach works, but it depends on our recognizing that the
     [match] hidden inside [bar] is what was preventing us from making
-    progress.
+    progress. *)
 
-    A more straightforward way to make progress is to explicitly tell
+(** A more straightforward way to make progress is to explicitly tell
     Coq to unfold [bar]. *)
 
 Fact silly_fact_2' : forall m, bar m + 1 = bar (m + 1) + 1.
@@ -1005,7 +1006,7 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** **** Exercise: 3 stars, advancedM? (beq_nat_sym_informal)  *)
+(** **** Exercise: 3 stars, advanced? (beq_nat_sym_informal)  *)
 (** Give an informal proof of this lemma that corresponds to your
     formal proof above:
 
@@ -1025,7 +1026,7 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** **** Exercise: 3 stars, advancedM (split_combine)  *)
+(** **** Exercise: 3 stars, advanced (split_combine)  *)
 (** We proved, in an exercise above, that for all lists of pairs,
     [combine] is the inverse of [split].  How would you formalize the
     statement that [split] is the inverse of [combine]?  When is this
@@ -1095,6 +1096,6 @@ Proof.
 (* FILL IN HERE *)
 (** [] *)
 
-(** $Date: 2016-10-08 18:36:21 -0400 (Sat, 08 Oct 2016) $ *)
+(** $Date: 2017-08-22 17:13:32 -0400 (Tue, 22 Aug 2017) $ *)
 
 

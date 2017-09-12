@@ -9,7 +9,7 @@
 *)
 (** 始める前に、前の章の定義をここに持ってきます。 *)
 
-Require Export Basics.
+Require Export LF.Basics.
 
 (*
 (** For the [Require Export] to work, you first need to use
@@ -22,9 +22,13 @@ Require Export Basics.
          Open [Basics.v].  In the "Compile" menu, click on "Compile
          Buffer".
 
+         (N.b.: These instructions need to be updated to take the "-R
+         LF ." into account.  Can a CoqIDE expert tell me how this is
+         done, please?)
+
      - From the command line:
 
-         [coqc Basics.v]
+         [make Basics.vo]
 
    If you have trouble (e.g., if you get complaints about missing
    identifiers later in the file), it may be because the "load path"
@@ -41,7 +45,7 @@ Require Export Basics.
  
      - コマンドラインで：
  
-         [coqc Basics.v]を実行します。（訳注：[coqc]のあるフォルダにパスを通すのを忘れないでください。）
+         [make Basics.vo]を実行します。（訳注：[make]や[coqc]のあるフォルダにパスを通すのを忘れないでください。）
  
    もし識別子が見つからないなどのエラーが出たりしたら、Coqの"load path"が正しく設定されていないせいかもしれません。
    [Print LoadPath.]と言うコマンドで正しく設定されているか確認してみてください。 *)
@@ -155,14 +159,14 @@ Proof.
 
     In the first subgoal, [n] is replaced by [0].  No new variables
     are introduced (so the first part of the [as...] is empty), and
-    the goal becomes [0 + 0 = 0], which follows by simplification.
+    the goal becomes [0 = 0 + 0], which follows by simplification.
 
     In the second subgoal, [n] is replaced by [S n'], and the
     assumption [n' + 0 = n'] is added to the context with the name
     [IHn'] (i.e., the Induction Hypothesis for [n']).  These two names
     are specified in the second part of the [as...] clause.  The goal
-    in this case becomes [(S n') + 0 = S n'], which simplifies to
-    [S (n' + 0) = S n'], which in turn follows from [IHn']. *)
+    in this case becomes [S n' = (S n') + 0], which simplifies to
+    [S n' = S (n' + 0)], which in turn follows from [IHn']. *)
 *)
 (** [destruct]タクティックと同様に、[induction]タクティックには、サブゴールで使う変数を指定する[as...]節を使うことができます。
     二つに分かれているので、[as...]節も[|]で二つに分かれています。
@@ -178,6 +182,7 @@ Proof.
     [n']と[IHn']という二つの名前は[as...]節の二つ目で指定しています。
     ゴールは[S n' = (S n') + 0]となっていますが、簡約すると[S n' = S (n' + 0)]になります。
     これは帰納法の仮定である[IHn']から示せます。 *)
+(* 訳注：指摘の結果ほとんど直っているが、三段落目に[n' + 0 = n']という左右逆の等式が残っている。 *)
 
 Theorem minus_diag : forall n,
   minus n n = 0.
@@ -252,7 +257,7 @@ Proof.
 (** [] *)
 
 (** **** Exercise: 2 stars, optional (evenb_S)  *)
-(** One inconveninent aspect of our definition of [evenb n] is the
+(** One inconvenient aspect of our definition of [evenb n] is the
     recursive call on [n - 2]. This makes proofs about [evenb n]
     harder when done by induction on [n], since we may need an
     induction hypothesis about [n - 2]. The following lemma gives an
@@ -266,7 +271,7 @@ Proof.
 (** [] *)
 
 (*
-(** **** Exercise: 1 starM (destruct_induction)  *)
+(** **** Exercise: 1 star (destruct_induction)  *)
 *)
 (** **** 練習問題: ★ (destruct_induction)  *)
 (*
@@ -589,7 +594,7 @@ Proof.
     形式的証明ではいくつかの手順がより明示的になっています（例えば[reflexivity]の使用など）が、逆に明示されていない箇所もあります（特に「証明する命題」はCoqの証明上には全く現れませんが、非形式的証明では現状確認のために明示されています）。 *)
 
 (*
-(** **** Exercise: 2 stars, advanced, recommendedM (plus_comm_informal)  *)
+(** **** Exercise: 2 stars, advanced, recommended (plus_comm_informal)  *)
 *)
 (** **** 練習問題: ★★, advanced, recommended (plus_comm_informal)  *)
 (*
@@ -609,7 +614,7 @@ Proof.
 (** [] *)
 
 (*
-(** **** Exercise: 2 stars, optionalM (beq_nat_refl_informal)  *)
+(** **** Exercise: 2 stars, optional (beq_nat_refl_informal)  *)
 *)
 (** **** 練習問題: ★★, optional (beq_nat_refl_informal)  *)
 (*
@@ -690,6 +695,8 @@ Proof.
     （紙に書いた予想をコード中に書いたりしなくて構いません。
     手を動かす前に一度考えてもらうために使ったのです。） *)
 (* 訳注：最後の括弧書きは「提出しなくて構いません」なのだが、web公開のテキストに提出も何もないので意訳。 *)
+
+Check leb.
 
 Theorem leb_refl : forall n:nat,
   true = leb n n.
@@ -789,7 +796,7 @@ Proof.
 (** [] *)
 
 (*
-(** **** Exercise: 3 stars, recommendedM (binary_commute)  *)
+(** **** Exercise: 3 stars, recommended (binary_commute)  *)
 *)
 (** **** 練習問題: ★★★, recommended (binary_commute)  *)
 (*
@@ -839,7 +846,7 @@ Proof.
 (** [] *)
 
 (*
-(** **** Exercise: 5 stars, advancedM (binary_inverse)  *)
+(** **** Exercise: 5 stars, advanced (binary_inverse)  *)
 *)
 (** **** 練習問題: ★★★★★, advanced (binary_inverse)  *)
 (*
@@ -889,4 +896,4 @@ Proof.
 (* FILL IN HERE *)
 (** [] *)
 
-(** $Date: 2016-10-07 14:01:19 -0400 (Fri, 07 Oct 2016) $ *)
+(** $Date: 2017-08-22 17:13:32 -0400 (Tue, 22 Aug 2017) $ *)

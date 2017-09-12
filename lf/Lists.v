@@ -3,7 +3,7 @@
 (** * Lists: Working with Structured Data *)
 *)
 
-Require Export Induction.
+Require Export LF.Induction.
 Module NatList.
 
 (* ################################################################# *)
@@ -64,12 +64,12 @@ Notation "( x , y )" := (pair x y).
 (*
 (** The new pair notation can be used both in expressions and in
     pattern matches (indeed, we've actually seen this already in the
-    previous chapter, in the definition of the [minus] function --
+    [Basics] chapter, in the definition of the [minus] function --
     this works because the pair notation is also provided as part of
     the standard library): *)
 *)
 (** こうして定義したペアの新しい記法（notation）は、式だけでなくパターンマッチに使うこともできます。
-   （実際には、パターンマッチで使っている様子は既に[minus]関数を定義する際に見ています。
+   （実際には、パターンマッチで使っている様子は既に[Basics1]章の[minus]関数を定義する際に見ています。
    この時点で動いていたのは、同じペアの記法が標準ライブラリの一部として提供されているからです。） *)
 
 Compute (fst (3,5)).
@@ -353,6 +353,7 @@ Proof. reflexivity.  Qed.
 Example test_tl:              tl [1;2;3] = [2;3].
 Proof. reflexivity.  Qed.
 
+
 (* ----------------------------------------------------------------- *)
 (*
 (** *** Exercises *)
@@ -486,10 +487,10 @@ Example test_count2:              count 6 [1;2;3;1;4;1] = 0.
  (* FILL IN HERE *) Admitted.
 
 (*
-(** Multiset [sum] is similar to set [union]: [sum a b] contains
-    all the elements of [a] and of [b].  (Mathematicians usually
-    define [union] on multisets a little bit differently, which
-    is why we don't use that name for this operation.)
+(** Multiset [sum] is similar to set [union]: [sum a b] contains all
+    the elements of [a] and of [b].  (Mathematicians usually define
+    [union] on multisets a little bit differently -- using max instead
+    of sum -- which is why we don't use that name for this operation.)
     For [sum] we're giving you a header that does not give explicit
     names to the arguments.  Moreover, it uses the keyword
     [Definition] instead of [Fixpoint], so even if you had names for
@@ -500,7 +501,8 @@ Example test_count2:              count 6 [1;2;3;1;4;1] = 0.
 *)
 (** 多重集合の [sum] （直和、または非交和）は集合の [union] （和）と同じようなものです。
     [sum a b] は [a] と [b] の両方の要素を持つ多重集合です。
-    （数学者は通常、多重集合の [union] にもう少し異なる定義を与えます。それが、この関数の名前を [union] にしなかった理由です。）
+    （数学者は通常、多重集合の [union] に少し異なる定義として、和(sum)を使う代わりに最大(max)を使ったものを与えます。
+    それが、この関数の名前を [union] にしなかった理由です。）
     [sum] のヘッダには引数の名前を与えませんでした。
     さらに、 [Fixpoint] ではなく [Definition] を使っています。
     ですから、引数に名前がついていたとしても再帰的な処理はできません。
@@ -586,7 +588,7 @@ Example test_subset2:              subset [1;2;2] [2;1;4;1] = false.
 (** [] *)
 
 (*
-(** **** Exercise: 3 stars, recommendedM (bag_theorem)  *)
+(** **** Exercise: 3 stars, recommended (bag_theorem)  *)
 *)
 (** **** 練習問題: ★★★, recommended (bag_theorem) *)
 (*
@@ -631,12 +633,12 @@ Proof. reflexivity. Qed.
 
 (*
 (** ... because the [[]] is substituted into the
-    "scrutinee" (the value being "scrutinized" by the match) in the
-    definition of [app], allowing the match itself to be
-    simplified. *)
+    "scrutinee" (the expression whose value is being "scrutinized" by
+    the match) in the definition of [app], allowing the match itself
+    to be simplified. *)
 *)
-(** これは、 [[]] が [app] の定義における「被検査体(scrutinee)」（パターンマッチで「検査(scrutinize)」される式/訳注：matchの直後に書いた式）に代入され、パターンマッチが簡約できるようになるからです。 *)
-(* 訳注：scrutineeはあまり見ない語だが、Scalaでは使っているようだ。なお、他の部分から推測するとscrutineeは式であって値ではないはず。 *)
+(** これは、 [[]] が [app] の定義における「被検査体(scrutinee)」（パターンマッチでその値が「検査(scrutinize)」される式 / 訳注：matchの直後に書いた式）に代入され、パターンマッチが簡約できるようになるからです。 *)
+(* 訳注：scrutineeはあまり見ない語だが、Scalaでは使っているようだ。 *)
 
 (*
 (** Also, as with numbers, it is sometimes helpful to perform case
@@ -1069,6 +1071,8 @@ Proof.
 (** どちらのスタイルの方が好ましいかは、読み手の証明への馴れや、彼らが今まで触れてきた証明がどちらに近いかに依ります。
     本書の目的としては冗長なスタイルの方が無難でしょう。 *)
 
+
+
 (* ================================================================= *)
 (** ** [Search] *)
 
@@ -1117,7 +1121,7 @@ Proof.
 (** ** リストについての練習問題 (1) *)
 
 (*
-(** **** Exercise: 3 starsM (list_exercises)  *)
+(** **** Exercise: 3 stars (list_exercises)  *)
 *)
 (** **** 練習問題: ★★★ (list_exercises) *)
 (*
@@ -1232,7 +1236,7 @@ Proof.
 (** [] *)
 
 (*
-(** **** Exercise: 3 stars, optionalM (bag_count_sum)  *)
+(** **** Exercise: 3 stars, optional (bag_count_sum)  *)
 *)
 (** **** 練習問題: ★★★, optional (bag_count_sum) *)
 (*
@@ -1247,7 +1251,7 @@ Proof.
 (** [] *)
 
 (*
-(** **** Exercise: 4 stars, advancedM (rev_injective)  *)
+(** **** Exercise: 4 stars, advanced (rev_injective)  *)
 *)
 (** **** 練習問題: ★★★★, advanced (rev_injective) *)
 (*
@@ -1504,7 +1508,7 @@ Proof.
 (** [] *)
 End PartialMap.
 
-(** **** Exercise: 2 starsM (baz_num_elts)  *)
+(** **** Exercise: 2 stars (baz_num_elts)  *)
 (** Consider the following inductive definition: *)
 
 Inductive baz : Type :=
@@ -1518,5 +1522,5 @@ Inductive baz : Type :=
 *)
 (** [] *)
 
-(** $Date: 2016-12-17 23:53:20 -0500 (Sat, 17 Dec 2016) $ *)
+(** $Date: 2017-08-24 10:54:05 -0400 (Thu, 24 Aug 2017) $ *)
 

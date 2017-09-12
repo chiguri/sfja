@@ -7,19 +7,26 @@
 (** This short (and optional) chapter develops some basic definitions
     and a few theorems about binary relations in Coq.  The key
     definitions are repeated where they are actually used (in the
-    [Smallstep] chapter), so readers who are already comfortable with
-    these ideas can safely skim or skip this chapter.  However,
-    relations are also a good source of exercises for developing
-    facility with Coq's basic reasoning facilities, so it may be
-    useful to look at this material just after the [IndProp]
-    chapter. *)
+    \CHAPV2{Smallstep} chapter of _Programming Language Foundations_),
+    so readers who are already comfortable with these ideas can safely
+    skim or skip this chapter.  However, relations are also a good
+    source of exercises for developing facility with Coq's basic
+    reasoning facilities, so it may be useful to look at this material
+    just after the [IndProp] chapter. *)
 *)
 (** この短い（オプションの）章では、Coqでいくつかの基本的な定義と二項関係の定理の証明を行います。
-    重要な定義は実際に使う際（[Smallstep]章）に再度定義されます。
+    重要な定義は実際に使う際（「プログラミング言語の基礎」の[Smallstep]章）に再度定義されます。
     もしこれらに慣れているならばこの章を流し読みするか飛ばしても問題ありません。
     しかし、Coqの基本的推論機構を使う良い練習問題ともなるので、[IndProp]章の直後に見ておくとよいかもしれません。 *)
 
-Require Export IndProp.
+Set Warnings "-notation-overridden,-parsing".
+From LF Require Export IndProp.
+
+(* ################################################################# *)
+(*
+(** * Relations *)
+*)
+(** * 関係 *)
 
 (*
 (** A binary _relation_ on a set [X] is a family of propositions
@@ -574,4 +581,4 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** $Date: 2016-05-26 16:17:19 -0400 (Thu, 26 May 2016) $ *)
+(** $Date: 2017-08-24 17:13:02 -0400 (Thu, 24 Aug 2017) $ *)

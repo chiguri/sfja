@@ -4,62 +4,55 @@
 *)
 
 (*
-(** In this chapter, we begin a new direction that will continue for
-    the rest of the course.  Up to now most of our attention has been
-    focused on various aspects of Coq itself, while from now on we'll
-    mostly be using Coq to formalize other things.  (We'll continue to
-    pause from time to time to introduce a few additional aspects of
-    Coq.)
+(** In this chapter, we'll take a more serious look at how to use Coq
+    to study interesting things outside of itself.  Our case study is
+    a _simple imperative programming language_ called Imp, embodying a
+    tiny core fragment of conventional mainstream languages such as C
+    and Java.  Here is a familiar mathematical function written in
+    Imp.
 
-    Our first case study is a _simple imperative programming language_
-    called Imp, embodying a tiny core fragment of conventional
-    mainstream languages such as C and Java.  Here is a familiar
-    mathematical function written in Imp.
-
-     Z ::= X;;
-     Y ::= 1;;
-     WHILE not (Z = 0) DO
-       Y ::= Y * Z;;
-       Z ::= Z - 1
-     END
-*)
- *)
-(** この章では、コースの残りに続く新しい方向へ進み始めます。
-    ここまではもっぱらCoq自身に焦点を当ててきましたが、ここからは、主として別のものを形式化するためにCoqを使います。
-    （他のCoqの機能の紹介は少し後で続けます。）
-    
-    はじめの例は、Imp と呼ばれる単純な命令型プログラミング言語です。
-    Imp は C や Java のような標準的に広く使われている言語の中心部分の機能だけを取り出したものです。
-    下の例は、おなじみの数学的関数を Imp で書いたものです。
-<<
      Z ::= X;; 
      Y ::= 1;; 
      WHILE not (Z = 0) DO 
        Y ::= Y * Z;; 
        Z ::= Z - 1 
+     END
+*)
+ *)
+(** この章では、別のものを学ぶためにCoqを使う方法に焦点を当てます。
+    学ぶ対象は、Imp と呼ばれる単純な命令型プログラミング言語です。
+    Imp は C や Java のような標準的に広く使われている言語の中心部分の機能だけを取り出したものです。
+    下の例は、おなじみの数学的関数を Imp で書いたものです。
+<<
+     Z ::= X;;
+     Y ::= 1;;
+     WHILE not (Z = 0) DO
+       Y ::= Y * Z;;
+       Z ::= Z - 1
      END 
 >>
  *)
 
 (*
 (** This chapter looks at how to define the _syntax_ and _semantics_
-    of Imp; the chapters that follow develop a theory of _program
-    equivalence_ and introduce _Hoare Logic_, a widely used logic for
-    reasoning about imperative programs. *)
+    of Imp; further chapters in _Programming Language
+    Foundations_ (_Software Foundations_, volume 2) develop a theory
+    of _program equivalence_ and introduce _Hoare Logic_, a widely
+    used logic for reasoning about imperative programs. *)
 *)
 (** この章ではImpの構文(_syntax_)と意味(_semantics_)をどのように定義するかを見ます。
-    続く章では、プログラムの同値性(_program equivalence_)の理論を展開し、命令型プログラムについての推論のための論理として一番知られているホーア論理(_Hoare Logic_)を紹介します。 *)
+    「プログラミング言語の基礎(_Programming Language Foundations_)」（ソフトウェアの基礎、第二巻）の章では、プログラムの同値性(_program equivalence_)の理論を展開し、命令型プログラムについての推論のための論理として一番知られているホーア論理(_Hoare Logic_)を紹介します。 *)
 
-(* IMPORTS *)
+Set Warnings "-notation-overridden,-parsing".
 Require Import Coq.Bool.Bool.
 Require Import Coq.Arith.Arith.
 Require Import Coq.Arith.EqNat.
 Require Import Coq.omega.Omega.
 Require Import Coq.Lists.List.
+Require Import Coq.omega.Omega.
 Import ListNotations.
 
-Require Import Maps.
-(* /IMPORTS *)
+From LF Require Import Maps.
 
 (* ################################################################# *)
 (*
@@ -506,7 +499,7 @@ Proof.
         IH.
 
         The interesting case is when [a1 = ANum n] for some [n].  If
-        [n = ANum 0], then
+        [n = 0], then
 
           optimize_0plus (APlus a1 a2) = optimize_0plus a2
 
@@ -549,7 +542,6 @@ Proof.
 ]]
         そして[a2]についての帰納仮定がまさに求めるものである。
         一方、ある[n']について [n = S n'] ならば、[optimize_0plus]はやはり自分自身を再帰的に呼び出し、結果は帰納仮定から得られる。 [] *)
-(* 訳注：[a1 = ANum n]の次の行に[n = ANum 0]とあるが、[n]は[nat]なので[n = 0]のはず。 *)
 
 (*
 (** However, this proof can still be improved: the first case (for
@@ -696,35 +688,37 @@ Proof.
 (** ** 新しいタクティック記法を定義する *)
 
 (*
-(** Coq also provides several ways of "programming" tactic scripts.
+(** Coq also provides several ways of "programming" tactic
+scripts.
 
-    - The [Tactic Notation] idiom illustrated below gives a handy way to
-      define "shorthand tactics" that bundle several tactics into a
+    - The [Tactic Notation] idiom illustrated below gives a handy way
+      to define "shorthand tactics" that bundle several tactics into a
       single command.
 
     - For more sophisticated programming, Coq offers a built-in
-      programming language called [Ltac] with primitives that can
-      examine and modify the proof state.  The details are a bit too
-      complicated to get into here (and it is generally agreed that
-      [Ltac] is not the most beautiful part of Coq's design!), but they
-      can be found in the reference manual and other books on Coq, and
-      there are many examples of [Ltac] definitions in the Coq standard
-      library that you can use as examples.
+      language called [Ltac] with primitives that can examine and
+      modify the proof state.  The details are a bit too complicated
+      to get into here (and it is generally agreed that [Ltac] is not
+      the most beautiful part of Coq's design!), but they can be found
+      in the reference manual and other books on Coq, and there are
+      many examples of [Ltac] definitions in the Coq standard library
+      that you can use as examples.
 
     - There is also an OCaml API, which can be used to build tactics
       that access Coq's internal structures at a lower level, but this
       is seldom worth the trouble for ordinary Coq users.
 
-    The [Tactic Notation] mechanism is the easiest to come to grips with,
-    and it offers plenty of power for many purposes.  Here's an example. *)
+    The [Tactic Notation] mechanism is the easiest to come to grips
+    with, and it offers plenty of power for many purposes.  Here's an
+    example. *)
 *)
 (** Coqはまた、タクティックスクリプトを「プログラミングする」いろいろな方法も提供します。
  
     - [Tactic Notation] コマンドは、「略記法タクティック("shorthand tactics")」を定義する簡単な方法を提供します。
       「略記法タクティック」は、呼ばれると、いろいろなタクティックを一度に適用します。
  
-    - より洗練されたプログラミングのために、Coqは[Ltac]と呼ばれる小さなビルトインのプログラミング言語と、証明の状態を調べたり変更したりするための[Ltac]のプリミティブを提供します。
-      その詳細はここで説明するにはちょっと複雑過ぎます（しかも、[Ltac]がCoqの設計の一番美しくない部分だというのは共通見解です!）。
+    - より洗練されたプログラミングのために、Coqは[Ltac]と呼ばれる小さな組込みの言語と、証明の状態を調べたり変更したりするための[Ltac]のプリミティブを提供します。
+      その詳細はここで説明するにはちょっと複雑過ぎます（しかも、[Ltac]はCoqの設計の一番美しくない部分だというのが共通見解です!）。
       しかし、詳細はリファレンスマニュアルにありますし、Coqの標準ライブラリには、読者が参考にできる[Ltac]の定義のたくさんの例があります。
  
     - Coqの内部構造のより深いレベルにアクセスする新しいタクティックを作ることができるOCaml API も存在します。
@@ -765,7 +759,7 @@ Tactic Notation "simpl_and_try" tactic(c) :=
         and [pred]), and multiplication by constants (this is what
         makes it Presburger arithmetic),
 
-      - equality ([=] and [<>]) and inequality ([<=]), and
+      - equality ([=] and [<>]) and ordering ([<=]), and
 
       - the logical connectives [/\], [\/], [~], and [->],
 
@@ -786,14 +780,14 @@ Tactic Notation "simpl_and_try" tactic(c) :=
     です。
     このとき、[omega]を呼ぶと、ゴールを解くか、そのゴールが偽であると告げるか、いずれかになります。 *)
 
-Require Import Coq.omega.Omega.
-
 Example silly_presburger_example : forall m n o p,
   m + n <= n + o /\ o + 3 = p + 3 ->
   m <= p.
 Proof.
   intros. omega.
 Qed.
+
+(** (Note the [Require Import Coq.omega.Omega.] at the top of the file.) *)
 
 (* ================================================================= *)
 (*
@@ -832,7 +826,7 @@ Qed.
        applied to solve the current goal.  If one is found, behave
        like [apply c].
 
-    We'll see examples below. *)
+    We'll see examples as we go along. *)
 *)
 (** 最後に、役に立ちそうないろいろなタクティックをいくつか紹介します。
  
@@ -854,7 +848,7 @@ Qed.
      - [constructor]: 現在のゴールを解くのに使えるコンストラクタ[c]を（現在の環境の[Inductive]による定義から）探そうとします。
        発見されたときは [apply c] と同様に振る舞います。
  
-    以降の証明でこれらのたくさんの例を見るでしょう。 *)
+    進むにしたがって、たくさんの例を見ることになります。 *)
 
 (* ################################################################# *)
 (*
@@ -895,18 +889,10 @@ Inductive aevalR : aexp -> nat -> Prop :=
 (*
 (** It will be convenient to have an infix notation for
     [aevalR].  We'll write [e \\ n] to mean that arithmetic expression
-    [e] evaluates to value [n].  (This notation is one place where the
-    limitation to ASCII symbols becomes a little bothersome.  The
-    standard notation for the evaluation relation is a double
-    down-arrow.  We'll typeset it like this in the HTML version of the
-    notes and use a double slash as the closest approximation in [.v]
-    files.)  *)
+    [e] evaluates to value [n]. *)
 *)
 (** [aevalR]の中置記法を定義するのと便利です。
-    算術式[e]が値[n]に評価されることを [e \\ n] と書きます。
-    （この記法は煩わしいascii記号の限界の1つです。
-    評価関係の標準記法は二重の下向き矢印です。
-    HTML版ではそのようにタイプセットしますが、[.v] ファイルでは可能な近似として縦棒二本を使います。） *)
+    算術式[e]が値[n]に評価されることを [e \\ n] と書きます。 *)
 
 Notation "e '\\' n"
          := (aevalR e n)
@@ -952,7 +938,7 @@ Inductive aevalR : aexp -> nat -> Prop :=
     [aevalR] and similar relations in the more readable graphical form
     of _inference rules_, where the premises above the line justify
     the conclusion below the line (we have already seen them in the
-    [Prop] chapter). *)
+    [IndProp] chapter). *)
 
 (** For example, the constructor [E_APlus]...
 
@@ -1291,9 +1277,9 @@ Definition Z : id := Id "Z".
 (** (This convention for naming program variables ([X], [Y],
     [Z]) clashes a bit with our earlier use of uppercase letters for
     types.  Since we're not using polymorphism heavily in the chapters
-    devoped to Imp, this overloading should not cause confusion.) *)
+    developed to Imp, this overloading should not cause confusion.) *)
 *)
-(** （プログラム変数のこの慣習（[X], [Y], [Z]）は、型に大文字の記号を使うという以前の使用法と衝突します。
+(** （プログラム変数のこの慣習（[X], [Y], [Z]）は、大文字は型を表すのに使うという使用法と衝突します。
     Impを構成していく章では多相性を多用はしないので、このことが混乱を招くことはないはずです。） *)
 
 (*
@@ -1664,13 +1650,13 @@ Fixpoint ceval_fun_no_while (st : state) (c : com)
                 IF b1 THEN c1 ELSE c2 FI / st \\ st'
 
                          beval st b = false
-                    ------------------------------                 (E_WhileEnd)
+                    ------------------------------               (E_WhileFalse)
                     WHILE b DO c END / st \\ st
 
                           beval st b = true
                            c / st \\ st'
                   WHILE b DO c END / st' \\ st''
-                  ---------------------------------               (E_WhileLoop)
+                  ---------------------------------               (E_WhileTrue)
                     WHILE b DO c END / st \\ st''
 *)
  *)
@@ -1699,13 +1685,13 @@ Fixpoint ceval_fun_no_while (st : state) (c : com)
                 IF b1 THEN c1 ELSE c2 FI / st \\ st' 
  
                          beval st b = false 
-                    ------------------------------                 (E_WhileEnd) 
+                    ------------------------------               (E_WhileFalse) 
                     WHILE b DO c END / st \\ st 
  
                           beval st b = true 
                            c / st \\ st' 
                   WHILE b DO c END / st' \\ st'' 
-                  ---------------------------------               (E_WhileLoop) 
+                  ---------------------------------               (E_WhileTrue) 
                     WHILE b DO c END / st \\ st'' 
 >>
 *)
@@ -1738,10 +1724,10 @@ Inductive ceval : com -> state -> state -> Prop :=
       beval st b = false ->
       c2 / st \\ st' ->
       (IFB b THEN c1 ELSE c2 FI) / st \\ st'
-  | E_WhileEnd : forall b st c,
+  | E_WhileFalse : forall b st c,
       beval st b = false ->
       (WHILE b DO c END) / st \\ st
-  | E_WhileLoop : forall st st' st'' b c,
+  | E_WhileTrue : forall st st' st'' b c,
       beval st b = true ->
       c / st \\ st' ->
       (WHILE b DO c END) / st' \\ st'' ->
@@ -1855,13 +1841,13 @@ Proof.
     rewrite H in H5. inversion H5.
   - (* E_IfFalse, b1 evaluates to false *)
       apply IHE1. assumption.
-  - (* E_WhileEnd, b1 evaluates to false *)
+  - (* E_WhileFalse, b1 evaluates to false *)
     reflexivity.
-  - (* E_WhileEnd, b1 evaluates to true (contradiction) *)
+  - (* E_WhileFalse, b1 evaluates to true (contradiction) *)
     rewrite H in H2. inversion H2.
-  - (* E_WhileLoop, b1 evaluates to false (contradiction) *)
+  - (* E_WhileTrue, b1 evaluates to false (contradiction) *)
     rewrite H in H4. inversion H4.
-  - (* E_WhileLoop, b1 evaluates to true *)
+  - (* E_WhileTrue, b1 evaluates to true *)
       assert (st' = st'0) as EQ1.
       { (* Proof of assertion *) apply IHE1_1; assumption. }
       subst st'0.
@@ -1899,7 +1885,7 @@ Proof.
   apply t_update_eq.  Qed.
 
 (*
-(** **** Exercise: 3 stars, recommendedM (XtimesYinZ_spec)  *)
+(** **** Exercise: 3 stars, recommended (XtimesYinZ_spec)  *)
 *)
 (** **** 練習問題: ★★★, recommended (XtimesYinZ_spec)  *)
 (*
@@ -1973,7 +1959,7 @@ Proof.
 (** [] *)
 
 (*
-(** **** Exercise: 4 starsM (no_whiles_terminating)  *)
+(** **** Exercise: 4 stars (no_whiles_terminating)  *)
 *)
 (** **** 練習問題: ★★★★ (no_whiles_terminating) *)
 (*
@@ -2346,8 +2332,8 @@ End BreakImp.
 (** **** Exercise: 4 stars, optional (add_for_loop)  *)
 (** Add C-style [for] loops to the language of commands, update the
     [ceval] definition to define the semantics of [for] loops, and add
-    cases for [for] loops as needed so that all the proofs in this file
-    are accepted by Coq.
+    cases for [for] loops as needed so that all the proofs in this
+    file are accepted by Coq.
 
     A [for] loop should be parameterized by (a) a statement executed
     initially, (b) a test that is run on each iteration of the loop to
@@ -2360,5 +2346,5 @@ End BreakImp.
 (* FILL IN HERE *)
 (** [] *)
 
-(* $Date: 2016-12-20 10:33:44 -0500 (Tue, 20 Dec 2016) $ *)
+(** $Date: 2017-08-25 14:01:35 -0400 (Fri, 25 Aug 2017) $ *)
 
