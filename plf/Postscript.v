@@ -1,10 +1,17 @@
+(** * Postscript: あとがき *)
+(*
 (** * Postscript *)
+*)
 
 (** Congratulations: We've made it to the end! *)
 
 (* ################################################################# *)
+(*
 (** * Looking Back *)
+*)
+(** * ふりかえり *)
 
+(*
 (** We've covered a lot of ground.  Here's a quick review of the whole course starting with _Logical Foundations_...  
 
    - _Functional programming_:
@@ -13,7 +20,16 @@
             or pointer structures)
           - higher-order functions
           - polymorphism *)
+*)
+(** ここまで様々なことを学んできました。
+    「論理の基礎」からの内容を簡単に振り返ってみましょう。
+ 
+    - 関数プログラミング
+          - 「宣言的」プログラミング（変更可能な配列やポインタなどによるループではなく、永続データ構造上の再帰）
+          - 高階関数
+          - 多相性 *)
 
+(*
 (**
      - _Logic_, the mathematical basis for software engineering:
 
@@ -25,14 +41,35 @@
           - inductively defined sets and relations
           - inductive proofs
           - proof objects *)
+*)
+(** 
+     - 論理、ソフトウェア工学の数学的基盤:
+<<
+                論理                        微積分
+        --------------------   ~   ---------------------------- 
+            ソフトウェア工学               機械/土木工学
+>>
+ 
+          - 帰納的に定義された集合と関係
+          - 帰納的証明
+          - 証明オブジェクト *)
 
+(*
 (**
      - _Coq_, an industrial-strength proof assistant
           - functional core language
           - core tactics
           - automation
 *)
+ *)
+(** 
+     - _Coq_、産業用途に耐え得る証明支援器
+          - 関数型のコア言語
+          - 基礎となるタクティック
+          - 自動化
+ *)
 
+(*
 (**
      - _Foundations of programming languages_
 
@@ -53,6 +90,27 @@
 
            - theory of subtyping
 *)
+ *)
+(** 
+     - プログラミング言語の基礎
+ 
+           - 以下を精密に定めるための記法と定義法
+                - 抽象構文
+                - 操作的意味
+                    - 大ステップ形式
+                    - 小ステップ形式
+                - 型システム
+ 
+           - プログラム同値性
+ 
+           - ホーア論理
+ 
+           - 型システムの基本的メタ理論
+ 
+              - 進行と保存
+ 
+           - サブタイプ理論
+ *)
 
 (* ################################################################# *)
 (** * Looking Around *)
@@ -236,8 +294,12 @@
 *)
 
 (* ################################################################# *)
+(*
 (** * Looking Forward *)
+*)
+(** * これからの指針 *)
 
+(*
 (** Some good places to learn more...
 
        - This book includes several optional chapters covering topics
@@ -281,6 +343,38 @@
             - Principles in Practice workshop (PiP)
             - CoqPL workshop 
 *)
+ *)
+(** 先に進む資料としてよいものをいくつか...
+ 
+       - この本のオプションの章。
+         目次と依存関係のページを眺めてみてください。
+ 
+       - ホーア論理とプログラム検証について:
+            - The Formal Semantics of Programming Languages: An Introduction, by Glynn Winskel [Winskel 1993]
+            - 実践的な形式検証ツール、例えばMicrosoftのBoogie system、Java Extended Static Checking、など
+ 
+       - プログラミング言語の基礎について:
+            - Concrete Semantics with Isabelle/HOL, by Tobias Nipkow and Gerwin Klein [Nipkow 2014]
+            - Types and Programming Languages, by Benjamin C. Pierce [Pierce 2002]
+              （和訳：型システム入門 -プログラミング言語と型の理論-）
+            - Practical Foundations for Programming Languages, by Robert Harper [Harper 2016]
+            - Foundations for Programming Languages, by John C. Mitchell [Mitchell 1996]
+ 
+        - Iron Lambda (http://iron.ouroborus.net/) は、段階的に複雑さが変わる複数の関数型言語のCoqによる定式化です。
+          ソフトウェアの基礎と、最近の研究論文で起こっていることのギャップを埋めてくれます。
+          定式化の中では、STLCや多相ラムダ計算（System F）の複数の亜種について、少なくとも進行性定理や型保存定理が示されています。 
+ 
+       - 最後に、プログラミング言語と形式検証について最先端を行く学会:
+            - Principles of Programming Langauges (POPL) 
+            - Programming Language Design and Implementation (PLDI) 
+            - International Conference on Functional Programming (ICFP) 
+            - Computer Aided Verification (CAV) 
+            - Interactive Theorem Proving (ITP) 
+            - Certified Programs and Proofs (CPP) 
+            - SPLASH/OOPSLA 
+            - Principles in Practice workshop (PiP) 
+            - CoqPL workshop 
+ *)
 
 (** $Date: 2017-08-24 17:13:02 -0400 (Thu, 24 Aug 2017) $ *)
 
