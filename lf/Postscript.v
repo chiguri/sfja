@@ -155,7 +155,7 @@
            - Certified Programming with Dependent Types, by Adam Chlipala [Chlipala 2013]
            - Interactive Theorem Proving and Program Development: Coq'Art: The Calculus of Inductive Constructions,
              by Yves Bertot and Pierre Casteran [Bertot 2004]
-
+ 
        - Coqを用いて検証済みシステムを構築するという話については、2017年のDeepSpec Summer Schoolの講義資料が有用でしょう。
          https://deepspec.org/event/dsss17/index.html 
  *)
