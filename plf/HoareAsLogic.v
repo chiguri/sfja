@@ -19,7 +19,8 @@
     derivations_ in this new logic.
 
     This chapter is optional.  Before reading it, you'll want to read
-    the [ProofObjects] chapter. *)
+    the \CHAPV1{ProofObjects} chapter in _Logical
+    Foundations_ (_Software Foundations_, volume 1). *)
 *)
 (** [Hoare]の章におけるホーア論理の提示を「モデル理論的」("model-theoretic")に行うこともできたでしょう。
     それぞれのコンストラクタに対する証明規則をプログラムの振舞いについての「定理」として提示し、プログラムの正しさ（ホーアの三つ組の正しさ）の証明は、
@@ -31,10 +32,10 @@
     こうするためには、新しい論理で正しい導出(_valid derivations_)の帰納的定義を与えれば良いのです。
  
     この章はオプションです。
-    先に[ProofObjects]の章を読んだ方がいいかもしれません。 *)
+    先に「論理の基礎」（「ソフトウェアの基礎」の第一巻）の[ProofObjects]の章を読んだ方がいいかもしれません。 *)
 
-Require Import Imp.
-Require Import Hoare.
+From PLF Require Import Imp.
+From PLF Require Import Hoare.
 
 (* ################################################################# *)
 (*
@@ -356,4 +357,4 @@ Proof.
     かなりくどいのです。
     [Hoare2]の修飾付きプログラムの形式化の節が、より良い方法を示してくれます。*)
 
-(** $Date: 2016-11-06 11:48:34 -0500 (Sun, 06 Nov 2016) $ *)
+(** $Date: 2017-08-22 17:13:32 -0400 (Tue, 22 Aug 2017) $ *)

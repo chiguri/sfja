@@ -25,13 +25,15 @@
     このことから、型付け規則を型チェック「関数」にそのまま変換することができます。
     この関数は、項とコンテキストをとり、その項の型を返すか、項が型付けできないという信号を出します。 *)
 
-(* This short chapter constructs such a function and proves it
-   correct. *)
+(** This short chapter constructs such a function and proves it
+    correct. *)
 
+Set Warnings "-notation-overridden,-parsing".
 Require Import Coq.Bool.Bool.
-Require Import Maps.
-Require Import Smallstep.
-Require Import Stlc.
+From PLF Require Import Maps.
+From PLF Require Import Smallstep.
+From PLF Require Import Stlc.
+From PLF Require MoreStlc.
 
 Module STLCChecker.
 Import STLC.
@@ -95,7 +97,7 @@ Proof with auto.
     [None].  Also, in the [tapp] case, we use pattern matching to
     extract the left- and right-hand sides of the function's arrow
     type (and fail if the type of the function is not [TArrow T11 T12]
-    for some [T1] and [T2]). *)
+    for some [T11] and [T12]). *)
 *)
 (** 型チェッカは、与えられた項の構造をたどって調べ、[Some T] または [None] を返します。
     部分項の型を調べるために再帰呼び出しをするたびに、結果についてパターンマッチをして、 [None] でないことを確認します。
@@ -212,7 +214,7 @@ End STLCChecker.
     is to fill in the omitted cases in the following. *)
 
 Module TypecheckerExtensions.
-Require Import MoreStlc.
+Import MoreStlc.
 Import STLCExtended.
   
 Fixpoint beq_ty (T1 T2: ty) : bool :=
@@ -311,8 +313,9 @@ Fixpoint type_check (Gamma:context) (t:tm) : option ty :=
   | _ => None  (* ... and delete this line *)
   end.
 
-(* Just for fun, we'll do the soundness proof with just a bit more
-   automation than above, using these "mega-tactics": *)
+(** Just for fun, we'll do the soundness proof with just a bit more
+    automation than above, using these "mega-tactics": *)
+
 Ltac invert_typecheck Gamma t T :=
   remember (type_check Gamma t) as TO;
   destruct TO as [T|]; 
@@ -404,10 +407,11 @@ End StepFunction.
 (** [] *)
 
 (** **** Exercise: 5 stars, optional (stlc_impl)  *)
-(** Using the Imp parser described in the [ImpParser] chapter as
-    a guide, build a parser for extended Stlc programs.  Combine it
-    with the typechecking and stepping functions from above to yield a
-    complete typechecker and interpreter for this language. *)
+(** Using the Imp parser described in the \CHAPV1{ImpParser} chapter
+    of _Logical Foundations_ as a guide, build a parser for extended
+    Stlc programs.  Combine it with the typechecking and stepping
+    functions from above to yield a complete typechecker and
+    interpreter for this language. *)
 
 Module StlcImpl.
 Import StepFunction.
@@ -416,4 +420,4 @@ Import StepFunction.
 End StlcImpl.
 (** [] *)
 
-(** $Date: 2016-12-01 22:35:27 -0500 (Thu, 01 Dec 2016) $ *)
+(** $Date: 2017-08-24 17:13:02 -0400 (Thu, 24 Aug 2017) $ *)

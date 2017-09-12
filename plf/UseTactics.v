@@ -20,13 +20,23 @@
     この章では、とても便利なのに、いろいろな理由でデフォルトのCoqでは用意されていないたくさんのタクティックを説明します。
     それらのタクティックは、[LibTactics.v]ファイルに定義されています。 *)
 
+Set Warnings "-notation-overridden,-parsing".
+
 Require Import Coq.Arith.Arith.
 
-Require Import Maps.
-Require Import Imp.
-Require Import Types.
-Require Import Smallstep.
-Require Import LibTactics.
+From PLF Require Import Maps.
+From PLF Require Import Imp.
+From PLF Require Import Types.
+From PLF Require Import Smallstep.
+From PLF Require Import LibTactics.
+
+From PLF Require Stlc.
+From PLF Require Equiv.
+From PLF Require Imp.
+From PLF Require References.
+From PLF Require Smallstep.
+From PLF Require Hoare.
+From PLF Require Sub.
 
 (*
 (** Remark: SSReflect is another package providing powerful tactics.
@@ -107,7 +117,7 @@ Require Import LibTactics.
 (** ** タクティック[introv] *)
 
 Module IntrovExamples.
-  Require Import Stlc.
+  Import Stlc.
   Import Imp.
   Import STLC.
 
@@ -190,9 +200,9 @@ End IntrovExamples.
 (** ** タクティック[inverts] *)
 
 Module InvertsExamples.
-  Require Import Stlc.
-  Require Import Equiv.
-  Require Import Imp.
+  Import Stlc.
+  Import Equiv.
+  Import Imp.
   Import STLC.
 
 (*
@@ -411,10 +421,9 @@ End InvertsExamples.
     - [exists] :n個の存在限量の証明をします。 *)
 
 Module NaryExamples.
-  Require Import References.
-  Require Import Smallstep.
+  Import References.
+  Import Smallstep.
   Import STLCRef.
-
 
 (* ================================================================= *)
 (*
@@ -804,7 +813,7 @@ End EqualityExamples.
 (** ** タクティック [unfolds] *)
 
 Module UnfoldsExample.
-  Require Import Hoare.
+  Import Hoare.
 
 (*
 (** The tactic [unfolds] (without any argument) unfolds the
@@ -906,7 +915,7 @@ Qed.
     たくさんの引数を一度に受けます。このタクティックは [gen x y z] という形で呼びます。*)
 
 Module GenExample.
-  Require Import Stlc.
+  Import Stlc.
   Import STLC.
 
 Lemma substitution_preserves_typing : forall Gamma x U v t S,
@@ -954,7 +963,7 @@ End GenExample.
     典型的には[eapply]によって導入されるものであったことを思い出してください。*)
 
 Module SkipExample.
-  Require Import Stlc.
+  Import Stlc.
   Import STLC.
 
 Notation " t '/' st '==>a*' t' " := (multi (astep st) t t')
@@ -1072,7 +1081,7 @@ End SkipExample.
 (** ** タクティック [sort] *)
 
 Module SortExamples.
-  Require Import Imp.
+  Import Imp.
 
 (*
 (** The tactic [sort] reorganizes the proof context by placing
@@ -1183,7 +1192,7 @@ End SortExamples.
     型の上の first-match アルゴリズムを使います。*)
 
 Module ExamplesLets.
-  Require Import Sub.
+  Import Sub.
 
 (* To illustrate the working of [lets], assume that we want to
    exploit the following lemma. *)
@@ -1394,7 +1403,7 @@ End ExamplesLets.
 (** ** 具体化の例 *)
 
 Module ExamplesInstantiations.
-  Require Import Sub.
+  Import Sub.
 
 (*
 (** The following proof shows several examples where [lets] is used
@@ -1557,4 +1566,4 @@ End ExamplesInstantiations.
     http://www.chargueraud.org/softs/tlc/
     から最新版を取得してください。 *)
 
-(** $Date: 2017-01-30 19:42:52 -0500 (Mon, 30 Jan 2017) $ *)
+(** $Date: 2017-08-22 17:13:32 -0400 (Tue, 22 Aug 2017) $ *)

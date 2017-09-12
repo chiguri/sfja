@@ -66,7 +66,7 @@
     なぜなら、項の各簡約は部分項のリデックスを複製することがあるからです。 *)
 
 (*
-(** **** Exercise: 2 starsM (norm_fail)  *)
+(** **** Exercise: 2 stars (norm_fail)  *)
 *)
 (** **** 練習問題: ★★ (norm_fail)  *)
 (*
@@ -111,10 +111,11 @@
 *)
 (** *** 構文と操作的意味 *)
 
-Require Import Coq.Lists.List.
-Import ListNotations.
-Require Import Maps.
-Require Import Smallstep.
+Set Warnings "-notation-overridden,-parsing".
+Require Import Coq.Lists.List. Import ListNotations.
+From PLF Require Import Maps.
+From PLF Require Import Smallstep.
+
 Hint Constructors multi.
 
 Inductive ty : Type :=
@@ -1423,6 +1424,11 @@ Proof.
 *)
 (** *** 正規化定理 *)
 
+(*
+(** And the final theorem: *)
+*)
+(** そして最後の定理です。 *)
+
 Theorem normalization : forall t T, has_type empty t T -> halts t.
 Proof.
   intros.
@@ -1432,4 +1438,4 @@ Proof.
   eapply V_nil.
 Qed.
 
-(** $Date: 2016-10-19 09:26:05 -0400 (Wed, 19 Oct 2016) $ *)
+(** $Date: 2017-08-24 17:13:02 -0400 (Thu, 24 Aug 2017) $ *)

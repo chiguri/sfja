@@ -20,10 +20,11 @@
     [Stlc]章では、単純型付きラムダ計算(_simply typed lambda-calculus_)に移ります。
     単純型付きラムダ計算は（Coq を含む）近代的な関数型プログラミング言語すべての中心概念になっています。 *)
 
+Set Warnings "-notation-overridden,-parsing".
 Require Import Coq.Arith.Arith.
-Require Import Maps.
-Require Import Imp.
-Require Import Smallstep.
+From PLF Require Import Maps.
+From PLF Require Import Imp.
+From PLF Require Import Smallstep.
 
 Hint Constructors multi.
 
@@ -575,7 +576,7 @@ Proof with auto.
 (** [] *)
 
 (*
-(** **** Exercise: 3 stars, advancedM (finish_progress_informal)  *)
+(** **** Exercise: 3 stars, advanced (finish_progress_informal)  *)
 *)
 (** **** 練習問題: ★★★, advanced (finish_progress_informal)  *)
 (*
@@ -680,7 +681,7 @@ Proof with auto.
 (** [] *)
 
 (*
-(** **** Exercise: 3 stars, advancedM (finish_preservation_informal)  *)
+(** **** Exercise: 3 stars, advanced (finish_preservation_informal)  *)
 *)
 (** **** 練習問題: ★★★, advanced (finish_preservation_informal)  *)
 (*
@@ -957,7 +958,7 @@ Tactic Notation "normalize" :=
 (** ** 追加演習 *)
 
 (*
-(** **** Exercise: 2 stars, recommendedM (subject_expansion)  *)
+(** **** Exercise: 2 stars, recommended (subject_expansion)  *)
 *)
 (** **** 練習問題: ★★, recommended (subject_expansion)  *)
 (*
@@ -981,7 +982,7 @@ Tactic Notation "normalize" :=
 []  *)
 
 (*
-(** **** Exercise: 2 starsM (variation1)  *)
+(** **** Exercise: 2 stars (variation1)  *)
 *)
 (** **** 練習問題: ★★ (variation1)  *)
 (*
@@ -1020,7 +1021,7 @@ Tactic Notation "normalize" :=
 [] *)
 
 (*
-(** **** Exercise: 2 starsM (variation2)  *)
+(** **** Exercise: 2 stars (variation2)  *)
 *)
 (** **** 練習問題: ★★ (variation2)  *)
 (*
@@ -1162,11 +1163,11 @@ Tactic Notation "normalize" :=
 []  *)
 
 (*
-(** **** Exercise: 1 starM (remove_predzero)  *)
+(** **** Exercise: 1 star (remove_predzero)  *)
 *)
 (** **** 練習問題: ★ (remove_predzero)  *)
 (*
-(** The reduction rule [E_PredZero] is a bit counter-intuitive: we
+(** The reduction rule [ST_PredZero] is a bit counter-intuitive: we
     might feel that it makes more sense for the predecessor of zero to
     be undefined, rather than being defined to be zero.  Can we
     achieve this simply by removing the rule from the definition of
@@ -1175,15 +1176,16 @@ Tactic Notation "normalize" :=
 (* FILL IN HERE *)
 [] *)
 *)
-(** 簡約規則 [E_PredZero] には少し直感に反するところがあります。
+(** 簡約規則 [ST_PredZero] には少し直感に反するところがあります。
     0 の前者を 0 と定義するよりは、未定義とした方が意味があるように感じられるでしょう。
-    これは [step] の定義から [E_PredZero] を取り除くだけで実現できるでしょうか？
+    これは [step] の定義から [ST_PredZero] を取り除くだけで実現できるでしょうか？
+    それとも別の場所に問題が起こるでしょうか？
  
 (* FILL IN HERE *) 
 []  *)
 
 (*
-(** **** Exercise: 4 stars, advancedM (prog_pres_bigstep)  *)
+(** **** Exercise: 4 stars, advanced (prog_pres_bigstep)  *)
 *)
 (** **** 練習問題: ★★★★, advanced (prog_pres_bigstep)  *)
 (*
@@ -1201,4 +1203,4 @@ Tactic Notation "normalize" :=
 (* FILL IN HERE *) 
 []  *)
 
-(** $Date: 2016-12-20 11:35:30 -0500 (Tue, 20 Dec 2016) $ *)
+(** $Date: 2017-08-22 17:13:32 -0400 (Tue, 22 Aug 2017) $ *)

@@ -10,9 +10,10 @@
     presentation here is somewhat terse.  We just comment where things
     are nonstandard. *)
 
-Require Import Maps.
-Require Import Smallstep.
-Require Import MoreStlc.
+Set Warnings "-notation-overridden,-parsing".
+From PLF Require Import Maps.
+From PLF Require Import Smallstep.
+From PLF Require Import MoreStlc.
 
 (* ################################################################# *)
 (*
@@ -749,7 +750,7 @@ Proof with eauto.
 
       - If the final step of the derivation is by [T_RCons], then
         there exist some terms [t1] [tr], types [T1 Tr] and a label
-        [t] such that [t = {i=t1, tr}], [T = {i:T1, Tr}], [record_tm
+        [t] such that [t = {i=t1, tr}], [T = {i:T1, Tr}], [record_ty
         tr], [record_tm Tr], [empty |- t1 : T1] and [empty |- tr :
         Tr].
 
@@ -1133,7 +1134,7 @@ Proof with eauto.
 
      - If the final step of the derivation is by [T_RCons], then there
        exist some terms [t1] [tr], types [T1 Tr] and a label [t] such
-       that [t = {i=t1, tr}], [T = {i:T1, Tr}], [record_tm tr],
+       that [t = {i=t1, tr}], [T = {i:T1, Tr}], [record_ty tr],
        [record_tm Tr], [empty |- t1 : T1] and [empty |- tr : Tr].
 
        By the definition of the step relation, [t] must have stepped
@@ -1193,5 +1194,5 @@ Proof with eauto.
        [ST_Rcd_Tail]の場合、[tr]の型付け導出についての帰納仮定、[T_RCons]、
        および[step_preserves_record_tm]補題の使用から求める結果が得られる。 *)
 
-(** $Date: 2016-10-19 09:26:05 -0400 (Wed, 19 Oct 2016) $ *)
+(** $Date: 2017-08-23 17:50:06 -0400 (Wed, 23 Aug 2017) $ *)
 

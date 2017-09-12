@@ -3,7 +3,7 @@
 (** * Equiv: Program Equivalence *)
 *)
 
-(* IMPORTS *)
+Set Warnings "-notation-overridden,-parsing".
 Require Import Coq.Bool.Bool.
 Require Import Coq.Arith.Arith.
 Require Import Coq.Arith.EqNat.
@@ -11,9 +11,8 @@ Require Import Coq.omega.Omega.
 Require Import Coq.Lists.List.
 Require Import Coq.Logic.FunctionalExtensionality.
 Import ListNotations.
-Require Import Maps.
-Require Import Imp.
-(* /IMPORTS *)
+From PLF Require Import Maps.
+From PLF Require Import Imp.
 
 (*
 (** *** Some Advice for Working on Exercises:
@@ -351,13 +350,13 @@ Proof.
   intros b c Hb. split; intros H.
   - (* -> *)
     inversion H; subst.
-    + (* E_WhileEnd *)
+    + (* E_WhileFalse *)
       apply E_Skip.
-    + (* E_WhileLoop *)
+    + (* E_WhileTrue *)
       rewrite Hb in H2. inversion H2.
   - (* <- *)
     inversion H; subst.
-    apply E_WhileEnd.
+    apply E_WhileFalse.
     rewrite Hb.
     reflexivity.  Qed.
 
@@ -394,12 +393,12 @@ Proof.
     that this assumption leads to a contradiction.
 
       - Suppose [(WHILE b DO c END) / st \\ st'] is proved using rule
-        [E_WhileEnd].  Then by assumption [beval st b = false].  But
+        [E_WhileFalse].  Then by assumption [beval st b = false].  But
         this contradicts the assumption that [b] is equivalent to
         [BTrue].
 
       - Suppose [(WHILE b DO c END) / st \\ st'] is proved using rule
-        [E_WhileLoop].  Then we are given the induction hypothesis
+        [E_WhileTrue].  Then we are given the induction hypothesis
         that [(WHILE b DO c END) / st \\ st'] is contradictory, which
         is exactly what we are trying to prove!
 
@@ -412,11 +411,11 @@ Proof.
     「証明」:[(WHILE b DO c END) / st \\ st']と仮定する。
     [(WHILE b DO c END) / st \\ st']の導出についての帰納法によって、この仮定から矛盾が導かれることを示す。
  
-      - [(WHILE b DO c END) / st \\ st']が規則[E_WhileEnd]から証明されると仮定する。
+      - [(WHILE b DO c END) / st \\ st']が規則[E_WhileFalse]から証明されると仮定する。
         すると仮定から[beval st b = false]となる。
         しかしこれは、[b]が[BTrue]と同値という仮定と矛盾する。
  
-      - [(WHILE b DO c END) / st \\ st']が規則[E_WhileLoop]を使って証明されると仮定する。
+      - [(WHILE b DO c END) / st \\ st']が規則[E_WhileTrue]を使って証明されると仮定する。
         すると帰納法の仮定として[(WHILE b DO c END) / st \\ st']が矛盾するということが得られる。
         これはまさに証明しようとしていることである。
  
@@ -435,11 +434,11 @@ Proof.
        by inversion *)
     inversion Heqcw; subst; clear Heqcw.
   (* The two interesting cases are the ones for WHILE loops: *)
-  - (* E_WhileEnd *) (* contradictory -- b is always true! *)
+  - (* E_WhileFalse *) (* contradictory -- b is always true! *)
     unfold bequiv in Hb.
     (* [rewrite] is able to instantiate the quantifier in [st] *)
     rewrite Hb in H. inversion H.
-  - (* E_WhileLoop *) (* immediate from the IH *)
+  - (* E_WhileTrue *) (* immediate from the IH *)
     apply IHceval2. reflexivity.  Qed.
 
 (*
@@ -501,10 +500,10 @@ Proof.
     inversion Hce; subst.
     + (* loop runs *)
       inversion H5; subst.
-      apply E_WhileLoop with (st' := st'0).
+      apply E_WhileTrue with (st' := st'0).
       assumption. assumption. assumption.
     + (* loop doesn't run *)
-      inversion H5; subst. apply E_WhileEnd. assumption.  Qed.
+      inversion H5; subst. apply E_WhileFalse. assumption.  Qed.
 
 (*
 (** **** Exercise: 2 stars, optional (seq_assoc)  *)
@@ -788,15 +787,15 @@ Proof.
         [WHILE b1' DO c1' END / st \\ st'], by induction on a
         derivation of [WHILE b1 DO c1 END / st \\ st'].  The only
         nontrivial cases are when the final rule in the derivation is
-        [E_WhileEnd] or [E_WhileLoop].
+        [E_WhileFalse] or [E_WhileTrue].
 
-          - [E_WhileEnd]: In this case, the form of the rule gives us
+          - [E_WhileFalse]: In this case, the form of the rule gives us
             [beval st b1 = false] and [st = st'].  But then, since
             [b1] and [b1'] are equivalent, we have [beval st b1' =
-            false], and [E-WhileEnd] applies, giving us [WHILE b1' DO
+            false], and [E-WhileFalse] applies, giving us [WHILE b1' DO
             c1' END / st \\ st'], as required.
 
-          - [E_WhileLoop]: The form of the rule now gives us [beval st
+          - [E_WhileTrue]: The form of the rule now gives us [beval st
             b1 = true], with [c1 / st \\ st'0] and [WHILE b1 DO c1
             END / st'0 \\ st'] for some state [st'0], with the
             induction hypothesis [WHILE b1' DO c1' END / st'0 \\
@@ -804,7 +803,7 @@ Proof.
 
             Since [c1] and [c1'] are equivalent, we know that [c1' /
             st \\ st'0].  And since [b1] and [b1'] are equivalent, we
-            have [beval st b1' = true].  Now [E-WhileLoop] applies,
+            have [beval st b1' = true].  Now [E-WhileTrue] applies,
             giving us [WHILE b1' DO c1' END / st \\ st'], as
             required.
 
@@ -821,20 +820,21 @@ Proof.
  
       - ([->]) [WHILE b1 DO c1 END / st \\ st']ならば
         [WHILE b1' DO c1' END / st \\ st']であることを、[WHILE b1 DO c1 END / st \\ st']の導出についての帰納法で示す。
-        自明でないのは、導出の最後の規則が[E_WhileEnd]または[E_WhileLoop]のときだけである。
+        自明でないのは、導出の最後の規則が[E_WhileFalse]または[E_WhileTrue]のときだけである。
  
-          - [E_WhileEnd]: この場合、規則の形から[beval st b1 = false]かつ[st = st']となる。
+          - [E_WhileFalse]: この場合、規則の形から[beval st b1 = false]かつ[st = st']となる。
             しかし[b1]と[b1']が同値であることから[beval st b1' = false]になる。
-            さらに[E-WhileEnd]を適用すると証明すべき[WHILE b1' DO c1' END / st \\ st']が得られる。
+            さらに[E_WhileFalse]を適用すると証明すべき[WHILE b1' DO c1' END / st \\ st']が得られる。
  
-          - [E_WhileLoop]: 規則の形から[beval st b1 = true]および、ある状態[st'0]について帰納法の仮定[WHILE b1' DO c1' END / st'0 \\ st']のもとで、
+          - [E_WhileTrue]: 規則の形から[beval st b1 = true]および、ある状態[st'0]について帰納法の仮定[WHILE b1' DO c1' END / st'0 \\ st']のもとで、
             [c1 / st \\ st'0]かつ[WHILE b1 DO c1 END / st'0 \\ st']となる。
  
             [c1]と[c1']が同値であることから、[c1' / st \\ st'0]となる。
             さらに[b1]と[b1']が同値であることから、[beval st b1' = true]となる。
-            [E-WhileLoop]を適用すると、証明すべき[WHILE b1' DO c1' END / st \\ st']が得られる。
+            [E_WhileTrue]を適用すると、証明すべき[WHILE b1' DO c1' END / st \\ st']が得られる。
  
       - ([<-]) 同様である。 [] *)
+(* 訳注：場合分けの中身で[E-WhileTrue]/[E-WhileFalse]になっている。アンダースコアが正しい。 *)
 
 Theorem CWhile_congruence : forall b1 b1' c1 c1',
   bequiv b1 b1' -> cequiv c1 c1' ->
@@ -848,10 +848,10 @@ Proof.
     remember (WHILE b1 DO c1 END) as cwhile
       eqn:Heqcwhile.
     induction Hce; inversion Heqcwhile; subst.
-    + (* E_WhileEnd *)
-      apply E_WhileEnd. rewrite <- Hb1e. apply H.
-    + (* E_WhileLoop *)
-      apply E_WhileLoop with (st' := st').
+    + (* E_WhileFalse *)
+      apply E_WhileFalse. rewrite <- Hb1e. apply H.
+    + (* E_WhileTrue *)
+      apply E_WhileTrue with (st' := st').
       * (* show loop runs *) rewrite <- Hb1e. apply H.
       * (* body execution *)
         apply (Hc1e st st').  apply Hce1.
@@ -861,10 +861,10 @@ Proof.
     remember (WHILE b1' DO c1' END) as c'while
       eqn:Heqc'while.
     induction Hce; inversion Heqc'while; subst.
-    + (* E_WhileEnd *)
-      apply E_WhileEnd. rewrite -> Hb1e. apply H.
-    + (* E_WhileLoop *)
-      apply E_WhileLoop with (st' := st').
+    + (* E_WhileFalse *)
+      apply E_WhileFalse. rewrite -> Hb1e. apply H.
+    + (* E_WhileTrue *)
+      apply E_WhileTrue with (st' := st').
       * (* show loop runs *) rewrite -> Hb1e. apply H.
       * (* body execution *)
         apply (Hc1e st st').  apply Hce1.
@@ -1465,7 +1465,8 @@ Proof.
 *)
 (** **** 練習問題: ★★★★, advanced, optional (optimize_0plus) *)
 (*
-(** Recall the definition [optimize_0plus] from the [Imp] chapter:
+(** Recall the definition [optimize_0plus] from the \CHAPV1{Imp} chapter of _Logical 
+    Foundations_: 
 
     Fixpoint optimize_0plus (e:aexp) : aexp :=
       match e with
@@ -1504,7 +1505,7 @@ Proof.
    - Prove that the optimizer is sound.  (This part should be _very_
      easy.)  *)
 *)
-(** [Imp]の章の[optimize_0plus]の定義をふり返ります。
+(** 「論理の基礎」の[Imp]の章の[optimize_0plus]の定義をふり返ります。
 [[
     Fixpoint optimize_0plus (e:aexp) : aexp := 
       match e with 
@@ -1898,10 +1899,10 @@ Inductive ceval : com -> state -> state -> Prop :=
       beval st b1 = false ->
       c2 / st \\ st' ->
       (IFB b1 THEN c1 ELSE c2 FI) / st \\ st'
-  | E_WhileEnd : forall (b1 : bexp) (st : state) (c1 : com),
+  | E_WhileFalse : forall (b1 : bexp) (st : state) (c1 : com),
       beval st b1 = false ->
       (WHILE b1 DO c1 END) / st \\ st
-  | E_WhileLoop : forall (st st' st'' : state) (b1 : bexp) (c1 : com),
+  | E_WhileTrue : forall (st st' st'' : state) (b1 : bexp) (c1 : com),
       beval st b1 = true ->
       c1 / st \\ st' ->
       (WHILE b1 DO c1 END) / st' \\ st'' ->
@@ -2015,7 +2016,7 @@ Theorem p1_p2_equiv : cequiv p1 p2.
 Proof. (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** **** Exercise: 4 stars, advancedM (p3_p4_inequiv)  *)
+(** **** Exercise: 4 stars, advanced (p3_p4_inequiv)  *)
 (** Prove that the following programs are _not_ equivalent.  (Hint:
     What should the value of [Z] be when [p3] terminates?  What about
     [p4]?) *)
@@ -2072,7 +2073,7 @@ End Himp.
 (** **** 練習問題: ★★★★, optional (for_while_equiv) *)
 (*
 (** This exercise extends the optional [add_for_loop] exercise from
-    the [Imp] chapter, where you were asked to extend the language
+    the \CHAPV1{Imp} chapter, where you were asked to extend the language
     of commands with C-style [for] loops.  Prove that the command:
 
       for (c1 ; b ; c2) {
@@ -2174,5 +2175,5 @@ Theorem zprop_preserving : forall c c',
 Proof. (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** $Date: 2016-12-20 10:47:46 -0500 (Tue, 20 Dec 2016) $ *)
+(** $Date: 2017-08-22 17:13:32 -0400 (Tue, 22 Aug 2017) $ *)
 

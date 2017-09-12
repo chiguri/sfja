@@ -1,9 +1,10 @@
 (** * StlcProp: Properties of STLC *)
 
-Require Import Maps.
-Require Import Types.
-Require Import Stlc.
-Require Import Smallstep.
+Set Warnings "-notation-overridden,-parsing".
+From PLF Require Import Maps.
+From PLF Require Import Types.
+From PLF Require Import Stlc.
+From PLF Require Import Smallstep.
 Module STLCProp.
 Import STLC.
 
@@ -229,7 +230,7 @@ Definition closed (t:tm) :=
 (** An _open_ term is one that is not closed (or not known to be
     closed). *)
 
-(** **** Exercise: 1 starM (afi)  *)
+(** **** Exercise: 1 star (afi)  *)
 (** In the space below, write out the rules of the [appears_free_in]
     relation in informal inference-rule notation.  (Use whatever
     notational conventions you like -- the point of the exercise is
@@ -564,7 +565,7 @@ Proof with eauto.
       inversion HT1...
 Qed.
 
-(** **** Exercise: 2 stars, recommendedM (subject_expansion_stlc)  *)
+(** **** Exercise: 2 stars, recommended (subject_expansion_stlc)  *)
 (** An exercise in the [Types] chapter asked about the _subject
     expansion_ property for the simple language of arithmetic and
     boolean expressions.  Does this property hold for STLC?  That is,
@@ -600,7 +601,7 @@ Proof.
 (* ################################################################# *)
 (** * Uniqueness of Types *)
 
-(** **** Exercise: 3 starsM (types_unique)  *)
+(** **** Exercise: 3 stars (types_unique)  *)
 (** Another nice property of the STLC is that types are unique: a
     given term (in a given context) has at most one type. *)
 (** Formalize this statement and prove it. *)
@@ -611,7 +612,7 @@ Proof.
 (* ################################################################# *)
 (** * Additional Exercises *)
 
-(** **** Exercise: 1 starM (progress_preservation_statement)  *)
+(** **** Exercise: 1 star (progress_preservation_statement)  *)
 (** Without peeking at their statements above, write down the progress
     and preservation theorems for the simply typed lambda-calculus (as 
     Coq theorems). *) 
@@ -619,7 +620,7 @@ Proof.
 (* FILL IN HERE *)
 (** [] *)
 
-(** **** Exercise: 2 starsM (stlc_variation1)  *)
+(** **** Exercise: 2 stars (stlc_variation1)  *)
 (** Suppose we add a new term [zap] with the following reduction rule
 
                          ---------                  (ST_Zap)
@@ -644,7 +645,7 @@ and the following typing rule:
 []
 *)
 
-(** **** Exercise: 2 starsM (stlc_variation2)  *)
+(** **** Exercise: 2 stars (stlc_variation2)  *)
 (** Suppose instead that we add a new term [foo] with the following 
     reduction rules:
 
@@ -668,7 +669,7 @@ and the following typing rule:
 []
 *)
 
-(** **** Exercise: 2 starsM (stlc_variation3)  *)
+(** **** Exercise: 2 stars (stlc_variation3)  *)
 (** Suppose instead that we remove the rule [ST_App1] from the [step]
     relation. Which of the following properties of the STLC remain
     true in the presence of this rule?  For each one, write either
@@ -805,7 +806,7 @@ Inductive tm : Type :=
   | tmult : tm -> tm -> tm
   | tif0  : tm -> tm -> tm -> tm.
 
-(** **** Exercise: 4 starsM (stlc_arith)  *)
+(** **** Exercise: 4 stars (stlc_arith)  *)
 (** Finish formalizing the definition and properties of the STLC
     extended with arithmetic.  Specifically:
 
@@ -829,5 +830,5 @@ Inductive tm : Type :=
 
 End STLCArith.
 
-(** $Date: 2016-12-20 12:03:19 -0500 (Tue, 20 Dec 2016) $ *)
+(** $Date: 2017-08-22 17:13:32 -0400 (Tue, 22 Aug 2017) $ *)
 

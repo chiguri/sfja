@@ -3,17 +3,6 @@
 (** * Stlc: The Simply Typed Lambda-Calculus *)
 *)
 
-Require Import Maps.
-Require Import Smallstep.
-Require Import Types.
-
-(* ################################################################# *)
-(*
-(** * The Simply Typed Lambda-Calculus *)
-*)
-(** * 単純型付きラムダ計算 *)
-
-(*
 (** The simply typed lambda-calculus (STLC) is a tiny core
     calculus embodying the key concept of _functional abstraction_,
     which shows up in pretty much every real-world programming
@@ -37,9 +26,14 @@ Require Import Types.
     新しい技術的挑戦は、すべて変数束縛(_variable binding_)と置換(_substitution_)の機構から生じます。
     これらを扱うには少し作業がいります。 *)
 
-(* ================================================================= *)
+Set Warnings "-notation-overridden,-parsing".
+From PLF Require Import Maps.
+From PLF Require Import Smallstep.
+From PLF Require Import Types.
+
+(* ################################################################# *)
 (*
-(** ** Overview *)
+(** * Overview *)
 *)
 (** ** 概観 *)
 
@@ -272,31 +266,31 @@ Require Import Types.
       - [(\x:Bool. \y:Bool. x) false true] は型 [Bool] を持ちます。 *)
 
 
-(* ================================================================= *)
+(* ################################################################# *)
 (*
-(** ** Syntax *)
+(** * Syntax *)
 *)
-(** ** 構文 *)
+(** * 構文 *)
 
 (** We next formalize the syntax of the STLC. *)
 
 Module STLC.
 
-(* ----------------------------------------------------------------- *)
+(* ================================================================= *)
 (*
-(** *** Types *)
+(** ** Types *)
 *)
-(** *** 型 *)
+(** ** 型 *)
 
 Inductive ty : Type :=
   | TBool  : ty
   | TArrow : ty -> ty -> ty.
 
-(* ----------------------------------------------------------------- *)
+(* ================================================================= *)
 (*
-(** *** Terms *)
+(** ** Terms *)
 *)
-(** *** 項 *)
+(** ** 項 *)
 
 Inductive tm : Type :=
   | tvar : id -> tm
@@ -325,6 +319,7 @@ Inductive tm : Type :=
 Definition x := (Id "x").
 Definition y := (Id "y").
 Definition z := (Id "z").
+
 Hint Unfold x.
 Hint Unfold y.
 Hint Unfold z.
@@ -360,11 +355,11 @@ Notation notB := (tabs x TBool (tif (tvar x) tfalse ttrue)).
 *)
 (** (これらを[Definition]ではなく[Notation]とすることで、[auto]に扱いやすくしています。) *)
 
-(* ================================================================= *)
+(* ################################################################# *)
 (*
-(** ** Operational Semantics *)
+(** * Operational Semantics *)
 *)
-(** ** 操作的意味論 *)
+(** * 操作的意味論 *)
 
 (*
 (** To define the small-step semantics of STLC terms, we begin,
@@ -378,11 +373,11 @@ Notation notB := (tabs x TBool (tif (tvar x) tfalse ttrue)).
     これらは関数適用式の簡約規則に使われます。
     そして最後に、スモールステップ関係自体を与えます。 *)
 
-(* ----------------------------------------------------------------- *)
+(* ================================================================= *)
 (*
-(** *** Values *)
+(** ** Values *)
 *)
-(** *** 値 *)
+(** ** 値 *)
 
 (*
 (** To define the values of the STLC, we have a few cases to consider.
@@ -484,11 +479,11 @@ Hint Constructors value.
     関数抽象の中を簡約することを選択しなかったため、変数が値であるかをどうかを心配する必要はなくなります。
     なぜなら、プログラムの簡約は常に「外側から内側に」行われ、[step]関係は常に閉じた項だけを対象とするからです。 *)
 
-(* ----------------------------------------------------------------- *)
+(* ================================================================= *)
 (*
-(** *** Substitution *)
+(** ** Substitution *)
 *)
-(** *** 置換 *)
+(** ** 置換 *)
 
 (*
 (** Now we come to the heart of the STLC: the operation of
@@ -676,11 +671,11 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(* ----------------------------------------------------------------- *)
+(* ================================================================= *)
 (*
-(** *** Reduction *)
+(** ** Reduction *)
 *)
-(** *** 簡約 *)
+(** ** 簡約 *)
 
 (*
 (** The small-step reduction relation for STLC now follows the
@@ -796,11 +791,11 @@ Hint Constructors step.
 Notation multistep := (multi step).
 Notation "t1 '==>*' t2" := (multistep t1 t2) (at level 40).
 
-(* ----------------------------------------------------------------- *)
+(* ================================================================= *)
 (*
-(** *** Examples *)
+(** ** Examples *)
 *)
-(** *** 例 *)
+(** ** 例 *)
 
 (** Example:
 
@@ -909,9 +904,9 @@ Lemma step_example4' :
 Proof. normalize.  Qed.
 
 (*
-(** **** Exercise: 2 stars (step_example3)  *)
+(** **** Exercise: 2 stars (step_example5)  *)
 *)
-(** **** 練習問題: ★★ (step_example3)  *) (* 訳注:5では？ *)
+(** **** 練習問題: ★★ (step_example5)  *)
 (*
 (** Try to do this one both with and without [normalize]. *)
 *)
@@ -930,19 +925,19 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(* ================================================================= *)
+(* ################################################################# *)
 (*
-(** ** Typing *)
+(** * Typing *)
 *)
-(** ** 型付け *)
+(** * 型付け *)
 
 (** Next we consider the typing relation of the STLC. *)
 
-(* ----------------------------------------------------------------- *)
+(* ================================================================= *)
 (*
-(** *** Contexts *)
+(** ** Contexts *)
 *)
-(** *** コンテキスト *)
+(** ** コンテキスト *)
 
 (*
 (** _Question_: What is the type of the term "[x y]"?
@@ -973,11 +968,11 @@ Proof.
 
 Definition context := partial_map ty.
 
-(* ----------------------------------------------------------------- *)
+(* ================================================================= *)
 (*
-(** *** Typing Relation *)
+(** ** Typing Relation *)
 *)
-(** *** 型付け関係 *)
+(** ** 型付け関係 *)
 
 (*
 (** 
@@ -1066,11 +1061,11 @@ where "Gamma '|-' t '\in' T" := (has_type Gamma t T).
 
 Hint Constructors has_type.
 
-(* ----------------------------------------------------------------- *)
+(* ================================================================= *)
 (*
-(** *** Examples *)
+(** ** Examples *)
 *)
-(** *** 例 *)
+(** ** 例 *)
 
 Example typing_example_1 :
   empty |- tabs x TBool (tvar x) \in TArrow TBool TBool.
@@ -1177,7 +1172,7 @@ Proof with auto.
     to the term [\x:Bool. \y:Bool, x y] -- i.e.,
 
     ~ exists T,
-        empty |- \x:Bool. \y:Bool, x y : T.
+        empty |- \x:Bool. \y:Bool, x y \in T.
 *)
  *)
 (** 項が「型付けできない」ことを証明することもできます。
@@ -1237,5 +1232,5 @@ Proof.
 
 End STLC.
 
-(** $Date: 2016-12-20 12:03:19 -0500 (Tue, 20 Dec 2016) $ *)
+(** $Date: 2017-08-25 14:01:35 -0400 (Fri, 25 Aug 2017) $ *)
 

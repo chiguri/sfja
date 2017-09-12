@@ -3,10 +3,11 @@
 (** * Records: Adding Records to STLC *)
 *)
 
-Require Import Maps.
-Require Import Imp.
-Require Import Smallstep.
-Require Import Stlc.
+Set Warnings "-notation-overridden,-parsing".
+From PLF Require Import Maps.
+From PLF Require Import Imp.
+From PLF Require Import Smallstep.
+From PLF Require Import Stlc.
 
 (* ################################################################# *)
 (*
@@ -54,9 +55,9 @@ Require Import Stlc.
 
    Reduction:
 
-                                 ti ==> ti'                            (ST_Rcd)
-    --------------------------------------------------------------------
-    {i1=v1, ..., im=vm, in=tn, ...} ==> {i1=v1, ..., im=vm, in=tn', ...}
+                               ti ==> ti'                            
+  -------------------------------------------------------------------- (ST_Rcd)
+  {i1=v1, ..., im=vm, in=tn, ...} ==> {i1=v1, ..., im=vm, in=tn', ...}
 
                                  t1 ==> t1'
                                --------------                        (ST_Proj1)
@@ -94,9 +95,9 @@ Require Import Stlc.
 >>
    簡約:
 <<
-                                 ti ==> ti'                            (ST_Rcd) 
-    -------------------------------------------------------------------- 
-    {i1=v1, ..., im=vm, in=tn, ...} ==> {i1=v1, ..., im=vm, in=tn', ...} 
+                               ti ==> ti'                             
+  -------------------------------------------------------------------- (ST_Rcd) 
+  {i1=v1, ..., im=vm, in=tn, ...} ==> {i1=v1, ..., im=vm, in=tn', ...} 
  
                                  t1 ==> t1' 
                                --------------                        (ST_Proj1) 
@@ -321,11 +322,11 @@ Inductive well_formed_ty : ty -> Prop :=
 Hint Constructors record_ty well_formed_ty.
 
 (*
-(** Note that [record_ty] and [record_tm] are not recursive -- they
-    just check the outermost constructor.  The [well_formed_ty]
-    property, on the other hand, verifies that the whole type is well
-    formed in the sense that the tail of every record (the second
-    argument to [TRCons]) is a record.
+(** Note that [record_ty] is not recursive -- it just checks the
+    outermost constructor.  The [well_formed_ty] property, on the
+    other hand, verifies that the whole type is well formed in the
+    sense that the tail of every record (the second argument to
+    [TRCons]) is a record.
 
     Of course, we should also be concerned about ill-formed terms, not
     just types; but typechecking can rules those out without the help
@@ -337,13 +338,12 @@ Hint Constructors record_ty well_formed_ty.
 (** [record_ty]が再帰的ではないことに注意します。
     これは一番外側のコンストラクタだけをチェックします。
     一方[well_formed_ty]は型全体がwell-formedか(正しい形をしているか)、
-    つまり、レコードのすべての後部([TRCons]の第2引数)がレコードであるか、を検証します。
+    つまり、レコードのすべての後部（[TRCons]の第2引数）がレコードであるか、を検証します。
  
     もちろん、型だけでなく項についても、ill-formedの可能性を考慮しなければなりません。
     しかし、別途[well_formed_tm]を用意しなくても、ill-formed項は型チェックが排除します。
     なぜなら、型チェックが既に項の構成を調べているからです。
     必要なものは[record_ty]相当のもので、項の外側が[trnil]と[trcons]で作られていればレコード項だという保証をするだけです。 *)
-(* 訳注：最初の文で[record_tm]についても言及していたが、この時点では定義していないし後ろの文ともつながらないので、[record_tm]は要らないと判断。 *)
 
 Inductive record_tm : tm -> Prop :=
   | rtnil :
@@ -1154,5 +1154,5 @@ Qed.
 
 End STLCExtendedRecords.
 
-(** $Date: 2016-11-29 16:09:40 -0500 (Tue, 29 Nov 2016) $ *)
+(** $Date: 2017-08-24 17:13:02 -0400 (Thu, 24 Aug 2017) $ *)
 

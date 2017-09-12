@@ -1,12 +1,13 @@
 (** * Hoare2: Hoare Logic, Part II *)
 
+Set Warnings "-notation-overridden,-parsing".
 Require Import Coq.Bool.Bool.
 Require Import Coq.Arith.Arith.
 Require Import Coq.Arith.EqNat.
 Require Import Coq.omega.Omega.
-Require Import Maps.
-Require Import Imp.
-Require Import Hoare.
+From PLF Require Import Maps.
+From PLF Require Import Imp.
+From PLF Require Import Hoare.
 
 (* ################################################################# *)
 (** * Decorated Programs *)
@@ -245,7 +246,7 @@ These decorations were constructed as follows:
     arbitrary natural numbers [n] and [m] (for example, [3 - 5 + 5 =
     5]). *)
 
-(** **** Exercise: 2 starsM (if_minus_plus_reloaded)  *)
+(** **** Exercise: 2 stars (if_minus_plus_reloaded)  *)
 (** Fill in valid decorations for the following program:
 
        {{ True }}
@@ -539,7 +540,7 @@ Proof.
 (* ================================================================= *)
 (** ** Exercise: Slow Assignment *)
 
-(** **** Exercise: 2 starsM (slow_assignment)  *)
+(** **** Exercise: 2 stars (slow_assignment)  *)
 (** A roundabout way of assigning a number currently stored in [X] to
     the variable [Y] is to start [Y] at [0], then decrement [X] until
     it hits [0], incrementing [Y] at each step. Here is a program that
@@ -804,7 +805,7 @@ Proof.
 (* ================================================================= *)
 (** ** Exercise: Factorial *)
 
-(** **** Exercise: 3 starsM (factorial)  *)
+(** **** Exercise: 3 stars (factorial)  *)
 (** Recall that [n!] denotes the factorial of [n] (i.e., [n! =
     1*2*...*n]).  Here is an Imp program that calculates the factorial
     of the number initially stored in the variable [X] and puts it in
@@ -842,7 +843,7 @@ Proof.
 (* ================================================================= *)
 (** ** Exercise: Min *)
 
-(** **** Exercise: 3 starsM (Min_Hoare)  *)
+(** **** Exercise: 3 stars (Min_Hoare)  *)
 (** Fill in valid decorations for the following program.
   For the [=>] steps in your annotations, you may rely (silently) 
   on the following facts about min
@@ -878,7 +879,7 @@ Proof.
 
 (** [] *)
 
-(** **** Exercise: 3 starsM (two_loops)  *)
+(** **** Exercise: 3 stars (two_loops)  *)
 (** Here is a very inefficient way of adding 3 numbers:
 
   X ::= 0;;
@@ -1357,7 +1358,8 @@ Eval simpl in (verification_conditions_dec dec_while).
     a bit of automation.  We first define a custom [verify] tactic
     that uses [split] repeatedly to turn all the conjunctions into
     separate subgoals and then uses [omega] and [eauto] (described in
-    chapter [Auto]) to deal with as many of them as possible. *)
+    chapter \CHAPV1{Auto} in _Logical Foundations_) to deal with as many
+    of them as possible. *)
 
 Tactic Notation "verify" :=
   apply verification_correct;
@@ -1953,7 +1955,7 @@ Theorem slow_assignment_dec_correct : forall m,
 Proof. (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** **** Exercise: 4 stars, advancedM (factorial_dec)   *)
+(** **** Exercise: 4 stars, advanced (factorial_dec)   *)
 (** Remember the factorial function we worked with before: *)
 
 Fixpoint real_fact (n:nat) : nat :=
@@ -2046,12 +2048,12 @@ Theorem dfib_correct : forall n,
 (** [] *)
 
 (** **** Exercise: 4 stars, advanced, optional (implement_dcom)  *)
-(** Adapt the parser for Imp presented in chapter [ImpParser] 
-    to parse decorated commands (either ours or the ones you defined
-    in the previous exercise). *)
+(** Adapt the parser for Imp presented in chapter \CHAPV1{ImpParser}
+    of _Logical Foundations_ to parse decorated commands (either ours
+    or the ones you defined in the previous exercise). *)
 
 (* FILL IN HERE *)
 (** [] *)
 
-(** $Date: 2016-12-20 11:20:02 -0500 (Tue, 20 Dec 2016) $ *)
+(** $Date: 2017-08-24 17:13:02 -0400 (Thu, 24 Aug 2017) $ *)
 

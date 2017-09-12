@@ -48,12 +48,13 @@
     この拡張は直接的に定義できます。
     一番興味深い部分は、型保存定理の主張のために必要なリファインメント(refinement)です。 *)
 
+Set Warnings "-notation-overridden,-parsing".
 Require Import Coq.Arith.Arith.
 Require Import Coq.omega.Omega.
 Require Import Coq.Lists.List.
 Import ListNotations.
-Require Import Maps.
-Require Import Smallstep.
+From PLF Require Import Maps.
+From PLF Require Import Smallstep.
 
 (* ################################################################# *)
 (*
@@ -560,7 +561,7 @@ Definition tseq t1 t2 :=
     bodies.  Since function abstractions are values, the two [let]s are
     executed simply by binding these functions to the names [incc] and
     [decc], rather than by actually incrementing or decrementing [c].
-    Later, each caddll to one of these functions results in its body
+    Later, each call to one of these functions results in its body
     being executed once and performing the appropriate mutation on
     [c].  Such functions are often called _thunks_.
 
@@ -783,8 +784,8 @@ would it behave the same? *)
     [MoreStlc] chapter already give us what we need.
 
     First, we can use sums to build an analog of the [option] types
-    introduced in the [Lists] chapter.  Define [Option T] to be an
-    abbreviation for [Unit + T].
+    introduced in the \CHAPV1{Lists} chapter of _Logical Foundations_.
+    Define [Option T] to be an abbreviation for [Unit + T].
 
     Then a "nullable reference to a [T]" is simply an element of the
     type [Option (Ref T)].  *)
@@ -799,7 +800,7 @@ would it behave the same? *)
     幸い、参照の基本メカニズムを拡張しなくてもこれは実現できます。
     [MoreStlc]章で導入された直和型によってそれが可能になります。
  
-    最初に、直和を使って、[Lists]章で導入した[option]型に対応するものを構築します。
+    最初に、直和を使って、「論理の基礎」の[Lists]章で導入した[option]型に対応するものを構築します。
     [Option T] を [Unit + T] の略記法として定義します。
  
     すると、「nullになり得る[T]への参照」は単に型 [Option (Ref T)] の要素となります。 *)
@@ -871,7 +872,7 @@ would it behave the same? *)
     appears when we consider how to formalize their operational
     behavior.  One way to see why is to ask, "What should be the
     _values_ of type [Ref T]?"  The crucial observation that we need
-    to take into account is that reduci a [ref] operator should
+    to take into account is that reducing a [ref] operator should
     _do_ something -- namely, allocate some storage -- and the result
     of the operation should be a reference to this storage.
 
@@ -2753,4 +2754,4 @@ Qed.
 End RefsAndNontermination.
 End STLCRef.
 
-(** $Date: 2016-10-11 11:45:39 -0400 (Tue, 11 Oct 2016) $ *)
+(** $Date: 2017-08-22 17:13:32 -0400 (Tue, 22 Aug 2017) $ *)

@@ -52,11 +52,12 @@ Require Import Coq.Arith.Arith.
 Require Import Coq.Lists.List.
 Import ListNotations.
 
-Require Import Maps.
-Require Import Smallstep.
-Require Import Stlc.
-Require Import LibTactics.
+From PLF Require Import Maps.
+From PLF Require Import Smallstep.
+From PLF Require Import Stlc.
+From PLF Require Import LibTactics.
 
+From PLF Require Imp.
 
 (* ################################################################# *)
 (*
@@ -1081,7 +1082,7 @@ Ltac auto_tilde ::= auto.
 (** ** 決定性 *)
 
 Module DeterministicImp.
-  Require Import Imp.
+  Import Imp.
 
 (*
 (** Recall the original proof of the determinism lemma for the IMP
@@ -1115,12 +1116,12 @@ Proof.
     rewrite H in H5. inversion H5.
   - (* b1 reduces to false *)
       apply IHE1. assumption.
-  (* E_WhileEnd *)
+  (* E_WhileFalse *)
   - (* b1 reduces to true *)
     reflexivity.
   - (* b1 reduces to false (contradiction) *)
     rewrite H in H2. inversion H2.
-  (* E_WhileLoop *)
+  (* E_WhileTrue *)
   - (* b1 reduces to true (contradiction) *)
     rewrite H in H4. inversion H4.
   - (* b1 reduces to false *)
@@ -1270,10 +1271,11 @@ End DeterministicImp.
 *)
 (** ** STLC の保存 *)
 
+Set Warnings "-notation-overridden,-parsing".
+From PLF Require Import StlcProp.
 Module PreservationProgressStlc.
-  Require Import StlcProp.
-  Import STLC.
-  Import STLCProp.
+Import STLC.
+Import STLCProp.
 
 (*
 (** Consider the proof of perservation of STLC, shown below.
@@ -1394,8 +1396,9 @@ End PreservationProgressStlc.
 *)
 (** ** ビッグステップとスモールステップ *)
 
+From PLF Require Import Smallstep.
+Require Import Program.
 Module Semantics.
-Require Import Smallstep.
 
 (*
 (** Consider the proof relating a small-step reduction judgment
@@ -1455,10 +1458,8 @@ Admitted.
     information when applied to a property whose arguments
     are not reduced to variables, such as [t ==>* (C n)].
     You will thus need to use the more powerful tactic called
-    [dependent induction]. This tactic is available only after
-    importing the [Program] library, as shown below. *)
-
-Require Import Program.
+    [dependent induction]. (This tactic is available only after
+    importing the [Program] library, as we did above.) *)
 
 (** Exercise: prove the lemma [multistep__eval] without invoking
     the lemma [multistep_eval_ind], that is, by inlining the proof
@@ -1481,11 +1482,12 @@ End Semantics.
 *)
 (** ** STLCRef の保存 *)
 
+Require Import Coq.omega.Omega.
+From PLF Require Import References.
+Import STLCRef.
+Require Import Program.
 Module PreservationProgressReferences.
-  Require Import Coq.omega.Omega.
-  Require Import References.
-  Import STLCRef.
-  Hint Resolve store_weakening extends_refl.
+Hint Resolve store_weakening extends_refl.
 
 (*
 (** The proof of preservation for [STLCRef] can be found in chapter
@@ -1786,8 +1788,9 @@ End PreservationProgressReferences.
 *)
 (** ** サブタイプ *)
 
+From PLF Require Sub.
 Module SubtypingInversion.
-  Require Import Sub.
+Import Sub.
 
 (*
 (** Consider the inversion lemma for typing judgment
@@ -2555,8 +2558,8 @@ Qed.
     さらに、対象とするのは整数（型[Z]）だけで、自然数（型[nat]）は対象外です。
     以下は[ring]の使い方の例です。*)
 
+Require Import ZArith.
 Module RingDemo.
-  Require Import ZArith.
   Open Scope Z_scope.
   (* Arithmetic symbols are now interpreted in [Z] *)
 
@@ -2727,4 +2730,4 @@ Proof. congruence. Qed.
     しかし、その投資はすぐに回収できます。
  *)
 
-(** $Date: 2016-07-13 12:41:41 -0400 (Wed, 13 Jul 2016) $ *)
+(** $Date: 2017-08-22 17:13:32 -0400 (Tue, 22 Aug 2017) $ *)

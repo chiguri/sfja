@@ -3,17 +3,19 @@
 (** * Hoare: Hoare Logic, Part I *)
 *)
 
+Set Warnings "-notation-overridden,-parsing".
 Require Import Coq.Bool.Bool.
 Require Import Coq.Arith.Arith.
 Require Import Coq.Arith.EqNat.
 Require Import Coq.omega.Omega.
-Require Import Imp.
-Require Import Maps.
+From PLF Require Import Imp.
+From PLF Require Import Maps.
 
 (*
-(** In the past couple of chapters, we've begun applying the
-    mathematical tools developed in the first part of the course to
-    studying the theory of a small programming language, Imp.
+(** In the final chaper of _Logical Foundations_ (_Software
+    Foundations_, volume 1), we began applying the mathematical tools
+    developed in the first part of the course to studying the theory
+    of a small programming language, Imp.
 
     - We defined a type of _abstract syntax trees_ for Imp, together
       with an _evaluation relation_ (a partial function on states)
@@ -40,7 +42,8 @@ Require Import Maps.
         - correctness (in the sense of preserving meaning) of a number
           of useful program transformations
 
-        - behavioral equivalence of programs (in the [Equiv] chapter). 
+        - behavioral equivalence of programs (in the [Equiv]
+          chapter).
 
     If we stopped here, we would already have something useful: a set
     of tools for defining and discussing programming languages and
@@ -54,7 +57,7 @@ Require Import Maps.
     can sometimes be quite subtle (sometimes also subtly wrong!).
 
     We'll return to the theme of metatheoretic properties of whole
-    languages later in the book when we discuss _types_ and _type
+    languages later in this volume when we discuss _types_ and _type
     soundness_.  In this chapter, though, we turn to a different set
     of issues.
 
@@ -71,17 +74,16 @@ Require Import Maps.
     Hoare Logic originated in the 1960s, and it continues to be the
     subject of intensive research right up to the present day.  It
     lies at the core of a multitude of tools that are being used in
-    academia and industry to specify and verify real software
-    systems. 
+    academia and industry to specify and verify real software systems.
 
-    Hoare Logic combines two beautiful ideas: a natural way of
-    writing down _specifications_ of programs, and a _compositional
-    proof technique_ for proving that programs are correct with
-    respect to such specifications -- where by "compositional" we mean
-    that the structure of proofs directly mirrors the structure of the
-    programs that they are about. *)
+    Hoare Logic combines two beautiful ideas: a natural way of writing
+    down _specifications_ of programs, and a _compositional proof
+    technique_ for proving that programs are correct with respect to
+    such specifications -- where by "compositional" we mean that the
+    structure of proofs directly mirrors the structure of the programs
+    that they are about. *)
 *)
-(** これまでのいくつかの章ではコースの最初に用意した数学的道具を、小さなプログラミング言語 Imp の理論の学習に適用し始めています。
+(** 「論理の基礎」（「ソフトウェアの基礎」第一巻）の最後の章では、コースの最初に用意した数学的道具を、小さなプログラミング言語 Imp の理論の学習に適用してみました。
  
     - Imp の抽象構文木(_abstract syntax trees_)の型を定義しました。
       また、操作的意味論(_operational semantics_)を与える評価関係(_evaluation relation_)（状態間の部分関数）も定義しました。
@@ -109,7 +111,7 @@ Require Import Maps.
     実際、その多くは我々が扱うプログラミング言語を理解する上で本当に基本的なことですので、「定理」と意識することはなかったかもしれません。
     しかし、直観的に明らかだと思っている性質はしばしばとても曖昧で、時には間違っていることもあります!
  
-    言語に対する性質については、後に型(_types_)とその健全性(_type soundness_)を議論する際に再度出てきます。
+    言語に対するメタな性質については、この巻の後ろで型(_types_)とその健全性(_type soundness_)を議論する際に再度出てきます。
     この章では、別の問題について進めます。
  
     本章のゴールは、「プログラム検証(_program verification_)」をいくつか行うことです。
@@ -194,7 +196,7 @@ End ExAssertions.
     we'll write just [X] to mean [st X].  Thus, instead of writing *)
 *)
 (** この方法で表明を書くことは、2つの理由から、若干ヘビーに見えます。
-    (1)すべての個々の表明は、[fun st=> ]から始まっています。
+    (1)すべての個々の表明は、[fun st => ]から始まっています。
     (2)状態[st]は表明から変数を参照するために使う唯一の状態です（2つの別々の状態を同時に考える必要はありません）。
     例について非形式的に議論するときには、いくらか簡単にします。
     最初の[fun st =>]は書かず、[st X]のかわりに単に[X]と書きます。
@@ -224,7 +226,7 @@ End ExAssertions.
 (*
 (** This example also illustrates a convention that we'll use
     throughout the Hoare Logic chapters: in informal assertions,
-    capital letters like {X], [Y], and [Z] are Imp variables, while
+    capital letters like [X], [Y], and [Z] are Imp variables, while
     lowercase letters like [x], [y], [m], and [n] are ordinary Coq
     variables (of type [nat]).  This is why, when translating from
     informal to formal, we replace [X] with [st X] but leave [m]
@@ -710,7 +712,7 @@ Proof.
   apply hoare_asgn.  Qed.
 
 (*
-(** **** Exercise: 2 starsM (hoare_asgn_examples)  *)
+(** **** Exercise: 2 stars (hoare_asgn_examples)  *)
 *)
 (** **** 練習問題: ★★ (hoare_asgn_examples) *)
 (*
@@ -743,7 +745,7 @@ Proof.
 (** [] *)
 
 (*
-(** **** Exercise: 2 stars, recommendedM (hoare_asgn_wrong)  *)
+(** **** Exercise: 2 stars, recommended (hoare_asgn_wrong)  *)
 *)
 (** **** 練習問題: ★★, recommended (hoare_asgn_wrong)  *)
 (*
@@ -792,8 +794,6 @@ Proof.
 *)
 
 Theorem hoare_asgn_fwd :
-  (forall {X Y: Type} {f g : X -> Y},
-     (forall (x: X), f x = g x) ->  f = g) ->
   forall m a P,
   {{fun st => P st /\ st X = m}}
     X ::= a
@@ -816,15 +816,13 @@ Proof.
 *)
 
 Theorem hoare_asgn_fwd_exists :
-  (forall {X Y: Type} {f g : X -> Y},
-     (forall (x: X), f x = g x) ->  f = g) ->
   forall a P,
   {{fun st => P st}}
     X ::= a
   {{fun st => exists m, P (t_update st X m) /\
                 st X = aeval (t_update st X m) a }}.
 Proof.
-  intros functional_extensionality a P.
+  intros a P.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
@@ -1004,7 +1002,8 @@ Proof.
 
 (*
 (** This is a good moment to take another look at the [eapply] tactic,
-    which we introduced briefly in the [Auto] chapter.
+    which we introduced briefly in the \CHAPV1{Auto} chapter of
+    _Logical Foundations_.
 
     We had to write "[with (P' := ...)]" explicitly in the proof of
     [hoare_asgn_example1] and [hoare_consequence] above, to make sure
@@ -1022,7 +1021,7 @@ Proof.
     to tell Coq, essentially, "Be patient: The missing part is going
     to be filled in later in the proof." *)
 *)
-(** 良い機会ですので、[Auto] 章で概要を説明した [eapply] 別の観点を説明しましょう。
+(** 良い機会ですので、「論理の基礎」の [Auto] 章で概要を説明した [eapply] を別の観点を説明しましょう。
  
     上述の [hoare_asgn_example1] や [hoare_consequence] の証明では、 [hoare_consequence_pre] 規則のメタ変数を明示するために、[with (P' := ...)] のように書かなければいけませんでした。
     （というのも、[hoare_consequence_pre] の [P'] は帰結に出ないので、帰結と現在のゴールを単一化しても [P'] を特定することはできません。）
@@ -1062,14 +1061,11 @@ Lemma silly1 : forall (P : nat -> nat -> Prop) (Q : nat -> Prop),
 Proof.
   intros P Q HP HQ. eapply HQ. apply HP.
 
-(** Coq gives a warning after [apply HP].  (The warnings look
-    different between Coq 8.4 and Coq 8.5.  In 8.4, the warning says
-    "No more subgoals but non-instantiated existential variables."  In
-    8.5, it says "All the remaining goals are on the shelf," meaning
-    that we've finished all our top-level proof obligations but along
-    the way we've put some aside to be done later, and we have not
-    finished those.)  Trying to close the proof with [Qed] gives an
-    error. *)
+(** Coq gives a warning after [apply HP].  ("All the remaining goals
+    are on the shelf," means that we've finished all our top-level
+    proof obligations but along the way we've put some aside to be
+    done later, and we have not finished those.)  Trying to close the
+    proof with [Qed] gives an error. *)
 
 Abort.
 
@@ -1123,7 +1119,7 @@ Proof.
   intros P Q HP HQ. destruct HP as [y HP']. eapply HQ. eassumption.
 Qed.
 
-(** **** Exercise: 2 starsM (hoare_asgn_examples_2)  *)
+(** **** Exercise: 2 stars (hoare_asgn_examples_2)  *)
 (** Translate these informal Hoare triples...
 
        {{ X + 1 <= 5 }}  X ::= X + 1  {{ X <= 5 }}
@@ -1322,7 +1318,7 @@ Proof.
 (** [] *)
 
 (*
-(** **** Exercise: 3 starsM (hoarestate1)  *)
+(** **** Exercise: 3 stars (hoarestate1)  *)
 *)
 (** **** 練習問題: ★★★ (hoarestate1) *)
 (*
@@ -1548,7 +1544,7 @@ Proof.
 (* ----------------------------------------------------------------- *)
 (** *** Exercise: One-sided conditionals *)
 
-(** **** Exercise: 4 starsM (if1_hoare)  *)
+(** **** Exercise: 4 stars (if1_hoare)  *)
 (** In this exercise we consider extending Imp with "one-sided
     conditionals" of the form [IF1 b THEN c FI]. Here [b] is a
     boolean expression, and [c] is a command. If [b] evaluates to
@@ -1604,9 +1600,9 @@ Inductive ceval : com -> state -> state -> Prop :=
   | E_IfFalse : forall (st st' : state) (b1 : bexp) (c1 c2 : com),
                 beval st b1 = false ->
                 c2 / st \\ st' -> (IFB b1 THEN c1 ELSE c2 FI) / st \\ st'
-  | E_WhileEnd : forall (b1 : bexp) (st : state) (c1 : com),
+  | E_WhileFalse : forall (b1 : bexp) (st : state) (c1 : com),
                  beval st b1 = false -> (WHILE b1 DO c1 END) / st \\ st
-  | E_WhileLoop : forall (st st' st'' : state) (b1 : bexp) (c1 : com),
+  | E_WhileTrue : forall (st st' st'' : state) (b1 : bexp) (c1 : com),
                   beval st b1 = true ->
                   c1 / st \\ st' ->
                   (WHILE b1 DO c1 END) / st' \\ st'' ->
@@ -1812,9 +1808,9 @@ Proof.
   remember (WHILE b DO c END) as wcom eqn:Heqwcom.
   induction He;
     try (inversion Heqwcom); subst; clear Heqwcom.
-  - (* E_WhileEnd *)
+  - (* E_WhileFalse *)
     split. assumption. apply bexp_eval_false. assumption.
-  - (* E_WhileLoop *)
+  - (* E_WhileTrue *)
     apply IHHe2. reflexivity.
     apply (Hhoare st st'). assumption.
       split. assumption. apply bexp_eval_true. assumption.
@@ -1886,13 +1882,14 @@ Proof.
     もしコマンドが終了しないなら、なんでも望むものが事後条件として示せます。 *)
 
 (*
-(** Hoare rules that only talk about terminating commands are
-    often said to describe a logic of "partial" correctness.  It is
-    also possible to give Hoare rules for "total" correctness, which
-    build in the fact that the commands terminate. However, in this
-    course we will only talk about partial correctness. *)
+(** Hoare rules that only talk about what happens when commands
+    terminate (without proving that they do) are often said to
+    describe a logic of "partial" correctness.  It is also possible to
+    give Hoare rules for "total" correctness, which build in the fact
+    that the commands terminate. However, in this course we will only
+    talk about partial correctness. *)
 *)
-(** 停止するコマンドについてだけを議論するホーア規則は、「部分」正当性("partial" correctness)を記述していると言われます。
+(** コマンドが停止したときに関してのみ（しかも停止することを示すことなく）何が起こるかを議論するホーア規則は、「部分」正当性("partial" correctness)を記述していると言われます。
     「完全」正当性("total" correctness)についてのホーア規則を与えることも可能です。
     それは、コマンドが停止するという事実を組み込んだものです。
     ただし、このコースでは部分正当性についてのみ説明します。 *)
@@ -1904,7 +1901,7 @@ Proof.
 (** *** 練習問題: [REPEAT] *)
 
 (*
-(** **** Exercise: 4 stars, advancedM (hoare_repeat)  *)
+(** **** Exercise: 4 stars, advanced (hoare_repeat)  *)
 *)
 (** **** 練習問題: ★★★★, advanced (hoare_repeat) *)
 (*
@@ -1912,13 +1909,13 @@ Proof.
     commands: [REPEAT] c [UNTIL] a [END]. You will write the
     evaluation rule for [repeat] and add a new Hoare rule to the
     language for programs involving it.  (You may recall that the
-    evaluation rule is given in an example in the [Auto] chapter.
+    evaluation rule is given in an example in the \CHAPV1{Auto} chapter.
     Try to figure it out yourself here rather than peeking.) *)
 *)
 (** この練習問題では、言語に新たなコマンドを追加します。
     [REPEAT] c [UNTIL] a [END]という形のコマンドです。
     [repeat]の評価規則を記述し、このコマンドを含むプログラムについての評価規則と新たなホーア論理の規則を追加しなさい。
-    （評価規則については[Auto]章でも例として使っていますが、それを見ないでやってみましょう。） *)
+    （評価規則については前巻の[Auto]章でも例として使っていますが、それを見ないでやってみましょう。） *)
 
 Module RepeatExercise.
 
@@ -1957,13 +1954,11 @@ Notation "'REPEAT' e1 'UNTIL' b2 'END'" :=
 (** Add new rules for [REPEAT] to [ceval] below.  You can use the rules
     for [WHILE] as a guide, but remember that the body of a [REPEAT]
     should always execute at least once, and that the loop ends when
-    the guard becomes true.  Then update the [ceval_cases] tactic to
-    handle these added cases.  *)
+    the guard becomes true. *)
 *)
 (** 以下の[ceval]に[REPEAT]の新たな規則を追加しなさい。
     [WHILE]の規則を参考にして構いません。
-    ただ、[REPEAT]の本体は1度は実行されることと、ループの終了はガードが真になったときであることは忘れないで下さい。
-    そして、この場合を扱えるように、[ceval_cases]タクティックを更新しなさい。*)
+    ただし、[REPEAT]の本体は1度は実行されること、ループの終了はガードが真になったときであることを忘れないで下さい。 *)
 
 Inductive ceval : state -> com -> state -> Prop :=
   | E_Skip : forall st,
@@ -1983,10 +1978,10 @@ Inductive ceval : state -> com -> state -> Prop :=
       beval st b1 = false ->
       ceval st c2 st' ->
       ceval st (IFB b1 THEN c1 ELSE c2 FI) st'
-  | E_WhileEnd : forall b1 st c1,
+  | E_WhileFalse : forall b1 st c1,
       beval st b1 = false ->
       ceval st (WHILE b1 DO c1 END) st
-  | E_WhileLoop : forall st st' st'' b1 c1,
+  | E_WhileTrue : forall st st' st'' b1 c1,
       beval st b1 = true ->
       ceval st c1 st' ->
       ceval st' (WHILE b1 DO c1 END) st'' ->
@@ -2129,9 +2124,9 @@ Inductive ceval : com -> state -> state -> Prop :=
   | E_IfFalse : forall (st st' : state) (b1 : bexp) (c1 c2 : com),
                 beval st b1 = false ->
                 c2 / st \\ st' -> (IFB b1 THEN c1 ELSE c2 FI) / st \\ st'
-  | E_WhileEnd : forall (b1 : bexp) (st : state) (c1 : com),
+  | E_WhileFalse : forall (b1 : bexp) (st : state) (c1 : com),
                  beval st b1 = false -> (WHILE b1 DO c1 END) / st \\ st
-  | E_WhileLoop : forall (st st' st'' : state) (b1 : bexp) (c1 : com),
+  | E_WhileTrue : forall (st st' st'' : state) (b1 : bexp) (c1 : com),
                   beval st b1 = true ->
                   c1 / st \\ st' ->
                   (WHILE b1 DO c1 END) / st' \\ st'' ->
@@ -2164,5 +2159,5 @@ Proof.
 End Himp.
 (** [] *)
 
-(** $Date: 2017-02-02 10:32:28 -0500 (Thu, 02 Feb 2017) $ *)
+(** $Date: 2017-08-25 07:06:36 -0400 (Fri, 25 Aug 2017) $ *)
 
