@@ -202,7 +202,7 @@ html: $(GLOBFILES) $(VFILES) _CoqProject common deps.gif deps.html deps.map foot
 	for glob in $(VFILES:.v=.glob); do mv $${glob/.glob/_orig.glob} $$glob ; done
 	rm -f html/deps.gif html/deps.html html/deps.map html/index.html
 	cp deps.gif deps.html deps.map index.html html
-	tar zcvf html/plf.tgz $(VFILES) _CoqProject common deps.gif deps.html deps.map footer.html header.html index.html Makefile README LICENSE
+	tar zcvf html/plf.tgz $(VFILES) _CoqProject common deps.gif deps.html deps.map footer.html header.html index.html Makefile README LICENSE $(PLFFILES:%.v=html/%.html) html/deps.gif html/deps.html html/deps.map html/index.html html/coqindex.html html/toc.html html/common
 
 html-normal: $(GLOBFILES) $(VFILES)
 	- mkdir -p html
