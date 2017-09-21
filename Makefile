@@ -7,7 +7,11 @@ all:
 	for volume in $(VOLUMES); do cd $$volume && make && cd .. ; done
 
 html:
-	for volume in $(VOLUMES); do cd $$volume && make html && cd .. ; done
+	rm -rf html
+	mkdir -p html/sfja
+	for volume in $(VOLUMES); do cd $$volume && make html && cd .. && cp -r $$volume/html html/sfja/$$volume ; done
+	cp index.html html/sfja/index.html
+	cp -r common html/sfja/common
 
 clean:
 	for volume in $(VOLUMES); do cd $$volume && make clean && cd .. ; done

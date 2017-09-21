@@ -1,10 +1,8 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"><head>
-<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-<link href="coqdoc.css" rel="stylesheet" type="text/css" />
-
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<link href="common/sf.css" rel="stylesheet" type="text/css">
 <title>ソフトウェアの基礎</title>
-
   <!-- Google Analytics -->
   <script type="text/javascript">
   var _gaq = _gaq || [];
@@ -18,102 +16,99 @@
   })();
   </script>
   <!-- Google Analytics -->
+<link href="common/css.css" rel="stylesheet">
 </head>
 
-<body>
+<body class="sf_home">
 
 <div id="page">
-<div class="doc" id="index">
 
-<br/>
+<div id="header">
+<!-- added to header -->
+<img src="common/sf_logo_lg.png" style="padding-bottom:50px;" width="400px">
 
-  <center>
-    <table bgcolor="black" width="700"> <tbody><tr><td>
-          <table style="background-color: rgb(153, 128, 255);" cellpadding="50" width="700"> <tbody><tr><td>
-                   <br>
-                   <div class="booktitle">
-                     ソフトウェアの基礎
-                  </div>
-                  <br/>
-                  <br/>
-                  <p>
-                    <div class="authors">
-                      Benjamin C. Pierce<br/>
-                      Arthur Azevedo de Amorim<br/>
-                      Chris Casinghino<br/>
-                      Marco Gaboardi<br/>
-                      Michael Greenberg<br/>
-                      C&#259;t&#259;lin Hri&#355;cu<br/>
-                      Vilhelm Sj&ouml;berg<br/>
-                      Brent Yorgey
-                    </div>
-                  </p>
-                  <p>
-                    <div class="moreauthors">
-                      <i>with</i>
-                      Loris D'Antoni,
-                      Andrew W. Appel, 
-                      Arthur Chargueraud,
-                      Anthony Cowley,
-                      Jeffrey Foster, 
-                      Dmitri Garbuzov,
-                      Michael Hicks, 
-                      Ranjit Jhala, 
-                      Greg Morrisett,
-                      Jennifer Paykin,
-                      Mukund Raghothaman,
-                      Chung-chieh Shan, 
-                      Leonid Spesivtsev, 
-                      Andrew Tolmach,
-                      Stephanie Weirich,
-                      and
-                      Steve Zdancewic
-                    </div>
-                  </p>
-                  <p>
-                    <div class="moreauthors">
-                    <i>日本語訳第一版:</i>
-                      梅村晃広、片山功士、水野洋樹、大橋台地、増子萌、今井宜洋
-                    </div>
-                  </p>
-                  <p>
-                    <div class="moreauthors">
-                    <i>日本語訳第二版（第一版改版）:</i>
-                      森口草介
-                    </div>
-                  </p>
+<p><strong>The Software Foundations series is a broad introduction to the mathematical underpinnings of reliable software.</strong></p>
 
-                <br/>
-                <br/>
+<p>The principal novelty of the series is that every detail is one hundred
+percent formalized and machine-checked: the entire text of each volume,
+including the exercises, is literally a "proof script" for the Coq
+proof assistant.
+</p>
+<p>The exposition is intended for a broad range of readers, from advanced
+  undergraduates to PhD students and researchers. No specific background in
+  logic or programming languages is assumed, though a degree of mathematical
+  maturity is helpful. A one-semester course can expect to cover <i>Logical
+  Foundations</i> plus most of <i>Programming Language
+  Foundations</i> or <i>Verified Functional Algorithms</i>, or selections
+  from both.</p>
 
-                <div class="buttons"><center>
-                  <table cellpadding="10" cellspacing="3"><tbody><tr>
-                      <td/>
-                      <td style="background-color: rgb(166, 140, 255); border: solid 1px;">
-                          <a href="toc.html">目次</a></td>
-                    <td width="20"/>
-                    <td style="background-color: rgb(166, 140, 255); border: solid 1px;">
-                      <a href="deps.html">依存関係</a></td>
-                    <td width="20"/>
-                    <td style="background-color: rgb(166, 140, 255); border: solid 1px;">
-                      <a href="http://www.cis.upenn.edu/%7Ebcpierce/sf/">原文</a></td>
-                    <td width="20"/>
-                    <td style="background-color: rgb(166, 140, 255); border: solid 1px;">
-                      <a href="sfja.tar.gz">ソース</a></td>
-                    <td/>
-                  </tr></tbody></table></center>
-                </div>
+<div style="margin-top: 60px;">
+<div class="column pub">
 
-                <br/>
-                <br/>
-                <div>
-                  Version 4.2_J -- Based on Version 4.2 (Spring, 2017)
-                </div>
-          </td></tr></tbody></table>
-    </td></tr></tbody></table>
-  </center>
+<table class="logical">
+<tbody><tr>
+<td class="tab">Volume 1</td>
+</tr>
+
+<tr>
+<td>
+<p>Logical Foundations, serves as the entry-point to the series. It 
+covers functional programming, basic concepts of logic, 
+computer-assisted theorem proving,and Coq.</p>
+<a href="lf/index.html"><img src="common/lf_icon.jpg" width="200px"></a>
+</td>
+
+</tr></tbody></table>
+
+</div>
+<div class="column pub">
+<table class="language_found">
+<tbody><tr>
+<td class="tab">Volume 2</td>
+</tr>
+
+<tr>
+<td>
+<p>Programming Language Foundations, surveys the theory of programming 
+languages, including operational semantics, Hoare logic, and static type
+ systems.</p>
+<a href="plf/index.html"><img src="common/plf_icon.jpg" width="200px"></a>
+</td>
+
+</tr></tbody></table>
+
+
 </div>
 </div>
 
-</body>
-</html>
+
+<div class="column pub">
+
+<table class="algo">
+<tbody><tr>
+<td class="tab">Volume 3</td>
+</tr>
+
+<tr>
+<td>
+<p>Verified Functional Algorithms, shows how a variety of fundamental data structures can be mechanically verified.</p>
+<a href="vfa/index.html"><img src="common/vfa_icon.jpg" width="200px"></a>
+</td>
+
+</tr></tbody></table>
+
+
+</div>
+
+
+
+</div>
+
+<div id="main_home">
+<div id="index_content">
+
+</div>
+
+
+
+</div></div></body></html>
