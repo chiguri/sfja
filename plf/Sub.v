@@ -2115,15 +2115,11 @@ Qed.
 *)
 (** ** 練習問題 *)
 
-<<<<<<< HEAD
 (*
-(** **** Exercise: 2 starsM (variations)  *)
+(** **** Exercise: 2 stars (variations)  *)
 *)
 (** **** 練習問題: ★★ (variations)  *)
 (*
-=======
-(** **** Exercise: 2 stars (variations)  *)
->>>>>>> e50621b11947377d06a110d11277127272e26f81
 (** Each part of this problem suggests a different way of changing the
     definition of the STLC with Unit and subtyping.  (These changes
     are not cumulative: each part starts from the original language.)

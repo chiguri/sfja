@@ -3,6 +3,7 @@
 (** * Stlc: The Simply Typed Lambda-Calculus *)
 *)
 
+(*
 (** The simply typed lambda-calculus (STLC) is a tiny core
     calculus embodying the key concept of _functional abstraction_,
     which shows up in pretty much every real-world programming
