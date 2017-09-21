@@ -115,8 +115,8 @@ VFILES:=Preface.v\
   Rel.v\
   Imp.v\
   ImpParser.v\
-  Extraction.v\
   ImpCEvalFun.v\
+  Extraction.v\
   Auto.v\
   Postscript.v\
   Bib.v
