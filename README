@@ -1,19 +1,32 @@
 #########################################################################
-                           SOFTWARE FOUNDATIONS
+                           ソフトウェアの基礎
 #########################################################################
 
-This directory contains both Coq scripts (.v files) and more readable
-HTML files for the Software Foundations electronic textbook.
+このフォルダはソフトウェアの基礎（Software Foundations）の日本語翻訳ファイルを集めた場所です。
+各巻がフォルダ分けされています。
 
-  - Preface.v or Preface.html
-    The place to start reading, including details on how to install
-    required software
+  - lf
+    論理の基礎（Logical Foundations）のファイルが収められたフォルダです。
+
+  - plf
+    プログラミング言語の基礎（Programming Language Foundations）のファイルが収められたフォルダです。
+
+  - vfa
+    検証済み関数型アルゴリズム（Verified Functional Algorithms）のファイルが収められたフォルダです。
 
   - index.html
-    The book's cover page and navigation starting point
+    全体の表紙です。
 
-  - deps.html 
-    Overview of the ordering of chapters
+  - common
+    index.htmlの表示に使われているファイルが収められたフォルダです。
 
   - LICENSE
-    Explanation of how these files may be redistributed
+    index.html、commonのライセンスです。その他のフォルダについては各フォルダ内のLICENSEファイルを参照してください。翻訳も原則としてこのLICENSEファイルに準じます。
+
+  - README
+    このファイルです。
+
+  - README_TRANSLATION
+    翻訳における注意点が書かれたファイルです。読むだけならば特に見る必要はありません。
+
+各巻のコンパイルにはCoq8.6以降が、各巻のHTML生成にはその他にbash、sedが必要です。
