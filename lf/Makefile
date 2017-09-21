@@ -162,14 +162,19 @@ checkproofs:
 	$(COQC) $(COQDEBUG) $(COQFLAGS) -schedule-vio-checking $(J) $(VOFILES:%.vo=%.vio)
 gallina: $(GFILES)
 
-html: $(GLOBFILES) $(VFILES)
+html: $(GLOBFILES) $(VFILES) _CoqProject common deps.gif deps.html deps.map footer.html header.html index.html README LICENSE impdriver.ml
 	- mkdir -p html
 # save original glob files / remove "LF." from identifiers
+	rm -rf html/common
+	cp -R common html/common
 	for glob in $(VFILES:.v=.glob); do mv $$glob $${glob/.glob/_orig.glob} && sed -e 's/LF.//g' $${glob/.glob/_orig.glob} > $$glob ; done
-	$(COQDOC) $(COQDOCFLAGS) --no-lib-name --lib-subtitles -toc --toc-depth 2 --index coqindex --html -d html $(VFILES)
+	$(COQDOC) $(COQDOCFLAGS) --html --with-header header.html --with-footer footer.html --no-lib-name --lib-subtitles -toc --toc-depth 2 --index coqindex -d html $(VFILES)
 # restore original globs
 	rm -rf $(VFILES:.v=.glob)
 	for glob in $(VFILES:.v=.glob); do mv $${glob/.glob/_orig.glob} $$glob ; done
+	rm -f html/deps.gif html/deps.html html/deps.map html/index.html
+	cp deps.gif deps.html deps.map index.html html
+	tar zcvf html/lf.tgz $(VFILES) _CoqProject common deps.gif deps.html deps.map footer.html header.html index.html Makefile README LICENSE impdriver.ml
 
 html-normal: $(GLOBFILES) $(VFILES)
 	- mkdir -p html
@@ -266,6 +271,7 @@ clean::
 	rm -f $(VOFILES) $(VOFILES:.vo=.vio) $(GFILES) $(VFILES:.v=.v.d) $(VFILES:=.beautified) $(VFILES:=.old)
 	rm -f all.ps all-gal.ps all.pdf all-gal.pdf all.glob $(VFILES:.v=.glob) $(VFILES:.v=.tex) $(VFILES:.v=.g.tex) all-mli.tex
 	rm -f $(VFILES:%.v=.%.aux)
+	rm -f imp.ml imp.mli imp1.ml imp1.mli imp2.ml imp2.mli
 	- rm -rf html mlihtml uninstall_me.sh
 
 cleanall:: clean
