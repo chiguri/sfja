@@ -15,3 +15,4 @@ html:
 
 clean:
 	for volume in $(VOLUMES); do cd $$volume && make clean && cd .. ; done
+	rm -rf html
