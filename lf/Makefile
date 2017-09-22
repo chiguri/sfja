@@ -1,3 +1,5 @@
+SHELL = /bin/bash
+
 #############################################################################
 ##  v      #                   The Coq Proof Assistant                     ##
 ## <O___,, #                INRIA - CNRS - LIX - LRI - PPS                 ##
