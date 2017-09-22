@@ -1,4 +1,4 @@
-SHELL = /bin/bash
+SHELL = bash
 
 VOLUMES:=lf plf vfa
 
