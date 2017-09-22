@@ -1,5 +1,3 @@
-SHELL = bash
-
 VOLUMES:=lf plf vfa
 
 .PHONY: all clean html
