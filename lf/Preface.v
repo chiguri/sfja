@@ -272,7 +272,7 @@
  
     - 「プログラミング言語をモデル化する基盤」として、複雑な言語の記述と推論に用いられています。
       例えばJavaCardプラットフォームにおいて、Common Criteria Certificationの最高レベルを得るためにセキュリティの検査に利用されたり、x86やLLVMの命令セット、Cなどのプログラミング言語に対する形式仕様を与えたりしています。
-      （訳注：調べてみたが、JavaCardに関しては若干誇張が入っている気がする。総合評価は7段階あるうちの5+、ただし脆弱性評価は確かに最高ランク。）
+      (* （訳注：調べてみたが、JavaCardに関しては若干誇張が入っている気がする。総合評価は7段階あるうちの5+、ただし脆弱性評価は確かに最高ランク。） *)
       （http://www.commoncriteriaportal.org/products/ や http://www.commoncriteriaportal.org/cc/ のPart.3を参照のこと。）
  
     - 「検証付きソフトウェア・ハードウェアの開発環境」として、CompCertという最適化も含めたCの検証付きコンパイラの開発、CertiKosという検証付きハイパーバイザ、浮動小数点数を使った繊細なアルゴリズムの正しさの証明、また暗号化アルゴリズムのセキュリティ検査の環境CertiCryptの基盤として使われています。
@@ -467,7 +467,7 @@
              冒険心のある人向けに、Coq用のEmacs拡張として [company-coq] や [control-lock] というものもあります。
  
            - CoqIDEは、スタンドアロンで動作するシンプルなIDEです。
-             Coqと一緒に配布されているので、Coqインストールすれば使えるはずです。
+             Coqと一緒に配布されているので、Coqをインストールすれば使えるはずです。
              1からビルドし直すこともできますが、環境によってはGUIライブラリなどの追加パッケージをインストールする必要があります。 *)
 
 (* ================================================================= *)
@@ -558,13 +558,20 @@
     （講義でこの本の一部だけを使用している場合、講師からリリース版の代わりに使う変更版について説明されると思います。） *)
 
 (* ================================================================= *)
+(*
 (** ** Lecture Videos *)
+*)
+(** ** 講義ビデオ *)
 
+(*
 (** Lectures for an intensive summer course based on _Logical
     Foundations_ (part of the DeepSpec summer school in 2017) can be
     found at https://deepspec.org/event/dsss17/coq_intensive.html.
     The video quality is poor at the beginning but gets better in the
     later lectures. *)
+*)
+(** 「論理の基礎」を元にした集中講義（2017年のDeepSpec summer schoolの一部）の様子が https://deepspec.org/event/dsss17/coq_intensive.html から見られます。
+    最初の方は画質が悪いのですが、後の講義になるに従って徐々に良くなっていきます。 *)
 
 (* ################################################################# *)
 (*
