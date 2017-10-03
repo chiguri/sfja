@@ -596,7 +596,7 @@ Inductive nat : Type :=
     また同時に、[true]や[andb true false]、[S (S false)]、[O (O (O S))]が[nat]に属さないことも明確にされています。
  
     重要な点は、ここでは数の「表現(_representation_)」、つまり書き下し方を定義したに過ぎないと言うことです。
-    [O]や[S]という名前は特別ないみがあるわけではなく、なんでもよいのです。
+    [O]や[S]という名前は特別な意味があるわけではなく、なんでもよいのです。
     これらは単に数を書くための異なる二つの記号でしかありません。
     （それに付随して、[S]が[O]の前に並ぶことで任意の[nat]が記述されるという規則もありますが。）
     望むなら、同じ定義を次のように書いても良いのです。 *)
@@ -1128,7 +1128,6 @@ Proof.
 Theorem plus_n_O : forall n, n = n + 0.
 Proof.
   intros n. simpl. (* Doesn't do anything! *)
-(** (#*#%*% なにも変わりません！ %*%#*#) *)
 (*
 (** (Can you explain why this happens?  Step through both proofs
     with Coq and notice how the goal and context change.)
@@ -1136,10 +1135,11 @@ Proof.
     When stuck in the middle of a proof, we can use the [Abort]
     command to give up on it for the moment. *)
 *)
-(** （どうしてこうなるか分かるでしょうか？
-    それぞれの証明を1ステップずつ見て、ゴールと文脈がどのように変化していくかを見てください。）
+(** なんと[simpl]後もなにも変わりません！
+    （どうしてこうなるか分かるでしょうか？
+    証明の過程を1ステップずつ見て、ゴールと文脈がどのように変化していくかを見てください。）
  
-    もし証明の途中で行き詰まったら、[Abort]コマンドを使って諦めましょう。 *)
+    証明に行き詰まったので、[Abort]コマンドを使って諦めましょう。 *)
 
 Abort.
 
@@ -1222,8 +1222,8 @@ Proof.
     2行目は、[n = m]ならば、という仮定をコンテキストに移し、[H]という名前をこれに与えています。
     3行目は、ゴールになっている式([n + n = m + m])に仮定[H]の左側を右側にするような書き換えを施しています。
  
-    （[rewrite]の矢印は特に論理に関与していません。
-    単に左側を右側に置き換えているだけです。
+    （[rewrite]の矢印は含意とは関係ありません。
+    左側を右側に置き換えよ、という指示を出しているだけです。
     逆に右側を左側に置き換えたい場合は、[rewrite <-]と書きます。
     この逆の置き換えも上の証明で試して、どのように変わるかを観察してください。） *)
 
@@ -1254,9 +1254,9 @@ Proof.
     are leaving a door open for total nonsense to enter Coq's nice,
     rigorous, formally checked world! *)
 *)
-(** Admittedコマンドは、Coqに対して「この証明はあきらめたので、この定理はこれでいいことにしてください」と指示するものです。
+(** [Admitted]コマンドは、Coqに対して「この証明はあきらめたので、この定理はこれでいいことにしてください」と指示するものです。
     この機能は、より長い証明をする際に便利です。
-    何か大きな論証をしようとする時、今のところ信用している補足的な命題を示したい時があります。
+    何か大きな論証を構築しているときには、今のところ信用している補足的な命題を示したいことがあります。
     そんな時、[Admitted]を使用すると、その命題を一時的に信用できることにして、主としている論証がうまくいくまで続けられます。
     そしてそれが完成したのち、あらためて保留していた命題の証明を埋めればいいのです。
     ただし注意して下さい。
@@ -1488,10 +1488,15 @@ Qed.
 *)
 (** 2つ並んだ[reflexivity]は、その直前の行の[destruct c]を実行することで作られたサブゴールに対応しています。 *)
 
+(*
 (** Besides [-] and [+], we can use [*] (asterisk) as a third kind of
     bullet.  We can also enclose sub-proofs in curly braces, which is
     useful in case we ever encounter a proof that generates more than
     three levels of subgoals: *)
+*)
+(** バレットとしては、[-]や[+]の他に[*] （アスタリスク）が使用できます。
+    また、証明のブロックを波括弧（[{}]）で囲むこともできます。
+    これは、3つ以上のレベルでサブゴールが出来てしまった場合に有用です。 *)
 
 Theorem andb_commutative' : forall b c, andb b c = andb c b.
 Proof.
@@ -1504,10 +1509,14 @@ Proof.
     { reflexivity. } }
 Qed.
 
+(*
 (** Since curly braces mark both the beginning and the end of a
     proof, they can be used for multiple subgoal levels, as this
     example shows. Furthermore, curly braces allow us to reuse the
     same bullet shapes at multiple levels in a proof: *)
+*)
+(** この例のように、波括弧で証明の始めと終わりを囲むことで、ネストしてレベルを表現することができます。
+    また、波括弧で囲むことで、既にバレットとして使ってしまった記号を再利用することができます。 *)
 
 Theorem andb3_exchange :
   forall b c d, andb (andb b c) d = andb (andb b d) c.
@@ -1556,7 +1565,10 @@ Proof.
   - reflexivity.
   - reflexivity.  Qed.
 
+(*
 (** If there are no arguments to name, we can just write [[]]. *)
+*)
+(** もし全ての場合で名前を付ける必要がないのなら、[[]]と書くことができます。 *)
 
 Theorem andb_commutative'' :
   forall b c, andb b c = andb c b.
@@ -1568,9 +1580,15 @@ Proof.
   - reflexivity.
 Qed.
 
+(*
 (** **** Exercise: 2 stars (andb_true_elim2)  *)
+*)
+(** **** 練習問題: ★★ (andb_true_elim2)  *)
+(*
 (** Prove the following claim, marking cases (and subcases) with
     bullets when you use [destruct]. *)
+*)
+(** 以下の言明を、[destruct]を使ったときの場合分けそれぞれにバレットを使用して証明しなさい。 *)
 
 Theorem andb_true_elim2 : forall b c : bool,
   andb b c = true -> c = true.

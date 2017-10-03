@@ -165,7 +165,7 @@ gallina: $(GFILES)
 html: $(GLOBFILES) $(VFILES) _CoqProject footer.html header.html README LICENSE impdriver.ml
 # save original glob files / remove "LF." from identifiers
 	for glob in $(VFILES:.v=.glob); do mv $$glob $${glob}.glob && sed -e 's/LF.//g' $${glob}.glob > $$glob ; done
-	$(COQDOC) $(COQDOCFLAGS) --html --with-header header.html --with-footer footer.html --no-lib-name --lib-subtitles -toc --toc-depth 2 --index coqindex -d html $(VFILES)
+	$(COQDOC) --interpolate --html --with-header header.html --with-footer footer.html --no-lib-name --lib-subtitles -toc --toc-depth 2 --index coqindex -d html $(VFILES)
 # restore original globs
 	rm -f $(VFILES:.v=.glob)
 	for glob in $(VFILES:.v=.glob); do mv $${glob}.glob $$glob ; done
