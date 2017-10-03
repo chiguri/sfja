@@ -1,5 +1,4 @@
 *~
-html/*
 *.d
 *.vo
 *.glob
@@ -7,9 +6,10 @@ html/*
 *.ml
 *.mli
 *.aux
+*.tgz
+*.html
 !impdriver.ml
-!html/common
-!html/deps.gif
-!html/deps.html
-!html/deps.map
-!html/index.html
+!deps.html
+!index.html
+!footer.html
+!header.html
