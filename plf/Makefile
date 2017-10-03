@@ -190,19 +190,15 @@ checkproofs:
 	$(COQC) $(COQDEBUG) $(COQFLAGS) -schedule-vio-checking $(J) $(VOFILES:%.vo=%.vio)
 gallina: $(GFILES)
 
-html: $(GLOBFILES) $(VFILES) _CoqProject common deps.gif deps.html deps.map footer.html header.html index.html README LICENSE
-	- mkdir -p html
+html: $(GLOBFILES) $(VFILES) _CoqProject footer.html header.html README LICENSE
 # save original glob files / remove "PLF." from identifiers
-	rm -rf html/common
-	cp -R common html/common
 	for glob in $(VFILES:.v=.glob); do mv $$glob $${glob}.glob && sed -e 's/PLF.//g' $${glob}.glob > $$glob ; done
 	$(COQDOC) $(COQDOCFLAGS) --html --with-header header.html --with-footer footer.html --no-lib-name --lib-subtitles -toc --toc-depth 2 --index coqindex -d html $(PLFFILES)
 # restore original globs
-	rm -rf $(VFILES:.v=.glob)
+	rm -f $(VFILES:.v=.glob)
 	for glob in $(VFILES:.v=.glob); do mv $${glob}.glob $$glob ; done
-	rm -f html/deps.gif html/deps.html html/deps.map html/index.html
-	cp deps.gif deps.html deps.map index.html html
-	tar zcvf html/plf.tgz $(VFILES) _CoqProject common deps.gif deps.html deps.map footer.html header.html index.html Makefile README LICENSE $(PLFFILES:%.v=html/%.html) html/deps.gif html/deps.html html/deps.map html/index.html html/coqindex.html html/toc.html html/common
+	rm -f html/coqdoc.css
+	tar zcvf html/plf.tgz $(VFILES) _CoqProject footer.html header.html Makefile README LICENSE $(PLFFILES:%.v=html/%.html) html/deps.gif html/deps.html html/deps.map html/index.html html/coqindex.html html/toc.html html/common
 
 html-normal: $(GLOBFILES) $(VFILES)
 	- mkdir -p html
@@ -299,7 +295,8 @@ clean::
 	rm -f $(VOFILES) $(VOFILES:.vo=.vio) $(GFILES) $(VFILES:.v=.v.d) $(VFILES:=.beautified) $(VFILES:=.old)
 	rm -f all.ps all-gal.ps all.pdf all-gal.pdf all.glob $(VFILES:.v=.glob) $(VFILES:.v=.tex) $(VFILES:.v=.g.tex) all-mli.tex
 	rm -f $(VFILES:%.v=.%.aux)
-	- rm -rf html mlihtml uninstall_me.sh
+	rm -rf mlihtml uninstall_me.sh
+	rm -f $(VFILES:%.v=html/%.html) html/toc.html html/coqindex.html html/plf.tgz
 
 cleanall:: clean
 	rm -f $(foreach f,$(VFILES:.v=),$(dir $(f)).$(notdir $(f)).aux)
