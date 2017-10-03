@@ -174,7 +174,7 @@ html: $(GLOBFILES) $(VFILES) _CoqProject common deps.gif deps.html deps.map foot
 	for glob in $(VFILES:.v=.glob); do mv $${glob}.glob $$glob ; done
 	rm -f html/deps.gif html/deps.html html/deps.map html/index.html
 	cp deps.gif deps.html deps.map index.html html
-	tar zcvf html/lf.tgz $(VFILES) _CoqProject common deps.gif deps.html deps.map footer.html header.html index.html Makefile README LICENSE impdriver.ml $(VFILES:%.v=html/%.html) html/deps.gif html/deps.html html/deps.map html/index.html html/coqindex.html html/toc.html html/common
+	tar zcvf html/lf.tgz $(VFILES) _CoqProject footer.html header.html Makefile README LICENSE impdriver.ml $(VFILES:%.v=html/%.html) html/deps.gif html/deps.html html/deps.map html/index.html html/coqindex.html html/toc.html html/common
 
 html-normal: $(GLOBFILES) $(VFILES)
 	- mkdir -p html
@@ -272,7 +272,8 @@ clean::
 	rm -f all.ps all-gal.ps all.pdf all-gal.pdf all.glob $(VFILES:.v=.glob) $(VFILES:.v=.tex) $(VFILES:.v=.g.tex) all-mli.tex
 	rm -f $(VFILES:%.v=.%.aux)
 	rm -f imp.ml imp.mli imp1.ml imp1.mli imp2.ml imp2.mli
-	- rm -rf html mlihtml uninstall_me.sh
+	rm -rf mlihtml uninstall_me.sh
+	rm -f $(VFILES:%.v=html/%.html) html/toc.html html/coqindex.html html/lf.tgz
 
 cleanall:: clean
 	rm -f $(foreach f,$(VFILES:.v=),$(dir $(f)).$(notdir $(f)).aux)

@@ -1,5 +1,5 @@
 *~
-html/
+html/*
 *.d
 *.vo
 *.glob
@@ -8,3 +8,8 @@ html/
 *.mli
 *.aux
 !impdriver.ml
+!html/common
+!html/deps.gif
+!html/deps.html
+!html/deps.map
+!html/index.html
