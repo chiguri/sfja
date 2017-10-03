@@ -176,7 +176,7 @@ gallina: $(GFILES)
 html: $(GLOBFILES) $(VFILES) _CoqProject footer.html header.html README LICENSE
 # save original glob files / remove "VFA." from identifiers
 	for glob in $(VFILES:.v=.glob); do mv $$glob $${glob}.glob && sed -e 's/VFA.//g' $${glob}.glob > $$glob ; done
-	$(COQDOC) $(COQDOCFLAGS) --html --with-header header.html --with-footer footer.html --no-lib-name --lib-subtitles -toc --toc-depth 2 --index coqindex -d html $(VFAFILES)
+	$(COQDOC) --interpolate --html --with-header header.html --with-footer footer.html --no-lib-name --lib-subtitles -toc --toc-depth 2 --index coqindex -d html $(VFAFILES)
 # restore original globs
 	rm -f $(VFILES:.v=.glob)
 	for glob in $(VFILES:.v=.glob); do mv $${glob}.glob $$glob ; done

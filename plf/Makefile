@@ -193,7 +193,7 @@ gallina: $(GFILES)
 html: $(GLOBFILES) $(VFILES) _CoqProject footer.html header.html README LICENSE
 # save original glob files / remove "PLF." from identifiers
 	for glob in $(VFILES:.v=.glob); do mv $$glob $${glob}.glob && sed -e 's/PLF.//g' $${glob}.glob > $$glob ; done
-	$(COQDOC) $(COQDOCFLAGS) --html --with-header header.html --with-footer footer.html --no-lib-name --lib-subtitles -toc --toc-depth 2 --index coqindex -d html $(PLFFILES)
+	$(COQDOC) --interpolate --html --with-header header.html --with-footer footer.html --no-lib-name --lib-subtitles -toc --toc-depth 2 --index coqindex -d html $(PLFFILES)
 # restore original globs
 	rm -f $(VFILES:.v=.glob)
 	for glob in $(VFILES:.v=.glob); do mv $${glob}.glob $$glob ; done
