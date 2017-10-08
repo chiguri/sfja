@@ -285,11 +285,6 @@ printenv:
 	@echo 'COQLIBINSTALL =	$(COQLIBINSTALL)'
 	@echo 'COQDOCINSTALL =	$(COQDOCINSTALL)'
 
-Makefile: _CoqProject
-	mv -f $@ $@.bak
-	"$(COQBIN)coq_makefile" -f $< -o $@
-
-
 ###################
 #                 #
 # Implicit rules. #
