@@ -264,10 +264,10 @@
 (* ================================================================= *)
 (** ** System Requirements *)
 
-(** Coq runs on Windows, Linux, and OS X.  You will need:
+(** Coq runs on Windows, Linux, and macOS.  You will need:
 
        - A current installation of Coq, available from the Coq home
-         page.  These files have been tested with Coq 8.6.
+         page.  These files have been tested with Coq 8.7.1.
 
        - An IDE for interacting with Coq.  Currently, there are two
          choices:
@@ -370,13 +370,13 @@
         Benjamin Pierce.
 
     To get started, please send an email to Benjamin Pierce, describing
-    yourself and how you plan to use the materials and including 
-       (1) the above copyright transfer text and 
+    yourself and how you plan to use the materials and including
+       (1) the above copyright transfer text and
        (2) the result of doing "htpasswd -s -n NAME"
-    where NAME is your preferred user name. 
+    where NAME is your preferred user name.
 
-    We'll set you up with access to the subversion repository and 
-    developers' mailing lists.  In the repository you'll find a 
+    We'll set you up with access to the subversion repository and
+    developers' mailing lists.  In the repository you'll find a
     file [INSTRUCTORS] with further instructions. *)
 
 (* ################################################################# *)
@@ -384,7 +384,8 @@
 
 (** Thanks to the efforts of a team of volunteer translators,
     _Software Foundations_ can be enjoyed in Japanese at
-    http://proofcafe.org/sf.  A Chinese translation is underway. *)
+    http://proofcafe.org/sf.  A Chinese translation is also underway;
+    you can preview it at https://coq-zh.github.io/SF-zh/. *)
 
 (* ################################################################# *)
 (** * Thanks *)
@@ -394,4 +395,3 @@
     NSF Expeditions grant 1521523, _The Science of Deep
     Specification_. *)
 
-(** $Date: 2017-08-24 17:13:02 -0400 (Thu, 24 Aug 2017) $ *)

@@ -30,7 +30,7 @@ End TABLE.
   It's easy to make an implementation of [TABLE], using [Maps].
   Just for example, let's choose [V] to be [Type]. *)
 
-From VFA Require Import Maps.
+Require Import Maps.
 
 Module MapsTable <: TABLE.
  Definition V := Type.
@@ -51,9 +51,10 @@ Module MapsTable <: TABLE.
    Qed.
 End MapsTable.
 
-(** In summary:  to make a [Module] that implements a [Module Type],
-   you need to provide a [Definition] or [Theorem] in the [Module], whose type
-   matches the corresponding [Parameter] or [Axiom] in the [Module Type]. *)
+(** In summary: to make a [Module] that implements a [Module Type],
+   you need to provide a [Definition] or [Theorem] in the [Module],
+   whose type matches the corresponding [Parameter] or [Axiom] in the
+   [Module Type]. *)
 
 (** Now, let's calculate: put 1 and then 3 into a map, then lookup 1. *)
 
@@ -73,7 +74,7 @@ Eval compute in MapsTable.get 1 (MapsTable.set 3 unit (MapsTable.set 1 bool Maps
    of [N] [get] and [set] operations, it can take time quadratic in [N].
    For a more efficient implementation, let's use our search trees. *)
 
-From VFA Require Import SearchTree.
+Require Import SearchTree.
 
 Module TreeTable <: TABLE.
  Definition V := Type.
@@ -400,8 +401,8 @@ Proof.  (* No induction needed in this proof! *)
   fib:  (* fill  in here *)
   fibish: (* fill in here *)
 
-*)
-(** [] *)
+
+    [] *)
 
 
 

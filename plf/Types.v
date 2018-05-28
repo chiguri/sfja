@@ -12,9 +12,9 @@
 
 Set Warnings "-notation-overridden,-parsing".
 Require Import Coq.Arith.Arith.
-From PLF Require Import Maps.
-From PLF Require Import Imp.
-From PLF Require Import Smallstep.
+Require Import Maps.
+Require Import Imp.
+Require Import Smallstep.
 
 Hint Constructors multi.
 
@@ -407,7 +407,8 @@ Proof with auto.
               [t].
 
       - (* FILL IN HERE *)
-[] *)
+ *)
+(** [] *)
 
 (** This theorem is more interesting than the strong progress theorem
     that we saw in the [Smallstep] chapter, where _all_ normal forms
@@ -475,7 +476,8 @@ Proof with auto.
              [|- if t1' then t2 else t3 \in T], as required.
 
       - (* FILL IN HERE *)
-[] *)
+*)
+(** [] *)
 
 (** **** Exercise: 3 stars (preservation_alternate_proof)  *)
 (** Now prove the same property again by induction on the
@@ -517,7 +519,6 @@ Proof.
   destruct (progress x T HT); auto.
   apply IHP.  apply (preservation x y T HT H).
   unfold stuck. split; auto.   Qed.
-
 
 (* ################################################################# *)
 (** * Aside: the [normalize] Tactic *)
@@ -602,6 +603,7 @@ Proof.
    where ?e' is the variable ``guessed'' by eapply. *)
 Qed.
 
+
 (** **** Exercise: 1 star (normalize_ex)  *)
 Theorem normalize_ex : exists e',
   (P (C 3) (P (C 2) (C 1))) 
@@ -621,13 +623,13 @@ Proof.
 (** [] *)
 
 End NormalizePlayground.
+
 Tactic Notation "print_goal" :=
   match goal with |- ?x => idtac x end.
 Tactic Notation "normalize" :=
   repeat (print_goal; eapply multi_step ;
             [ (eauto 10; fail) | (instantiate; simpl)]);
   apply multi_refl.
-
 
 (* ================================================================= *)
 (** ** Additional Exercises *)
@@ -641,7 +643,8 @@ Tactic Notation "normalize" :=
     counter-example in Coq, but feel free to do so.)
 
     (* FILL IN HERE *)
-[] *)
+*)
+(** [] *)
 
 (** **** Exercise: 2 stars (variation1)  *)
 (** Suppose, that we add this new rule to the typing relation:
@@ -660,7 +663,8 @@ Tactic Notation "normalize" :=
 
       - Preservation
 
-[] *)
+
+    [] *)
 
 (** **** Exercise: 2 stars (variation2)  *)
 (** Suppose, instead, that we add this new rule to the [step] relation:
@@ -671,7 +675,8 @@ Tactic Notation "normalize" :=
    Which of the above properties become false in the presence of
    this rule?  For each one that does, give a counter-example.
 
-[] *)
+
+    [] *)
 
 (** **** Exercise: 2 stars, optional (variation3)  *)
 (** Suppose instead that we add this rule:
@@ -683,7 +688,8 @@ Tactic Notation "normalize" :=
    Which of the above properties become false in the presence of
    this rule?  For each one that does, give a counter-example.
 
-[] *)
+
+    [] *)
 
 (** **** Exercise: 2 stars, optional (variation4)  *)
 (** Suppose instead that we add this rule:
@@ -694,7 +700,8 @@ Tactic Notation "normalize" :=
    Which of the above properties become false in the presence of
    this rule?  For each one that does, give a counter-example.
 
-[] *)
+
+    [] *)
 
 (** **** Exercise: 2 stars, optional (variation5)  *)
 (** Suppose instead that we add this rule:
@@ -705,7 +712,8 @@ Tactic Notation "normalize" :=
    Which of the above properties become false in the presence of
    this rule?  For each one that does, give a counter-example.
 
-[] *)
+
+    [] *)
 
 (** **** Exercise: 2 stars, optional (variation6)  *)
 (** Suppose instead that we add this rule:
@@ -716,14 +724,16 @@ Tactic Notation "normalize" :=
    Which of the above properties become false in the presence of
    this rule?  For each one that does, give a counter-example.
 
-[] *)
+
+    [] *)
 
 (** **** Exercise: 3 stars, optional (more_variations)  *)
 (** Make up some exercises of your own along the same lines as
     the ones above.  Try to find ways of selectively breaking
     properties -- i.e., ways of changing the definitions that
     break just one of the properties and leave the others alone.
-[] *)
+*)
+(** [] *)
 
 (** **** Exercise: 1 star (remove_predzero)  *)
 (** The reduction rule [ST_PredZero] is a bit counter-intuitive: we
@@ -733,14 +743,21 @@ Tactic Notation "normalize" :=
     [step]?  Would doing so create any problems elsewhere?
 
 (* FILL IN HERE *)
-[] *)
+*)
+(** [] *)
 
 (** **** Exercise: 4 stars, advanced (prog_pres_bigstep)  *)
 (** Suppose our evaluation relation is defined in the big-step style.
-    What are the appropriate analogs of the progress and preservation
-    properties?  (You do not need to prove them.)
+    State appropriate analogs of the progress and preservation
+    properties. (You do not need to prove them.)
+
+    Can you see any limitations of either of your properties?
+    Do they allow for nonterminating commands?
+    Why might we prefer the small-step semantics for stating
+    preservation and progress?
 
 (* FILL IN HERE *)
-[] *)
+*)
+(** [] *)
 
-(** $Date: 2017-08-22 17:13:32 -0400 (Tue, 22 Aug 2017) $ *)
+(** $Date$ *)

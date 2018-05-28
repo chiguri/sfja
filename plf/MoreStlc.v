@@ -1,10 +1,10 @@
 (** * MoreStlc: More on the Simply Typed Lambda-Calculus *)
-
+ 
 Set Warnings "-notation-overridden,-parsing".
-From PLF Require Import Maps.
-From PLF Require Import Types.
-From PLF Require Import Smallstep.
-From PLF Require Import Stlc.
+Require Import Maps.
+Require Import Types.
+Require Import Smallstep.
+Require Import Stlc.
 
 (* ################################################################# *)
 (** * Simple Extensions to STLC *)
@@ -70,8 +70,8 @@ From PLF Require Import Stlc.
 
     Typing:
 
-                Gamma |- t1 : T1      Gamma, x:T1 |- t2 : T2
-                --------------------------------------------            (T_Let)
+             Gamma |- t1 : T1      Gamma & {{x-->T1}} |- t2 : T2
+             ---------------------------------------------------        (T_Let)
                         Gamma |- let x=t1 in t2 : T2
 *)
 
@@ -253,8 +253,8 @@ From PLF Require Import Stlc.
     [inr b] is a [Nat+Bool].  The names of the tags [inl] and [inr]
     arise from thinking of them as functions
 
-   inl : Nat -> Nat + Bool
-   inr : Bool -> Nat + Bool
+       inl : Nat -> Nat + Bool
+       inr : Bool -> Nat + Bool
 
     that "inject" elements of [Nat] or [Bool] into the left and right
     components of the sum type [Nat+Bool].  (But note that we don't
@@ -268,13 +268,13 @@ From PLF Require Import Stlc.
 
 (** One important usage of sums is signaling errors:
 
-    div : Nat -> Nat -> (Nat + Unit) =
-    div =
-      \x:Nat. \y:Nat.
-        if iszero y then
-          inr unit
-        else
-          inl ...
+      div : Nat -> Nat -> (Nat + Unit) =
+      div =
+        \x:Nat. \y:Nat.
+          if iszero y then
+            inr unit
+          else
+            inl ...
 *)
 (** The type [Nat + Unit] above is in fact isomorphic to [option
     nat] in Coq -- i.e., it's easy to write functions that translate
@@ -401,9 +401,9 @@ From PLF Require Import Stlc.
     the first two elements of a list of numbers:
 
       \x:List Nat.
-      lcase x of nil -> 0
-         | a::x' -> lcase x' of nil -> a
-                       | b::x'' -> a+b
+      lcase x of nil => 0
+         | a::x' => lcase x' of nil => a
+                       | b::x'' => a+b
 *)
 (**
     Syntax:
@@ -411,7 +411,7 @@ From PLF Require Import Stlc.
        t ::=                Terms
            | nil T
            | cons t t
-           | lcase t of nil -> t | x::x -> t
+           | lcase t of nil => t | x::x => t
            | ...
 
        v ::=                Values
@@ -436,15 +436,15 @@ From PLF Require Import Stlc.
 
                               t1 ==> t1'
                 ----------------------------------------             (ST_Lcase1)
-                (lcase t1 of nil -> t2 | xh::xt -> t3) ==>
-                (lcase t1' of nil -> t2 | xh::xt -> t3)
+                (lcase t1 of nil => t2 | xh::xt => t3) ==>
+                (lcase t1' of nil => t2 | xh::xt => t3)
 
                -----------------------------------------          (ST_LcaseNil)
-               (lcase nil T of nil -> t2 | xh::xt -> t3)
+               (lcase nil T of nil => t2 | xh::xt => t3)
                                 ==> t2
 
             -----------------------------------------------      (ST_LcaseCons)
-            (lcase (cons vh vt) of nil -> t2 | xh::xt -> t3)
+            (lcase (cons vh vt) of nil => t2 | xh::xt => t3)
                           ==> [xh:=vh,xt:=vt]t3
 *)
 
@@ -461,7 +461,7 @@ From PLF Require Import Stlc.
                            Gamma |- t2 : T
                    Gamma , h:T1, t:List T1 |- t3 : T
           -------------------------------------------------           (T_Lcase)
-          Gamma |- (lcase t1 of nil -> t2 | h::t -> t3) : T
+          Gamma |- (lcase t1 of nil => t2 | h::t => t3) : T
 *)
 
 (* ================================================================= *)
@@ -503,8 +503,8 @@ From PLF Require Import Stlc.
             (\f:Nat->Nat.
                \x:Nat.
                   if x=0 then 1 else x * (f (pred x)))
-
-    We can derive the latter from the former as follows:
+*)
+(** We can derive the latter from the former as follows:
 
       - In the right-hand side of the definition of [fact], replace 
         recursive references to [fact] by a fresh variable [f].
@@ -657,8 +657,8 @@ From PLF Require Import Stlc.
            else 1 + (halve (pred (pred x))))
 
 (* FILL IN HERE *)
-[]
 *)
+(** [] *)
 
 (** **** Exercise: 1 star, optional (fact_steps)  *)
 (** Write down the sequence of steps that the term [fact 1] goes
@@ -666,8 +666,8 @@ From PLF Require Import Stlc.
     rules for arithmetic operations).
 
     (* FILL IN HERE *)
-[]
 *)
+(** [] *)
 
 (** The ability to form the fixed point of a function of type [T->T]
     for any [T] has some surprising consequences.  In particular, it
@@ -690,9 +690,8 @@ From PLF Require Import Stlc.
              if m=0 then iszero n
              else if n=0 then false
              else eq (pred m) (pred n))
-
-
-    And finally, here is an example where [fix] is used to define a
+*)
+(** And finally, here is an example where [fix] is used to define a
     _pair_ of recursive functions (illustrating the fact that the type
     [T1] in the rule [T_Fix] need not be a function type):
 
@@ -949,9 +948,9 @@ Inductive ty : Type :=
 
 Inductive tm : Type :=
   (* pure STLC *)
-  | tvar : id -> tm
+  | tvar : string -> tm
   | tapp : tm -> tm -> tm
-  | tabs : id -> ty -> tm -> tm
+  | tabs : string -> ty -> tm -> tm
   (* numbers *)
   | tnat : nat -> tm
   | tsucc : tm -> tm
@@ -965,18 +964,18 @@ Inductive tm : Type :=
   (* units *)
   | tunit : tm
   (* let *)
-  | tlet : id -> tm -> tm -> tm
+  | tlet : string -> tm -> tm -> tm
           (* i.e., [let x = t1 in t2] *)
   (* sums *)
   | tinl : ty -> tm -> tm
   | tinr : ty -> tm -> tm
-  | tcase : tm -> id -> tm -> id -> tm -> tm
+  | tcase : tm -> string -> tm -> string -> tm -> tm
           (* i.e., [case t0 of inl x1 => t1 | inr x2 => t2] *)
   (* lists *)
   | tnil : ty -> tm
   | tcons : tm -> tm -> tm
-  | tlcase : tm -> tm -> id -> id -> tm -> tm
-           (* i.e., [lcase t1 of | nil -> t2 | x::y -> t3] *)
+  | tlcase : tm -> tm -> string -> string -> tm -> tm
+           (* i.e., [lcase t1 of | nil => t2 | x::y => t3] *)
   (* fix *)
   | tfix  : tm -> tm.
 
@@ -994,12 +993,12 @@ Inductive tm : Type :=
 (* ----------------------------------------------------------------- *)
 (** *** Substitution *)
 
-Fixpoint subst (x:id) (s:tm) (t:tm) : tm :=
+Fixpoint subst (x:string) (s:tm) (t:tm) : tm :=
   match t with
   | tvar y =>
-      if beq_id x y then s else t
+      if beq_string x y then s else t
   | tabs y T t1 =>
-      tabs y T (if beq_id x y then t1 else (subst x s t1))
+      tabs y T (if beq_string x y then t1 else (subst x s t1))
   | tapp t1 t2 =>
       tapp (subst x s t1) (subst x s t2)
   | tnat n =>
@@ -1021,17 +1020,17 @@ Fixpoint subst (x:id) (s:tm) (t:tm) : tm :=
       tinr T (subst x s t1)
   | tcase t0 y1 t1 y2 t2 =>
       tcase (subst x s t0)
-         y1 (if beq_id x y1 then t1 else (subst x s t1))
-         y2 (if beq_id x y2 then t2 else (subst x s t2))
+         y1 (if beq_string x y1 then t1 else (subst x s t1))
+         y2 (if beq_string x y2 then t2 else (subst x s t2))
   | tnil T =>
       tnil T
   | tcons t1 t2 =>
       tcons (subst x s t1) (subst x s t2)
   | tlcase t1 t2 y1 y2 t3 =>
       tlcase (subst x s t1) (subst x s t2) y1 y2
-        (if beq_id x y1 then
+        (if beq_string x y1 then
            t3
-         else if beq_id x y2 then t3
+         else if beq_string x y2 then t3
               else (subst x s t3))
   (* FILL IN HERE *)
   | _ => t  (* ... and delete this line *)
@@ -1070,8 +1069,7 @@ Inductive value : tm -> Prop :=
   | v_lcons : forall v1 vl,
       value v1 ->
       value vl ->
-      value (tcons v1 vl)
-  .
+      value (tcons v1 vl).
 
 Hint Constructors value.
 
@@ -1259,23 +1257,24 @@ Module Examples.
 
 (** First, let's define a few variable names: *)
 
-Notation x := (Id "x").
-Notation y := (Id "y").
-Notation a := (Id "a").
-Notation f := (Id "f").
-Notation g := (Id "g").
-Notation l := (Id "l").
-Notation k := (Id "k").
-Notation i1 := (Id "i1").
-Notation i2 := (Id "i2").
-Notation processSum := (Id "processSum").
-Notation n := (Id "n").
-Notation eq := (Id "eq").
-Notation m := (Id "m").
-Notation evenodd := (Id "evenodd").
-Notation even := (Id "even").
-Notation odd := (Id "odd").
-Notation eo := (Id "eo").
+Open Scope string_scope.
+Notation x := "x".
+Notation y := "y".
+Notation a := "a".
+Notation f := "f".
+Notation g := "g".
+Notation l := "l".
+Notation k := "k".
+Notation i1 := "i1".
+Notation i2 := "i2".
+Notation processSum := "processSum".
+Notation n := "n".
+Notation eq := "eq".
+Notation m := "m".
+Notation evenodd := "evenodd".
+Notation even := "even".
+Notation odd := "odd".
+Notation eo := "eo".
 
 (** Next, a bit of Coq hackery to automate searching for typing
     derivations.  You don't need to understand this bit in detail --
@@ -1808,7 +1807,7 @@ Qed.
 (* ----------------------------------------------------------------- *)
 (** *** Context Invariance *)
 
-Inductive appears_free_in : id -> tm -> Prop :=
+Inductive appears_free_in : string -> tm -> Prop :=
   | afi_var : forall x,
       appears_free_in x (tvar x)
   | afi_app1 : forall x t1 t2,
@@ -1900,7 +1899,7 @@ Proof with eauto.
   - (* T_Abs *)
     apply T_Abs... apply IHhas_type. intros y Hafi.
     unfold update, t_update.
-    destruct (beq_idP x y)...
+    destruct (beq_stringP x y)...
   - (* T_Mult *)
     apply T_Mult...
   - (* T_If0 *)
@@ -1913,17 +1912,17 @@ Proof with eauto.
     eapply T_Case...
     + apply IHhas_type2. intros y Hafi.
       unfold update, t_update.
-      destruct (beq_idP x1 y)...
+      destruct (beq_stringP x1 y)...
     + apply IHhas_type3. intros y Hafi.
       unfold update, t_update.
-      destruct (beq_idP x2 y)...
+      destruct (beq_stringP x2 y)...
   - (* T_Cons *)
     apply T_Cons...
   - (* T_Lcase *)
     eapply T_Lcase... apply IHhas_type3. intros y Hafi.
     unfold update, t_update.
-    destruct (beq_idP x1 y)...
-    destruct (beq_idP x2 y)...
+    destruct (beq_stringP x1 y)...
+    destruct (beq_stringP x2 y)...
 Qed.
 
 Lemma free_in_context : forall x t T Gamma,
@@ -1936,24 +1935,24 @@ Proof with eauto.
   - (* T_Abs *)
     destruct IHHtyp as [T' Hctx]... exists T'.
     unfold update, t_update in Hctx.
-    rewrite false_beq_id in Hctx...
+    rewrite false_beq_string in Hctx...
   (* let *)
   (* FILL IN HERE *)
   (* T_Case *)
   - (* left *)
     destruct IHHtyp2 as [T' Hctx]... exists T'.
     unfold update, t_update in Hctx.
-    rewrite false_beq_id in Hctx...
+    rewrite false_beq_string in Hctx...
   - (* right *)
     destruct IHHtyp3 as [T' Hctx]... exists T'.
     unfold update, t_update in Hctx.
-    rewrite false_beq_id in Hctx...
+    rewrite false_beq_string in Hctx...
   - (* T_Lcase *)
     clear Htyp1 IHHtyp1 Htyp2 IHHtyp2.
     destruct IHHtyp3 as [T' Hctx]... exists T'.
     unfold update, t_update in Hctx.
-    rewrite false_beq_id in Hctx...
-    rewrite false_beq_id in Hctx...
+    rewrite false_beq_string in Hctx...
+    rewrite false_beq_string in Hctx...
 Qed.
 
 (* ----------------------------------------------------------------- *)
@@ -1975,7 +1974,7 @@ Proof with eauto.
   induction t;
     intros S Gamma Htypt; simpl; inversion Htypt; subst...
   - (* tvar *)
-    simpl. rename i into y.
+    simpl. rename s into y.
     (* If t = y, we know that
          [empty |- v : U] and
          [Gamma,x:U |- y : S]
@@ -1984,7 +1983,7 @@ Proof with eauto.
 
        There are two cases to consider: either [x=y] or [x<>y]. *)
     unfold update, t_update in H1.
-    destruct (beq_idP x y).
+    destruct (beq_stringP x y).
     + (* x=y *)
       (* If [x = y], then we know that [U = S], and that 
          [[x:=v]y = v].  So what we really must show is 
@@ -2003,7 +2002,7 @@ Proof with eauto.
        effect.  We can show that [Gamma |- y : S] by [T_Var]. *)
       apply T_Var...
   - (* tabs *)
-    rename i into y. rename t into T11.
+    rename s into y. rename t into T11.
     (* If [t = tabs y T11 t0], then we know that
          [Gamma,x:U |- tabs y T11 t0 : T11->T12]
          [Gamma,x:U,y:T11 |- t0 : T12]
@@ -2012,14 +2011,14 @@ Proof with eauto.
          [Gamma,x:U |- t0 : S -> Gamma |- [x:=v]t0 : S].
 
        We can calculate that
-         [x:=v]t = tabs y T11 (if beq_id x y then t0 else [x:=v]t0)
+         [x:=v]t = tabs y T11 (if beq_string x y then t0 else [x:=v]t0)
        And we must show that [Gamma |- [x:=v]t : T11->T12].  We know
        we will do so using [T_Abs], so it remains to be shown that:
-         [Gamma,y:T11 |- if beq_id x y then t0 else [x:=v]t0 : T12]
+         [Gamma,y:T11 |- if beq_string x y then t0 else [x:=v]t0 : T12]
        We consider two cases: [x = y] and [x <> y].
     *)
     apply T_Abs...
-    destruct (beq_idP x y) as [Hxy|Hxy].
+    destruct (beq_stringP x y) as [Hxy|Hxy].
     + (* x=y *)
     (* If [x = y], then the substitution has no effect.  Context
        invariance shows that [Gamma,y:U,y:T11] and [Gamma,y:T11] are
@@ -2028,7 +2027,7 @@ Proof with eauto.
       eapply context_invariance...
       subst.
       intros x Hafi. unfold update, t_update.
-      destruct (beq_id y x)...
+      destruct (beq_string y x)...
     + (* x<>y *)
       (* If [x <> y], then the IH and context invariance allow 
          us to show that
@@ -2037,62 +2036,62 @@ Proof with eauto.
            [Gamma,y:T11 |- [x:=v]t0 : T12] *)
       apply IHt. eapply context_invariance...
       intros z Hafi. unfold update, t_update.
-      destruct (beq_idP y z) as [Hyz|Hyz]...
+      destruct (beq_stringP y z) as [Hyz|Hyz]...
       subst.
-      rewrite false_beq_id...
+      rewrite false_beq_string...
   (* let *)
   (* FILL IN HERE *)
   - (* tcase *)
-    rename i into x1. rename i0 into x2.
+    rename s into x1. rename s0 into x2.
     eapply T_Case...
     + (* left arm *)
-      destruct (beq_idP x x1) as [Hxx1|Hxx1].
+      destruct (beq_stringP x x1) as [Hxx1|Hxx1].
       * (* x = x1 *)
         eapply context_invariance...
         subst.
         intros z Hafi. unfold update, t_update.
-        destruct (beq_id x1 z)...
+        destruct (beq_string x1 z)...
       * (* x <> x1 *)
         apply IHt2. eapply context_invariance...
         intros z Hafi.  unfold update, t_update.
-        destruct (beq_idP x1 z) as [Hx1z|Hx1z]...
-        subst. rewrite false_beq_id...
+        destruct (beq_stringP x1 z) as [Hx1z|Hx1z]...
+        subst. rewrite false_beq_string...
     + (* right arm *)
-      destruct (beq_idP x x2) as [Hxx2|Hxx2].
+      destruct (beq_stringP x x2) as [Hxx2|Hxx2].
       * (* x = x2 *)
         eapply context_invariance...
         subst.
         intros z Hafi. unfold update, t_update.
-        destruct (beq_id x2 z)...
+        destruct (beq_string x2 z)...
       * (* x <> x2 *)
         apply IHt3. eapply context_invariance...
         intros z Hafi.  unfold update, t_update.
-        destruct (beq_idP x2 z)...
-        subst. rewrite false_beq_id...
+        destruct (beq_stringP x2 z)...
+        subst. rewrite false_beq_string...
   - (* tlcase *)
-    rename i into y1. rename i0 into y2.
+    rename s into y1. rename s0 into y2.
     eapply T_Lcase...
-    destruct (beq_idP x y1).
+    destruct (beq_stringP x y1).
     + (* x=y1 *)
       simpl.
       eapply context_invariance...
       subst.
       intros z Hafi. unfold update, t_update.
-      destruct (beq_idP y1 z)...
+      destruct (beq_stringP y1 z)...
     + (* x<>y1 *)
-      destruct (beq_idP x y2).
+      destruct (beq_stringP x y2).
       * (* x=y2 *)
         eapply context_invariance...
         subst.
         intros z Hafi. unfold update, t_update.
-        destruct (beq_idP y2 z)...
+        destruct (beq_stringP y2 z)...
       * (* x<>y2 *)
         apply IHt3. eapply context_invariance...
         intros z Hafi. unfold update, t_update.
-        destruct (beq_idP y1 z)...
-        subst. rewrite false_beq_id...
-        destruct (beq_idP y2 z)...
-        subst. rewrite false_beq_id...
+        destruct (beq_stringP y1 z)...
+        subst. rewrite false_beq_string...
+        destruct (beq_stringP y2 z)...
+        subst. rewrite false_beq_string...
 Qed.
 
 (* ----------------------------------------------------------------- *)
@@ -2158,4 +2157,4 @@ Qed.
 End STLCExtended.
 (** [] *)
 
-(** $Date: 2017-08-24 17:13:02 -0400 (Thu, 24 Aug 2017) $ *)
+(** $Date$ *)

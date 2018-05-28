@@ -1,7 +1,7 @@
 (** * IndProp: Inductively Defined Propositions *)
 
 Set Warnings "-notation-overridden,-parsing".
-From LF Require Export Logic.
+Require Export Logic.
 Require Coq.omega.Omega.
 
 (* ################################################################# *)
@@ -101,7 +101,7 @@ Fail Inductive wrong_ev (n : nat) : Prop :=
     arguments on the right of the colon.) *)
 
 (** We can think of the definition of [ev] as defining a Coq property
-    [ev : nat -> Prop], together with theorems [ev_0 : ev 0] and
+    [ev : nat -> Prop], together with primitive theorems [ev_0 : ev 0] and
     [ev_SS : forall n, ev n -> ev (S (S n))]. *)
 
 (** Such "constructor theorems" have the same status as proven
@@ -268,13 +268,17 @@ Theorem one_not_even : ~ ev 1.
 Proof.
   intros H. inversion H. Qed.
 
-(** **** Exercise: 1 star (inversion_practice)  *)
-(** Prove the following results using [inversion]. *)
+(** **** Exercise: 1 star (SSSSev__even)  *)
+(** Prove the following result using [inversion]. *)
 
 Theorem SSSSev__even : forall n,
   ev (S (S (S (S n)))) -> ev n.
 Proof.
   (* FILL IN HERE *) Admitted.
+(** [] *)
+
+(** **** Exercise: 1 star (even5_nonsense)  *)
+(** Prove the following result using [inversion]. *)
 
 Theorem even5_nonsense :
   ev 5 -> 2 + 2 = 9.
@@ -408,7 +412,7 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** **** Exercise: 4 stars, advanced, optional (ev_alternate)  *)
+(** **** Exercise: 4 stars, advanced, optional (ev'_ev)  *)
 (** In general, there may be multiple ways of defining a
     property inductively.  For example, here's a (slightly contrived)
     alternative definition for [ev]: *)
@@ -604,6 +608,7 @@ Theorem leb_true_trans : forall n m o,
   leb n m = true -> leb m o = true -> leb n o = true.
 Proof.
   (* FILL IN HERE *) Admitted.
+(** [] *)
 
 (** **** Exercise: 2 stars, optional (leb_iff)  *)
 Theorem leb_iff : forall n m,
@@ -639,8 +644,8 @@ Inductive R : nat -> nat -> nat -> Prop :=
       sentence) explain your answer.
 
 (* FILL IN HERE *)
-[]
 *)
+(** [] *)
 
 (** **** Exercise: 3 stars, optional (R_fact)  *)
 (** The relation [R] above actually encodes a familiar function.
@@ -872,7 +877,7 @@ Proof.
   intros H. inversion H.
 Qed.
 
-(** We can define helper functions to help write down regular
+(** We can define helper functions for writing down regular
     expressions. The [reg_exp_of_list] function constructs a regular
     expression that matches exactly the list that it receives as an
     argument: *)
@@ -941,7 +946,7 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** **** Exercise: 4 stars (reg_exp_of_list)  *)
+(** **** Exercise: 4 stars, optional (reg_exp_of_list_spec)  *)
 (** Prove that [reg_exp_of_list] satisfies the following
     specification: *)
 
@@ -959,8 +964,10 @@ Proof.
 
 (** For example, suppose that we wanted to prove the following
     intuitive result: If a regular expression [re] matches some string
-    [s], then all elements of [s] must occur somewhere in [re].  To
-    state this theorem, we first define a function [re_chars] that
+    [s], then all elements of [s] must occur as character literals
+    somewhere in [re].
+
+    To state this theorem, we first define a function [re_chars] that
     lists all characters that occur in a regular expression: *)
 
 Fixpoint re_chars {T} (re : reg_exp) : list T :=
@@ -982,27 +989,26 @@ Theorem in_re_match : forall T (s : list T) (re : reg_exp) (x : T),
 Proof.
   intros T s re x Hmatch Hin.
   induction Hmatch
-    as [
-        |x'
-        |s1 re1 s2 re2 Hmatch1 IH1 Hmatch2 IH2
-        |s1 re1 re2 Hmatch IH|re1 s2 re2 Hmatch IH
-        |re|s1 s2 re Hmatch1 IH1 Hmatch2 IH2].
+    as [| x'
+        | s1 re1 s2 re2 Hmatch1 IH1 Hmatch2 IH2
+        | s1 re1 re2 Hmatch IH | re1 s2 re2 Hmatch IH
+        | re | s1 s2 re Hmatch1 IH1 Hmatch2 IH2].
   (* WORKED IN CLASS *)
   - (* MEmpty *)
     apply Hin.
   - (* MChar *)
     apply Hin.
-  - simpl. rewrite in_app_iff in *.
+  - simpl. rewrite In_app_iff in *.
     destruct Hin as [Hin | Hin].
     + (* In x s1 *)
       left. apply (IH1 Hin).
     + (* In x s2 *)
       right. apply (IH2 Hin).
   - (* MUnionL *)
-    simpl. rewrite in_app_iff.
+    simpl. rewrite In_app_iff.
     left. apply (IH Hin).
   - (* MUnionR *)
-    simpl. rewrite in_app_iff.
+    simpl. rewrite In_app_iff.
     right. apply (IH Hin).
   - (* MStar0 *)
     destruct Hin.
@@ -1017,7 +1023,7 @@ Proof.
     to reason about the case [In x s2]. *)
 
   - (* MStarApp *)
-    simpl. rewrite in_app_iff in Hin.
+    simpl. rewrite In_app_iff in Hin.
     destruct Hin as [Hin | Hin].
     + (* In x s1 *)
       apply (IH1 Hin).
@@ -1055,9 +1061,9 @@ Lemma star_app: forall T (s1 s2 : list T) (re : @reg_exp T),
 Proof.
   intros T s1 s2 re H1.
 
-(** Just doing an [inversion] on [H1] won't get us very far in the
-    recursive cases. (Try it!). So we need induction. Here is a naive
-    first attempt: *)
+(** Just doing an [inversion] on [H1] won't get us very far in
+    the recursive cases. (Try it!). So we need induction (on
+    evidence!). Here is a naive first attempt: *)
 
   induction H1
     as [|x'|s1 re1 s2' re2 Hmatch1 IH1 Hmatch2 IH2
@@ -1114,7 +1120,6 @@ Lemma star_app: forall T (s1 s2 : list T) (re re' : reg_exp),
 
 Abort.
 
-
 (** Invoking the tactic [remember e as x] causes Coq to (1) replace
     all occurrences of the expression [e] by the variable [x], and (2)
     add an equation [x = e] to the context.  Here's how we can use it
@@ -1163,7 +1168,7 @@ Proof.
       * apply H1.
 Qed.
 
-(** **** Exercise: 4 stars (exp_match_ex2)  *)
+(** **** Exercise: 4 stars, optional (exp_match_ex2)  *)
 
 (** The [MStar''] lemma below (combined with its converse, the
     [MStar'] exercise above), shows that our definition of [exp_match]
@@ -1300,23 +1305,6 @@ Qed.
     which is generally not directly useful, this principle gives us
     right away the assumption we really need: [n = m]. *)
 
-(** We'll actually define something a bit more general, which can be
-    used with arbitrary properties (and not just equalities): *)
-
-Module FirstTry.
-
-Inductive reflect : Prop -> bool -> Prop :=
-| ReflectT : forall (P:Prop), P -> reflect P true
-| ReflectF : forall (P:Prop), ~ P -> reflect P false.
-
-End FirstTry.
-
-(** Before explaining this, let's rearrange it a little: Since the
-    types of both [ReflectT] and [ReflectF] begin with
-    [forall (P:Prop)], we can make the definition a bit more readable
-    and easier to work with by making [P] a parameter of the whole
-    Inductive declaration. *)
-
 Inductive reflect (P : Prop) : bool -> Prop :=
 | ReflectT : P -> reflect P true
 | ReflectF : ~ P -> reflect P false.
@@ -1401,11 +1389,12 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** Here, this technique gives us a fairly small gain in convenience
-    for the proofs we've seen, but using [reflect] consistently often
-    leads to noticeably shorter and clearer scripts as proofs get
-    larger.  We'll see many more examples in later chapters and in
-    _Programming Language Foundations_.
+(** In this small example, this technique gives us only a rather small
+    gain in convenience for the proofs we've seen; however, using
+    [reflect] consistently often leads to noticeably shorter and
+    clearer scripts as proofs get larger.  We'll see many more
+    examples in later chapters and in _Programming Language
+    Foundations_.
 
     The use of the [reflect] property was popularized by _SSReflect_,
     a Coq library that has been used to formalize important results in
@@ -1417,17 +1406,17 @@ Proof.
 (* ################################################################# *)
 (** * Additional Exercises *)
 
-(** **** Exercise: 3 stars, recommended (nostutter)  *)
+(** **** Exercise: 3 stars, recommended (nostutter_defn)  *)
 (** Formulating inductive definitions of properties is an important
     skill you'll need in this course.  Try to solve this exercise
     without any help at all.
 
     We say that a list "stutters" if it repeats the same element
-    consecutively.  The property "[nostutter mylist]" means that
+    consecutively.  (This is different from the [NoDup] property in 
+    the exercise above: the sequence [1;4;1] repeats but does not
+    stutter.)  The property "[nostutter mylist]" means that
     [mylist] does not stutter.  Formulate an inductive definition for
-    [nostutter].  (This is different from the [NoDup] property in the
-    exercise above; the sequence [1;4;1] repeats but does not
-    stutter.) *)
+    [nostutter]. *)
 
 Inductive nostutter {X:Type} : list X -> Prop :=
  (* FILL IN HERE *)
@@ -1584,12 +1573,12 @@ Example test_nostutter_4:      not (nostutter [3;1;1;4]).
 (* FILL IN HERE *)
 (** [] *)
 
-(** **** Exercise: 4 stars, advanced, optional (pigeonhole principle)  *)
+(** **** Exercise: 4 stars, advanced, optional (pigeonhole_principle)  *)
 (** The _pigeonhole principle_ states a basic fact about counting: if
-   we distribute more than [n] items into [n] pigeonholes, some
-   pigeonhole must contain at least two items.  As often happens, this
-   apparently trivial fact about numbers requires non-trivial
-   machinery to prove, but we now have enough... *)
+    we distribute more than [n] items into [n] pigeonholes, some
+    pigeonhole must contain at least two items.  As often happens, this
+    apparently trivial fact about numbers requires non-trivial
+    machinery to prove, but we now have enough... *)
 
 (** First prove an easy useful lemma. *)
 
@@ -1630,4 +1619,345 @@ Proof.
 (** [] *)
 
 
-(** $Date: 2017-08-22 17:13:32 -0400 (Tue, 22 Aug 2017) $ *)
+(* ================================================================= *)
+(** ** Extended Exercise: A Verified Regular-Expression Matcher *)
+
+(** We have now defined a match relation over regular expressions and
+    polymorphic lists. We can use such a definition to manually prove that
+    a given regex matches a given string, but it does not give us a
+    program that we can run to determine a match autmatically.
+
+    It would be reasonable to hope that we can translate the definitions
+    of the inductive rules for constructing evidence of the match relation
+    into cases of a recursive function reflects the relation by recursing
+    on a given regex. However, it does not seem straightforward to define
+    such a function in which the given regex is a recursion variable
+    recognized by Coq. As a result, Coq will not accept that the function
+    always terminates.
+
+    Heavily-optimized regex matchers match a regex by translating a given
+    regex into a state machine and determining if the state machine
+    accepts a given string. However, regex matching can also be
+    implemented using an algorithm that operates purely on strings and
+    regexes without defining and maintaining additional datatypes, such as
+    state machines. We'll implemement such an algorithm, and verify that
+    its value reflects the match relation. *)
+
+(** We will implement a regex matcher that matches strings represeneted
+    as lists of ASCII characters: *)
+Require Export Coq.Strings.Ascii.
+
+Definition string := list ascii.
+
+(** The Coq standard library contains a distinct inductive definition
+    of strings of ASCII characters. However, we will use the above
+    definition of strings as lists as ASCII characters in order to apply
+    the existing definition of the match relation.
+
+    We could also define a regex matcher over polymorphic lists, not lists
+    of ASCII characters specifically. The matching algorithm that we will
+    implement needs to be able to test equality of elements in a given
+    list, and thus needs to be given an equality-testing
+    function. Generalizing the definitions, theorems, and proofs that we
+    define for such a setting is a bit tedious, but workable. *)
+
+(** The proof of correctness of the regex matcher will combine
+    properties of the regex-matching function with properties of the
+    [match] relation that do not depend on the matching function. We'll go
+    ahead and prove the latter class of properties now. Most of them have
+    straightforward proofs, which have been given to you, although there
+    are a few key lemmas that are left for you to prove. *)
+
+
+(** Each provable [Prop] is equivalent to [True]. *)
+Lemma provable_equiv_true : forall (P : Prop), P -> (P <-> True).
+Proof.
+  intros.
+  split.
+  - intros. constructor.
+  - intros _. apply H.
+Qed.
+
+(** Each [Prop] whose negation is provable is equivalent to [False]. *)
+Lemma not_equiv_false : forall (P : Prop), ~P -> (P <-> False).
+Proof.
+  intros.
+  split.
+  - apply H.
+  - intros. inversion H0.
+Qed.
+
+(** [EmptySet] matches no string. *)
+Lemma null_matches_none : forall (s : string), (s =~ EmptySet) <-> False.
+Proof.
+  intros. 
+  apply not_equiv_false.
+  unfold not. intros. inversion H.
+Qed.
+
+(** [EmptyStr] only matches the empty string. *)
+Lemma empty_matches_eps : forall (s : string), s =~ EmptyStr <-> s = [ ].
+Proof.
+  split.
+  - intros. inversion H. reflexivity.
+  - intros. rewrite H. apply MEmpty.
+Qed.
+
+(** [EmptyStr] matches no non-empty string. *)
+Lemma empty_nomatch_ne : forall (a : ascii) s, (a :: s =~ EmptyStr) <-> False.
+Proof.
+  intros.
+  apply not_equiv_false.
+  unfold not. intros. inversion H.
+Qed.
+
+(** [Char a] matches no string that starts with a non-[a] character. *)
+Lemma char_nomatch_char :
+  forall (a b : ascii) s, b <> a -> (b :: s =~ Char a <-> False).
+Proof.
+  intros.
+  apply not_equiv_false.
+  unfold not.
+  intros.
+  apply H.
+  inversion H0.
+  reflexivity.
+Qed. 
+
+(** If [Char a] matches a non-empty string, then the string's tail is empty. *)
+Lemma char_eps_suffix : forall (a : ascii) s, a :: s =~ Char a <-> s = [ ].
+Proof.
+  split.
+  - intros. inversion H. reflexivity.
+  - intros. rewrite H. apply MChar.
+Qed.
+
+(** [App re0 re1] matches string [s] iff [s = s0 ++ s1], where [s0]
+    matches [re0] and [s1] matches [re1]. *)
+Lemma app_exists : forall (s : string) re0 re1,
+    s =~ App re0 re1 <->
+    exists s0 s1, s = s0 ++ s1 /\ s0 =~ re0 /\ s1 =~ re1.
+Proof.
+  intros.
+  split.
+  - intros. inversion H. exists s1, s2. split.
+    * reflexivity.
+    * split. apply H3. apply H4.
+  - intros [ s0 [ s1 [ Happ [ Hmat0 Hmat1 ] ] ] ].
+    rewrite Happ. apply (MApp s0 _ s1 _ Hmat0 Hmat1).
+Qed.
+
+(** **** Exercise: 3 stars, optional (app_ne)  *)
+(** [App re0 re1] matches [a::s] iff [re0] matches the empty string
+    and [a::s] matches [re1] or [s=s0++s1], where [a::s0] matches [re0]
+    and [s1] matches [re1].
+
+    Even though this is a property of purely the match relation, it is a
+    critical observation behind the design of our regex matcher. So (1)
+    take time to understand it, (2) prove it, and (3) look for how you'll
+    use it later. *)
+Lemma app_ne : forall (a : ascii) s re0 re1,
+    a :: s =~ (App re0 re1) <->
+    ([ ] =~ re0 /\ a :: s =~ re1) \/
+    exists s0 s1, s = s0 ++ s1 /\ a :: s0 =~ re0 /\ s1 =~ re1.
+Proof.
+  (* FILL IN HERE *) Admitted.
+(** [] *)
+
+(** [s] matches [Union re0 re1] iff [s] matches [re0] or [s] matches [re1]. *)
+Lemma union_disj : forall (s : string) re0 re1,
+    s =~ Union re0 re1 <-> s =~ re0 \/ s =~ re1.
+Proof.
+  intros. split.
+  - intros. inversion H.
+    + left. apply H2.
+    + right. apply H2.
+  - intros [ H | H ].
+    + apply MUnionL. apply H.
+    + apply MUnionR. apply H. 
+Qed.
+
+(** **** Exercise: 3 stars, optional (star_ne)  *)
+(** [a::s] matches [Star re] iff [s = s0 ++ s1], where [a::s0] matches
+    [re] and [s1] matches [Star re]. Like [app_ne], this observation is
+    critical, so understand it, prove it, and keep it in mind.
+
+    Hint: you'll need to perform induction. There are quite a few
+    reasonable candidates for [Prop]'s to prove by induction. The only one
+    that will work is splitting the [iff] into two implications and
+    proving one by induction on the evidence for [a :: s =~ Star re]. The
+    other implication can be proved without induction.
+
+    In order to prove the right property by induction, you'll need to
+    rephrase [a :: s =~ Star re] to be a [Prop] over general variables,
+    using the [remember] tactic.  *)
+
+Lemma star_ne : forall (a : ascii) s re,
+    a :: s =~ Star re <->
+    exists s0 s1, s = s0 ++ s1 /\ a :: s0 =~ re /\ s1 =~ Star re.
+Proof.
+  (* FILL IN HERE *) Admitted.
+(** [] *)
+
+(** The definition of our regex matcher will include two fixpoint
+    functions. The first function, given regex [re], will evaluate to a
+    value that reflects whether [re] matches the empty string. The
+    function will satisfy the following property: *)
+Definition refl_matches_eps m :=
+  forall re : @reg_exp ascii, reflect ([ ] =~ re) (m re).
+
+(** **** Exercise: 2 stars, optional (match_eps)  *)
+(** Complete the definition of [match_eps] so that it tests if a given
+    regex matches the empty string: *)
+Fixpoint match_eps (re: @reg_exp ascii) : bool
+  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+(** [] *)
+
+(** **** Exercise: 3 stars, optional (match_eps_refl)  *)
+(** Now, prove that [match_eps] indeed tests if a given regex matches
+    the empty string.  (Hint: You'll want to use the reflection lemmas
+    [ReflectT] and [ReflectF].) *)
+Lemma match_eps_refl : refl_matches_eps match_eps.
+Proof.
+  (* FILL IN HERE *) Admitted.
+(** [] *)
+
+(** We'll define other functions that use [match_eps]. However, the
+    only property of [match_eps] that you'll need to use in all proofs
+    over these functions is [match_eps_refl]. *)
+
+
+(** The key operation that will be performed by our regex matcher will
+    be to iteratively construct a sequence of regex derivatives. For each
+    character [a] and regex [re], the derivative of [re] on [a] is a regex
+    that matches all suffixes of strings matched by [re] that start with
+    [a]. I.e., [re'] is a derivative of [re] on [a] if they satisfy the
+    following relation: *)
+
+Definition is_der re (a : ascii) re' :=
+  forall s, a :: s =~ re <-> s =~ re'.
+
+(** A function [d] derives strings if, given character [a] and regex
+    [re], it evaluates to the derivative of [re] on [a]. I.e., [d]
+    satisfies the following property: *)
+Definition derives d := forall a re, is_der re a (d a re).
+
+(** **** Exercise: 3 stars, optional (derive)  *)
+(** Define [derive] so that it derives strings. One natural
+    implementation uses [match_eps] in some cases to determine if key
+    regex's match the empty string. *)
+Fixpoint derive (a : ascii) (re : @reg_exp ascii) : @reg_exp ascii
+  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+(** [] *)
+
+(** The [derive] function should pass the following tests. Each test
+    establishes an equality between an expression that will be
+    evaluated by our regex matcher and the final value that must be
+    returned by the regex matcher. Each test is annotated with the
+    match fact that it reflects. *)
+Example c := ascii_of_nat 99.
+Example d := ascii_of_nat 100.
+
+(** "c" =~ EmptySet: *)
+Example test_der0 : match_eps (derive c (EmptySet)) = false.
+Proof.
+  (* FILL IN HERE *) Admitted.
+
+(** "c" =~ Char c: *)
+Example test_der1 : match_eps (derive c (Char c)) = true.
+Proof.
+  (* FILL IN HERE *) Admitted.
+
+(** "c" =~ Char d: *)
+Example test_der2 : match_eps (derive c (Char d)) = false.
+Proof.
+  (* FILL IN HERE *) Admitted.
+
+(** "c" =~ App (Char c) EmptyStr: *)
+Example test_der3 : match_eps (derive c (App (Char c) EmptyStr)) = true.
+Proof.
+  (* FILL IN HERE *) Admitted.
+
+(** "c" =~ App EmptyStr (Char c): *)
+Example test_der4 : match_eps (derive c (App EmptyStr (Char c))) = true.
+Proof.
+  (* FILL IN HERE *) Admitted.
+
+(** "c" =~ Star c: *)
+Example test_der5 : match_eps (derive c (Star (Char c))) = true.
+Proof.
+  (* FILL IN HERE *) Admitted.
+
+(** "cd" =~ App (Char c) (Char d): *)
+Example test_der6 :
+  match_eps (derive d (derive c (App (Char c) (Char d)))) = true.
+Proof.
+  (* FILL IN HERE *) Admitted.
+
+(** "cd" =~ App (Char d) (Char c): *)
+Example test_der7 :
+  match_eps (derive d (derive c (App (Char d) (Char c)))) = false.
+Proof.
+  (* FILL IN HERE *) Admitted.
+
+(** **** Exercise: 4 stars, optional (derive_corr)  *)
+(** Prove that [derive] in fact always derives strings.
+
+    Hint: one proof performs induction on [re], although you'll need
+    to carefully choose the property that you prove by induction by
+    generalizing the appropriate terms.
+
+    Hint: if your definition of [derive] applies [match_eps] to a
+    particular regex [re], then a natural proof will apply
+    [match_eps_refl] to [re] and destruct the result to generate cases
+    with assumptions that the [re] does or does not match the empty
+    string.
+
+    Hint: You can save quite a bit of work by using lemmas proved
+    above. In particular, to prove many cases of the induction, you
+    can rewrite a [Prop] over a complicated regex (e.g., [s =~ Union
+    re0 re1]) to a Boolean combination of [Prop]'s over simple
+    regex's (e.g., [s =~ re0 \/ s =~ re1]) using lemmas given above
+    that are logical equivalences. You can then reason about these
+    [Prop]'s naturally using [intro] and [destruct]. *)
+Lemma derive_corr : derives derive.
+Proof.
+  (* FILL IN HERE *) Admitted.
+(** [] *)
+
+(** We'll define the regex matcher using [derive]. However, the only
+    property of [derive] that you'll need to use in all proofs of
+    properties of the matcher is [derive_corr]. *)
+
+
+(** A function [m] matches regexes if, given string [s] and regex [re],
+    it evaluates to a value that reflects whether [s] is matched by
+    [re]. I.e., [m] holds the following property: *)
+Definition matches_regex m : Prop :=
+  forall (s : string) re, reflect (s =~ re) (m s re).
+
+(** **** Exercise: 2 stars, optional (regex_match)  *)
+(** Complete the definition of [regex_match] so that it matches
+    regexes. *)
+Fixpoint regex_match (s : string) (re : @reg_exp ascii) : bool
+  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+(** [] *)
+
+(** **** Exercise: 3 stars, optional (regex_refl)  *)
+(** Finally, prove that [regex_match] in fact matches regexes.
+
+    Hint: if your definition of [regex_match] applies [match_eps] to
+    regex [re], then a natural proof applies [match_eps_refl] to [re]
+    and destructs the result to generate cases in which you may assume
+    that [re] does or does not match the empty string.
+
+    Hint: if your definition of [regex_match] applies [derive] to
+    character [x] and regex [re], then a natural proof applies
+    [derive_corr] to [x] and [re] to prove that [x :: s =~ re] given
+    [s =~ derive x re], and vice versa. *)
+Theorem regex_refl : matches_regex regex_match.
+Proof.
+  (* FILL IN HERE *) Admitted.
+(** [] *)
+
+

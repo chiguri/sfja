@@ -14,19 +14,19 @@ Set Warnings "-notation-overridden,-parsing".
 
 Require Import Coq.Arith.Arith.
 
-From PLF Require Import Maps.
-From PLF Require Import Imp.
-From PLF Require Import Types.
-From PLF Require Import Smallstep.
-From PLF Require Import LibTactics.
+Require Import Maps.
+Require Import Imp.
+Require Import Types.
+Require Import Smallstep.
+Require Import LibTactics.
 
-From PLF Require Stlc.
-From PLF Require Equiv.
-From PLF Require Imp.
-From PLF Require References.
-From PLF Require Smallstep.
-From PLF Require Hoare.
-From PLF Require Sub.
+Require Stlc.
+Require Equiv.
+Require Imp.
+Require References.
+Require Smallstep.
+Require Hoare.
+Require Sub.
 
 (** Remark: SSReflect is another package providing powerful tactics.
     The library "LibTactics" differs from "SSReflect" in two respects:
@@ -675,7 +675,7 @@ Notation " t '/' st '==>a*' t' " := (multi (astep st) t t')
                                     (at level 40, st at level 39).
 
 Example astep_example1 :
-  (APlus (ANum 3) (AMult (ANum 3) (ANum 4))) / empty_state ==>a* (ANum 15).
+  (3 +  (3 * 4)) / { --> 0 } ==>a* 15.
 Proof.
   eapply multi_step. skip. (* the tactic [admit] would not work here *)
   eapply multi_step. skip. skip.
@@ -833,7 +833,7 @@ Module ExamplesLets.
 (* To illustrate the working of [lets], assume that we want to
    exploit the following lemma. *)
 
-Axiom typing_inversion_var : forall (G:context) (x:id) (T:ty),
+Axiom typing_inversion_var : forall (G:context) (x:string) (T:ty),
   has_type G (tvar x) T ->
   exists S, G x = Some S /\ subtype S T.
 
@@ -842,7 +842,7 @@ Axiom typing_inversion_var : forall (G:context) (x:id) (T:ty),
     lemma [typing_inversion_var] by invoking the tactics
     [lets K: typing_inversion_var H], as shown next. *)
 
-Lemma demo_lets_1 : forall (G:context) (x:id) (T:ty),
+Lemma demo_lets_1 : forall (G:context) (x:string) (T:ty),
   has_type G (tvar x) T -> True.
 Proof.
   intros G x T H. dup.
@@ -864,7 +864,7 @@ Abort.
     triple-underscore symbol [___]. (We'll later introduce a shorthand
     tactic called [forwards] to avoid writing triple underscores.) *)
 
-Lemma demo_lets_2 : forall (G:context) (x:id) (T:ty), True.
+Lemma demo_lets_2 : forall (G:context) (x:string) (T:ty), True.
 Proof.
   intros G x T.
   lets (S & Eq & Sub): typing_inversion_var G x T ___.
@@ -877,7 +877,7 @@ Abort.
     The variables [G] and [T] are then instantiated using existential
     variables. *)
 
-Lemma demo_lets_3 : forall (x:id), True.
+Lemma demo_lets_3 : forall (x:string), True.
 Proof.
   intros x.
   lets (S & Eq & Sub): typing_inversion_var x ___.
@@ -983,13 +983,13 @@ Proof with eauto.
   generalize dependent S. generalize dependent Gamma.
   (induction t); intros; simpl.
   - (* tvar *)
-    rename i into y.
+    rename s into y.
 
     (* An example where [destruct] is replaced with [lets]. *)
     (* old: destruct (typing_inversion_var _ _ _ Htypt) as [T [Hctx Hsub]].*)
     (* new: *) lets (T&Hctx&Hsub): typing_inversion_var Htypt.
     unfold update, t_update in Hctx.
-    destruct (beq_idP x y)...
+    destruct (beq_stringP x y)...
     + (* x=y *)
       subst.
       inversion Hctx; subst. clear Hctx.
@@ -1010,7 +1010,7 @@ Proof with eauto.
     (* FILL IN HERE *) admit.
 
   - (* tabs *)
-    rename i into y. rename t into T1.
+    rename s into y. rename t into T1.
 
     (* Here is another example of using [lets]. *)
     (* old: destruct (typing_inversion_abs _ _ _ _ _ Htypt). *)
@@ -1020,17 +1020,17 @@ Proof with eauto.
     (* old: apply T_Sub with (TArrow T1 T2)... *)
     (* new: *) applys T_Sub (TArrow T1 T2)...
      apply T_Abs...
-    destruct (beq_idP x y).
+    destruct (beq_stringP x y).
     + (* x=y *)
       eapply context_invariance...
       subst.
       intros x Hafi. unfold update, t_update.
-      destruct (beq_idP y x)...
+      destruct (beq_stringP y x)...
     + (* x<>y *)
       apply IHt. eapply context_invariance...
       intros z Hafi. unfold update, t_update.
-      destruct (beq_idP y z)...
-      subst. rewrite false_beq_id...
+      destruct (beq_stringP y z)...
+      subst. rewrite false_beq_string...
   - (* ttrue *)
     lets: typing_inversion_true Htypt...
   - (* tfalse *)
@@ -1086,4 +1086,4 @@ End ExamplesInstantiations.
 
 *)
 
-(** $Date: 2017-08-22 17:13:32 -0400 (Tue, 22 Aug 2017) $ *)
+(** $Date$ *)

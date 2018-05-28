@@ -4,7 +4,7 @@
     mind, we can now take a deeper look at induction principles. *)
 
 Set Warnings "-notation-overridden,-parsing".
-From LF Require Export ProofObjects.
+Require Export ProofObjects.
 
 (* ################################################################# *)
 (** * Basics *)
@@ -699,4 +699,3 @@ Check le_ind.
 
              But then, by [le_S], [n <= S o'].  [] *)
 
-(** $Date: 2017-08-22 17:13:32 -0400 (Tue, 22 Aug 2017) $ *)

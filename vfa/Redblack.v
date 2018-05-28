@@ -45,8 +45,8 @@ _Journal of Functional Programming_, 9(4):471-477, July 1999.
    integers. We don't repeat the [Extract] commands, because they are
    imported implicitly from Extract.v *)
 
-From VFA Require Import Perm.
-From VFA Require Import Extract.
+Require Import Perm.
+Require Import Extract.
 Require Import Coq.Lists.List. 
 Export ListNotations.
 
@@ -411,7 +411,6 @@ apply IHSearchTree'1; omega.
 apply IHSearchTree'2; omega.
 Qed.
 
-
 Lemma insert_SearchTree: forall x vx s,
     SearchTree s -> SearchTree (insert x vx s).
 (* FILL IN HERE *) Admitted.
@@ -536,7 +535,7 @@ Definition how_many_subgoals_remaining :=
   ].
 (** [] *)
 
-(** **** Exercise: 3 stars (insert_relate)  *)
+(** **** Exercise: 3 stars (ins_relate)  *)
 Theorem ins_relate:
  forall k v t cts,
     SearchTree t ->
@@ -625,7 +624,7 @@ Proof.
    stay approximately balanced; this tells us important information about
    their efficiency. *)
 
-(** **** Exercise: 4 stars (is_redblack)   *)
+(** **** Exercise: 4 stars (is_redblack_properties)   *)
 (** The relation [is_redblack] ensures that there are exactly [n] black 
    nodes in every path from the root to a leaf, and that there are never
    two red nodes in a row. *)
@@ -642,7 +641,13 @@ Proof.
           is_redblack (T Black tl k kv tr) c (S n).
 
 Lemma is_redblack_toblack:
- forall s n, is_redblack s Red n -> is_redblack s Black n.
+  forall s n, is_redblack s Red n -> is_redblack s Black n.
+Proof.
+(* FILL IN HERE *) Admitted.
+
+Lemma makeblack_fiddle:
+  forall s n, is_redblack s Black n -> 
+            exists n, is_redblack (makeBlack s) Red n.
 Proof.
 (* FILL IN HERE *) Admitted.
 
@@ -679,12 +684,13 @@ unfold balance.
    the proofs of [ins_not_E] and [balance_relate]. *)
 
 (* FILL IN HERE *) Admitted.
-(** [] *)
 
 Lemma insert_is_redblack:
   forall x xv s n, is_redblack s Red n ->
                     exists n', is_redblack (insert x xv s) Red n'.
-Proof. (* Just apply a couple of lemmas:  ins_is_redblack and makeblack_fiddle *)
+Proof.
+  (* Just apply a couple of lemmas: 
+     ins_is_redblack and makeblack_fiddle *)
 (* FILL IN HERE *) Admitted.
 (** [] *)
 

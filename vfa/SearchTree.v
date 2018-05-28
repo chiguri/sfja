@@ -20,7 +20,7 @@
    Our focus here is to _prove the correctness of an implementation_
    of binary search trees. *)
 
-From VFA Require Import Perm.
+Require Import Perm.
 Require Import FunctionalExtensionality.
 
 (* ################################################################# *)
@@ -31,7 +31,7 @@ Require Import FunctionalExtensionality.
     VFA's [Maps] module is almost exactly the same, except that it
     implements functions from [nat] to some arbitrary type [A]. *)
 
-From VFA Require Import Maps.
+Require Import Maps.
 
 (* ################################################################# *)
 (** * Sections *)
@@ -390,8 +390,8 @@ Abort.
 (** [] *)
 
 (** Instead of doing a _formal_ proof that [elements_relate] is true,
-     prove that it's false!  That is, as long as type [V] contains at
-     least two distinct values. *)
+    prove that it's false!  That is, as long as type [V] contains at
+    least two distinct values. *)
 
 (** **** Exercise: 4 stars (not_elements_relate)  *)
 Theorem not_elements_relate:
@@ -669,21 +669,6 @@ clear default.  (* This is here to avoid a nasty interaction between Admitted
    is not needed in this theorem. *)
 (* FILL IN HERE *) Admitted.
 (** [] *)
-
-Remark omega_on_keys:
-   forall i j : key, ~ (i > j) -> ~ (i < j) -> i=j.
-Proof.
-intros.
-try omega.  (* Oops! [omega] cannot solve this one.
-    The problem is that [i] and [j] have type [key] instead of type [nat].
-    The solution is easy enough: *)
-unfold key in *.
-omega.
-
-(** So, if you get stuck on an [omega] that ought to work,
-   try unfolding the types from [key] to [nat] *)
-
-Qed.
 
 (** **** Exercise: 3 stars (insert_SearchTree)  *)
 Theorem insert_SearchTree:

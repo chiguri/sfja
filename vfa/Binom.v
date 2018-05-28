@@ -22,8 +22,8 @@
 (* ################################################################# *)
 (** * The Program *)
 
-From VFA Require Import Perm.
-From VFA Require Import Priqueue.
+Require Import Perm.
+Require Import Priqueue.
 
 Module BinomQueue <: PRIQUEUE.
 
@@ -281,6 +281,7 @@ Theorem abs_perm: forall p al bl,
    priq p -> Abs p al -> Abs p bl -> Permutation al bl.
 Proof.
 (* FILL IN HERE *) Admitted.
+(** [] *)
 
 (** **** Exercise: 2 stars (can_relate)  *)
 Lemma tree_can_relate: forall t, exists al, tree_elems t al.

@@ -5,7 +5,9 @@
 (* ################################################################# *)
 (** * Looking Back *)
 
-(** We've covered a lot of ground.  Here's a quick review of the whole course starting with _Logical Foundations_...  
+(** We've covered a lot of ground.  Here's a quick review of the whole
+    trajectory we've followed, starting at the beginning of _Logical
+    Foundations_...
 
    - _Functional programming_:
           - "declarative" programming style (recursion over persistent
@@ -282,5 +284,5 @@
             - CoqPL workshop 
 *)
 
-(** $Date: 2017-08-24 17:13:02 -0400 (Thu, 24 Aug 2017) $ *)
+(** $Date$ *)
 

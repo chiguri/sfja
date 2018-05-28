@@ -23,7 +23,7 @@
 (* ################################################################# *)
 (** * The Selection-Sort Program  *)
 
-From VFA Require Import Perm.
+Require Import Perm.
 
 (** Find (and delete) the smallest element in a list. *)
 
@@ -229,7 +229,7 @@ simpl in *; omega.
 Defined.  (* Use [Defined] instead of [Qed], otherwise you
   can't compute with the function in Coq. *)
 
-(** **** Exercise: 3 stars (selection_sort'_perm)  *)
+(** **** Exercise: 3 stars (selsort'_perm)  *)
 Lemma selsort'_perm:
   forall n, 
   forall l, length l = n -> Permutation l (selsort' l).
@@ -249,4 +249,4 @@ Proof.
 
 Eval compute in selsort' [3;1;4;1;5;9;2;6;5].
 
-(** $Date: 2017-08-25 14:01:08 -0400 (Fri, 25 Aug 2017) $ *)
+(** $Date$ *)

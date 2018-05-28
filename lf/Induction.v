@@ -3,30 +3,53 @@
 (** Before getting started, we need to import all of our
     definitions from the previous chapter: *)
 
-Require Export LF.Basics.
+Require Export Basics.
 
 (** For the [Require Export] to work, you first need to use
     [coqc] to compile [Basics.v] into [Basics.vo].  This is like
-    making a .class file from a .java file, or a .o file from a .c
-    file.  There are two ways to do it:
+    making a [.class] file from a [.java] file, or a [.o] file from a
+    [.c] file.  There are two ways to do it:
 
      - In CoqIDE:
 
          Open [Basics.v].  In the "Compile" menu, click on "Compile
          Buffer".
 
-         (N.b.: These instructions need to be updated to take the "-R
-         LF ." into account.  Can a CoqIDE expert tell me how this is
-         done, please?)
-
-     - From the command line:
+     - From the command line: Either
 
          [make Basics.vo]
 
-   If you have trouble (e.g., if you get complaints about missing
-   identifiers later in the file), it may be because the "load path"
-   for Coq is not set up correctly.  The [Print LoadPath.] command may
-   be helpful in sorting out such issues. *)
+       (assuming you've downloaded the whole LF directory and have a
+       working [make] command) or
+
+         [coqc Basics.v]
+
+       (which should work from any terminal window).
+
+    If you have trouble (e.g., if you get complaints about missing
+    identifiers later in the file), it may be because the "load path"
+    for Coq is not set up correctly.  The [Print LoadPath.] command may
+    be helpful in sorting out such issues.
+
+    In particular, if you see a message like
+
+        [Compiled library Foo makes inconsistent assumptions over
+        library Coq.Init.Bar]
+
+    you should check whether you have multiple installations of Coq on
+    your machine.  If so, it may be that commands (like [coqc]) that
+    you execute in a terminal window are getting a different version of
+    Coq than commands executed by Proof General or CoqIDE.
+
+    One more tip for CoqIDE users: If you see messages like [Error:
+    Unable to locate library Basics], a likely reason is
+    inconsistencies between compiling things _within CoqIDE_ vs _using
+    coqc_ from the command line.  This typically happens when there are
+    two incompatible versions of [coqc] installed on your system (one
+    associated with CoqIDE, and one associated with [coqc] from the
+    terminal).  The workaround for this situation is compiling using
+    CoqIDE only (i.e. choosing "make" from the menu), and avoiding
+    using [coqc] directly at all. *)
 
 (* ################################################################# *)
 (** * Proof by Induction *)
@@ -112,6 +135,7 @@ Proof.
     in this case becomes [S n' = (S n') + 0], which simplifies to
     [S n' = S (n' + 0)], which in turn follows from [IHn']. *)
 
+
 Theorem minus_diag : forall n,
   minus n n = 0.
 Proof.
@@ -135,21 +159,26 @@ Theorem mult_0_r : forall n:nat,
   n * 0 = 0.
 Proof.
   (* FILL IN HERE *) Admitted.
+(* GRADE_THEOREM 0.5: mult_0_r *)
 
 Theorem plus_n_Sm : forall n m : nat,
   S (n + m) = n + (S m).
 Proof.
   (* FILL IN HERE *) Admitted.
+(* GRADE_THEOREM 0.5: plus_n_Sm *)
+
 
 Theorem plus_comm : forall n m : nat,
   n + m = m + n.
 Proof.
   (* FILL IN HERE *) Admitted.
+(* GRADE_THEOREM 0.5: plus_comm *)
 
 Theorem plus_assoc : forall n m p : nat,
   n + (m + p) = (n + m) + p.
 Proof.
   (* FILL IN HERE *) Admitted.
+(* GRADE_THEOREM 0.5: plus_assoc *)
 (** [] *)
 
 (** **** Exercise: 2 stars (double_plus)  *)
@@ -397,7 +426,8 @@ Proof.
     Theorem: [true = beq_nat n n] for any [n].
 
     Proof: (* FILL IN HERE *)
-[] *)
+*)
+(** [] *)
 
 (* ################################################################# *)
 (** * More Exercises *)
@@ -568,4 +598,4 @@ Proof.
 (* FILL IN HERE *)
 (** [] *)
 
-(** $Date: 2017-08-22 17:13:32 -0400 (Tue, 22 Aug 2017) $ *)
+

@@ -1,5 +1,6 @@
 (** * References: Typing Mutable References *)
 
+ 
 (** Up to this point, we have considered a variety of _pure_
     language features, including functional abstraction, basic types
     such as numbers and booleans, and structured types such as records
@@ -32,10 +33,10 @@
 Set Warnings "-notation-overridden,-parsing".
 Require Import Coq.Arith.Arith.
 Require Import Coq.omega.Omega.
+Require Import Maps.
+Require Import Smallstep.
 Require Import Coq.Lists.List.
 Import ListNotations.
-From PLF Require Import Maps.
-From PLF Require Import Smallstep.
 
 (* ################################################################# *)
 (** * Definitions *)
@@ -135,9 +136,9 @@ Inductive ty : Type :=
 
 Inductive tm  : Type :=
   (* STLC with numbers: *)
-  | tvar    : id -> tm
+  | tvar    : string -> tm
   | tapp    : tm -> tm -> tm
-  | tabs    : id -> ty -> tm -> tm
+  | tabs    : string -> ty -> tm -> tm
   | tnat    : nat -> tm
   | tsucc   : tm -> tm
   | tpred   : tm -> tm
@@ -214,14 +215,14 @@ Hint Constructors value.
 (** Extending substitution to handle the new syntax of terms is
     straightforward.  *)
 
-Fixpoint subst (x:id) (s:tm) (t:tm) : tm :=
+Fixpoint subst (x:string) (s:tm) (t:tm) : tm :=
   match t with
   | tvar x'       =>
-      if beq_id x x' then s else t
+      if beq_string x x' then s else t
   | tapp t1 t2    =>
       tapp (subst x s t1) (subst x s t2)
   | tabs x' T t1  =>
-      if beq_id x x' then t else tabs x' T (subst x s t1)
+      if beq_string x x' then t else tabs x' T (subst x s t1)
   | tnat n        =>
       t
   | tsucc t1      =>
@@ -279,7 +280,7 @@ Notation "'[' x ':=' s ']' t" := (subst x s t) (at level 20).
     [tseq] that expands into an abstraction and an application. *)
 
 Definition tseq t1 t2 :=
-  tapp (tabs (Id "x") TUnit t2) t1.
+  tapp (tabs "x" TUnit t2) t1.
 
 (* ================================================================= *)
 (** ** References and Aliasing *)
@@ -379,7 +380,7 @@ Definition tseq t1 t2 :=
       r2  // yields 1, not 2!
 *)
 
-(** **** Exercise: 1 star (store_draw)  *)
+(** **** Exercise: 1 star, optional (store_draw)  *)
 (** Draw (on paper) the contents of the store at the point in
     execution where the first two [let]s have finished and the third
     one is about to begin. *)
@@ -463,7 +464,7 @@ would it behave the same? *)
     [MoreStlc] chapter already give us what we need.
 
     First, we can use sums to build an analog of the [option] types
-    introduced in the \CHAPV1{Lists} chapter of _Logical Foundations_.
+    introduced in the [Lists] chapter of _Logical Foundations_.
     Define [Option T] to be an abbreviation for [Unit + T].
 
     Then a "nullable reference to a [T]" is simply an element of the
@@ -490,7 +491,7 @@ would it behave the same? *)
     names for the same storage cell -- one with type [Ref Nat] and the
     other with type [Ref Bool]. *)
 
-(** **** Exercise: 1 star (type_safety_violation)  *)
+(** **** Exercise: 2 stars (type_safety_violation)  *)
 (** Show how this can lead to a violation of type safety. *)
 
 (* FILL IN HERE *)
@@ -1275,7 +1276,7 @@ Definition preservation_theorem := forall ST t t' T st st',
     lemma, along with the same machinery about context invariance that
     we used in the proof of the substitution lemma for the STLC. *)
 
-Inductive appears_free_in : id -> tm -> Prop :=
+Inductive appears_free_in : string -> tm -> Prop :=
   | afi_var : forall x,
       appears_free_in x (tvar x)
   | afi_app1 : forall x t1 t2,
@@ -1345,7 +1346,7 @@ Proof with eauto.
   - (* T_Abs *)
     apply T_Abs. apply IHhas_type; intros.
     unfold update, t_update.
-    destruct (beq_idP x x0)...
+    destruct (beq_stringP x x0)...
   - (* T_App *)
     eapply T_App.
       apply IHhas_type1...
@@ -1375,8 +1376,8 @@ Proof with eauto.
   induction t; intros T Gamma H;
     inversion H; subst; simpl...
   - (* tvar *)
-    rename i into y.
-    destruct (beq_idP x y).
+    rename s0 into y.
+    destruct (beq_stringP x y).
     + (* x = y *)
       subst.
       rewrite update_eq in H3.
@@ -1390,8 +1391,8 @@ Proof with eauto.
       apply T_Var.
       rewrite update_neq in H3...
   - (* tabs *) subst.
-    rename i into y.
-    destruct (beq_idP x y).
+    rename s0 into y.
+    destruct (beq_stringP x y).
     + (* x = y *)
       subst.
       apply T_Abs. eapply context_invariance...
@@ -1400,9 +1401,9 @@ Proof with eauto.
       apply T_Abs. apply IHt.
       eapply context_invariance...
       intros. unfold update, t_update.
-      destruct (beq_idP y x0)...
+      destruct (beq_stringP y x0)...
       subst.
-      rewrite false_beq_id...
+      rewrite false_beq_string...
 Qed.
 
 (* ================================================================= *)
@@ -1613,7 +1614,8 @@ Qed.
     cases.
 
 (* FILL IN HERE *)
-[] *)
+ *)
+(** [] *)
 
 (* ================================================================= *)
 (** ** Progress *)
@@ -1748,10 +1750,12 @@ Qed.
 
 Module ExampleVariables.
 
-Definition x := Id "x".
-Definition y := Id "y".
-Definition r := Id "r".
-Definition s := Id "s".
+Open Scope string_scope.
+  
+Definition x := "x".
+Definition y := "y".
+Definition r := "r".
+Definition s := "s".
 
 End ExampleVariables.
 
@@ -1885,4 +1889,4 @@ Qed.
 End RefsAndNontermination.
 End STLCRef.
 
-(** $Date: 2017-08-22 17:13:32 -0400 (Tue, 22 Aug 2017) $ *)
+(** $Date$ *)

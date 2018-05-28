@@ -8,8 +8,8 @@
     with repeats, where the order does not matter.  One simple
     representation of a multiset is a function from values to [nat]. *)
 
-From VFA Require Import Perm.
-From VFA Require Import Sort.
+Require Import Perm.
+Require Import Sort.
 Require Export FunctionalExtensionality.
 
 (** In this chapter we will be using natural numbers for two different
@@ -145,7 +145,7 @@ Qed.
 
        [Permutation al bl <-> contents al = contents bl.] *)
 
-(** **** Exercise: 3 stars  *)
+(** **** Exercise: 3 stars (perm_contents)  *)
 (** The forward direction is easy, by induction on the evidence for
     [Permutation]: *)
 
@@ -182,6 +182,7 @@ Proof.
   simpl.
   bdestruct (a =? v).
   (* FILL IN HERE *) Admitted.
+(** [] *)
 
 (** **** Exercise: 2 stars (contents_perm_aux)  *)
 Lemma contents_perm_aux:

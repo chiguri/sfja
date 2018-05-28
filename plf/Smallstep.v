@@ -6,8 +6,8 @@ Require Import Coq.Arith.EqNat.
 Require Import Coq.omega.Omega.
 Require Import Coq.Lists.List.
 Import ListNotations.
-From PLF Require Import Maps.
-From PLF Require Import Imp. 
+Require Import Maps.
+Require Import Imp. 
 
 (** The evaluators we have seen so far (for [aexp]s, [bexp]s,
     commands, ...) have been formulated in a "big-step" style: they
@@ -54,21 +54,22 @@ From PLF Require Import Imp.
     rules can be applied.
 
     These two outcomes -- nontermination vs. getting stuck in an
-    erroneous configuration -- are quite different.  In particular, we
-    want to allow the first (permitting the possibility of infinite
+    erroneous configuration -- should not be confused.  In particular, we
+    want to _allow_ the first (permitting the possibility of infinite
     loops is the price we pay for the convenience of programming with
-    general looping constructs like [while]) but prevent the
+    general looping constructs like [while]) but _prevent_ the
     second (which is just wrong), for example by adding some form of
     _typechecking_ to the language.  Indeed, this will be a major
     topic for the rest of the course.  As a first step, we need a way
     of presenting the semantics that allows us to distinguish
     nontermination from erroneous "stuck states."
 
-    So, for lots of reasons, we'd like to have a finer-grained way of
-    defining and reasoning about program behaviors.  This is the topic
-    of the present chapter.  We replace the "big-step" [eval] relation
-    with a "small-step" relation that specifies, for a given program,
-    how the "atomic steps" of computation are performed. *)
+    So, for lots of reasons, we'd often like to have a finer-grained
+    way of defining and reasoning about program behaviors.  This is
+    the topic of the present chapter.  Our goal is to replace the
+    "big-step" [eval] relation with a "small-step" relation that
+    specifies, for a given program, how the "atomic steps" of
+    computation are performed. *)
 
 (* ################################################################# *)
 (** * A Toy Language *)
@@ -215,7 +216,7 @@ End SimpleArith1.
     parameterized by two elements of [X] -- i.e., a proposition about
     pairs of elements of [X].  *)
 
-Definition relation (X: Type) := X->X->Prop.
+Definition relation (X: Type) := X -> X -> Prop.
 
 (** Our main examples of such relations in this chapter will be
     the single-step reduction relation, [==>], and its multi-step
@@ -228,7 +229,7 @@ Definition relation (X: Type) := X->X->Prop.
     big-step evaluation relation for Imp, it is _deterministic_.
 
     _Theorem_: For each [t], there is at most one [t'] such that [t]
-    steps to [t'] ([t ==> t'] is provable).  Formally, this is the
+    steps to [t'] ([t ==> t'] is provable).  This is the
     same as saying that [==>] is deterministic. *)
 
 (** _Proof sketch_: We show that if [x] steps to both [y1] and
@@ -562,8 +563,10 @@ Proof.
     Because [value] is a syntactic concept -- it is defined by looking
     at the form of a term -- while [normal_form] is a semantic one --
     it is defined by looking at how the term steps.  It is not obvious
-    that these concepts should coincide!  Indeed, we could easily have
-    written the definitions so that they would _not_ coincide. *)
+    that these concepts should coincide!  *)
+
+(** Indeed, we could easily have written the definitions so that they
+    would _not_ coincide. *)
 
 (** **** Exercise: 3 stars, optional (value_not_same_as_normal_form1)  *)
 (** We might, for example, mistakenly define [value] so that it
@@ -633,9 +636,7 @@ Proof.
   (* FILL IN HERE *) Admitted.
 
 End Temp2.
-
 (** [] *)
-
 
 (** **** Exercise: 3 stars, optional (value_not_same_as_normal_form3)  *)
 (** Finally, we might define [value] and [step] so that there is some
@@ -669,8 +670,6 @@ Proof.
   (* FILL IN HERE *) Admitted.
 
 End Temp3.
-
-
 (** [] *)
 
 (* ----------------------------------------------------------------- *)
@@ -871,11 +870,12 @@ Inductive multi {X:Type} (R: relation X) : relation X :=
                     multi R y z ->
                     multi R x z.
 
-(** (In the \CHAPV1{Rel} chapter of _Logical Foundations_ and the Coq standard 
-    library, this relation is called [clos_refl_trans_1n].  We give it a shorter 
-    name here for the sake of readability.)
+(** (In the [Rel] chapter of _Logical Foundations_ and
+    the Coq standard library, this relation is called
+    [clos_refl_trans_1n].  We give it a shorter name here for the sake
+    of readability.) *)
 
-    The effect of this definition is that [multi R] relates two
+(** The effect of this definition is that [multi R] relates two
     elements [x] and [y] if 
 
        - [x = y], or 
@@ -1180,8 +1180,8 @@ Proof.
 (** Write a detailed informal version of the proof of [eval__multistep].
 
 (* FILL IN HERE *)
-[]
 *)
+(** [] *)
 
 (** For the other direction, we need one lemma, which establishes a
     relation between single-step reduction and big-step evaluation. *)
@@ -1275,13 +1275,14 @@ Inductive step : tm -> tm -> Prop :=
     - a strong progress lemma, stating that every term is either a
       value or can take a step.
 
-    Prove or disprove these two properties for the combined language. *)
+    Formally prove or disprove these two properties for the combined
+    language.  (That is, state a theorem saying that the property
+    holds or does not hold, and prove your theorem.) *)
 
 (* FILL IN HERE *)
 
 End Combined.
 (** [] *)
-
 
 (* ################################################################# *)
 (** * Small-Step Imp *)
@@ -1415,7 +1416,7 @@ Inductive cstep : (com * state) -> (com * state) -> Prop :=
       a / st ==>a a' ->
       (i ::= a) / st ==> (i ::= a') / st
   | CS_Ass : forall st i n,
-      (i ::= (ANum n)) / st ==> SKIP / (t_update st i n)
+      (i ::= (ANum n)) / st ==> SKIP / (st & { i --> n })
   | CS_SeqStep : forall st c1 c1' st' c2,
       c1 / st ==> c1' / st' ->
       (c1 ;; c2) / st ==> (c1' ;; c2) / st'
@@ -1449,7 +1450,7 @@ Module CImp.
 
 Inductive com : Type :=
   | CSkip : com
-  | CAss : id -> aexp -> com
+  | CAss : string -> aexp -> com
   | CSeq : com -> com -> com
   | CIf : bexp -> com -> com -> com
   | CWhile : bexp -> com -> com
@@ -1475,7 +1476,7 @@ Inductive cstep : (com * state)  -> (com * state) -> Prop :=
       a / st ==>a a' ->
       (i ::= a) / st ==> (i ::= a') / st
   | CS_Ass : forall st i n,
-      (i ::= (ANum n)) / st ==> SKIP / (t_update st i n)
+      (i ::= (ANum n)) / st ==> SKIP / st & { i --> n }
   | CS_SeqStep : forall st c1 c1' st' c2,
       c1 / st ==> c1' / st' ->
       (c1 ;; c2) / st ==> (c1' ;; c2) / st'
@@ -1509,17 +1510,16 @@ Notation " t '/' st '==>*' t' '/' st' " :=
    (multi cstep  (t,st) (t',st'))
    (at level 40, st at level 39, t' at level 39).
 
-
 (** Among the many interesting properties of this language is the fact
     that the following program can terminate with the variable [X] set
     to any value. *)
 
 Definition par_loop : com :=
   PAR
-    Y ::= ANum 1
+    Y ::= 1
   WITH
-    WHILE BEq (AId Y) (ANum 0) DO
-      X ::= APlus (AId X) (ANum 1)
+    WHILE Y = 0 DO
+      X ::= X + 1
     END
   END.
 
@@ -1527,7 +1527,7 @@ Definition par_loop : com :=
 
 Example par_loop_example_0:
   exists st',
-       par_loop / empty_state  ==>* SKIP / st'
+       par_loop / { --> 0 }  ==>* SKIP / st'
     /\ st' X = 0.
 Proof.
   eapply ex_intro. split.
@@ -1548,7 +1548,7 @@ Proof.
 
 Example par_loop_example_2:
   exists st',
-       par_loop / empty_state ==>* SKIP / st'
+       par_loop / { --> 0 } ==>* SKIP / st'
     /\ st' X = 2.
 Proof.
   eapply ex_intro. split.
@@ -1596,7 +1596,7 @@ Proof.
 (** **** Exercise: 3 stars, optional (par_body_n__Sn)  *)
 Lemma par_body_n__Sn : forall n st,
   st X = n /\ st Y = 0 ->
-  par_loop / st ==>* par_loop / (t_update st X (S n)).
+  par_loop / st ==>* par_loop / st & { X --> S n}.
 Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
@@ -1615,16 +1615,16 @@ Proof.
 
 Theorem par_loop_any_X:
   forall n, exists st',
-    par_loop / empty_state ==>*  SKIP / st'
+    par_loop / { --> 0 } ==>*  SKIP / st'
     /\ st' X = n.
 Proof.
   intros n.
-  destruct (par_body_n n empty_state).
+  destruct (par_body_n n { --> 0 }).
     split; unfold t_update; reflexivity.
 
   rename x into st.
   inversion H as [H' [HX HY]]; clear H.
-  exists (t_update st Y 1). split.
+  exists (st & { Y --> 1 }). split.
   eapply multi_trans with (par_loop,st). apply H'.
   eapply multi_step. apply CS_Par1. apply CS_Ass.
   eapply multi_step. apply CS_Par2. apply CS_While.
@@ -1645,7 +1645,7 @@ End CImp.
 (** * A Small-Step Stack Machine *)
 
 (** Our last example is a small-step semantics for the stack machine
-    example from the \CHAPV1{Imp} chapter of _Logical Foundations_. *)
+    example from the [Imp] chapter of _Logical Foundations_. *)
 
 Definition stack := list nat.
 Definition prog  := list sinstr.
@@ -1673,7 +1673,7 @@ Definition stack_multistep st := multi (stack_step st).
 
 (** **** Exercise: 3 stars, advanced (compiler_is_correct)  *)
 (** Remember the definition of [compile] for [aexp] given in the
-    \CHAPV1{Imp} chapter of _Logical Foundations_. We want now to
+    [Imp] chapter of _Logical Foundations_. We want now to
     prove [compile] correct with respect to the stack machine.
 
     State what it means for the compiler to be correct according to
@@ -1682,11 +1682,11 @@ Definition stack_multistep st := multi (stack_step st).
 Definition compiler_is_correct_statement : Prop 
   (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
 
-
 Theorem compiler_is_correct : compiler_is_correct_statement.
 Proof.
 (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** $Date: 2017-08-23 17:25:07 -0400 (Wed, 23 Aug 2017) $ *)
+
+(** $Date$ *)
 

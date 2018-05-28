@@ -28,15 +28,16 @@
     [UseTactics]. *)
 
 Require Import Coq.Arith.Arith.
+
+Require Import Maps.
+Require Import Smallstep.
+Require Import Stlc.
+Require Import LibTactics.
+
+Require Imp.
+
 Require Import Coq.Lists.List.
 Import ListNotations.
-
-From PLF Require Import Maps.
-From PLF Require Import Smallstep.
-From PLF Require Import Stlc.
-From PLF Require Import LibTactics.
-
-From PLF Require Imp.
 
 (* ################################################################# *)
 (** * Basic Features of Proof Search *)
@@ -827,7 +828,7 @@ End DeterministicImp.
 (** ** Preservation for STLC *)
 
 Set Warnings "-notation-overridden,-parsing".
-From PLF Require Import StlcProp.
+Require Import StlcProp.
 Module PreservationProgressStlc.
 Import STLC.
 Import STLCProp.
@@ -926,7 +927,7 @@ End PreservationProgressStlc.
 (* ================================================================= *)
 (** ** BigStep and SmallStep *)
 
-From PLF Require Import Smallstep.
+Require Import Smallstep.
 Require Import Program.
 Module Semantics.
 
@@ -1003,7 +1004,7 @@ End Semantics.
 (** ** Preservation for STLCRef *)
 
 Require Import Coq.omega.Omega.
-From PLF Require Import References.
+Require Import References.
 Import STLCRef.
 Require Import Program.
 Module PreservationProgressReferences.
@@ -1272,7 +1273,7 @@ End PreservationProgressReferences.
 (* ================================================================= *)
 (** ** Subtyping *)
 
-From PLF Require Sub.
+Require Sub.
 Module SubtypingInversion.
 Import Sub.
 
@@ -1908,4 +1909,4 @@ Proof. congruence. Qed.
     some investment, however this investment will pay off very quickly.
 *)
 
-(** $Date: 2017-08-22 17:13:32 -0400 (Tue, 22 Aug 2017) $ *)
+(** $Date$ *)

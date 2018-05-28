@@ -45,7 +45,6 @@
   - thanks to Georges Gonthier for the implementation trick in [rapply]
 *)
 
-
 Set Implicit Arguments.
 
 Require Import List.
@@ -56,7 +55,6 @@ Require Import List.
   time eauto 7. (* takes over 4 seconds  to fail! *) *)
 
 Remove Hints Bool.trans_eq_bool.
-
 
 (* ################################################################# *)
 (** * Tools for Programming with Ltac *)
@@ -4695,4 +4693,4 @@ End LibTacticsCompatibility.
 
 Open Scope nat_scope.
 
-(** $Date: 2017-08-24 17:13:02 -0400 (Thu, 24 Aug 2017) $ *)
+(** $Date$ *)

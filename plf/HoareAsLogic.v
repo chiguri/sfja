@@ -15,11 +15,11 @@
     derivations_ in this new logic.
 
     This chapter is optional.  Before reading it, you'll want to read
-    the \CHAPV1{ProofObjects} chapter in _Logical
+    the [ProofObjects] chapter in _Logical
     Foundations_ (_Software Foundations_, volume 1). *)
 
-From PLF Require Import Imp.
-From PLF Require Import Hoare.
+Require Import Imp.
+Require Import Hoare.
 
 (* ################################################################# *)
 (** * Definitions *)
@@ -67,7 +67,7 @@ Proof.
 (** As an example, let's construct a proof object representing a
     derivation for the hoare triple
 
-      {{assn_sub X (X+1) (assn_sub X (X+2) (X=3))}} 
+      {{(X=3) [X |-> X + 2] [X |-> X + 1]}}
       X::=X+1 ;; X::=X+2 
       {{X=3}}.
 
@@ -75,33 +75,29 @@ Proof.
 
 Example sample_proof :
   hoare_proof
-    (assn_sub X (APlus (AId X) (ANum 1))
-              (assn_sub X (APlus (AId X) (ANum 2))
-                        (fun st => st X = 3) ))
-    (X ::= APlus (AId X) (ANum 1);; (X ::= APlus (AId X) (ANum 2)))
-    (fun st => st X = 3).
+    ((fun st:state => st X = 3) [X |-> X + 2] [X |-> X + 1])
+    (X ::= X + 1;; X ::= X + 2)
+    (fun st:state => st X = 3).
 Proof.
   eapply H_Seq; apply H_Asgn.
 Qed.
 
 (*
 Print sample_proof.
+
 ====>
   H_Seq
-    (assn_sub X (APlus (AId X) (ANum 1))
-       (assn_sub X (APlus (AId X) (ANum 2))
-                (fun st : state => st X = VNat 3)))
-    (X ::= APlus (AId X) (ANum 1))
-    (assn_sub X (APlus (AId X) (ANum 2)) 
-              (fun st : state => st X = VNat 3))
-    (X ::= APlus (AId X) (ANum 2)) 
-      (fun st : state => st X = VNat 3)
-    (H_Asgn
-       (assn_sub X (APlus (AId X) (ANum 2)) 
-                   (fun st : state => st X = VNat 3))
-       X (APlus (AId X) (ANum 1)))
-    (H_Asgn (fun st : state => st X = VNat 3) X 
-            (APlus (AId X) (ANum 2)))
+  (((fun st : state => st X = 3) [X |-> X + 2]) [X |-> X + 1])
+  (X ::= X + 1)
+  ((fun st : state => st X = 3) [X |-> X + 2]) 
+  (X ::= X + 2)
+  (fun st : state => st X = 3)
+  (H_Asgn
+     ((fun st : state => st X = 3) [X |-> X + 2])
+     X (X + 1))
+  (H_Asgn
+     (fun st : state => st X = 3)
+     X (X + 2))
 *)
 
 (* ################################################################# *)
@@ -290,4 +286,3 @@ Proof.
     section of chapter [Hoare2] on formalizing decorated programs
     shows how we can do even better. *)
 
-(** $Date: 2017-08-22 17:13:32 -0400 (Tue, 22 Aug 2017) $ *)

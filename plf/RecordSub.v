@@ -8,9 +8,9 @@
     are nonstandard. *)
 
 Set Warnings "-notation-overridden,-parsing".
-From PLF Require Import Maps.
-From PLF Require Import Smallstep.
-From PLF Require Import MoreStlc.
+Require Import Maps.
+Require Import Smallstep.
+Require Import MoreStlc.
 
 (* ################################################################# *)
 (** * Core Definitions *)
@@ -21,21 +21,21 @@ From PLF Require Import MoreStlc.
 Inductive ty : Type :=
   (* proper types *)
   | TTop   : ty
-  | TBase  : id -> ty
+  | TBase  : string -> ty
   | TArrow : ty -> ty -> ty
   (* record types *)
   | TRNil : ty
-  | TRCons : id -> ty -> ty -> ty.
+  | TRCons : string -> ty -> ty -> ty.
 
 Inductive tm : Type :=
   (* proper terms *)
-  | tvar : id -> tm
+  | tvar : string -> tm
   | tapp : tm -> tm -> tm
-  | tabs : id -> ty -> tm -> tm
-  | tproj : tm -> id -> tm
+  | tabs : string -> ty -> tm -> tm
+  | tproj : tm -> string -> tm
   (* record terms *)
   | trnil :  tm
-  | trcons : id -> tm -> tm -> tm.
+  | trcons : string -> tm -> tm -> tm.
 
 (* ----------------------------------------------------------------- *)
 (** *** Well-Formedness *)
@@ -92,10 +92,10 @@ Hint Constructors record_ty record_tm well_formed_ty.
 
 (** Substitution and reduction are as before. *)
 
-Fixpoint subst (x:id) (s:tm) (t:tm) : tm :=
+Fixpoint subst (x:string) (s:tm) (t:tm) : tm :=
   match t with
-  | tvar y => if beq_id x y then s else t
-  | tabs y T t1 =>  tabs y T (if beq_id x y then t1
+  | tvar y => if beq_string x y then s else t
+  | tabs y T t1 =>  tabs y T (if beq_string x y then t1
                              else (subst x s t1))
   | tapp t1 t2 => tapp (subst x s t1) (subst x s t2)
   | tproj t1 i => tproj (subst x s t1) i
@@ -119,17 +119,17 @@ Inductive value : tm -> Prop :=
 
 Hint Constructors value.
 
-Fixpoint Tlookup (i:id) (Tr:ty) : option ty :=
+Fixpoint Tlookup (i:string) (Tr:ty) : option ty :=
   match Tr with
   | TRCons i' T Tr' =>
-      if beq_id i i' then Some T else Tlookup i Tr'
+      if beq_string i i' then Some T else Tlookup i Tr'
   | _ => None
   end.
 
-Fixpoint tlookup (i:id) (tr:tm) : option tm :=
+Fixpoint tlookup (i:string) (tr:tm) : option tm :=
   match tr with
   | trcons i' t tr' =>
-      if beq_id i i' then Some t else tlookup i tr'
+      if beq_string i i' then Some t else tlookup i tr'
   | _ => None
   end.
 
@@ -225,16 +225,17 @@ Hint Constructors subtype.
 (** ** Examples *)
 
 Module Examples.
+Open Scope string_scope.
 
-Notation x := (Id "x").
-Notation y := (Id "y").
-Notation z := (Id "z").
-Notation j := (Id "j").
-Notation k := (Id "k").
-Notation i := (Id "i").
-Notation A := (TBase (Id "A")).
-Notation B := (TBase (Id "B")).
-Notation C := (TBase (Id "C")).
+Notation x := "x".
+Notation y := "y".
+Notation z := "z".
+Notation j := "j".
+Notation k := "k".
+Notation i := "i".
+Notation A := (TBase "A").
+Notation B := (TBase "B").
+Notation C := (TBase "C").
 
 Definition TRcd_j  :=
   (TRCons j (TArrow B B) TRNil).     (* {j:B->B} *)
@@ -323,7 +324,7 @@ Proof with eauto.
   induction T; intros; try solve_by_invert.
   - (* TRCons *)
     inversion H. subst. unfold Tlookup in H0.
-    destruct (beq_id i i0)...  inversion H0; subst...  Qed.
+    destruct (beq_string i s)...  inversion H0; subst...  Qed.
 
 (* ----------------------------------------------------------------- *)
 (** *** Field Lookup *)
@@ -352,16 +353,16 @@ Proof with (eauto using wf_rcd_lookup).
   - (* S_RcdDepth *)
     rename i0 into k.
     unfold Tlookup. unfold Tlookup in Hget.
-    destruct (beq_id i k)...
+    destruct (beq_string i k)...
     + (* i = k -- we're looking up the first field *)
       inversion Hget. subst. exists S1...
   - (* S_RcdPerm *)
     exists Ti. split.
     + (* lookup *)
       unfold Tlookup. unfold Tlookup in Hget.
-      destruct (beq_idP i i1)...
+      destruct (beq_stringP i i1)...
       * (* i = i1 -- we're looking up the first field *)
-        destruct (beq_idP i i2)...
+        destruct (beq_stringP i i2)...
         (* i = i2 -- contradictory *)
         destruct H0.
         subst...
@@ -534,7 +535,7 @@ Proof with eauto.
     destruct (IHHtyp Si) as [vi [Hget Htyvi]]...
   - (* T_RCons *)
     simpl in H0. simpl. simpl in H1.
-    destruct (beq_id i i0).
+    destruct (beq_string i i0).
     + (* i is first *)
       inversion H1. subst. exists t...
     + (* i in tail *)
@@ -773,7 +774,7 @@ Proof with eauto.
 (* ----------------------------------------------------------------- *)
 (** *** Context Invariance *)
 
-Inductive appears_free_in : id -> tm -> Prop :=
+Inductive appears_free_in : string -> tm -> Prop :=
   | afi_var : forall x,
       appears_free_in x (tvar x)
   | afi_app1 : forall x t1 t2,
@@ -808,7 +809,7 @@ Proof with eauto.
     apply T_Var... rewrite <- Heqv...
   - (* T_Abs *)
     apply T_Abs... apply IHhas_type. intros x0 Hafi.
-    unfold update, t_update. destruct (beq_idP x x0)...
+    unfold update, t_update. destruct (beq_stringP x x0)...
   - (* T_App *)
     apply T_App with T1...
   - (* T_RCons *)
@@ -824,7 +825,7 @@ Proof with eauto.
   - (* T_Abs *)
     destruct (IHHtyp H5) as [T Hctx]. exists T.
     unfold update, t_update in Hctx.
-    rewrite false_beq_id in Hctx...  Qed.
+    rewrite false_beq_string in Hctx...  Qed.
 
 (* ----------------------------------------------------------------- *)
 (** *** Preservation *)
@@ -838,10 +839,10 @@ Proof with eauto.
   generalize dependent S. generalize dependent Gamma.
   induction t; intros; simpl.
   - (* tvar *)
-    rename i into y.
+    rename s into y.
     destruct (typing_inversion_var _ _ _ Htypt) as [T [Hctx Hsub]].
     unfold update, t_update in Hctx.
-    destruct (beq_idP x y)...
+    destruct (beq_stringP x y)...
     + (* x=y *)
       subst.
       inversion Hctx; subst. clear Hctx.
@@ -856,23 +857,23 @@ Proof with eauto.
       as [T1 [Htypt1 Htypt2]].
     eapply T_App...
   - (* tabs *)
-    rename i into y. rename t into T1.
+    rename s into y. rename t into T1.
     destruct (typing_inversion_abs _ _ _ _ _ Htypt)
       as [T2 [Hsub Htypt2]].
     destruct (subtype__wf _ _ Hsub) as [Hwf1 Hwf2].
     inversion Hwf2. subst.
     apply T_Sub with (TArrow T1 T2)... apply T_Abs...
-    destruct (beq_idP x y).
+    destruct (beq_stringP x y).
     + (* x=y *)
       eapply context_invariance...
       subst.
       intros x Hafi. unfold update, t_update.
-      destruct (beq_id y x)...
+      destruct (beq_string y x)...
     + (* x<>y *)
       apply IHt. eapply context_invariance...
       intros z Hafi. unfold update, t_update.
-      destruct (beq_idP y z)...
-      subst.  rewrite false_beq_id...
+      destruct (beq_stringP y z)...
+      subst.  rewrite false_beq_string...
   - (* tproj *)
     destruct (typing_inversion_proj _ _ _ _ Htypt)
       as [T [Ti [Hget [Hsub Htypt1]]]]...
@@ -882,7 +883,7 @@ Proof with eauto.
   - (* trcons *)
     destruct (typing_inversion_rcons _ _ _ _ _ Htypt) as
       [Ti [Tr [Hsub [HtypTi [Hrcdt2 HtypTr]]]]].
-    apply T_Sub with (TRCons i Ti Tr)...
+    apply T_Sub with (TRCons s Ti Tr)...
     apply T_RCons...
     + (* record_ty Tr *)
       apply subtype__wf in Hsub. destruct Hsub. inversion H0...
@@ -969,5 +970,5 @@ Proof with eauto.
        for [tr]'s typing derivation, [T_RCons], and a use of the
        [step_preserves_record_tm] lemma. *)
 
-(** $Date: 2017-08-23 17:50:06 -0400 (Wed, 23 Aug 2017) $ *)
+(** $Date$ *)
 

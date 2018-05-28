@@ -2,8 +2,8 @@
 
 (** The [has_type] relation of the STLC defines what it means for a
     term to belong to a type (in some context).  But it doesn't, by
-    itself, tell us how to _check_ whether or not a term is well
-    typed.
+    itself, give us an algorithm for _checking_ whether or not a term
+    is well typed.
 
     Fortunately, the rules defining [has_type] are _syntax directed_
     -- that is, for every syntactic form of the language, there is
@@ -18,13 +18,13 @@
 
 Set Warnings "-notation-overridden,-parsing".
 Require Import Coq.Bool.Bool.
-From PLF Require Import Maps.
-From PLF Require Import Smallstep.
-From PLF Require Import Stlc.
-From PLF Require MoreStlc.
+Require Import Maps.
+Require Import Smallstep.
+Require Import Stlc.
+Require MoreStlc.
 
-Module STLCChecker.
-Import STLC.
+Module STLCTypes.
+Export STLC.
 
 (* ################################################################# *)
 (** * Comparing Types *)
@@ -61,6 +61,7 @@ Proof with auto.
   - (* T1=TArrow T1_1 T1_2 *)
     rewrite andb_true_iff in H0. inversion H0 as [Hbeq1 Hbeq2].
     apply IHT1_1 in Hbeq1. apply IHT1_2 in Hbeq2. subst...  Qed.
+End STLCTypes.
 
 (* ################################################################# *)
 (** * The Typechecker *)
@@ -73,6 +74,9 @@ Proof with auto.
     extract the left- and right-hand sides of the function's arrow
     type (and fail if the type of the function is not [TArrow T11 T12]
     for some [T11] and [T12]). *)
+
+Module FirstTry.
+Import STLCTypes.
 
 Fixpoint type_check (Gamma:context) (t:tm) : option ty :=
   match t with
@@ -105,11 +109,77 @@ Fixpoint type_check (Gamma:context) (t:tm) : option ty :=
       end
   end.
 
+End FirstTry.
+
+(* ################################################################# *)
+(** * Digression: Improving the Notation *)
+
+(** Before we consider the properties of this algorithm, let's write
+    it out again in a cleaner way, using "monadic" notations in the
+    style of Haskell to streamline the plumbing of options.  First, we
+    define a notation for composing two potentially failing (i.e.,
+    option-returning) computations: *)
+
+Notation " x <- e1 ;; e2"
+   := (match e1 with
+         | Some x => e2
+         | None => None
+       end)
+   (right associativity, at level 60).
+
+(** Second, we define [return] and [fail] as synonyms for [Some] and
+    [None]: *)
+
+Notation " 'return' e "
+  := (Some e) (at level 60).
+         
+Notation " 'fail' "
+  := None.
+
+Module STLCChecker.
+Import STLCTypes.
+
+(** Now we can write the same type-checking function in a more
+    "imperative" style using these notations. *)
+
+Fixpoint type_check (Gamma:context) (t:tm) : option ty :=
+  match t with
+  | tvar x =>
+      match Gamma x with
+      | Some T => return T
+      | None   => fail
+      end
+  | tabs x T11 t12 =>
+      T12 <- type_check (update Gamma x T11) t12 ;;
+      return (TArrow T11 T12)
+  | tapp t1 t2 =>
+      T1 <- type_check Gamma t1 ;;
+      T2 <- type_check Gamma t2 ;;
+      match T1 with 
+      | TArrow T11 T12 =>
+          if beq_ty T11 T2 then return T12 else fail
+      | _ => fail
+      end
+  | ttrue =>
+      return TBool
+  | tfalse =>
+      return TBool
+  | tif guard t1 t2 =>
+      Tguard <- type_check Gamma guard ;;
+      T1 <- type_check Gamma t1 ;;
+      T2 <- type_check Gamma t2 ;;
+      match Tguard with
+      | TBool =>
+          if beq_ty T1 T2 then return T1 else fail
+      | _ => fail
+      end
+  end.
+
 (* ################################################################# *)
 (** * Properties *)
 
-(** To verify that this typechecking algorithm is correct, we show
-    that it is _sound_ and _complete_ for the original [has_type]
+(** To verify that th typechecking algorithm is correct, we show that
+    it is _sound_ and _complete_ for the original [has_type]
     relation -- that is, [type_check] and [has_type] define the same
     partial function. *)
 
@@ -118,20 +188,21 @@ Theorem type_checking_sound : forall Gamma t T,
 Proof with eauto.
   intros Gamma t. generalize dependent Gamma.
   induction t; intros Gamma T Htc; inversion Htc.
-  - (* tvar *) eauto.
+  - (* tvar *) rename s into x. destruct (Gamma x) eqn:H. 
+    rename t into T'. inversion H0. subst. eauto. solve_by_invert.
   - (* tapp *)
     remember (type_check Gamma t1) as TO1.
-    remember (type_check Gamma t2) as TO2.
     destruct TO1 as [T1|]; try solve_by_invert;
-    destruct T1 as [|T11 T12]; try solve_by_invert.
+    destruct T1 as [|T11 T12]; try solve_by_invert; 
+    remember (type_check Gamma t2) as TO2;
     destruct TO2 as [T2|]; try solve_by_invert.
-    destruct (beq_ty T11 T2) eqn: Heqb;
-    try solve_by_invert.
+    destruct (beq_ty T11 T2) eqn: Heqb.
     apply beq_ty__eq in Heqb.
     inversion H0; subst...
+    inversion H0.
   - (* tabs *)
-    rename i into y. rename t into T1.
-    remember (update Gamma y T1) as G'.
+    rename s into x. rename t into T1.
+    remember (update Gamma x T1) as G'.
     remember (type_check G' t0) as TO2.
     destruct TO2; try solve_by_invert.
     inversion H0; subst...
@@ -142,8 +213,8 @@ Proof with eauto.
     remember (type_check Gamma t2) as TO1.
     remember (type_check Gamma t3) as TO2.
     destruct TOc as [Tc|]; try solve_by_invert.
-    destruct Tc; try solve_by_invert.
-    destruct TO1 as [T1|]; try solve_by_invert.
+    destruct Tc; try solve_by_invert;
+    destruct TO1 as [T1|]; try solve_by_invert;
     destruct TO2 as [T2|]; try solve_by_invert.
     destruct (beq_ty T1 T2) eqn:Heqb;
     try solve_by_invert.
@@ -156,7 +227,7 @@ Theorem type_checking_complete : forall Gamma t T,
 Proof with auto.
   intros Gamma t T Hty.
   induction Hty; simpl.
-  - (* T_Var *) eauto.
+  - (* T_Var *) destruct (Gamma x0) eqn:H0; assumption.
   - (* T_Abs *) rewrite IHHty...
   - (* T_App *)
     rewrite IHHty1. rewrite IHHty2.
@@ -222,44 +293,49 @@ Proof.
 Fixpoint type_check (Gamma:context) (t:tm) : option ty :=
   match t with
   | tvar x =>
-      Gamma x
-  | tabs x T11 t12 =>
-      match type_check (update Gamma x T11) t12 with
-      | Some T12 => Some (TArrow T11 T12)
-      | _ => None
+      match Gamma x with
+      | Some T => return T
+      | None   => fail
       end
+  | tabs x T11 t12 =>
+      T12 <- type_check (update Gamma x T11) t12 ;;
+      return (TArrow T11 T12)
   | tapp t1 t2 =>
-      match type_check Gamma t1, type_check Gamma t2 with
-      | Some (TArrow T11 T12),Some T2 =>
-          if beq_ty T11 T2 then Some T12 else None
-      | _,_ => None
+      T1 <- type_check Gamma t1 ;;
+      T2 <- type_check Gamma t2 ;;
+      match T1 with 
+      | TArrow T11 T12 =>
+          if beq_ty T11 T2 then return T12 else fail
+      | _ => fail
       end
   | tnat _ =>
-      Some TNat
+      return TNat
   | tsucc t1 =>
-      match type_check Gamma t1 with
-      | Some TNat => Some TNat
-      | _ => None
+      T1 <- type_check Gamma t1 ;;
+      match T1 with 
+      | TNat => return TNat
+      | _ => fail
       end
   | tpred t1 =>
-      match type_check Gamma t1 with
-      | Some TNat => Some TNat
-      | _ => None
+      T1 <- type_check Gamma t1 ;;
+      match T1 with 
+      | TNat => return TNat
+      | _ => fail
       end
   | tmult t1 t2 =>
-      match type_check Gamma t1, type_check Gamma t2 with
-      | Some TNat, Some TNat => Some TNat
-      | _,_ => None
+      T1 <- type_check Gamma t1 ;;
+      T2 <- type_check Gamma t2 ;;
+      match T1, T2 with
+      | TNat, TNat => return TNat
+      | _,_        => fail
       end
   | tif0 guard t f =>
-      match type_check Gamma guard with
-      | Some TNat =>
-          match type_check Gamma t, type_check Gamma f with
-          | Some T1, Some T2 =>
-              if beq_ty T1 T2 then Some T1 else None
-          | _,_ => None
-          end
-      | _ => None
+      Tguard <- type_check Gamma guard ;;
+      T1 <- type_check Gamma t ;;
+      T2 <- type_check Gamma f ;;
+      match Tguard with
+      | TNat => if beq_ty T1 T2 then return T1 else fail
+      | _ => fail
       end
   (* FILL IN HERE *)
   | tlcase t0 t1 x21 x22 t2 =>
@@ -285,6 +361,9 @@ Ltac invert_typecheck Gamma t T :=
   destruct TO as [T|]; 
   try solve_by_invert; try (inversion H0; eauto); try (subst; eauto).
 
+Ltac analyze T T1 T2 :=
+  destruct T as [T1 T2| | | T1 T2| T1 T2| T1]; try solve_by_invert.
+
 Ltac fully_invert_typecheck Gamma t T T1 T2 :=
   let TX := fresh T in
   remember (type_check Gamma t) as TO;
@@ -301,13 +380,15 @@ Theorem type_checking_sound : forall Gamma t T,
 Proof with eauto.
   intros Gamma t. generalize dependent Gamma.
   induction t; intros Gamma T Htc; inversion Htc.
-  - (* tvar *) eauto.
+  - (* tvar *) rename s into x. destruct (Gamma x) eqn:H. 
+    rename t into T'. inversion H0. subst. eauto. solve_by_invert.
   - (* tapp *)
-    fully_invert_typecheck Gamma t1 T1 T11 T12.
+    invert_typecheck Gamma t1 T1.
     invert_typecheck Gamma t2 T2.
+    analyze T1 T11 T12.
     case_equality T11 T2.
   - (* tabs *)
-    rename i into x. rename t into T1.
+    rename s into x. rename t into T1.
     remember (update Gamma x T1) as Gamma'.
     invert_typecheck Gamma' t0 T0.
   - (* tnat *) eauto.
@@ -318,16 +399,19 @@ Proof with eauto.
     rename t into t1.
     fully_invert_typecheck Gamma t1 T1 T11 T12.
   - (* tmult *)
-    fully_invert_typecheck Gamma t1 T1 T11 T12.
-    fully_invert_typecheck Gamma t2 T2 T21 T12.
+    invert_typecheck Gamma t1 T1.
+    invert_typecheck Gamma t2 T2.
+    analyze T1 T11 T12; analyze T2 T21 T22.
+    inversion H0. subst. eauto.
   - (* tif0 *)
-    fully_invert_typecheck Gamma t1 T1 T11 T12.
+    invert_typecheck Gamma t1 T1.
     invert_typecheck Gamma t2 T2.
     invert_typecheck Gamma t3 T3.
+    destruct T1; try solve_by_invert.
     case_equality T2 T3.
   (* FILL IN HERE *)
   - (* tlcase *)
-    rename i into x31. rename i0 into x32.
+    rename s into x31. rename s0 into x32.
     fully_invert_typecheck Gamma t1 T1 T11 T12.
     invert_typecheck Gamma t2 T2.
     remember (update (update Gamma x32 (TList T11)) x31 T11) as Gamma'2.
@@ -349,6 +433,7 @@ Proof.
     try (rewrite (beq_ty_refl T1)); 
     try (rewrite (beq_ty_refl T2)); 
     eauto.
+  - destruct (Gamma x); try solve_by_invert. eauto.
   Admitted. (* ... and delete this line *)
 (* 
 Qed. (* ... and uncomment this one *)
@@ -371,11 +456,11 @@ End StepFunction.
 (** [] *)
 
 (** **** Exercise: 5 stars, optional (stlc_impl)  *)
-(** Using the Imp parser described in the \CHAPV1{ImpParser} chapter
+(** Using the Imp parser described in the [ImpParser] chapter
     of _Logical Foundations_ as a guide, build a parser for extended
     Stlc programs.  Combine it with the typechecking and stepping
-    functions from above to yield a complete typechecker and
-    interpreter for this language. *)
+    functions from the above exercises to yield a complete typechecker
+    and interpreter for this language. *)
 
 Module StlcImpl.
 Import StepFunction.
@@ -384,4 +469,4 @@ Import StepFunction.
 End StlcImpl.
 (** [] *)
 
-(** $Date: 2017-08-24 17:13:02 -0400 (Thu, 24 Aug 2017) $ *)
+(** $Date$ *)

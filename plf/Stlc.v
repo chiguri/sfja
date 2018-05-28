@@ -13,9 +13,9 @@
     work to deal with these. *)
 
 Set Warnings "-notation-overridden,-parsing".
-From PLF Require Import Maps.
-From PLF Require Import Smallstep.
-From PLF Require Import Types.
+Require Import Maps.
+Require Import Smallstep.
+Require Import Types.
 
 (* ################################################################# *)
 (** * Overview *)
@@ -155,9 +155,9 @@ Inductive ty : Type :=
 (** ** Terms *)
 
 Inductive tm : Type :=
-  | tvar : id -> tm
+  | tvar : string -> tm
   | tapp : tm -> tm -> tm
-  | tabs : id -> ty -> tm -> tm
+  | tabs : string -> ty -> tm -> tm
   | ttrue : tm
   | tfalse : tm
   | tif : tm -> tm -> tm -> tm.
@@ -168,11 +168,13 @@ Inductive tm : Type :=
     which use type inference to fill in missing annotations.  We're
     not considering type inference here. *)
 
+Open Scope string_scope.
+     
 (** Some examples... *)
 
-Definition x := (Id "x").
-Definition y := (Id "y").
-Definition z := (Id "z").
+Definition x := "x".
+Definition y := "y".
+Definition z := "z".
 
 Hint Unfold x.
 Hint Unfold y.
@@ -345,12 +347,12 @@ Hint Constructors value.
 
 Reserved Notation "'[' x ':=' s ']' t" (at level 20).
 
-Fixpoint subst (x:id) (s:tm) (t:tm) : tm :=
+Fixpoint subst (x:string) (s:tm) (t:tm) : tm :=
   match t with
   | tvar x' =>
-      if beq_id x x' then s else t
+      if beq_string x x' then s else t
   | tabs x' T t1 =>
-      tabs x' T (if beq_id x x' then t1 else ([x:=s] t1))
+      tabs x' T (if beq_string x x' then t1 else ([x:=s] t1))
   | tapp t1 t2 =>
       tapp ([x:=s] t1) ([x:=s] t2)
   | ttrue =>
@@ -367,15 +369,29 @@ where "'[' x ':=' s ']' t" := (subst x s t).
     consider the case where [s], the term being substituted for a
     variable in some other term, may itself contain free variables.
     Since we are only interested here in defining the [step] relation
-    on closed terms (i.e., terms like [\x:Bool. x] that include
+    on _closed_ terms (i.e., terms like [\x:Bool. x] that include
     binders for all of the variables they mention), we can avoid this
     extra complexity here, but it must be dealt with when formalizing
     richer languages. *)
 
+(** For example, using the definition of substitution above to
+    substitute the _open_ term [s = \x:Bool. r], where [r] is a _free_
+    reference to some global resource, for the variable [z] in the
+    term [t = \r:Bool. z], where [r] is a bound variable, we would get
+    [\r:Bool. \x:Bool. r], where the free reference to [r] in [s] has
+    been "captured" by the binder at the beginning of [t].
+
+    Why would this be bad?  Because it violates the principle that the
+    names of bound variables do not matter.  For example, if we rename
+    the bound variable in [t], e.g., let [t' = \w:Bool. z], then
+    [[x:=s]t'] is [\w:Bool. \x:Bool. r], which does not behave the
+    same as [[x:=s]t = \r:Bool. \x:Bool. r].  That is, renaming a
+    bound variable changes how [t] behaves under substitution. *)
+
 (** See, for example, [Aydemir 2008] for further discussion
     of this issue. *)
 
-(** **** Exercise: 3 stars (substi)  *)
+(** **** Exercise: 3 stars (substi_correct)  *)
 (** The definition that we gave above uses Coq's [Fixpoint] facility
     to define substitution as a _function_.  Suppose, instead, we
     wanted to define substitution as an inductive _relation_ [substi].
@@ -384,7 +400,7 @@ where "'[' x ':=' s ']' t" := (subst x s t).
     constructors and prove that the relation you've defined coincides
     with the function given above. *)
 
-Inductive substi (s:tm) (x:id) : tm -> tm -> Prop :=
+Inductive substi (s:tm) (x:string) : tm -> tm -> Prop :=
   | s_var1 :
       substi s x (tvar x) s
   (* FILL IN HERE *)
@@ -428,7 +444,7 @@ Proof.
                            ----------------                           (ST_App2)
                            v1 t2 ==> v1 t2'
 *)
-(** ... plus the usual rules for booleans:
+(** ... plus the usual rules for conditionals:
 
                     --------------------------------                (ST_IfTrue)
                     (if true then t1 else t2) ==> t1
@@ -543,6 +559,9 @@ Proof.
     i.e.,
 
       idBB (notB ttrue) ==>* tfalse.
+
+    (Note that this term doesn't actually typecheck; even so, we can
+    ask how it reduces.)
 *)
 
 Lemma step_example4 :
@@ -613,9 +632,9 @@ Proof.
     written [Gamma |- t \in T], where [Gamma] is a
     "typing context" -- a mapping from variables to their types. *)
 
-(** Informally, we'll write [Gamma, x:T] for "extend the partial
-    function [Gamma] to also map [x] to [T]."  Formally, we use the
-    function [extend] to add a binding to a partial map. *)
+(** Following the usual notation for partial maps, we could write [Gamma
+    & {{x:T}}] for "update the partial function [Gamma] to also map
+    [x] to [T]." *)
 
 Definition context := partial_map ty.
 
@@ -627,8 +646,8 @@ Definition context := partial_map ty.
                             --------------                              (T_Var)
                             Gamma |- x \in T
 
-                      Gamma , x:T11 |- t12 \in T12
-                     ----------------------------                       (T_Abs)
+                   Gamma & {{ x --> T11 }} |- t12 \in T12
+                   --------------------------------------               (T_Abs)
                      Gamma |- \x:T11.t12 \in T11->T12
 
                         Gamma |- t1 \in T11->T12
@@ -648,9 +667,7 @@ Definition context := partial_map ty.
 
 
     We can read the three-place relation [Gamma |- t \in T] as:
-    "to the term [t] we can assign the type [T] using as types for
-    the free variables of [t] the ones specified in the context
-    [Gamma]." *)
+    "under the assumptions in Gamma, the term [t] has the type [T]." *)
 
 Reserved Notation "Gamma '|-' t '\in' T" (at level 40).
 
@@ -659,7 +676,7 @@ Inductive has_type : context -> tm -> ty -> Prop :=
       Gamma x = Some T ->
       Gamma |- tvar x \in T
   | T_Abs : forall Gamma x T11 T12 t12,
-      update Gamma x T11 |- t12 \in T12 ->
+      Gamma & {{x --> T11}} |- t12 \in T12 ->
       Gamma |- tabs x T11 t12 \in TArrow T11 T12
   | T_App : forall T11 T12 Gamma t1 t2,
       Gamma |- t1 \in TArrow T11 T12 ->
@@ -696,7 +713,7 @@ Proof. auto.  Qed.
 
 (** Another example:
 
-       empty |- \x:A. \y:A->A. y (y x))
+       empty |- \x:A. \y:A->A. y (y x)
              \in A -> (A->A) -> A.
 *)
 
@@ -793,5 +810,5 @@ Proof.
 
 End STLC.
 
-(** $Date: 2017-08-25 14:01:35 -0400 (Fri, 25 Aug 2017) $ *)
+(** $Date$ *)
 

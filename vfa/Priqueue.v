@@ -61,7 +61,7 @@
  (and the [Binom] chapter) we simply won't worry about the
  time per comparison. *)
 
-From VFA Require Import Perm.
+Require Import Perm.
 
 Module Type PRIQUEUE.
   Parameter priqueue: Type.
@@ -134,7 +134,8 @@ match l with
                else let (j,l') := select h t in (j, i::l')
 end.
 
-(** **** Exercise: 3 stars (select_perm)  *)
+(** **** Exercise: 3 stars (select_perm_and_friends)  *)
+
 Lemma select_perm: forall i l, 
   let (j,r) := select i l in
    Permutation (i::l) (j::r).
@@ -142,7 +143,6 @@ Proof. (* Copy your proof from Selection.v, and change one character. *)
 intros i l; revert i.
 induction l; intros; simpl in *.
 (* FILL IN HERE *) Admitted.
-(** [] *)
 
 Lemma select_biggest_aux:
   forall i al j bl,
@@ -157,11 +157,11 @@ Theorem select_biggest:
      Forall (fun x => j >= x) bl.
 Proof. (* Copy your proof of [select_smallest] from Selection.v, and edit. *)
 intros i al; revert i; induction al; intros; simpl in *.
- (* FILL IN HERE *) admit.
+(* FILL IN HERE *) admit.
 bdestruct (i >=? a).
 *
 destruct (select i al) eqn:?H.
- (* FILL IN HERE *) Admitted.
+(* FILL IN HERE *) Admitted.
 (** [] *)
 
 (* ================================================================= *)
@@ -239,6 +239,8 @@ Lemma delete_max_Some_priq:
 Proof. constructor. Qed.
 
 (** **** Exercise: 2 stars (simple_priq_proofs)  *)
+
+(* GRADE_THEOREM 0.5: delete_max_None_relate *)
 Lemma delete_max_None_relate:
   forall p, priq p -> 
       (Abs p nil <-> delete_max p = None).
@@ -258,6 +260,7 @@ Lemma merge_priq:
   forall p q, priq p -> priq q -> priq (merge p q).
 Proof. intros. constructor. Qed.
 
+(* GRADE_THEOREM 0.5: delete_max_Some_relate *)
 Lemma merge_relate:
     forall p q pl ql al, 
        priq p -> priq q ->
