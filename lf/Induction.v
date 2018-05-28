@@ -107,7 +107,7 @@ Abort.
     since [n] can be arbitrarily large, if we just go on like this
     we'll never finish. *)
 *)
-(** [destruct n']を使って進められますが、[n]が非常に大きい場合もありうるので、このやり方ではいつまで経っても終わりません。 *)
+(** [destruct n']を使って進められますが、[n]がいくらでも大きくなりうるので、このやり方ではいつまで経っても終わりません。 *)
 
 (*
 (** To prove interesting facts about numbers, lists, and other
@@ -194,10 +194,14 @@ Proof.
   - (* n = S n' *)
     simpl. rewrite -> IHn'. reflexivity.  Qed.
 
+(*
 (** (The use of the [intros] tactic in these proofs is actually
     redundant.  When applied to a goal that contains quantified
     variables, the [induction] tactic will automatically move them
     into the context as needed.) *)
+*)
+(** （実のところ、上の証明では[intros]タクティクは冗長です。
+    量化変数を持つゴールに対して[induction]タクティクを適用すると、これらの変数は必要に応じて文脈に移動されます。） *)
 
 (*
 (** **** Exercise: 2 stars, recommended (basic_induction)  *)
@@ -256,13 +260,23 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
+(*
 (** **** Exercise: 2 stars, optional (evenb_S)  *)
+*)
+(** **** 練習問題: ★★, optional (evenb_S)  *)
+(*
 (** One inconvenient aspect of our definition of [evenb n] is the
     recursive call on [n - 2]. This makes proofs about [evenb n]
     harder when done by induction on [n], since we may need an
     induction hypothesis about [n - 2]. The following lemma gives an
     alternative characterization of [evenb (S n)] that works better
     with induction: *)
+*)
+(** [evenb n]の定義の不便な点は、再帰呼び出しが[n - 2]に対して行われているというものです。
+    これにより、[evenb n]に関する性質の証明を[n]に基づく帰納法で行う場合に、再帰呼び出しに関する性質を得るには[n - 2]に対する仮定が必要となります。
+    このため、そのままでは帰納法で示すことが難しくなっています。
+    次の補題は[evenb (S n)]の特徴付けを行っています。
+    これを用いることで、帰納法での扱いが容易になります。 *)
 
 Theorem evenb_S : forall n : nat,
   evenb (S n) = negb (evenb n).
@@ -644,7 +658,7 @@ Proof.
 (*
 (** **** Exercise: 3 stars, recommended (mult_comm)  *)
 *)
-(** **** 練習問題: ★★★★, recommended (mult_comm)  *)
+(** **** 練習問題: ★★★, recommended (mult_comm)  *)
 (*
 (** Use [assert] to help prove this theorem.  You shouldn't need to
     use induction on [plus_swap]. *)
