@@ -517,6 +517,7 @@ Inductive color : Type :=
   | white : color
   | primary : rgb -> color.
 
+(*
 (** Let's look at this in a little more detail.
 
     Every inductively defined type ([day], [bool], [rgb], [color],
@@ -536,6 +537,19 @@ Inductive color : Type :=
       [color]; and
     - expressions formed in these ways are the _only_ ones belonging
       to the sets [rgb] and [color]. *)
+*)
+(** この例を少し細かく見ていきましょう。
+ 
+    それぞれ帰納的に定義された型（[day]、 [bool]、 [rgb]、 [color]、などなど）は[red]や[primary]、[true]、[false]、[monday]などの「コンストラクタ(_constructor_)」から作られる「コンストラクタ式(_constructor expressions_)」を含んでいます。
+    [rgb]や[color]の定義はそれぞれの型に含まれる式がどのように作られるかを表しています。
+ 
+    - [red]や[green]、[blue]は[rgb]のコンストラクタです。
+    - [black]や[white]、[primary]は[color]のコンストラクタです。
+    - [red]という式は[rgb]の集合に属します。
+      [green]や[blue]も同様です。
+    - [black]や[white]といった式は[color]の集合に属します。
+    - もし[p]が[rgb]に属する式ならば、[primary p]（("[p]に適用されたコンストラクタ[primary]"と読みます）は[color]の集合に属します。
+    - これらによって作られる式「だけ」が[rgb]や[color]の集合に含まれます。 *)
 
 (** We can define functions on colors using pattern matching just as
     we have done for [day] and [bool]. *)
