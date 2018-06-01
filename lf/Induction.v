@@ -1,17 +1,17 @@
 (** * Induction: 帰納法による証明 *)
-(*
+(* begin hide *)
 (** * Induction: Proof by Induction *)
-*)
+(* end hide *)
 
-(*
+(* begin hide *)
 (** Before getting started, we need to import all of our
     definitions from the previous chapter: *)
-*)
+(* end hide *)
 (** 始める前に、前の章の定義をここに持ってきます。 *)
 
 Require Export Basics.
 
-(*
+(* begin hide *)
 (** For the [Require Export] to work, you first need to use
     [coqc] to compile [Basics.v] into [Basics.vo].  This is like
     making a [.class] file from a [.java] file, or a [.o] file from a
@@ -57,7 +57,7 @@ Require Export Basics.
     terminal).  The workaround for this situation is compiling using
     CoqIDE only (i.e. choosing "make" from the menu), and avoiding
     using [coqc] directly at all. *)
-*)
+(* end hide *)
 (** [Require Export]を動かすには、[coqc]で[Basics.v]をコンパイルして[Basics.vo]を作る必要があります。
     ちょうど [.java] のファイルから [.class] を作ったり、 [.c] のファイルから [.o] を作ったりするのと同じです。
     コンパイルする方法を二つ紹介します。
@@ -89,29 +89,29 @@ Require Export Basics.
    この場合、常にコンパイルをCoqIDEからのみ（例えば"make"をメニューから選んで）コンパイルし、ターミナルから呼び出さないようにしましょう。 *)
 
 (* ################################################################# *)
-(*
+(* begin hide *)
 (** * Proof by Induction *)
-*)
+(* end hide *)
 (** * 帰納法による証明 *)
 
-(*
+(* begin hide *)
 (** We proved in the last chapter that [0] is a neutral element
     for [+] on the left, using an easy argument based on
     simplification.  We also observed that proving the fact that it is
     also a neutral element on the _right_... *)
-*)
+(* end hide *)
 (** 前の章では、[0]が[+]に対する左単位元であることを証明しました。
     実際には、[0]は「右(_right_)」単位元でもあるのですが... *)
 
 Theorem plus_n_O_firsttry : forall n:nat,
   n = n + 0.
 
-(*
+(* begin hide *)
 (** ... can't be done in the same simple way.  Just applying
   [reflexivity] doesn't work, since the [n] in [n + 0] is an arbitrary
   unknown number, so the [match] in the definition of [+] can't be
   simplified.  *)
-*)
+(* end hide *)
 (** ... しかし、これは左単位元ほど簡単には示せません。
   [reflexivity]を使ってもうまくいきません。
   というのも、[n + 0]にある[n]はよく分からない数なので、[+]の定義における[match]は簡約されないのです。 *)
@@ -121,12 +121,12 @@ Proof.
   simpl. (* Does nothing! *)
 Abort.
 
-(*
+(* begin hide *)
 (** And reasoning by cases using [destruct n] doesn't get us much
     further: the branch of the case analysis where we assume [n = 0]
     goes through fine, but in the branch where [n = S n'] for some [n'] we
     get stuck in exactly the same way. *)
-*)
+(* end hide *)
 (** [destruct n]を使った場合分けもやはり先には進められません。
     [n = 0]のときはいいのですが、[n = S n']のときは同じ理由で詰まってしまいます。 *)
 
@@ -140,14 +140,14 @@ Proof.
     simpl.       (* ...but here we are stuck again *)
 Abort.
 
-(*
+(* begin hide *)
 (** We could use [destruct n'] to get one step further, but,
     since [n] can be arbitrarily large, if we just go on like this
     we'll never finish. *)
-*)
+(* end hide *)
 (** [destruct n']を使って進められますが、[n]がいくらでも大きくなりうるので、このやり方ではいつまで経っても終わりません。 *)
 
-(*
+(* begin hide *)
 (** To prove interesting facts about numbers, lists, and other
     inductively defined sets, we usually need a more powerful
     reasoning principle: _induction_.
@@ -166,7 +166,7 @@ Abort.
     tactic) into two separate subgoals: one where we must show [P(O)]
     and another where we must show [P(n') -> P(S n')].  Here's how
     this works for the theorem at hand: *)
-*)
+(* end hide *)
 (** これらの、大体の数やリストなどの帰納的に定義された集合に関する性質を示すには、より強力な道具、「帰納法(_induction_)」が必要になります。
  
     高校や離散数学の講義などで習ったと思いますが、「自然数に関する帰納法（数学的帰納法）の原理」をおさらいしておきましょう。
@@ -186,7 +186,7 @@ Proof.
   - (* n = 0 *)    reflexivity.
   - (* n = S n' *) simpl. rewrite <- IHn'. reflexivity.  Qed.
 
-(*
+(* begin hide *)
 (** Like [destruct], the [induction] tactic takes an [as...]
     clause that specifies the names of the variables to be introduced
     in the subgoals.  Since there are two subgoals, the [as...] clause
@@ -205,7 +205,7 @@ Proof.
     are specified in the second part of the [as...] clause.  The goal
     in this case becomes [S n' = (S n') + 0], which simplifies to
     [S n' = S (n' + 0)], which in turn follows from [IHn']. *)
-*)
+(* end hide *)
 (** [destruct]タクティックと同様に、[induction]タクティックには、サブゴールで使う変数を指定する[as...]節を使うことができます。
     二つに分かれているので、[as...]節も[|]で二つに分かれています。
     （厳密に言うと、ここでは[as...]節は省略できて、その場合Coqが名前を付けてくれます。
@@ -220,7 +220,6 @@ Proof.
     [n']と[IHn']という二つの名前は[as...]節の二つ目で指定しています。
     ゴールは[S n' = (S n') + 0]となっていますが、簡約すると[S n' = S (n' + 0)]になります。
     これは帰納法の仮定である[IHn']から示せます。 *)
-(* 訳注：指摘の結果ほとんど直っているが、三段落目に[n' + 0 = n']という左右逆の等式が残っている。 *)
 
 
 Theorem minus_diag : forall n,
@@ -233,23 +232,23 @@ Proof.
   - (* n = S n' *)
     simpl. rewrite -> IHn'. reflexivity.  Qed.
 
-(*
+(* begin hide *)
 (** (The use of the [intros] tactic in these proofs is actually
     redundant.  When applied to a goal that contains quantified
     variables, the [induction] tactic will automatically move them
     into the context as needed.) *)
-*)
+(* end hide *)
 (** （実のところ、上の証明では[intros]タクティクは冗長です。
     量化変数を持つゴールに対して[induction]タクティクを適用すると、これらの変数は必要に応じて文脈に移動されます。） *)
 
-(*
+(* begin hide *)
 (** **** Exercise: 2 stars, recommended (basic_induction)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★★, recommended (basic_induction)  *)
-(*
+(* begin hide *)
 (** Prove the following using induction. You might need previously
     proven results. *)
-*)
+(* end hide *)
 (** 以下の定理を帰納法で証明しなさい。
     証明には、前に示した内容を使う必要があるかもしれません。 *)
 
@@ -279,13 +278,13 @@ Proof.
 (* GRADE_THEOREM 0.5: plus_assoc *)
 (** [] *)
 
-(*
+(* begin hide *)
 (** **** Exercise: 2 stars (double_plus)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★★ (double_plus)  *)
-(*
+(* begin hide *)
 (** Consider the following function, which doubles its argument: *)
-*)
+(* end hide *)
 (** 次のように、引数を二倍にする関数を定義します。 *)
 
 Fixpoint double (n:nat) :=
@@ -294,9 +293,9 @@ Fixpoint double (n:nat) :=
   | S n' => S (S (double n'))
   end.
 
-(*
+(* begin hide *)
 (** Use induction to prove this simple fact about [double]: *)
-*)
+(* end hide *)
 (** 帰納法を使って、[double]に関する以下の性質を証明しなさい。 *)
 
 Lemma double_plus : forall n, double n = n + n .
@@ -304,18 +303,18 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(*
+(* begin hide *)
 (** **** Exercise: 2 stars, optional (evenb_S)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★★, optional (evenb_S)  *)
-(*
+(* begin hide *)
 (** One inconvenient aspect of our definition of [evenb n] is the
     recursive call on [n - 2]. This makes proofs about [evenb n]
     harder when done by induction on [n], since we may need an
     induction hypothesis about [n - 2]. The following lemma gives an
     alternative characterization of [evenb (S n)] that works better
     with induction: *)
-*)
+(* end hide *)
 (** [evenb n]の定義の不便な点は、再帰呼び出しが[n - 2]に対して行われているというものです。
     これにより、[evenb n]に関する性質の証明を[n]に基づく帰納法で行う場合に、再帰呼び出しに関する性質を得るには[n - 2]に対する仮定が必要となります。
     このため、そのままでは帰納法で示すことが難しくなっています。
@@ -328,17 +327,17 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(*
+(* begin hide *)
 (** **** Exercise: 1 star (destruct_induction)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★ (destruct_induction)  *)
-(*
+(* begin hide *)
 (** Briefly explain the difference between the tactics [destruct]
     and [induction].
 
 (* FILL IN HERE *)
 *)
-  *)
+(* end hide *)
 (** [destruct]と[induction]の違いについて大まかに説明しなさい。
  
 (* FILL IN HERE *)
@@ -346,12 +345,12 @@ Proof.
 (** [] *)
 
 (* ################################################################# *)
-(*
+(* begin hide *)
 (** * Proofs Within Proofs *)
-*)
+(* end hide *)
 (** * 証明の中の証明 *)
 
-(*
+(* begin hide *)
 (** In Coq, as in informal mathematics, large proofs are often
     broken into a sequence of theorems, with later proofs referring to
     earlier theorems.  But sometimes a proof will require some
@@ -363,7 +362,7 @@ Proof.
     proof of the [mult_0_plus] theorem referred to a previous theorem
     named [plus_O_n].  We could instead use [assert] to state and
     prove [plus_O_n] in-line: *)
-*)
+(* end hide *)
 (** Coqでは、通常の数学のように、大きな証明を複数の定理の列に分割して、後ろの証明で前の定理を利用する、ということをします。
     しかし、このように分割した定理の中には、内容が自明だったり全く一般的でなかったりするため、全体に見える名前を付けるのが面倒になるものも現れます。
     こういう場合、その場所でだけ使うように「副定理」を記述、証明できると便利です。
@@ -379,7 +378,7 @@ Proof.
   rewrite -> H.
   reflexivity.  Qed.
 
-(*
+(* begin hide *)
 (** The [assert] tactic introduces two sub-goals.  The first is
     the assertion itself; by prefixing it with [H:] we name the
     assertion [H].  (We can also name the assertion with [as] just as
@@ -394,7 +393,7 @@ Proof.
     fact and a second subgoal where we can use the asserted fact to
     make progress on whatever we were trying to prove in the first
     place. *)
-*)
+(* end hide *)
 (** [assert]タクティックは二つのサブゴールを作ります。
     一つ目は表明したものそのものです。
     [H:]という記述は、表明したものを[H]と名付けることを意味します。
@@ -403,12 +402,12 @@ Proof.
     二つ目のゴールは[assert]を実行したものと同じですが、文脈に[H]という名前で[0 + n = n]の仮定が入っています。
     つまり、[assert]は一つのサブゴールで表明した内容を証明させ、二つ目のサブゴールで元の場所に戻り、表明した内容を使って証明を進めさせるのです。 *)
 
-(*
+(* begin hide *)
 (** Another example of [assert]... *)
-*)
+(* end hide *)
 (** [assert]の他の使用例です。 *)
 
-(*
+(* begin hide *)
 (** For example, suppose we want to prove that [(n + m) + (p + q)
     = (m + n) + (p + q)]. The only difference between the two sides of
     the [=] is that the arguments [m] and [n] to the first inner [+]
@@ -418,7 +417,7 @@ Proof.
     _where_ it applies the rewrite.  There are three uses of [+] here,
     and it turns out that doing [rewrite -> plus_comm] will affect
     only the _outer_ one... *)
-*)
+(* end hide *)
 (** 例えば、[(n + m) + (p + q) = (m + n) + (p + q)]を示す必要があったとします。
     [=]の左右での差は[m]と[n]の位置が[+]の間で入れ替わっているだけですから、加算の可換律（[plus_comm]）で書き換えれば簡単に示せるはずです。
     ただ、[rewrite]タクティックは「どこを」書き換えるかに関してはあまり賢くないので、今回は[rewrite -> plus_comm]を実行しても、3箇所存在する[+]のうち「外側」のものを書き換えてしまいます。 *)
@@ -433,12 +432,12 @@ Proof.
   (* Doesn't work...Coq rewrote the wrong plus! *)
 Abort.
 
-(*
+(* begin hide *)
 (** To use [plus_comm] at the point where we need it, we can introduce
     a local lemma stating that [n + m = m + n] (for the particular [m]
     and [n] that we are talking about here), prove this lemma using
     [plus_comm], and then use it to do the desired rewrite. *)
-*)
+(* end hide *)
 (** [plus_comm]を必要な場所に使うために、[n + m = m + n]（ただし[m]と[n]は今の文脈にある変数）を[assert]を使って補題として作る方法があります。
     この補題を[plus_comm]で示し、それを使って意図通りに式を書き換えるのです。 *)
 
@@ -451,17 +450,17 @@ Proof.
   rewrite -> H. reflexivity.  Qed.
 
 (* ################################################################# *)
-(*
+(* begin hide *)
 (** * Formal vs. Informal Proof *)
-*)
+(* end hide *)
 (** * 形式的証明　対　非形式的証明 *)
 
-(*
+(* begin hide *)
 (** "_Informal proofs are algorithms; formal proofs are code_." *)
-*)
+(* end hide *)
 (** 「非形式的証明はアルゴリズムで、形式的証明はコードだ。」 *)
 
-(*
+(* begin hide *)
 (** What constitutes a successful proof of a mathematical claim?
     The question has challenged philosophers for millennia, but a
     rough and ready definition could be this: A proof of a
@@ -507,7 +506,7 @@ Proof.
     completely forget about informal ones!  Formal proofs are useful
     in many ways, but they are _not_ very efficient ways of
     communicating ideas between human beings. *)
-*)
+(* end hide *)
 (** 数学的な言明に対して「よい証明」とは一体何でしょうか？この
     問いは、数千年に渡り議論されていますが、大まかに合意されている定義は次のようになります。
     「数学的命題[P]に対する証明とは、読み手（聞き手）が確かに[P]は正しいと信じるに足るような記述（発言）、すなわち[P]の正しさを否定できないような議論である。」
@@ -538,9 +537,9 @@ Proof.
     しかし、だからといって非形式的証明を忘れていいわけではありません！
     形式的証明は様々な点で有用なのですが、他の人とアイディアを交わしたりといったことには全くもって非効率的です。 *)
 
-(*
+(* begin hide *)
 (** For example, here is a proof that addition is associative: *)
-*)
+(* end hide *)
 (** 例えば、次の証明は加算が結合的であることを示しています。 *)
 
 Theorem plus_assoc' : forall n m p : nat,
@@ -548,11 +547,11 @@ Theorem plus_assoc' : forall n m p : nat,
 Proof. intros n m p. induction n as [| n' IHn']. reflexivity.
   simpl. rewrite -> IHn'. reflexivity.  Qed.
 
-(*
+(* begin hide *)
 (** Coq is perfectly happy with this.  For a human, however, it
     is difficult to make much sense of it.  We can use comments and
     bullets to show the structure a little more clearly... *)
-*)
+(* end hide *)
 (** この証明はCoqにとっては完璧です。
     しかし人間からすると、直観的に理解することは難しいものです。
     コメントやbulletを使って証明の構成を記述すれば、少し読みやすくなります。 *)
@@ -566,7 +565,7 @@ Proof.
   - (* n = S n' *)
     simpl. rewrite -> IHn'. reflexivity.   Qed.
 
-(*
+(* begin hide *)
 (** ... and if you're used to Coq you may be able to step
     through the tactics one after the other in your mind and imagine
     the state of the context and goal stack at each point, but if the
@@ -575,13 +574,13 @@ Proof.
 
     A (pedantic) mathematician might write the proof something like
     this: *)
-*)
+(* end hide *)
 (** Coqに慣れている人なら、タクティックを一つずつ進めるように文脈とゴールを頭の中に作ることも可能かもしれません。
     しかし、ほんの少し証明が複雑になるだけでほぼ不可能になります。
  
     （こと細かな）数学者がこの証明を書くとしたら、大体次のようになるでしょう。 *)
 
-(*
+(* begin hide *)
 (** - _Theorem_: For any [n], [m] and [p],
 
       n + (m + p) = (n + m) + p.
@@ -607,7 +606,7 @@ Proof.
         S (n' + (m + p)) = S ((n' + m) + p),
 
       which is immediate from the induction hypothesis.  _Qed_. *)
-*)
+(* end hide *)
 (** - 定理： 任意の[n]、[m]、[p]について、以下が成立する。
 [[
       n + (m + p) = (n + m) + p.
@@ -634,7 +633,7 @@ Proof.
 ]]
       これは帰納法の仮定から明らかである。
       証明終了 *)
-(*
+(* begin hide *)
 (** The overall form of the proof is basically similar, and of
     course this is no accident: Coq has been designed so that its
     [induction] tactic generates the same sub-goals, in the same
@@ -645,24 +644,24 @@ Proof.
     at any given point in the Coq proof is completely implicit,
     whereas the informal proof reminds the reader several times where
     things stand). *)
-*)
+(* end hide *)
 (** 証明の大まかな形式は似ていますが、当然これは偶然ではありません。
     Coqの[induction]は、数学者版の箇条書きされたものと同じサブゴールを、同じ順で作るように設定されています。
     しかし、細部は大きく違います。
     形式的証明ではいくつかの手順がより明示的になっています（例えば[reflexivity]の使用など）が、逆に明示されていない箇所もあります（特に「証明する命題」はCoqの証明上には全く現れませんが、非形式的証明では現状確認のために明示されています）。 *)
 
-(*
+(* begin hide *)
 (** **** Exercise: 2 stars, advanced, recommended (plus_comm_informal)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★★, advanced, recommended (plus_comm_informal)  *)
-(*
+(* begin hide *)
 (** Translate your solution for [plus_comm] into an informal proof:
 
     Theorem: Addition is commutative.
 
     Proof: (* FILL IN HERE *)
 *)
- *)
+(* end hide *)
 (** [plus_comm]の（課題として解いた）証明を非形式的証明で書きなさい。
  
     定理： 加算は可換律を満たす。
@@ -671,11 +670,11 @@ Proof.
  *)
 (** [] *)
 
-(*
+(* begin hide *)
 (** **** Exercise: 2 stars, optional (beq_nat_refl_informal)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★★, optional (beq_nat_refl_informal)  *)
-(*
+(* begin hide *)
 (** Write an informal proof of the following theorem, using the
     informal proof of [plus_assoc] as a model.  Don't just
     paraphrase the Coq tactics into English!
@@ -684,7 +683,7 @@ Proof.
 
     Proof: (* FILL IN HERE *)
 *)
- *)
+(* end hide *)
 (** [plus_assoc]の非形式的証明を参考に、次の定理の非形式的証明を書きなさい。
     Coqのタクティックを日本語に変換するだけではだめです！
   
@@ -695,19 +694,19 @@ Proof.
 (** [] *)
 
 (* ################################################################# *)
-(*
+(* begin hide *)
 (** * More Exercises *)
-*)
+(* end hide *)
 (** * 発展課題 *)
 
-(*
+(* begin hide *)
 (** **** Exercise: 3 stars, recommended (mult_comm)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★★★, recommended (mult_comm)  *)
-(*
+(* begin hide *)
 (** Use [assert] to help prove this theorem.  You shouldn't need to
     use induction on [plus_swap]. *)
-*)
+(* end hide *)
 (** [assert]を使い、次の定理を示しなさい。
     ここでは[plus_swap]に対して[induction]を使ってはいけません。 *)
 
@@ -716,12 +715,12 @@ Theorem plus_swap : forall n m p : nat,
 Proof.
   (* FILL IN HERE *) Admitted.
 
-(*
+(* begin hide *)
 (** Now prove commutativity of multiplication.  (You will probably
     need to define and prove a separate subsidiary theorem to be used
     in the proof of this one.  You may find that [plus_swap] comes in
     handy.) *)
-*)
+(* end hide *)
 (** 次に乗算の可換律を示しなさい。
     （補助定理を一つ示す必要があるでしょう。
     [plus_swap]を使うといいかもしれません。） *)
@@ -732,11 +731,11 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(*
+(* begin hide *)
 (** **** Exercise: 3 stars, optional (more_exercises)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★★★, optional (more_exercises)  *)
-(*
+(* begin hide *)
 (** Take a piece of paper.  For each of the following theorems, first
     _think_ about whether (a) it can be proved using only
     simplification and rewriting, (b) it also requires case
@@ -744,7 +743,7 @@ Proof.
     down your prediction.  Then fill in the proof.  (There is no need
     to turn in your piece of paper; this is just to encourage you to
     reflect before you hack!) *)
-*)
+(* end hide *)
 (** 紙を準備し、以下の定理のそれぞれに対して、
     (a)簡約と書き換えだけで示せるか、
     (b)場合分け（[destruct]）が必要か、
@@ -806,17 +805,17 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(*
+(* begin hide *)
 (** **** Exercise: 2 stars, optional (beq_nat_refl)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★★, optional (beq_nat_refl)  *)
-(*
+(* begin hide *)
 (** Prove the following theorem.  (Putting the [true] on the left-hand
     side of the equality may look odd, but this is how the theorem is
     stated in the Coq standard library, so we follow suit.  Rewriting
     works equally well in either direction, so we will have no problem
     using the theorem no matter which way we state it.) *)
-*)
+(* end hide *)
 (** 次の定理を示しなさい。
     （[true]を統合の左辺に置くのは奇妙に見えるかもしれませんが、これは標準ライブラリにある定理に合わせたためです。
     書き換えは両方向で可能なので、どちらで記述しても問題はありません。） *)
@@ -827,11 +826,11 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(*
+(* begin hide *)
 (** **** Exercise: 2 stars, optional (plus_swap')  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★★, optional (plus_swap')  *)
-(*
+(* begin hide *)
 (** The [replace] tactic allows you to specify a particular subterm to
    rewrite and what you want it rewritten to: [replace (t) with (u)]
    replaces (all copies of) expression [t] in the goal by expression
@@ -840,7 +839,7 @@ Proof.
 
    Use the [replace] tactic to do a proof of [plus_swap'], just like
    [plus_swap] but without needing [assert (n + m = m + n)]. *)
-*)
+(* end hide *)
 (** [replace]タクティックは、特定の部分式を指定した別の式に書き換えるのに使います。
    [replace (t) with (u)]の形で、ゴールに存在する[t]を全て[u]に書き換え、サブゴールとして[t = u]を作ります。
    [rewrite]での書き換えが意図通りに行えないときに便利です。
@@ -854,11 +853,11 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(*
+(* begin hide *)
 (** **** Exercise: 3 stars, recommended (binary_commute)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★★★, recommended (binary_commute)  *)
-(*
+(* begin hide *)
 (** Recall the [incr] and [bin_to_nat] functions that you
     wrote for the [binary] exercise in the [Basics] chapter.  Prove
     that the following diagram commutes:
@@ -882,7 +881,7 @@ Proof.
     can be graded on its own.  If you want to change your original
     definitions to make the property easier to prove, feel free to
     do so! *)
-*)
+(* end hide *)
 (** [Basics]の章の[binary]という課題で書いた、[increment]と[bin_to_nat]関数に関してです。
     以下の図が可換であることを示しなさい。
 <<
@@ -904,11 +903,11 @@ Proof.
 (* FILL IN HERE *)
 (** [] *)
 
-(*
+(* begin hide *)
 (** **** Exercise: 5 stars, advanced (binary_inverse)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★★★★★, advanced (binary_inverse)  *)
-(*
+(* begin hide *)
 (** This exercise is a continuation of the previous exercise about
     binary numbers.  You will need your definitions and theorems from
     there to complete this one; please copy them to this file to make
@@ -933,7 +932,7 @@ Proof.
 
     Again, feel free to change your earlier definitions if this helps
     here. *)
-*)
+(* end hide *)
 (** この課題は一つ前の続きになります。
     したがって、一つ前の課題で使った定義や定理が必要です。
  
