@@ -1212,6 +1212,7 @@ Proof.
 *)
 (** ** リストについての練習問題 (2) *)
 
+(*
 (** Here are a couple of little theorems to prove about your
     definitions about bags above. *)
 *)
