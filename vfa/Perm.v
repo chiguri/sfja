@@ -464,8 +464,8 @@ Search Permutation.  (* Browse through the results of this query! *)
     been proved as theorems by the Coq library developers?  Answer
     here:
 
-*)
-(** [] *)
+
+    [] *)
 
 (** Let's use the permutation rules in the library to prove the
     following theorem. *)
@@ -616,4 +616,4 @@ Proof.
 (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** $Date: 2017-08-25 14:01:08 -0400 (Fri, 25 Aug 2017) $ *)
+(** $Date$ *)

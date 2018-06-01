@@ -49,15 +49,16 @@
     それらのタクティックについては[UseTactics.v]章に記述されています。 *)
 
 Require Import Coq.Arith.Arith.
+
+Require Import Maps.
+Require Import Smallstep.
+Require Import Stlc.
+Require Import LibTactics.
+
+Require Imp.
+
 Require Import Coq.Lists.List.
 Import ListNotations.
-
-From PLF Require Import Maps.
-From PLF Require Import Smallstep.
-From PLF Require Import Stlc.
-From PLF Require Import LibTactics.
-
-From PLF Require Imp.
 
 (* ################################################################# *)
 (*
@@ -1272,7 +1273,7 @@ End DeterministicImp.
 (** ** STLC の保存 *)
 
 Set Warnings "-notation-overridden,-parsing".
-From PLF Require Import StlcProp.
+Require Import StlcProp.
 Module PreservationProgressStlc.
 Import STLC.
 Import STLCProp.
@@ -1396,7 +1397,7 @@ End PreservationProgressStlc.
 *)
 (** ** ビッグステップとスモールステップ *)
 
-From PLF Require Import Smallstep.
+Require Import Smallstep.
 Require Import Program.
 Module Semantics.
 
@@ -1483,7 +1484,7 @@ End Semantics.
 (** ** STLCRef の保存 *)
 
 Require Import Coq.omega.Omega.
-From PLF Require Import References.
+Require Import References.
 Import STLCRef.
 Require Import Program.
 Module PreservationProgressReferences.
@@ -1788,7 +1789,7 @@ End PreservationProgressReferences.
 *)
 (** ** サブタイプ *)
 
-From PLF Require Sub.
+Require Sub.
 Module SubtypingInversion.
 Import Sub.
 
@@ -2730,4 +2731,4 @@ Proof. congruence. Qed.
     しかし、その投資はすぐに回収できます。
  *)
 
-(** $Date: 2017-08-22 17:13:32 -0400 (Tue, 22 Aug 2017) $ *)
+(** $Date$ *)

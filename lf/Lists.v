@@ -3,7 +3,7 @@
 (** * Lists: Working with Structured Data *)
 *)
 
-Require Export LF.Induction.
+Require Export Induction.
 Module NatList.
 
 (* ################################################################# *)
@@ -223,21 +223,21 @@ Definition mylist3 := [1;2;3].
   Notation "x + y" := (plus x y)
                       (at level 50, left associativity).
 
-   the [+] operator will bind tighter than [::], so [1 + 2 :: [3]]
-   will be parsed, as we'd expect, as [(1 + 2) :: [3]] rather than [1
-   + (2 :: [3])].
+    the [+] operator will bind tighter than [::], so [1 + 2 :: [3]]
+    will be parsed, as we'd expect, as [(1 + 2) :: [3]] rather than [1
+    + (2 :: [3])].
 
-   (Expressions like "[1 + 2 :: [3]]" can be a little confusing when
-   you read them in a .v file.  The inner brackets, around 3, indicate
-   a list, but the outer brackets, which are invisible in the HTML
-   rendering, are there to instruct the "coqdoc" tool that the bracketed
-   part should be displayed as Coq code rather than running text.)
+    (Expressions like "[1 + 2 :: [3]]" can be a little confusing when
+    you read them in a [.v] file.  The inner brackets, around 3, indicate
+    a list, but the outer brackets, which are invisible in the HTML
+    rendering, are there to instruct the "coqdoc" tool that the bracketed
+    part should be displayed as Coq code rather than running text.)
 
-   The second and third [Notation] declarations above introduce the
-   standard square-bracket notation for lists; the right-hand side of
-   the third one illustrates Coq's syntax for declaring n-ary
-   notations and translating them to nested sequences of binary
-   constructors. *)
+    The second and third [Notation] declarations above introduce the
+    standard square-bracket notation for lists; the right-hand side of
+    the third one illustrates Coq's syntax for declaring n-ary
+    notations and translating them to nested sequences of binary
+    constructors. *)
 *)
 (** [at level 60] の部分は [::] を他の中置演算子といっしょに使っている式にどのように括弧を付けるかを指示するものです。
     例えば、 [+] を [plus] に対する level 50 の中置記法として定義したので、
@@ -247,7 +247,7 @@ Definition mylist3 := [1;2;3].
 ]]
     [+] は [::] よりも強く結合し、 [1 + 2 :: [3]] は期待通り、 [1 + (2 :: [3])] ではなく [(1 + 2) :: [3]] と構文解析されます。
  
-    （.v ファイルを読んでいるときには "[1 + 2 :: [3]]" のような書き方は少し読みにくいように感じるでしょう。
+    （[.v] ファイルを読んでいるときには "[1 + 2 :: [3]]" のような書き方は少し読みにくいように感じるでしょう。
     内側の 3 の左右の角括弧はリストを表すものですが、外側の括弧は "coqdoc" 用の命令で、角括弧内の部分をそのままのテキストではなく Coq のコードとして表示するよう指示するものです。
     この角括弧は生成された HTML には現れません。）
  
@@ -378,6 +378,7 @@ Fixpoint nonzeros (l:natlist) : natlist
 Example test_nonzeros:
   nonzeros [0;1;0;2;3;0;0] = [1;2;3].
   (* FILL IN HERE *) Admitted.
+(* GRADE_THEOREM 0.5: NatList.test_nonzeros *)
 
 Fixpoint oddmembers (l:natlist) : natlist
   (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
@@ -385,6 +386,7 @@ Fixpoint oddmembers (l:natlist) : natlist
 Example test_oddmembers:
   oddmembers [0;1;0;2;3;0;0] = [1;3].
   (* FILL IN HERE *) Admitted.
+(* GRADE_THEOREM 0.5: NatList.test_oddmembers *)
 
 Definition countoddmembers (l:natlist) : nat
   (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
@@ -485,6 +487,7 @@ Example test_count1:              count 1 [1;2;3;1;4;1] = 3.
  (* FILL IN HERE *) Admitted.
 Example test_count2:              count 6 [1;2;3;1;4;1] = 0.
  (* FILL IN HERE *) Admitted.
+(* GRADE_THEOREM 0.5: NatList.test_count2 *)
 
 (*
 (** Multiset [sum] is similar to set [union]: [sum a b] contains all
@@ -513,6 +516,7 @@ Definition sum : bag -> bag -> bag
 
 Example test_sum1:              count 1 (sum [1;2;3] [1;4;1]) = 3.
  (* FILL IN HERE *) Admitted.
+(* GRADE_THEOREM 0.5: NatList.test_sum1 *)
 
 Definition add (v:nat) (s:bag) : bag
   (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
@@ -521,15 +525,19 @@ Example test_add1:                count 1 (add 1 [1;4;1]) = 3.
  (* FILL IN HERE *) Admitted.
 Example test_add2:                count 5 (add 1 [1;4;1]) = 0.
  (* FILL IN HERE *) Admitted.
+(* GRADE_THEOREM 0.5: NatList.test_add1 *)
+(* GRADE_THEOREM 0.5: NatList.test_add2 *)
 
 Definition member (v:nat) (s:bag) : bool
   (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
 
 Example test_member1:             member 1 [1;4;1] = true.
  (* FILL IN HERE *) Admitted.
+(* GRADE_THEOREM 0.5: NatList.test_member1 *)
+(* GRADE_THEOREM 0.5: NatList.test_member2 *)
 
 Example test_member2:             member 2 [1;4;1] = false.
- (* FILL IN HERE *) Admitted.
+(* FILL IN HERE *) Admitted.
 (** [] *)
 
 (*
@@ -537,12 +545,12 @@ Example test_member2:             member 2 [1;4;1] = false.
 *)
 (** **** 練習問題: ★★★, optional (bag_more_functions) *)
 (*
-(** Here are some more bag functions for you to practice with. *)
+(** Here are some more [bag] functions for you to practice with. *)
 *)
-(** 練習として、さらにいくつかの関数を作成してください。 *)
+(** 練習として、さらに以下の[bag]用の関数を作成しなさい。 *)
 
 (*
-(** When remove_one is applied to a bag without the number to remove,
+(** When [remove_one] is applied to a bag without the number to remove,
    it should return the same bag unchanged. *)
 *)
 (** [remove_one] を削除しようとしている数のないバッグに適用した場合は、同じバッグを変更せずに返す。 *)
@@ -632,7 +640,7 @@ Theorem nil_app : forall l:natlist,
 Proof. reflexivity. Qed.
 
 (*
-(** ... because the [[]] is substituted into the
+(** ...because the [[]] is substituted into the
     "scrutinee" (the expression whose value is being "scrutinized" by
     the match) in the definition of [app], allowing the match itself
     to be simplified. *)
@@ -1133,16 +1141,19 @@ Theorem app_nil_r : forall l : natlist,
   l ++ [] = l.
 Proof.
   (* FILL IN HERE *) Admitted.
+(* GRADE_THEOREM 0.5: NatList.app_nil_r *)
 
 Theorem rev_app_distr: forall l1 l2 : natlist,
   rev (l1 ++ l2) = rev l2 ++ rev l1.
 Proof.
   (* FILL IN HERE *) Admitted.
+(* GRADE_THEOREM 0.5: NatList.rev_app_distr *)
 
 Theorem rev_involutive : forall l : natlist,
   rev (rev l) = l.
 Proof.
   (* FILL IN HERE *) Admitted.
+(* GRADE_THEOREM 0.5: NatList.rev_involutive *)
 
 (*
 (** There is a short solution to the next one.  If you find yourself
@@ -1156,6 +1167,7 @@ Theorem app_assoc4 : forall l1 l2 l3 l4 : natlist,
   l1 ++ (l2 ++ (l3 ++ l4)) = ((l1 ++ l2) ++ l3) ++ l4.
 Proof.
   (* FILL IN HERE *) Admitted.
+(* GRADE_THEOREM 0.5: NatList.app_assoc4 *)
 
 (*
 (** An exercise about your implementation of [nonzeros]: *)
@@ -1200,25 +1212,25 @@ Proof.
 *)
 (** ** リストについての練習問題 (2) *)
 
-(*
-(** **** Exercise: 3 stars, advanced (bag_proofs)  *)
-*)
-(** **** 練習問題: ★★★, advanced (bag_proofs) *)
-(*
 (** Here are a couple of little theorems to prove about your
     definitions about bags above. *)
 *)
-(** 上で見たバッグについて、以下の定理を証明しなさい。 *)
+(** 上で見たバッグについて、いくつかの定理を証明します。 *)
 
+(*
+(** **** Exercise: 1 star (count_member_nonzero)  *)
+*)
+(** **** 練習問題: ★ (count_member_nonzero) *)
 Theorem count_member_nonzero : forall (s : bag),
   leb 1 (count 1 (1 :: s)) = true.
 Proof.
   (* FILL IN HERE *) Admitted.
+(** [] *)
 
 (*
-(** The following lemma about [leb] might help you in the next proof. *)
+(** The following lemma about [leb] might help you in the next exercise. *)
 *)
-(** 以下の [leb] に関する補題は、この次の証明に使えるかもしれません。 *)
+(** 以下の [leb] に関する補題は、この次の課題に使えるかもしれません。 *)
 
 Theorem ble_n_Sn : forall n,
   leb n (S n) = true.
@@ -1229,6 +1241,10 @@ Proof.
   - (* S n' *)
     simpl.  rewrite IHn'.  reflexivity.  Qed.
 
+(*
+(** **** Exercise: 3 stars, advanced (remove_decreases_count)  *)
+*)
+(** **** 練習問題: ★★★, advanced (remove_decreases_count) *)
 Theorem remove_decreases_count: forall (s : bag),
   leb (count 0 (remove_one 0 s)) (count 0 s) = true.
 Proof.
@@ -1241,11 +1257,11 @@ Proof.
 (** **** 練習問題: ★★★, optional (bag_count_sum) *)
 (*
 (** Write down an interesting theorem [bag_count_sum] about bags
-    involving the functions [count] and [sum], and prove it.  (You may
-    find that the difficulty of the proof depends on how you defined
-    [count]!) *)
+    involving the functions [count] and [sum], and prove it using
+    Coq.  (You may find that the difficulty of the proof depends on
+    how you defined [count]!) *)
 *)
-(** バッグについて [count] と [sum] を使った定理を考え、それを証明しなさい。
+(** バッグについて [count] と [sum] を使った定理 [bag_count_sum] を考え、それをCoqを使って証明しなさい。
     （[count]の定義によって証明の難易度が変わるかもしれません。） *)
 (* FILL IN HERE *)
 (** [] *)
@@ -1259,15 +1275,15 @@ Proof.
 
     forall (l1 l2 : natlist), rev l1 = rev l2 -> l1 = l2.
 
-(There is a hard way and an easy way to do this.) *)
+    (There is a hard way and an easy way to do this.) *)
 *)
 (** [rev] 関数が単射である、すなわち
 [[
     forall (l1 l2 : natlist), rev l1 = rev l2 -> l1 = l2 
 ]]
-であることを証明しなさい。
+    であることを証明しなさい。
  
-（この練習問題には簡単な解法と難しい解法があります。） *)
+    （この練習問題には簡単な解法と難しい解法があります。） *)
 
 (* FILL IN HERE *)
 (** [] *)
@@ -1427,9 +1443,9 @@ Inductive id : Type :=
 (** Internally, an [id] is just a number.  Introducing a separate type
     by wrapping each nat with the tag [Id] makes definitions more
     readable and gives us the flexibility to change representations
-    later if we wish.
+    later if we wish. *)
 
-    We'll also need an equality test for [id]s: *)
+(** We'll also need an equality test for [id]s: *)
 
 Definition beq_id (x1 x2 : id) :=
   match x1, x2 with
@@ -1515,12 +1531,10 @@ Inductive baz : Type :=
   | Baz1 : baz -> baz
   | Baz2 : baz -> bool -> baz.
 
-(** How _many_ elements does the type [baz] have?  (Answer in English
-    or the natural language of your choice.)
+(** How _many_ elements does the type [baz] have?
+    (Explain your answer in words, preferrably English.) *)
 
 (* FILL IN HERE *)
-*)
 (** [] *)
 
-(** $Date: 2017-08-24 10:54:05 -0400 (Thu, 24 Aug 2017) $ *)
 

@@ -25,7 +25,7 @@
    operating on arrays.  But it works just as well as a functional
    program operating on linked lists! *)
 
-From VFA Require Import Perm. 
+Require Import Perm. 
 
 Fixpoint insert (i:nat) (l: list nat) := 
   match l with
@@ -108,7 +108,7 @@ Definition is_a_sorting_algorithm (f: list nat -> list nat) :=
 (* ################################################################# *)
 (** * Proof of Correctness *)
 
-(** **** Exercise: 3 stars  *)
+(** **** Exercise: 3 stars (insert_perm)  *)
 (** Prove the following auxiliary lemma, [insert_perm], which will be
     useful for proving [sort_perm] below.  Your proof will be by
     induction, but you'll need some of the permutation facts from the
@@ -121,7 +121,7 @@ Proof.
 (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** **** Exercise: 3 stars  *)
+(** **** Exercise: 3 stars (sort_perm)  *)
 (** Now prove that sort is a permutation. *)
 
 Theorem sort_perm: forall l, Permutation l (sort l).
@@ -129,7 +129,7 @@ Proof.
 (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** **** Exercise: 4 stars  *)
+(** **** Exercise: 4 stars (insert_sorted)  *)
 (** This one is a bit tricky.  However, there just a single induction
    right at the beginning, and you do _not_ need to use [insert_perm]
    or [sort_perm]. *)
@@ -138,8 +138,9 @@ Lemma insert_sorted:
   forall a l, sorted l -> sorted (insert a l).
 Proof.
 (* FILL IN HERE *) Admitted.
+(** [] *)
 
-(** **** Exercise: 2 stars  *)
+(** **** Exercise: 2 stars (sort_sorted)  *)
 (** This one is easy.   *)
 
 Theorem sort_sorted: forall l, sorted (sort l).
@@ -244,4 +245,4 @@ Theorem sort_sorted': forall l, sorted' (sort l).
    predicate ([sorted]), and then prove [sort_sorted] and
    [sorted_sorted']. *)
 
-(** $Date: 2017-08-25 14:01:08 -0400 (Fri, 25 Aug 2017) $ *)
+(** $Date$ *)

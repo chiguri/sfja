@@ -20,7 +20,7 @@
     しかし、Coqの基本的推論機構を使う良い練習問題ともなるので、[IndProp]章の直後に見ておくとよいかもしれません。 *)
 
 Set Warnings "-notation-overridden,-parsing".
-From LF Require Export IndProp.
+Require Export IndProp.
 
 (* ################################################################# *)
 (*
@@ -147,16 +147,16 @@ Theorem le_not_a_partial_function :
   ~ (partial_function le).
 Proof.
   unfold not. unfold partial_function. intros Hc.
-  assert (0 = 1) as Nonsense. { 
+  assert (0 = 1) as Nonsense. {
     apply Hc with (x := 0).
     - apply le_n.
     - apply le_S. apply le_n. }
   inversion Nonsense.   Qed.
 
 (*
-(** **** Exercise: 2 stars, optional  *)
+(** **** Exercise: 2 stars, optional (total_relation_not_partial)  *)
 *)
-(** **** 練習問題:★★, optional  *)
+(** **** 練習問題:★★, optional (total_relation_not_partial)  *)
 (*
 (** Show that the [total_relation] defined in earlier is not a partial
     function. *)
@@ -167,9 +167,9 @@ Proof.
 (** [] *)
 
 (*
-(** **** Exercise: 2 stars, optional  *)
+(** **** Exercise: 2 stars, optional (empty_relation_partial)  *)
 *)
-(** **** 練習問題:★★, optional  *)
+(** **** 練習問題:★★, optional (empty_relation_partial)  *)
 (*
 (** Show that the [empty_relation] that we defined earlier is a
     partial function. *)
@@ -233,9 +233,9 @@ Proof.
   apply Hmo. Qed.
 
 (*
-(** **** Exercise: 2 stars, optional  *)
+(** **** Exercise: 2 stars, optional (le_trans_hard_way)  *)
 *)
-(** **** 練習問題:★★, optional  *)
+(** **** 練習問題:★★, optional (le_trans_hard_way)  *)
 (*
 (** We can also prove [lt_trans] more laboriously by induction,
     without using [le_trans].  Do this.*)
@@ -255,9 +255,9 @@ Proof.
 (** [] *)
 
 (*
-(** **** Exercise: 2 stars, optional  *)
+(** **** Exercise: 2 stars, optional (lt_trans'')  *)
 *)
-(** **** 練習問題:★★, optional  *)
+(** **** 練習問題:★★, optional (lt_trans'')  *)
 (*
 (** Prove the same thing again by induction on [o]. *)
 *)
@@ -288,9 +288,9 @@ Proof.
 Qed.
 
 (*
-(** **** Exercise: 1 star, optional  *)
+(** **** Exercise: 1 star, optional (le_S_n)  *)
 *)
-(** **** 練習問題:★, optional *)
+(** **** 練習問題:★, optional (le_S_n)  *)
 Theorem le_S_n : forall n m,
   (S n <= S m) -> (n <= m).
 Proof.
@@ -309,10 +309,7 @@ Proof.
     A formal proof of this is an optional exercise below, but try
     writing an informal proof without doing the formal proof first.
 
-    Proof:
-    (* FILL IN HERE *)
-    []
- *)
+    Proof: *)
 *)
 (** 以下の定理の非形式的な証明を示しなさい。
  
@@ -321,15 +318,14 @@ Proof.
     形式的な証明はこの次のoptionalな練習問題ですが、
     ここでは、形式的な証明を行わずに、まず非形式的な証明を示しなさい。 
  
-    証明:
-    (* FILL IN HERE *) 
-    [] 
-*)
+    証明: *)
+    (* FILL IN HERE *)
+(** [] *)
 
 (*
-(** **** Exercise: 1 star, optional  *)
+(** **** Exercise: 1 star, optional (le_Sn_n)  *)
 *)
-(** **** 練習問題:★, optional  *)
+(** **** 練習問題:★, optional (le_Sn_n)  *)
 Theorem le_Sn_n : forall n,
   ~ (S n <= n).
 Proof.
@@ -359,9 +355,9 @@ Definition symmetric {X: Type} (R: relation X) :=
   forall a b : X, (R a b) -> (R b a).
 
 (*
-(** **** Exercise: 2 stars, optional  *)
+(** **** Exercise: 2 stars, optional (le_not_symmetric)  *)
 *)
-(** **** 練習問題:★★, optional  *)
+(** **** 練習問題:★★, optional (le_not_symmetric)  *)
 Theorem le_not_symmetric :
   ~ (symmetric le).
 Proof.
@@ -380,9 +376,9 @@ Definition antisymmetric {X: Type} (R: relation X) :=
   forall a b : X, (R a b) -> (R b a) -> a = b.
 
 (*
-(** **** Exercise: 2 stars, optional  *)
+(** **** Exercise: 2 stars, optional (le_antisymmetric)  *)
 *)
-(** **** 練習問題:★★, optional  *)
+(** **** 練習問題:★★, optional (le_antisymmetric)  *)
 Theorem le_antisymmetric :
   antisymmetric le.
 Proof.
@@ -390,9 +386,9 @@ Proof.
 (** [] *)
 
 (*
-(** **** Exercise: 2 stars, optional  *)
+(** **** Exercise: 2 stars, optional (le_step)  *)
 *)
-(** **** 練習問題:★★, optional  *)
+(** **** 練習問題:★★, optional (le_step)  *)
 Theorem le_step : forall n m p,
   n < m ->
   m <= S p ->
@@ -581,4 +577,3 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** $Date: 2017-08-24 17:13:02 -0400 (Thu, 24 Aug 2017) $ *)

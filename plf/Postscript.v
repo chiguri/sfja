@@ -12,7 +12,9 @@
 (** * ふりかえり *)
 
 (*
-(** We've covered a lot of ground.  Here's a quick review of the whole course starting with _Logical Foundations_...  
+(** We've covered a lot of ground.  Here's a quick review of the whole
+    trajectory we've followed, starting at the beginning of _Logical
+    Foundations_...
 
    - _Functional programming_:
           - "declarative" programming style (recursion over persistent
@@ -22,7 +24,7 @@
           - polymorphism *)
 *)
 (** ここまで様々なことを学んできました。
-    「論理の基礎」からの内容を簡単に振り返ってみましょう。
+    「論理の基礎」から始まった軌跡を振り返ってみましょう。
  
     - 関数プログラミング
           - 「宣言的」プログラミング（変更可能な配列やポインタなどによるループではなく、永続データ構造上の再帰）
@@ -376,5 +378,5 @@
             - CoqPL workshop 
  *)
 
-(** $Date: 2017-08-24 17:13:02 -0400 (Thu, 24 Aug 2017) $ *)
+(** $Date$ *)
 

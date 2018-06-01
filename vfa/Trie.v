@@ -69,8 +69,8 @@
 (** * A Simple Program That's Waaaaay Too Slow. *)
 
 
-From VFA Require Import Perm.
-From VFA Require Import Maps.
+Require Import Perm.
+Require Import Maps.
 Import FunctionalExtensionality.
 
 Module VerySlow.
@@ -228,21 +228,20 @@ Proof.
 (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** **** Exercise: 3 stars (add_correct)  *)
+(** **** Exercise: 3 stars (addc_correct)  *)
 (** You may use [omega] in this proof if you want, along with induction
-     of course.  But really, using [omega] is an anachronism in a sense:
-     Coq's [omega] uses theorems about [Z] that are proved from theorems about
-     Coq's standard-library [positive] that, in turn, rely on a theorem much
-     like this one.  So the authors of the Coq standard library had to
-     do the associative-commutative rearrangement proofs "by hand."
-     But really, here you can use [omega] without penalty. *)
+    of course.  But really, using [omega] is an anachronism in a sense:
+    Coq's [omega] uses theorems about [Z] that are proved from theorems about
+    Coq's standard-library [positive] that, in turn, rely on a theorem much
+    like this one.  So the authors of the Coq standard library had to
+    do the associative-commutative rearrangement proofs "by hand."
+    But really, here you can use [omega] without penalty. *)
 
 Lemma addc_correct: forall (c: bool) (p q: positive),
    positive2nat (addc c p q) = 
         (if c then 1 else 0) + positive2nat p + positive2nat q.
 Proof.
 (* FILL IN HERE *) Admitted.
-(** [] *)
 
 Theorem add_correct: forall (p q: positive),
    positive2nat (add p q) = positive2nat p + positive2nat q.
@@ -596,17 +595,19 @@ Lemma nat2pos_injective: forall i j, nat2pos i = nat2pos j -> i=j.
 (* ================================================================= *)
 (** ** Proving That Tries are a "Table" ADT. *)
 
-(** Representation invariant.  Under what conditions is a trie well-formed?
-    Fill in the simplest thing you can, to start; then correct it later as necessary. *)
+(** Representation invariant.  Under what conditions is a trie
+    well-formed?  Fill in the simplest thing you can, to start; then
+    correct it later as necessary. *)
 
 Definition is_trie {A: Type} (t: trie_table A) : Prop
 (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
 
-(** Abstraction relation.  This is what we mean by, "what you get is what you get."
-   That is, the abstraction of a [trie_table] is the total function,
-    from naturals to [A] values, that  you get by running the [lookup] function.
-    Based on this abstraction relation, it'll be trivial to prove [lookup_relate].
-    But [insert_relate] will NOT be trivial. *)
+(** Abstraction relation.  This is what we mean by, "what you get is
+    what you get."  That is, the abstraction of a [trie_table] is the
+    total function, from naturals to [A] values, that you get by
+    running the [lookup] function.  Based on this abstraction
+    relation, it'll be trivial to prove [lookup_relate].  But
+    [insert_relate] will NOT be trivial. *)
 
 Definition abstract {A: Type} (t: trie_table A) (n: nat) : A :=
   lookup (nat2pos n) t.

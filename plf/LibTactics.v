@@ -82,7 +82,6 @@
   - [rapply]の実装のトリックに関して、Georges Gonthier に感謝します
  *)
 
-
 Set Implicit Arguments.
 
 Require Import List.
@@ -100,7 +99,6 @@ Require Import List.
  *)
 
 Remove Hints Bool.trans_eq_bool.
-
 
 (* ################################################################# *)
 (*
@@ -5778,4 +5776,4 @@ End LibTacticsCompatibility.
 
 Open Scope nat_scope.
 
-(** $Date: 2017-08-24 17:13:02 -0400 (Thu, 24 Aug 2017) $ *)
+(** $Date$ *)

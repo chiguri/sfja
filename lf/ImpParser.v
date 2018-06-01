@@ -10,9 +10,14 @@
     the datatypes [aexp], [bexp], and [com].  In this chapter, we
     illustrate how the rest of the story can be filled in by building
     a simple lexical analyzer and parser using Coq's functional
-    programming facilities.
+    programming facilities. *)
+*)
+(** [Imp.v]でのImp言語の開発は、具象構文の問題を完全に無視しています。
+    つまり、プログラマが書く文字列をデータ型[aexp]、[bexp]、[com]で定義された抽象構文木にどうやって変換するか、という問題です。
+    この章では、Coqの関数プログラミング機能によって簡単な字句解析器と構文解析器（パーサ）を構築することで、この残っている問題を終わらせます。 *)
 
-    It is not important to understand all the details here (and
+(*
+(** It is not important to understand all the details here (and
     accordingly, the explanations are fairly terse and there are no
     exercises).  The main point is simply to demonstrate that it can
     be done.  You are invited to look through the code -- most of it
@@ -21,25 +26,20 @@
     make out -- but most readers will probably want to just skim down
     to the Examples section at the very end to get the punchline. *)
 *)
-(** [Imp.v]でのImp言語の開発は、具象構文の問題を完全に無視しています。
-    つまり、プログラマが書く文字列をデータ型[aexp]、[bexp]、[com]で定義された抽象構文木にどうやって変換するか、という問題です。
-    この章では、Coqの関数プログラミング機能によって簡単な字句解析器と構文解析器（パーサ）を構築することで、この残っている問題を終わらせます。
- 
-    ここでやることは、細部まで理解する必要はありません（説明はかなり少なく、練習問題もありません。）
+(** ここでやることは、細部まで理解する必要はありません（説明はかなり少なく、練習問題もありません。）
     一番のポイントは単に、それができることを示すことです。
     コードを眺めてみて欲しいところです。ほとんどの部分はそれほど複雑ではありません。
     ただパーサはある「モナド的」プログラミング法をしているので、理解するのにちょっと骨が折れるかもしれません。
     もっとも、ほとんどの読者は、一番最後の「例」の場所まで流し読みしたくなるでしょう。 *)
 
-
-Set Warnings "-notation-overridden,-parsing,-deprecated-implicit-arguments".
+Set Warnings "-notation-overridden,-parsing".
 Require Import Coq.Strings.String.
 Require Import Coq.Strings.Ascii.
 Require Import Coq.Arith.Arith.
 Require Import Coq.Arith.EqNat.
 Require Import Coq.Lists.List.
 Import ListNotations.
-From LF Require Import Maps Imp.
+Require Import Maps Imp.
 
 (* ################################################################# *)
 (*
@@ -127,8 +127,8 @@ Definition tokenize (s : string) : list string :=
   map string_of_list (tokenize_helper white [] (list_of_string s)).
 
 Example tokenize_ex1 :
-    tokenize "abc12==3  223*(3+(a+c))" %string
-  = ["abc"; "12"; "=="; "3"; "223";
+    tokenize "abc12=3  223*(3+(a+c))" %string
+  = ["abc"; "12"; "="; "3"; "223";
        "*"; "("; "3"; "+"; "(";
        "a"; "+"; "c"; ")"; ")"]%string.
 Proof. reflexivity. Qed.
@@ -154,8 +154,8 @@ Inductive optionE (X:Type) : Type :=
   | SomeE : X -> optionE X
   | NoneE : string -> optionE X.
 
-Implicit Arguments SomeE [[X]].
-Implicit Arguments NoneE [[X]].
+Arguments SomeE {X}.
+Arguments NoneE {X}.
 
 (*
 (** Some syntactic sugar to make writing nested match-expressions on
@@ -239,12 +239,12 @@ Definition expect (t : token) : parser unit :=
 (** 識別子 *)
 
 Definition parseIdentifier (xs : list token)
-                         : optionE (id * list token) :=
+                         : optionE (string * list token) :=
 match xs with
 | [] => NoneE "Expected identifier"
 | x::xs' =>
     if forallb isLowerAlpha (list_of_string x) then
-      SomeE (Id x, xs')
+      SomeE (x, xs')
     else
       NoneE ("Illegal identifier:'" ++ x ++ "'")
 end.
@@ -348,7 +348,7 @@ match steps with
      OR DO (u,rest) <-- expect "false" xs;
          SomeE (BFalse,rest)
      OR DO (e,rest) <-- 
-            firstExpect "not" 
+            firstExpect "!" 
                (parseAtomicExp steps') 
                xs;
          SomeE (BNot e, rest)
@@ -359,7 +359,7 @@ match steps with
               SomeE (e, rest'))
      OR DO (e, rest) <== parseProductExp steps' xs;
             (DO (e', rest') <--
-              firstExpect "==" 
+              firstExpect "=" 
                 (parseAExp steps') rest;
               SomeE (BEq e e', rest')
              OR DO (e', rest') <--
@@ -368,7 +368,7 @@ match steps with
                SomeE (BLe e e', rest')
              OR
                NoneE 
-      "Expected '==' or '<=' after arithmetic expression")
+      "Expected '=' or '<=' after arithmetic expression")
 end
 
 with parseConjunctionExp (steps:nat)
@@ -402,7 +402,7 @@ Eval compute in
   testParsing parseProductExp "x*y*(x*x)*x".
 
 Eval compute in 
-  testParsing parseConjunctionExp "not((x==x||x*x<=(x*x)*x)&&x==x". 
+  testParsing parseConjunctionExp "not((x=x||x*x<=(x*x)*x)&&x=x". 
 *)
 
 (*
@@ -418,7 +418,7 @@ Fixpoint parseSimpleCommand (steps:nat)
     DO (u, rest) <-- expect "SKIP" xs;
       SomeE (SKIP, rest)
     OR DO (e,rest) <--
-         firstExpect "IF" (parseBExp steps') xs;
+         firstExpect "IFB" (parseBExp steps') xs;
        DO (c,rest')  <==
          firstExpect "THEN" 
            (parseSequencedCommand steps') rest;
@@ -470,171 +470,22 @@ Definition parse (str : string) : optionE (com * list token) :=
 (** * Examples *)
 *)
 (** * 例 *)
-(* 訳注：以下は本来Eval以下全てコメントアウトされているが、オリジナルのcoqdocでは何も表示されなくなるため、コマンド部分と結果を表示されるようにした。 *)
 
-(*
-Compute parse "
-  IF x == y + 1 + 2 - y * 6 + 3 THEN
+Example eg1 : parse "
+  IFB x = y + 1 + 2 - y * 6 + 3 THEN
     x := x * 1;;
     y := 0
   ELSE
     SKIP
-  END  ".
-====>
-  SomeE
-     (IFB BEq (AId (Id 0))
-              (APlus
-                 (AMinus (APlus (APlus (AId (Id 1)) (ANum 1)) (ANum 2))
-                    (AMult (AId (Id 1)) (ANum 6)))
-                 (ANum 3))
-      THEN Id 0 ::= AMult (AId (Id 0)) (ANum 1);; Id 1 ::= ANum 0
-      ELSE SKIP FI, [])
-*)
-(**
-<<
-Compute parse " 
-  IF x == y + 1 + 2 - y * 6 + 3 THEN 
-    x := x * 1;; 
-    y := 0 
-  ELSE 
-    SKIP 
-  END  ". 
-====> 
-  SomeE 
-     (IFB BEq (AId (Id 0)) 
-              (APlus 
-                 (AMinus (APlus (APlus (AId (Id 1)) (ANum 1)) (ANum 2)) 
-                    (AMult (AId (Id 1)) (ANum 6))) 
-                 (ANum 3)) 
-      THEN Id 0 ::= AMult (AId (Id 0)) (ANum 1);; Id 1 ::= ANum 0 
-      ELSE SKIP FI, []) 
->>
- *)
-
-(*
-Compute parse "
-  SKIP;;
-  z:=x*y*(x*x);;
-  WHILE x==x DO
-    IF z <= z*z && not x == 2 THEN
-      x := z;;
-      y := z
-    ELSE
-      SKIP
-    END;;
-    SKIP
-  END;;
-  x:=z  ".
-====>
-  SomeE
-     (SKIP;;
-      Id 0 ::= AMult (AMult (AId (Id 1)) (AId (Id 2)))
-                     (AMult (AId (Id 1)) (AId (Id 1)));;
-      WHILE BEq (AId (Id 1)) (AId (Id 1)) DO
-        IFB BAnd (BLe (AId (Id 0)) (AMult (AId (Id 0)) (AId (Id 0))))
-                  (BNot (BEq (AId (Id 1)) (ANum 2)))
-           THEN Id 1 ::= AId (Id 0);; Id 2 ::= AId (Id 0)
-           ELSE SKIP FI;;
-        SKIP
-      END;;
-      Id 1 ::= AId (Id 0),
-     [])
-*)
-(**
-<<
-Compute parse " 
-  SKIP;; 
-  z:=x*y*(x*x);; 
-  WHILE x==x DO 
-    IF z <= z*z && not x == 2 THEN 
-      x := z;; 
-      y := z 
-    ELSE 
-      SKIP 
-    END;; 
-    SKIP 
-  END;; 
-  x:=z  ". 
-====> 
-  SomeE 
-     (SKIP;; 
-      Id 0 ::= AMult (AMult (AId (Id 1)) (AId (Id 2))) 
-                     (AMult (AId (Id 1)) (AId (Id 1)));; 
-      WHILE BEq (AId (Id 1)) (AId (Id 1)) DO 
-        IFB BAnd (BLe (AId (Id 0)) (AMult (AId (Id 0)) (AId (Id 0)))) 
-                  (BNot (BEq (AId (Id 1)) (ANum 2))) 
-           THEN Id 1 ::= AId (Id 0);; Id 2 ::= AId (Id 0) 
-           ELSE SKIP FI;; 
-        SKIP 
-      END;; 
-      Id 1 ::= AId (Id 0), 
-     []) 
->>
- *)
-
-(*
-Compute parse "
-  SKIP;;
-  z:=x*y*(x*x);;
-  WHILE x==x DO
-    IF z <= z*z && not x == 2 THEN
-      x := z;;
-      y := z
-    ELSE
-      SKIP
-    END;;
-    SKIP
-  END;;
-  x:=z  ".
-=====>
-  SomeE
-     (SKIP;;
-      Id 0 ::= AMult (AMult (AId (Id 1)) (AId (Id 2)))
-            (AMult (AId (Id 1)) (AId (Id 1)));;
-      WHILE BEq (AId (Id 1)) (AId (Id 1)) DO
-        IFB BAnd (BLe (AId (Id 0)) (AMult (AId (Id 0)) (AId (Id 0))))
-                 (BNot (BEq (AId (Id 1)) (ANum 2)))
-          THEN Id 1 ::= AId (Id 0);;
-               Id 2 ::= AId (Id 0)
-          ELSE SKIP
-        FI;;
-        SKIP
-      END;;
-      Id 1 ::= AId (Id 0),
-     []).
-*)
-(**
-<<
-Compute parse " 
-  SKIP;; 
-  z:=x*y*(x*x);; 
-  WHILE x==x DO 
-    IF z <= z*z && not x == 2 THEN 
-      x := z;; 
-      y := z 
-    ELSE 
-      SKIP 
-    END;; 
-    SKIP 
-  END;; 
-  x:=z  ". 
-=====> 
-  SomeE 
-     (SKIP;; 
-      Id 0 ::= AMult (AMult (AId (Id 1)) (AId (Id 2))) 
-            (AMult (AId (Id 1)) (AId (Id 1)));; 
-      WHILE BEq (AId (Id 1)) (AId (Id 1)) DO 
-        IFB BAnd (BLe (AId (Id 0)) (AMult (AId (Id 0)) (AId (Id 0)))) 
-                 (BNot (BEq (AId (Id 1)) (ANum 2))) 
-          THEN Id 1 ::= AId (Id 0);; 
-               Id 2 ::= AId (Id 0) 
-          ELSE SKIP 
-        FI;; 
-        SKIP 
-      END;; 
-      Id 1 ::= AId (Id 0), 
+  END  "
+= 
+  SomeE (
+     IFB "x" = "y" + 1 + 2 - "y" * 6 + 3 THEN
+       "x" ::= "x" * 1;;
+       "y" ::= 0
+     ELSE
+       SKIP
+     FI,
      []). 
->>
- *)
+Proof. reflexivity. Qed.
 
-(** $Date: 2017-08-24 17:13:02 -0400 (Thu, 24 Aug 2017) $ *)

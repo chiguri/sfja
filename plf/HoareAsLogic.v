@@ -19,7 +19,7 @@
     derivations_ in this new logic.
 
     This chapter is optional.  Before reading it, you'll want to read
-    the \CHAPV1{ProofObjects} chapter in _Logical
+    the [ProofObjects] chapter in _Logical
     Foundations_ (_Software Foundations_, volume 1). *)
 *)
 (** [Hoare]の章におけるホーア論理の提示を「モデル理論的」("model-theoretic")に行うこともできたでしょう。
@@ -34,8 +34,8 @@
     この章はオプションです。
     先に「論理の基礎」（「ソフトウェアの基礎」の第一巻）の[ProofObjects]の章を読んだ方がいいかもしれません。 *)
 
-From PLF Require Import Imp.
-From PLF Require Import Hoare.
+Require Import Imp.
+Require Import Hoare.
 
 (* ################################################################# *)
 (*
@@ -87,7 +87,7 @@ Proof.
 (** As an example, let's construct a proof object representing a
     derivation for the hoare triple
 
-      {{assn_sub X (X+1) (assn_sub X (X+2) (X=3))}} 
+      {{(X=3) [X |-> X + 2] [X |-> X + 1]}}
       X::=X+1 ;; X::=X+2 
       {{X=3}}.
 
@@ -95,42 +95,38 @@ Proof.
 *)
 (** 例として、ホーアの三つ組
 [[
-      {{assn_sub X (X+1) (assn_sub X (X+2) (X=3))}}  
+      {{(X=3) [X |-> X + 2] [X |-> X + 1]}} 
       X::=X+1 ;; X::=X+2  
-      {{X=3}}
+      {{X=3}}. 
 ]]
     の導出を表現する証明オブジェクトを構成しましょう。
     証明オブジェクトを構成するのに Coq のタクティックを使うことができます。*)
 
 Example sample_proof :
   hoare_proof
-    (assn_sub X (APlus (AId X) (ANum 1))
-              (assn_sub X (APlus (AId X) (ANum 2))
-                        (fun st => st X = 3) ))
-    (X ::= APlus (AId X) (ANum 1);; (X ::= APlus (AId X) (ANum 2)))
-    (fun st => st X = 3).
+    ((fun st:state => st X = 3) [X |-> X + 2] [X |-> X + 1])
+    (X ::= X + 1;; X ::= X + 2)
+    (fun st:state => st X = 3).
 Proof.
   eapply H_Seq; apply H_Asgn.
 Qed.
 
 (*
 Print sample_proof.
+
 ====>
   H_Seq
-    (assn_sub X (APlus (AId X) (ANum 1))
-       (assn_sub X (APlus (AId X) (ANum 2))
-                (fun st : state => st X = VNat 3)))
-    (X ::= APlus (AId X) (ANum 1))
-    (assn_sub X (APlus (AId X) (ANum 2)) 
-              (fun st : state => st X = VNat 3))
-    (X ::= APlus (AId X) (ANum 2)) 
-      (fun st : state => st X = VNat 3)
-    (H_Asgn
-       (assn_sub X (APlus (AId X) (ANum 2)) 
-                   (fun st : state => st X = VNat 3))
-       X (APlus (AId X) (ANum 1)))
-    (H_Asgn (fun st : state => st X = VNat 3) X 
-            (APlus (AId X) (ANum 2)))
+  (((fun st : state => st X = 3) [X |-> X + 2]) [X |-> X + 1])
+  (X ::= X + 1)
+  ((fun st : state => st X = 3) [X |-> X + 2]) 
+  (X ::= X + 2)
+  (fun st : state => st X = 3)
+  (H_Asgn
+     ((fun st : state => st X = 3) [X |-> X + 2])
+     X (X + 1))
+  (H_Asgn
+     (fun st : state => st X = 3)
+     X (X + 2))
 *)
 
 (* ################################################################# *)
@@ -168,11 +164,11 @@ Proof.
     command [c]. *)
 *)
 (** Coqの推論機構をホーア論理についてのメタ定理を証明することに使うこともできます。
-    例えば、[Hoare.v]で見た2つの定理に対応するものを以下に示します。
+    例えば、[Hoare]で見た2つの定理に対応するものを以下に示します。
     ここではホーアの三つ組の意味論から直接にではなく、ホーア論理の導出（証明可能性）の構文の面から表現します。
  
     最初のものは、すべての[P]と[c]について、表明[{{P}} c {{True}}]がホーア論理で証明可能(_provable_)であることを言うものです。
-    [Hoare.v]における意味論的証明と比べて、この証明はより複雑になることに注意して下さい。
+    [Hoare]における意味論的証明と比べて、この証明はより複雑になることに注意して下さい。
     実際、コマンド[c]の構造についての帰納法を行う必要があります。*)
 
 Theorem H_Post_True_deriv:
@@ -357,4 +353,3 @@ Proof.
     かなりくどいのです。
     [Hoare2]の修飾付きプログラムの形式化の節が、より良い方法を示してくれます。*)
 
-(** $Date: 2017-08-22 17:13:32 -0400 (Tue, 22 Aug 2017) $ *)

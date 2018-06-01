@@ -4,10 +4,10 @@
 *)
 
 Set Warnings "-notation-overridden,-parsing".
-From PLF Require Import Maps.
-From PLF Require Import Imp.
-From PLF Require Import Smallstep.
-From PLF Require Import Stlc.
+Require Import Maps.
+Require Import Imp.
+Require Import Smallstep.
+Require Import Stlc.
 
 (* ################################################################# *)
 (*
@@ -140,10 +140,10 @@ Module STLCExtendedRecords.
 
 Module FirstTry.
 
-Definition alist (X : Type) := list (id * X).
+Definition alist (X : Type) := list (string * X).
 
 Inductive ty : Type :=
-  | TBase     : id -> ty
+  | TBase     : string -> ty
   | TArrow    : ty -> ty -> ty
   | TRcd      : (alist ty) -> ty.
 
@@ -203,10 +203,10 @@ End FirstTry.
     Coq 標準の[list]型の代わりに、型の構文にリストのコンストラクタ（"nil"と"cons"）を本質的に含めてしまうという方法です。*)
 
 Inductive ty : Type :=
-  | TBase : id -> ty
+  | TBase : string -> ty
   | TArrow : ty -> ty -> ty
   | TRNil : ty
-  | TRCons : id -> ty -> ty -> ty.
+  | TRCons : string -> ty -> ty -> ty.
 
 (*
 (** Similarly, at the level of terms, we have constructors [trnil],
@@ -216,31 +216,32 @@ Inductive ty : Type :=
 (** 同様に、項のレベルで、空レコードに対応するコンストラクタ[trnil]と、フィールドのリストの前に1つのフィールドを追加するコンストラクタ[trcons]を用意します。 *)
 
 Inductive tm : Type :=
-  | tvar : id -> tm
+  | tvar : string -> tm
   | tapp : tm -> tm -> tm
-  | tabs : id -> ty -> tm -> tm
+  | tabs : string -> ty -> tm -> tm
   (* records *)
   (** <<
   (* レコード *)
 >> *)
-  | tproj : tm -> id -> tm
+  | tproj : tm -> string -> tm
   | trnil :  tm
-  | trcons : id -> tm -> tm -> tm.
+  | trcons : string -> tm -> tm -> tm.
 
 (*
 (** Some examples... *)
 *)
 (** いくつかの例です... *)
+Open Scope string_scope.
 
-Notation a := (Id "a").
-Notation f := (Id "f").
-Notation g := (Id "g").
-Notation l := (Id "l").
-Notation A := (TBase (Id "A")).
-Notation B := (TBase (Id "B")).
-Notation k := (Id "k").
-Notation i1 := (Id "i1").
-Notation i2 := (Id "i2").
+Notation a := "a".
+Notation f := "f".
+Notation g := "g".
+Notation l := "l".
+Notation A := (TBase "A").
+Notation B := (TBase "B").
+Notation k := "k".
+Notation i1 := "i1".
+Notation i2 := "i2".
 
 (** [{ i1:A }] *)
 
@@ -361,11 +362,11 @@ Hint Constructors record_tm.
 
 (** Substitution extends easily. *)
 
-Fixpoint subst (x:id) (s:tm) (t:tm) : tm :=
+Fixpoint subst (x:string) (s:tm) (t:tm) : tm :=
   match t with
-  | tvar y => if beq_id x y then s else t
+  | tvar y => if beq_string x y then s else t
   | tabs y T t1 => tabs y T
-                     (if beq_id x y then t1 else (subst x s t1))
+                     (if beq_string x y then t1 else (subst x s t1))
   | tapp t1 t2 => tapp (subst x s t1) (subst x s t2)
   | tproj t1 i => tproj (subst x s t1) i
   | trnil => trnil
@@ -402,9 +403,9 @@ Hint Constructors value.
 *)
 (** 簡約を定義するために、レコード項から1つのフィールドを取り出すユーティリティ関数を定義しておきます。 *)
 
-Fixpoint tlookup (i:id) (tr:tm) : option tm :=
+Fixpoint tlookup (i:string) (tr:tm) : option tm :=
   match tr with
-  | trcons i' t tr' => if beq_id i i' then Some t else tlookup i tr'
+  | trcons i' t tr' => if beq_string i i' then Some t else tlookup i tr'
   | _ => None
   end.
 
@@ -492,10 +493,10 @@ Hint Constructors step.
     同様に[T_Abs]の場合、[well_formed_ty T11] の証明を必要とします。
     なぜなら、[has_type]の帰納的呼び出しは [T12] がwell-formedであることだけを保証するからです。 *)
 
-Fixpoint Tlookup (i:id) (Tr:ty) : option ty :=
+Fixpoint Tlookup (i:string) (Tr:ty) : option ty :=
   match Tr with
   | TRCons i' T Tr' =>
-      if beq_id i i' then Some T else Tlookup i Tr'
+      if beq_string i i' then Some T else Tlookup i Tr'
   | _ => None
   end.
 
@@ -558,6 +559,7 @@ Hint Constructors has_type.
     しかし、もし型システムがどのように動作するか確信できていないなら、最初に基本機能（特に[eapply]ではなく[apply]）を使った証明を行い、次に自動化を使ってその証明を圧縮するのがよいかもしれません。
     証明を始める前に、主張が何かを確かめなさい。 *)
 
+(* GRADE_THEOREM 0.5: typing_example_2 *)
 Lemma typing_example_2 :
   empty |-
     (tapp (tabs a (TRCons i1 (TArrow A A)
@@ -571,6 +573,7 @@ Lemma typing_example_2 :
 Proof.
   (* FILL IN HERE *) Admitted.
 
+(* GRADE_THEOREM 0.5: typing_nonexample *)
 Example typing_nonexample :
   ~ exists T,
       (update empty a (TRCons i2 (TArrow A A)
@@ -616,7 +619,7 @@ Proof with eauto.
   induction T; intros; try solve_by_invert.
   - (* TRCons *)
     inversion H. subst. unfold Tlookup in H0.
-    destruct (beq_id i i0)...
+    destruct (beq_string i s)...
     inversion H0. subst...  Qed.
 
 Lemma step_preserves_record_tm : forall tr tr',
@@ -721,7 +724,7 @@ Proof with eauto.
   remember (@empty ty) as Gamma.
   induction Htyp; subst; try solve_by_invert...
   - (* T_RCons *)
-    simpl in Hget. simpl. destruct (beq_id i i0).
+    simpl in Hget. simpl. destruct (beq_string i i0).
     + (* i is first *)
       simpl. inversion Hget. subst.
       exists t...
@@ -872,7 +875,7 @@ Proof with eauto.
 *)
 (** *** コンテキスト不変性 *)
 
-Inductive appears_free_in : id -> tm -> Prop :=
+Inductive appears_free_in : string -> tm -> Prop :=
   | afi_var : forall x,
       appears_free_in x (tvar x)
   | afi_app1 : forall x t1 t2,
@@ -907,7 +910,7 @@ Proof with eauto.
     apply T_Var... rewrite <- Heqv...
   - (* T_Abs *)
     apply T_Abs... apply IHhas_type. intros y Hafi.
-    unfold update, t_update. destruct (beq_idP x y)...
+    unfold update, t_update. destruct (beq_stringP x y)...
   - (* T_App *)
     apply T_App with T1...
   - (* T_RCons *)
@@ -923,7 +926,7 @@ Proof with eauto.
   - (* T_Abs *)
     destruct IHHtyp as [T' Hctx]... exists T'.
     unfold update, t_update in Hctx.
-    rewrite false_beq_id in Hctx...
+    rewrite false_beq_string in Hctx...
 Qed.
 
 (* ----------------------------------------------------------------- *)
@@ -958,7 +961,7 @@ Proof with eauto.
   induction t;
     intros S Gamma Htypt; simpl; inversion Htypt; subst...
   - (* tvar *)
-    simpl. rename i into y.
+    simpl. rename s into y.
     (* If t = y, we know that
          [empty |- v : U] and
          [Gamma,x:U |- y : S]
@@ -974,7 +977,7 @@ Proof with eauto.
  
        2つの場合に分けて考える: [x=y] の場合と [x<>y] の場合である。 *)
     unfold update, t_update in H0.
-    destruct (beq_idP x y) as [Hxy|Hxy].
+    destruct (beq_stringP x y) as [Hxy|Hxy].
     + (* x=y *)
     (* If [x = y], then we know that [U = S], and that 
        [[x:=v]y = v]. So what we really must show is that 
@@ -1001,7 +1004,7 @@ Proof with eauto.
        [T_Var]から[Gamma |- y : S]を示すことができる。 *)
       apply T_Var...
   - (* tabs *)
-    rename i into y. rename t into T11.
+    rename s into y. rename t into T11.
     (* If [t = tabs y T11 t0], then we know that
          [Gamma,x:U |- tabs y T11 t0 : T11->T12]
          [Gamma,x:U,y:T11 |- t0 : T12]
@@ -1010,10 +1013,10 @@ Proof with eauto.
          [Gamma,x:U |- t0 : S -> Gamma |- [x:=v]t0 S].
 
        We can calculate that
-       [ [x:=v]t = tabs y T11 (if beq_id x y then t0 else [x:=v]t0) ],
+       [ [x:=v]t = tabs y T11 (if beq_string x y then t0 else [x:=v]t0) ],
        and we must show that [Gamma |- [x:=v]t : T11->T12].  We know
        we will do so using [T_Abs], so it remains to be shown that:
-         [Gamma,y:T11 |- if beq_id x y then t0 else [x:=v]t0 : T12]
+         [Gamma,y:T11 |- if beq_string x y then t0 else [x:=v]t0 : T12]
        We consider two cases: [x = y] and [x <> y]. *)
     (* もし [t = tabs y T11 t0] ならば、
          [Gamma,x:U |- tabs y T11 t0 : T11->T12] 
@@ -1023,13 +1026,13 @@ Proof with eauto.
          [Gamma,x:U |- t0 : S -> Gamma |- [x:=v]t0 S] となる。
  
        次のように計算ができる:
-       [ [x:=v]t = tabs y T11 (if beq_id x y then t0 else [x:=v]t0) ] 
+       [ [x:=v]t = tabs y T11 (if beq_string x y then t0 else [x:=v]t0) ] 
        示さなければならないのは [Gamma |- [x:=v]t : T11->T12] である。
        [T_Abs]を使うので、残っているのは次を示すことである:
-         [Gamma,y:T11 |- if beq_id x y then t0 else [x:=v]t0 : T12] 
+         [Gamma,y:T11 |- if beq_string x y then t0 else [x:=v]t0 : T12] 
        2つの場合に分けて考える: [x = y] の場合と [x <> y] の場合である。 *)
     apply T_Abs...
-    destruct (beq_idP x y) as [Hxy|Hxy].
+    destruct (beq_stringP x y) as [Hxy|Hxy].
     + (* x=y *)
       (* If [x = y], then the substitution has no effect.  Context
          invariance shows that [Gamma,y:U,y:T11] and [Gamma,y:T11] are
@@ -1041,7 +1044,7 @@ Proof with eauto.
       eapply context_invariance...
       subst.
       intros x Hafi. unfold update, t_update.
-      destruct (beq_id y x)...
+      destruct (beq_string y x)...
     + (* x<>y *)
       (* If [x <> y], then the IH and context invariance allow 
          us to show that
@@ -1054,8 +1057,8 @@ Proof with eauto.
            [Gamma,y:T11 |- [x:=v]t0 : T12] となる。 *)
       apply IHt. eapply context_invariance...
       intros z Hafi. unfold update, t_update.
-      destruct (beq_idP y z)...
-      subst. rewrite false_beq_id...
+      destruct (beq_stringP y z)...
+      subst. rewrite false_beq_string...
   - (* trcons *)
     apply T_RCons... inversion H7; subst; simpl...
 Qed.
@@ -1154,5 +1157,5 @@ Qed.
 
 End STLCExtendedRecords.
 
-(** $Date: 2017-08-24 17:13:02 -0400 (Thu, 24 Aug 2017) $ *)
+(** $Date$ *)
 

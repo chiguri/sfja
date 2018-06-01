@@ -22,9 +22,9 @@
 
 Set Warnings "-notation-overridden,-parsing".
 Require Import Coq.Arith.Arith.
-From PLF Require Import Maps.
-From PLF Require Import Imp.
-From PLF Require Import Smallstep.
+Require Import Maps.
+Require Import Imp.
+Require Import Smallstep.
 
 Hint Constructors multi.
 
@@ -610,8 +610,8 @@ Proof with auto.
               [t].
 
       - (* FILL IN HERE *)
-[] *)
-*)
+ *)
+  *)
 (** 証明: [|- t \in T] の導出に関する帰納法で証明する。
  
       - 導出で直前に適用した規則が [T_If] である場合、 [t = if t1 then t2 else t3] かつ、 [|- t1 \in Bool]、 [|- t2 \in T] かつ [|- t3 \in T] である。
@@ -626,7 +626,8 @@ Proof with auto.
             - [t1] 自体が簡約できるなら、 [ST_If] を用いることで [t] もまた簡約できる。
  
       - (* ここを埋めなさい *)
-[]  *)
+  *)
+(** [] *)
 
 (*
 (** This theorem is more interesting than the strong progress theorem
@@ -718,8 +719,8 @@ Proof with auto.
              [|- if t1' then t2 else t3 \in T], as required.
 
       - (* FILL IN HERE *)
-[] *)
 *)
+ *)
 (** 証明: [|- t \in T] の導出に関する帰納法で証明する。
  
       - 導出で直前に使った規則が [T_If] の場合、 [t = if t1 then t2 else t3]、かつ [|- t1 \in Bool]、 [|- t2 \in T] かつ [|- t3 \in T] である。
@@ -737,7 +738,8 @@ Proof with auto.
              また、 [T_If] 規則から [|- if t1' then t2 else t3 \in T] であり、これは求める結果である。
  
       - (* ここを埋めなさい *)
-[]  *)
+ *)
+(** [] *)
 
 (*
 (** **** Exercise: 3 stars (preservation_alternate_proof)  *)
@@ -798,7 +800,6 @@ Proof.
   destruct (progress x T HT); auto.
   apply IHP.  apply (preservation x y T HT H).
   unfold stuck. split; auto.   Qed.
-
 
 (* ################################################################# *)
 (*
@@ -918,6 +919,7 @@ Proof.
    ここで ?e' はeapplyで作られた変数です。 *)
 Qed.
 
+
 (*
 (** **** Exercise: 1 star (normalize_ex)  *)
 *)
@@ -943,13 +945,13 @@ Proof.
 (** [] *)
 
 End NormalizePlayground.
+
 Tactic Notation "print_goal" :=
   match goal with |- ?x => idtac x end.
 Tactic Notation "normalize" :=
   repeat (print_goal; eapply multi_step ;
             [ (eauto 10; fail) | (instantiate; simpl)]);
   apply multi_refl.
-
 
 (* ================================================================= *)
 (*
@@ -970,8 +972,8 @@ Tactic Notation "normalize" :=
     counter-example in Coq, but feel free to do so.)
 
     (* FILL IN HERE *)
-[] *)
 *)
+ *)
 (** 主部簡約性が成り立つのなら、その逆の性質、主部展開（subject expansion）性も成り立つかも考えるでしょう。
     すなわち、 [t ==> t'] かつ [|- t' \in T] ならば [|- t \in T] は常に成り立つでしょうか。
     そうだと思うのなら、証明しなさい。
@@ -979,7 +981,8 @@ Tactic Notation "normalize" :=
     （反例をCoqで示す必要はありませんが、示してみるのも面白いでしょう。）
  
     (* FILL IN HERE *) 
-[]  *)
+ *)
+(** [] *)
 
 (*
 (** **** Exercise: 2 stars (variation1)  *)
@@ -1002,7 +1005,8 @@ Tactic Notation "normalize" :=
 
       - Preservation
 
-[] *)
+
+    [] *)
 *)
 (** 先程の問題とは別に、次の規則を型付け関係に追加したとしましょう。
 [[
@@ -1018,7 +1022,8 @@ Tactic Notation "normalize" :=
  
       - 型保存
  
-[] *)
+ 
+    []  *)
 
 (*
 (** **** Exercise: 2 stars (variation2)  *)
@@ -1033,7 +1038,8 @@ Tactic Notation "normalize" :=
    Which of the above properties become false in the presence of
    this rule?  For each one that does, give a counter-example.
 
-[] *)
+
+    [] *)
 *)
 (** 先程の問題とは別に、次の規則を [step] 関係に追加したとしましょう。
 [[
@@ -1043,7 +1049,8 @@ Tactic Notation "normalize" :=
    上の性質のうち、この規則を追加すると偽になるのはどれでしょう。
    偽になるものについてそれぞれ反例を挙げなさい。
  
-[]  *)
+ 
+    []  *)
 
 (*
 (** **** Exercise: 2 stars, optional (variation3)  *)
@@ -1059,7 +1066,8 @@ Tactic Notation "normalize" :=
    Which of the above properties become false in the presence of
    this rule?  For each one that does, give a counter-example.
 
-[] *)
+
+    [] *)
 *)
 (** 先程の問題とは別に、次の規則を追加したとしましょう。
 [[
@@ -1070,7 +1078,8 @@ Tactic Notation "normalize" :=
    上の性質のうち、この規則を追加すると偽になるのはどれでしょう。
    偽になるものについてそれぞれ反例を挙げなさい。
  
-[]  *)
+ 
+    []  *)
 
 (*
 (** **** Exercise: 2 stars, optional (variation4)  *)
@@ -1085,7 +1094,8 @@ Tactic Notation "normalize" :=
    Which of the above properties become false in the presence of
    this rule?  For each one that does, give a counter-example.
 
-[] *)
+
+    [] *)
 *)
 (** 先程の問題とは別に、次の規則を追加したとしましょう。
 [[
@@ -1095,7 +1105,8 @@ Tactic Notation "normalize" :=
    上の性質のうち、この規則を追加すると偽になるのはどれでしょう。
    偽になるものについてそれぞれ反例を挙げなさい。
  
-[]  *)
+ 
+    []  *)
 
 (*
 (** **** Exercise: 2 stars, optional (variation5)  *)
@@ -1110,7 +1121,8 @@ Tactic Notation "normalize" :=
    Which of the above properties become false in the presence of
    this rule?  For each one that does, give a counter-example.
 
-[] *)
+
+    [] *)
 *)
 (** 先程の問題とは別に、次の規則を追加したとしましょう。
 [[
@@ -1120,7 +1132,8 @@ Tactic Notation "normalize" :=
    上の性質のうち、この規則を追加すると偽になるのはどれでしょう。
    偽になるものについてそれぞれ反例を挙げなさい。
  
-[]  *)
+ 
+    []  *)
 
 (*
 (** **** Exercise: 2 stars, optional (variation6)  *)
@@ -1135,7 +1148,8 @@ Tactic Notation "normalize" :=
    Which of the above properties become false in the presence of
    this rule?  For each one that does, give a counter-example.
 
-[] *)
+
+    [] *)
 *)
 (** 先程の問題とは別に、次の規則を追加したとしましょう。
 [[
@@ -1145,7 +1159,8 @@ Tactic Notation "normalize" :=
    上の性質のうち、この規則を追加すると偽になるのはどれでしょう。
    偽になるものについてそれぞれ反例を挙げなさい。
  
-[]  *)
+ 
+    []  *)
 
 (*
 (** **** Exercise: 3 stars, optional (more_variations)  *)
@@ -1156,11 +1171,12 @@ Tactic Notation "normalize" :=
     the ones above.  Try to find ways of selectively breaking
     properties -- i.e., ways of changing the definitions that
     break just one of the properties and leave the others alone.
-[] *)
 *)
+ *)
 (** 上の問題と同様の練習問題を自分で作りなさい。
     さらに、上の性質を選択的に成り立たなくする方法、すなわち、上の性質のうちひとつだけを成り立たなるするよう定義を変更する方法を探しなさい。
-[]  *)
+ *)
+(** [] *)
 
 (*
 (** **** Exercise: 1 star (remove_predzero)  *)
@@ -1174,15 +1190,16 @@ Tactic Notation "normalize" :=
     [step]?  Would doing so create any problems elsewhere?
 
 (* FILL IN HERE *)
-[] *)
 *)
+ *)
 (** 簡約規則 [ST_PredZero] には少し直感に反するところがあります。
     0 の前者を 0 と定義するよりは、未定義とした方が意味があるように感じられるでしょう。
     これは [step] の定義から [ST_PredZero] を取り除くだけで実現できるでしょうか？
     それとも別の場所に問題が起こるでしょうか？
  
 (* FILL IN HERE *) 
-[]  *)
+ *)
+(** [] *)
 
 (*
 (** **** Exercise: 4 stars, advanced (prog_pres_bigstep)  *)
@@ -1190,17 +1207,27 @@ Tactic Notation "normalize" :=
 (** **** 練習問題: ★★★★, advanced (prog_pres_bigstep)  *)
 (*
 (** Suppose our evaluation relation is defined in the big-step style.
-    What are the appropriate analogs of the progress and preservation
-    properties?  (You do not need to prove them.)
+    State appropriate analogs of the progress and preservation
+    properties. (You do not need to prove them.)
+
+    Can you see any limitations of either of your properties?
+    Do they allow for nonterminating commands?
+    Why might we prefer the small-step semantics for stating
+    preservation and progress?
 
 (* FILL IN HERE *)
-[] *)
 *)
+ *)
 (** 評価関係をビッグステップスタイルで定義したとしましょう。
-    その場合、進行と型保存性に当たるものとしては何が適切でしょうか。
+    進行と型保存性に当たるものとして適当なものを記しなさい。
     （証明する必要はありません。）
  
+    その性質について何か制限は必要ですか？
+    終了しないコマンドを許容しますか？
+    なぜ型保存性と進行に関してスモールステップの方が望ましいのでしょうか？
+ 
 (* FILL IN HERE *) 
-[]  *)
+ *)
+(** [] *)
 
-(** $Date: 2017-08-22 17:13:32 -0400 (Tue, 22 Aug 2017) $ *)
+(** $Date$ *)

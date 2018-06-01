@@ -11,8 +11,8 @@ Require Import Coq.omega.Omega.
 Require Import Coq.Lists.List.
 Require Import Coq.Logic.FunctionalExtensionality.
 Import ListNotations.
-From PLF Require Import Maps.
-From PLF Require Import Imp.
+Require Import Maps.
+Require Import Imp.
 
 (*
 (** *** Some Advice for Working on Exercises:
@@ -20,11 +20,11 @@ From PLF Require Import Imp.
     - Most of the Coq proofs we ask you to do are similar to proofs
       that we've provided.  Before starting to work on exercises
       problems, take the time to work through our proofs (both
-      informally, on paper, and in Coq) and make sure you understand
-      them in detail.  This will save you a lot of time.
+      informally and in Coq) and make sure you understand them in
+      detail.  This will save you a lot of time.
 
     - The Coq proofs we're doing now are sufficiently complicated that
-      it is more or less impossible to complete them simply by random
+      it is more or less impossible to complete them by random
       experimentation or "following your nose."  You need to start
       with an idea about why the property is true and how the proof is
       going to go.  The best way to do this is to write out at least a
@@ -34,23 +34,22 @@ From PLF Require Import Imp.
       convince them that the theorem is true; then try to formalize
       your explanation.
 
-    - Use automation to save work!  The proofs in this chapter's
-      exercises can get pretty long if you try to write out all the
-      cases explicitly. *)
+    - Use automation to save work!  The proofs in this chapter can get
+      pretty long if you try to write out all the cases explicitly. *)
 *)
 (** *** 課題についてのアドバイス
  
     - Coqによる証明問題は、そこまでに文中で行ってきた証明となるべく同じようにできるようにしています。
-      課題に取り組む前に、そこまでの証明を自分でも（紙上とCoqの両方で）やってみなさい。
+      課題に取り組む前に、そこまでの証明を自分でも（手とCoqの両方で）やってみなさい。
       そして、細部まで理解していることを確認しなさい。そうすることは、多くの時間を節約することになるでしょう。
  
-    - 問題にする Coq の証明はそれなりに複雑なため、単に怪しそうなところをランダムに探ってみるような方法で解くことはまず無理です。
+    - 問題にする Coq の証明はそれなりに複雑なため、怪しそうなところをランダムに探ってみたり、直感に任せたりといった方法で解くことはまず無理です。
       なぜその性質が真で、どう進めば証明になるかを最初に考える必要があります。
       そのための一番良い方法は、形式的な証明を始める前に、紙の上に非形式的な証明をスケッチでも良いので書いてみることです。
       そうすることで、定理が成立することを直観的に確信できます。
  
-    - 作業を減らすために自動化を使いなさい。
-      この章の練習問題の証明は、すべての場合を明示的に書き出すととても長くなります。*)
+    - 作業を減らすために自動化を使いましょう。
+      この章に出てくる証明は、すべての場合を明示的に書き出すととても長くなります。*)
 
 (* ################################################################# *)
 (*
@@ -68,8 +67,8 @@ From PLF Require Import Imp.
     program that evaluates to the same number as the original.
 
     To talk about the correctness of program transformations for the
-    full Imp language, including assignment and other commands, we
-    need to consider the role of variables and state. *)
+    full Imp language, in particular assignment, we need to consider
+    the role of variables and state. *)
 *)
 (** これまでの章で、簡単なプログラム変換の正しさを調べました。
     [optimize_0plus]関数です。
@@ -77,7 +76,7 @@ From PLF Require Import Imp.
     それには変数もなく、そのためプログラム変換が正しいとはどういうことを意味するかを定義することはとても簡単でした。
     つまり、変換の結果得られるプログラムが常に、それを評価すると元のプログラムと同じ数値になるということでした。
  
-    代入やほかのコマンド含む、Imp言語全体についてプログラム変換の正しさを語るためには、変数の役割、および状態について考えなければなりません。*)
+    Imp言語全体、特に代入について、プログラム変換の正しさを語るためには、変数の役割、および状態について考えなければなりません。*)
 
 (* ================================================================= *)
 (*
@@ -105,13 +104,13 @@ Definition bequiv (b1 b2 : bexp) : Prop :=
     and boolean expressions. *)
 
 Theorem aequiv_example:
-  aequiv (AMinus (AId X) (AId X)) (ANum 0).
+  aequiv (X - X) 0.
 Proof.
   intros st. simpl. omega.
 Qed.
 
 Theorem bequiv_example:
-  bequiv (BEq (AMinus (AId X) (AId X)) (ANum 0)) BTrue.
+  bequiv (X - X = 0) true.
 Proof.
   intros st. unfold beval.
   rewrite aequiv_example. reflexivity.
@@ -162,7 +161,7 @@ Proof.
   intros c st st'.
   split; intros H.
   - (* -> *)
-    inversion H. subst.
+    inversion H; subst.
     inversion H2. subst.
     assumption.
   - (* <- *)
@@ -205,12 +204,12 @@ Proof.
     apply E_IfTrue. reflexivity. assumption.  Qed.
 
 (*
-(** Of course, few programmers would be tempted to write a conditional
-    whose guard is literally [BTrue].  A more interesting case is when
-    the guard is _equivalent_ to true: *)
+(** Of course, no human programmer would write a conditional whose
+    guard is literally [BTrue].  The interesting case is when the
+    guard is _equivalent_ to true: *)
 *)
-(** もちろん、ガードが[BTrue]そのままである条件文を書こうとするプログラマはほとんどいないでしょう。
-    より興味深いのは、ガードが真と「同値である」場合です。 *)
+(** もちろん、ガードが[BTrue]そのままである条件文を書こうとするプログラマなんていないでしょう。
+    興味深いのは、ガードが真と「同値である」場合です。 *)
 (*
 (** _Theorem_: If [b] is equivalent to [BTrue], then [IFB b THEN c1
     ELSE c2 FI] is equivalent to [c1]. *)
@@ -368,14 +367,13 @@ Proof.
 (** Write an informal proof of [WHILE_false].
 
 (* FILL IN HERE *)
-[]
 *)
  *)
 (** [WHILE_false]の非形式的証明を記述しなさい。
  
 (* FILL IN HERE *) 
-[] 
  *)
+(** [] *)
 
 (*
 (** To prove the second fact, we need an auxiliary lemma stating that
@@ -430,9 +428,8 @@ Proof.
   intros H.
   remember (WHILE b DO c END) as cw eqn:Heqcw.
   induction H;
-    (* Most rules don't apply, and we can rule them out
-       by inversion *)
-    inversion Heqcw; subst; clear Heqcw.
+  (* Most rules don't apply; we rule them out by inversion: *)
+  inversion Heqcw; subst; clear Heqcw.
   (* The two interesting cases are the ones for WHILE loops: *)
   - (* E_WhileFalse *) (* contradictory -- b is always true! *)
     unfold bequiv in Hb.
@@ -469,17 +466,17 @@ Proof.
     ヒント：ここで[WHILE_true_nonterm]を使いなさい。*)
 
 Theorem WHILE_true: forall b c,
-  bequiv b BTrue  ->
+  bequiv b true  ->
   cequiv
     (WHILE b DO c END)
-    (WHILE BTrue DO SKIP END).
+    (WHILE true DO SKIP END).
 Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** A more interesting fact about [WHILE] commands is that any finite
-    number of copies of the body can be "unrolled" without changing
-    meaning.  Unrolling is a common transformation in real compilers. *)
+(** A more interesting fact about [WHILE] commands is that any number
+    of copies of the body can be "unrolled" without changing meaning.
+    Loop unrolling is a common transformation in real compilers. *)
 
 Theorem loop_unrolling: forall b c,
   cequiv
@@ -518,20 +515,20 @@ Proof.
 (** Proving program properties involving assignments is one place
     where the Functional Extensionality axiom often comes in handy. *)
 
-Theorem identity_assignment : forall (X:id),
+Theorem identity_assignment : forall (X:string),
   cequiv
-    (X ::= AId X)
+    (X ::= X)
     SKIP.
 Proof.
    intros. split; intro H.
      - (* -> *)
        inversion H; subst. simpl.
-       replace (t_update st X (st X)) with st.
+       replace (st & { X --> st X }) with st.
        + constructor.
        + apply functional_extensionality. intro.
          rewrite t_update_same; reflexivity.
      - (* <- *)
-       replace st' with (t_update st' X (aeval st' (AId X))).
+       replace st' with (st' & { X --> aeval st' X }).
        + inversion H. subst. apply E_Ass. reflexivity.
        + apply functional_extensionality. intro.
          rewrite t_update_same. reflexivity.
@@ -541,8 +538,8 @@ Qed.
 (** **** Exercise: 2 stars, recommended (assign_aequiv)  *)
 *)
 (** **** 練習問題: ★★, recommended (assign_aequiv)  *)
-Theorem assign_aequiv : forall X e,
-  aequiv (AId X) e ->
+Theorem assign_aequiv : forall (X:string) e,
+  aequiv X e ->
   cequiv SKIP (X ::= e).
 Proof.
   (* FILL IN HERE *) Admitted.
@@ -563,50 +560,50 @@ Proof.
     [equiv_classes]. *)
 
 Definition prog_a : com :=
-  WHILE BNot (BLe (AId X) (ANum 0)) DO
-    X ::= APlus (AId X) (ANum 1)
+  WHILE ! (X <= 0) DO
+    X ::= X + 1
   END.
 
 Definition prog_b : com :=
-  IFB BEq (AId X) (ANum 0) THEN
-    X ::= APlus (AId X) (ANum 1);;
-    Y ::= ANum 1
+  IFB X = 0 THEN
+    X ::= X + 1;;
+    Y ::= 1
   ELSE
-    Y ::= ANum 0
+    Y ::= 0
   FI;;
-  X ::= AMinus (AId X) (AId Y);;
-  Y ::= ANum 0.
+  X ::= X - Y;;
+  Y ::= 0.
 
 Definition prog_c : com :=
   SKIP.
 
 Definition prog_d : com :=
-  WHILE BNot (BEq (AId X) (ANum 0)) DO
-    X ::= APlus (AMult (AId X) (AId Y)) (ANum 1)
+  WHILE ! (X = 0) DO
+    X ::= (X * Y) + 1
   END.
 
 Definition prog_e : com :=
-  Y ::= ANum 0.
+  Y ::= 0.
 
 Definition prog_f : com :=
-  Y ::= APlus (AId X) (ANum 1);;
-  WHILE BNot (BEq (AId X) (AId Y)) DO
-    Y ::= APlus (AId X) (ANum 1)
+  Y ::= X + 1;;
+  WHILE ! (X = Y) DO
+    Y ::= X + 1
   END.
 
 Definition prog_g : com :=
-  WHILE BTrue DO
+  WHILE true DO
     SKIP
   END.
 
 Definition prog_h : com :=
-  WHILE BNot (BEq (AId X) (AId X)) DO
-    X ::= APlus (AId X) (ANum 1)
+  WHILE ! (X = X) DO
+    X ::= X + 1
   END.
 
 Definition prog_i : com :=
-  WHILE BNot (BEq (AId X) (AId Y)) DO
-    X ::= APlus (AId Y) (ANum 1)
+  WHILE ! (X = Y) DO
+    X ::= Y + 1
   END.
 
 Definition equiv_classes : list (list com)
@@ -620,10 +617,10 @@ Definition equiv_classes : list (list com)
 (** * 振る舞い同値の性質 *)
 
 (*
-(** We next consider some fundamental properties of the program
-    equivalence relations. *)
+(** We next consider some fundamental properties of program
+    equivalence. *)
 *)
-(** ここからは、プログラムの同値関係に関する性質を調べていきましょう。*)
+(** ここからは、プログラムの同値性に関する性質を調べていきましょう。*)
 
 (* ================================================================= *)
 (*
@@ -903,20 +900,20 @@ Proof.
 Example congruence_example:
   cequiv
     (* Program 1: *)
-    (X ::= ANum 0;;
-     IFB (BEq (AId X) (ANum 0))
+    (X ::= 0;;
+     IFB X = 0
      THEN
-       Y ::= ANum 0
+       Y ::= 0
      ELSE
-       Y ::= ANum 42
+       Y ::= 42
      FI)
     (* Program 2: *)
-    (X ::= ANum 0;;
-     IFB (BEq (AId X) (ANum 0))
+    (X ::= 0;;
+     IFB X = 0
      THEN
-       Y ::= AMinus (AId X) (AId X)   (* <--- changed here *)
+       Y ::= X - X   (* <--- changed here *)
      ELSE
-       Y ::= ANum 42
+       Y ::= 42
      FI).
 Proof.
   apply CSeq_congruence.
@@ -1010,10 +1007,12 @@ Fixpoint fold_constants_aexp (a : aexp) : aexp :=
     end
   end.
 
+(* needed for parsing the examples below *)
+Local Open Scope aexp_scope.
+Local Open Scope bexp_scope.
+
 Example fold_aexp_ex1 :
-    fold_constants_aexp
-      (AMult (APlus (ANum 1) (ANum 2)) (AId X))
-  = AMult (ANum 3) (AId X).
+    fold_constants_aexp ((1 + 2) * X) = (3 * X).
 Proof. reflexivity. Qed.
 
 (*
@@ -1029,10 +1028,7 @@ Proof. reflexivity. Qed.
     定義と証明が長くなるだけです。*)
 
 Example fold_aexp_ex2 :
-    fold_constants_aexp
-      (AMinus (AId X) (APlus (AMult (ANum 0) (ANum 6))
-                             (AId Y)))
-  = AMinus (AId X) (APlus (ANum 0) (AId Y)).
+  fold_constants_aexp (X - ((0 * 6) + Y)) = (X - (0 + Y)).
 Proof. reflexivity. Qed.
 
 (*
@@ -1077,17 +1073,12 @@ Fixpoint fold_constants_bexp (b : bexp) : bexp :=
   end.
 
 Example fold_bexp_ex1 :
-    fold_constants_bexp (BAnd BTrue (BNot (BAnd BFalse BTrue)))
-  = BTrue.
+  fold_constants_bexp (true && ! (false && true)) = true.
 Proof. reflexivity. Qed.
 
 Example fold_bexp_ex2 :
-    fold_constants_bexp
-      (BAnd (BEq (AId X) (AId Y))
-            (BEq (ANum 0)
-                 (AMinus (ANum 2) (APlus (ANum 1)
-                                         (ANum 1)))))
-  = BAnd (BEq (AId X) (AId Y)) BTrue.
+  fold_constants_bexp ((X = Y) && (0 = (2 - (1 + 1)))) =
+  ((X = Y) && true).
 Proof. reflexivity. Qed.
 
 (*
@@ -1122,35 +1113,33 @@ Fixpoint fold_constants_com (c : com) : com :=
 Example fold_com_ex1 :
   fold_constants_com
     (* Original program: *)
-    (X ::= APlus (ANum 4) (ANum 5);;
-     Y ::= AMinus (AId X) (ANum 3);;
-     IFB BEq (AMinus (AId X) (AId Y))
-             (APlus (ANum 2) (ANum 4)) THEN
+    (X ::= 4 + 5;;
+     Y ::= X - 3;;
+     IFB (X - Y) = (2 + 4) THEN
        SKIP
      ELSE
-       Y ::= ANum 0
+       Y ::= 0
      FI;;
-     IFB BLe (ANum 0)
-             (AMinus (ANum 4) (APlus (ANum 2) (ANum 1)))
+     IFB 0 <= (4 - (2 + 1))
      THEN
-       Y ::= ANum 0
+       Y ::= 0
      ELSE
        SKIP
      FI;;
-     WHILE BEq (AId Y) (ANum 0) DO
-       X ::= APlus (AId X) (ANum 1)
+     WHILE Y = 0 DO
+       X ::= X + 1
      END)
   = (* After constant folding: *)
-    (X ::= ANum 9;;
-     Y ::= AMinus (AId X) (ANum 3);;
-     IFB BEq (AMinus (AId X) (AId Y)) (ANum 6) THEN
+    (X ::= 9;;
+     Y ::= X - 3;;
+     IFB (X - Y) = 6 THEN
        SKIP
      ELSE
-       (Y ::= ANum 0)
+       Y ::= 0
      FI;;
-     Y ::= ANum 0;;
-     WHILE BEq (AId Y) (ANum 0) DO
-       X ::= APlus (AId X) (ANum 1)
+     Y ::= 0;;
+     WHILE Y = 0 DO
+       X ::= X + 1 
      END).
 Proof. reflexivity. Qed.
 
@@ -1465,7 +1454,7 @@ Proof.
 *)
 (** **** 練習問題: ★★★★, advanced, optional (optimize_0plus) *)
 (*
-(** Recall the definition [optimize_0plus] from the \CHAPV1{Imp} chapter of _Logical 
+(** Recall the definition [optimize_0plus] from the [Imp] chapter of _Logical 
     Foundations_: 
 
     Fixpoint optimize_0plus (e:aexp) : aexp :=
@@ -1545,9 +1534,10 @@ Proof.
 
 (* ################################################################# *)
 (*
+(** * Proving Inequivalence *)
 (** * Proving That Programs Are _Not_ Equivalent *)
 *)
-(** * プログラムが同値でないことを証明する *)
+(** * 非等価性の証明 *)
 
 (*
 (** Suppose that [c1] is a command of the form [X ::= a1;; Y ::= a2]
@@ -1590,12 +1580,12 @@ Proof.
 *)
 (** 次が、式の中の指定された変数を別の算術式で置換する関数の形式的定義です。*)
 
-Fixpoint subst_aexp (i : id) (u : aexp) (a : aexp) : aexp :=
+Fixpoint subst_aexp (i : string) (u : aexp) (a : aexp) : aexp :=
   match a with
   | ANum n       =>
       ANum n
   | AId i'       =>
-      if beq_id i i' then u else AId i'
+      if beq_string i i' then u else AId i'
   | APlus a1 a2  =>
       APlus (subst_aexp i u a1) (subst_aexp i u a2)
   | AMinus a1 a2 =>
@@ -1605,9 +1595,8 @@ Fixpoint subst_aexp (i : id) (u : aexp) (a : aexp) : aexp :=
   end.
 
 Example subst_aexp_ex :
-  subst_aexp X (APlus (ANum 42) (ANum 53))
-             (APlus (AId Y) (AId X))
-= (APlus (AId Y) (APlus (ANum 42) (ANum 53))).
+  subst_aexp X (42 + 53) (Y + X)
+  = (Y + (42 + 53)).
 Proof. reflexivity.  Qed.
 
 (*
@@ -1637,33 +1626,33 @@ Definition subst_equiv_property := forall i1 i2 a1 a2,
 
     Consider the following program:
 
-       X ::= APlus (AId X) (ANum 1);; Y ::= AId X
+       X ::= X + 1;; Y ::= X
 
     Note that
 
-       (X ::= APlus (AId X) (ANum 1);; Y ::= AId X)
-       / empty_state \\ st1,
+       (X ::= X + 1;; Y ::= X)
+       / { --> 0 } \\ st1,
 
-    where [st1 = { X |-> 1, Y |-> 1 }].
+    where [st1 = { X --> 1; Y --> 1 }].
 
     By assumption, we know that
 
-      cequiv (X ::= APlus (AId X) (ANum 1);;
-              Y ::= AId X)
-             (X ::= APlus (AId X) (ANum 1);;
-              Y ::= APlus (AId X) (ANum 1))
+      cequiv (X ::= X + 1;;
+              Y ::= X)
+             (X ::= X + 1;;
+              Y ::= X + 1)
 
     so, by the definition of [cequiv], we have
 
-      (X ::= APlus (AId X) (ANum 1);; Y ::= APlus (AId X) (ANum 1))
-      / empty_state \\ st1.
+      (X ::= X + 1;; Y ::= X + 1
+      / { --> 0 } \\ st1.
 
     But we can also derive
 
-      (X ::= APlus (AId X) (ANum 1);; Y ::= APlus (AId X) (ANum 1))
-      / empty_state \\ st2,
+      (X ::= X + 1;; Y ::= X + 1)
+      / { --> 0 } \\ st2,
 
-    where [st2 = { X |-> 1, Y |-> 2 }].  But [st1 <> st2], which is a
+    where [st2 = { X --> 1; Y --> 2 }].  But [st1 <> st2], which is a
     contradiction, since [ceval] is deterministic!  [] *)
 *)
 (** 残念ながら、この性質は、常には成立「しません」。
@@ -1680,34 +1669,35 @@ Definition subst_equiv_property := forall i1 i2 a1 a2,
     が成立するとしましょう。
     ここで、次のプログラムを考えます。
 [[
-       X ::= APlus (AId X) (ANum 1);; Y ::= AId X 
+       X ::= X + 1;; Y ::= X 
 ]]
     次のことに注意しましょう。
 [[
-       (X ::= APlus (AId X) (ANum 1);; Y ::= AId X) 
-       / empty_state \\ st1 
+       (X ::= X + 1;; Y ::= X) 
+       / { --> 0 } \\ st1 
 ]]
-    ここで [st1 = { X |-> 1, Y |-> 1 }]です。
+    ここで [st1 = { X --> 1; Y --> 1 }] です。
  
     仮定より、次が言えます。
 [[
-      cequiv (X ::= APlus (AId X) (ANum 1);; 
-              Y ::= AId X) 
-             (X ::= APlus (AId X) (ANum 1);; 
-              Y ::= APlus (AId X) (ANum 1)) 
+      cequiv (X ::= X + 1;; 
+              Y ::= X) 
+             (X ::= X + 1;; 
+              Y ::= X + 1) 
 ]]
     すると、[cequiv]の定義より、次が言えます。
 [[
-      (X ::= APlus (AId X) (ANum 1);; Y ::= APlus (AId X) (ANum 1)) 
-      / empty_state \\ st1 
+      (X ::= X + 1;; Y ::= X + 1 
+      / { --> 0 } \\ st1 
 ]]
     しかし次のことも言えます。
 [[
-      (X ::= APlus (AId X) (ANum 1);; Y ::= APlus (AId X) (ANum 1)) 
-      / empty_state \\ st2 
+      (X ::= X + 1;; Y ::= X + 1) 
+      / { --> 0 } \\ st2 
 ]]
-    ただし[st2 = { X |-> 1, Y |-> 2 }]です。
+    ただし [st2 = { X --> 1; Y --> 2 }] です。
     [st1 <> st2]であるはずなので、これは[ceval]が決定性を持つことに矛盾します! [] *)
+
 
 Theorem subst_inequiv :
   ~ subst_equiv_property.
@@ -1718,31 +1708,31 @@ Proof.
   (* Here is the counterexample: assuming that [subst_equiv_property]
      holds allows us to prove that these two programs are
      equivalent... *)
-  remember (X ::= APlus (AId X) (ANum 1);;
-            Y ::= AId X)
+  remember (X ::= X + 1;;
+            Y ::= X)
       as c1.
-  remember (X ::= APlus (AId X) (ANum 1);;
-            Y ::= APlus (AId X) (ANum 1))
+  remember (X ::= X + 1;;
+            Y ::= X + 1)
       as c2.
   assert (cequiv c1 c2) by (subst; apply Contra).
 
   (* ... allows us to show that the command [c2] can terminate
      in two different final states:
-        st1 = {X |-> 1, Y |-> 1}
-        st2 = {X |-> 1, Y |-> 2}. *)
-  remember (t_update (t_update empty_state X 1) Y 1) as st1.
-  remember (t_update (t_update empty_state X 1) Y 2) as st2.
-  assert (H1: c1 / empty_state \\ st1);
-  assert (H2: c2 / empty_state \\ st2);
+        st1 = {X --> 1; Y --> 1}
+        st2 = {X --> 1; Y --> 2}. *)
+  remember {X --> 1 ; Y --> 1} as st1.
+  remember {X --> 1 ; Y --> 2} as st2.
+  assert (H1: c1 / { --> 0 } \\ st1);
+  assert (H2: c2 / { --> 0 } \\ st2);
   try (subst;
-       apply E_Seq with (st' := (t_update empty_state X 1));
+       apply E_Seq with (st' := {X --> 1});
        apply E_Ass; reflexivity).
   apply H in H1.
 
   (* Finally, we use the fact that evaluation is deterministic
      to obtain a contradiction. *)
   assert (Hcontra: st1 = st2)
-    by (apply (ceval_deterministic c2 empty_state); assumption).
+    by (apply (ceval_deterministic c2 { --> 0 }); assumption).
   assert (Hcontra': st1 Y = st2 Y)
     by (rewrite Hcontra; reflexivity).
   subst. inversion Hcontra'.  Qed.
@@ -1760,7 +1750,7 @@ Proof.
 (** 上で成立すると考えていた同値は、完全に意味がないものではありません。
     それは実際、ほとんど正しいのです。それを直すためには、最初の代入の右辺に変数[X]が現れる場合を排除すれば良いのです。*)
 
-Inductive var_not_used_in_aexp (X:id) : aexp -> Prop :=
+Inductive var_not_used_in_aexp (X:string) : aexp -> Prop :=
   | VNUNum: forall n, var_not_used_in_aexp X (ANum n)
   | VNUId: forall Y, X <> Y -> var_not_used_in_aexp X (AId Y)
   | VNUPlus: forall a1 a2,
@@ -1778,7 +1768,7 @@ Inductive var_not_used_in_aexp (X:id) : aexp -> Prop :=
 
 Lemma aeval_weakening : forall i st a ni,
   var_not_used_in_aexp i a ->
-  aeval (t_update st i ni) a = aeval st a.
+  aeval (st & { i --> ni }) a = aeval st a.
 Proof.
   (* FILL IN HERE *) Admitted.
 
@@ -1798,7 +1788,7 @@ Proof.
 (** Prove that an infinite loop is not equivalent to [SKIP] *)
 
 Theorem inequiv_exercise:
-  ~ cequiv (WHILE BTrue DO SKIP END) SKIP.
+  ~ cequiv (WHILE true DO SKIP END) SKIP.
 Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
@@ -1855,11 +1845,11 @@ Module Himp.
 
 Inductive com : Type :=
   | CSkip : com
-  | CAss : id -> aexp -> com
+  | CAss : string -> aexp -> com
   | CSeq : com -> com -> com
   | CIf : bexp -> com -> com -> com
   | CWhile : bexp -> com -> com
-  | CHavoc : id -> com.                (* <---- new *)
+  | CHavoc : string -> com.                (* <---- new *)
 
 Notation "'SKIP'" :=
   CSkip.
@@ -1884,9 +1874,9 @@ Reserved Notation "c1 '/' st '\\' st'"
 
 Inductive ceval : com -> state -> state -> Prop :=
   | E_Skip : forall st : state, SKIP / st \\ st
-  | E_Ass : forall (st : state) (a1 : aexp) (n : nat) (X : id),
+  | E_Ass : forall (st : state) (a1 : aexp) (n : nat) (X : string),
       aeval st a1 = n ->
-      (X ::= a1) / st \\ t_update st X n
+      (X ::= a1) / st \\ st & { X --> n }
   | E_Seq : forall (c1 c2 : com) (st st' st'' : state),
       c1 / st \\ st' ->
       c2 / st' \\ st'' ->
@@ -1914,12 +1904,12 @@ Inductive ceval : com -> state -> state -> Prop :=
 (** As a sanity check, the following claims should be provable for
     your definition: *)
 
-Example havoc_example1 : (HAVOC X) / empty_state \\ t_update empty_state X 0.
+Example havoc_example1 : (HAVOC X) / { --> 0 } \\ { X --> 0 }.
 Proof.
 (* FILL IN HERE *) Admitted.
 
 Example havoc_example2 :
-  (SKIP;; HAVOC Z) / empty_state \\ t_update empty_state Z 42.
+  (SKIP;; HAVOC Z) / { --> 0 } \\ { Z --> 42 }.
 Proof.
 (* FILL IN HERE *) Admitted.
 (** [] *)
@@ -1957,7 +1947,7 @@ Definition ptwice :=
   HAVOC X;; HAVOC Y.
 
 Definition pcopy :=
-  HAVOC X;; Y ::= AId X.
+  HAVOC X;; Y ::= X.
 
 (** If you think they are equivalent, then prove it. If you think they
     are not, then prove that.  (Hint: You may find the [assert] tactic
@@ -1983,13 +1973,13 @@ Proof. (* FILL IN HERE *) Admitted.
 (** Consider the following commands: *)
 
 Definition p1 : com :=
-  WHILE (BNot (BEq (AId X) (ANum 0))) DO
+  WHILE ! (X = 0) DO
     HAVOC Y;;
-    X ::= APlus (AId X) (ANum 1)
+    X ::= X + 1
   END.
 
 Definition p2 : com :=
-  WHILE (BNot (BEq (AId X) (ANum 0))) DO
+  WHILE ! (X = 0) DO
     SKIP
   END.
 
@@ -2022,15 +2012,15 @@ Proof. (* FILL IN HERE *) Admitted.
     [p4]?) *)
 
 Definition p3 : com :=
-  Z ::= ANum 1;;
-  WHILE (BNot (BEq (AId X) (ANum 0))) DO
+  Z ::= 1;;
+  WHILE ! (X = 0) DO
     HAVOC X;;
     HAVOC Z
   END.
 
 Definition p4 : com :=
-  X ::= (ANum 0);;
-  Z ::= (ANum 1).
+  X ::= 0;;
+  Z ::= 1.
 
 
 Theorem p3_p4_inequiv : ~ cequiv p3 p4.
@@ -2047,12 +2037,12 @@ Proof. (* FILL IN HERE *) Admitted.
     Conversely, is it always possible to make [p5] terminate?) *)
 
 Definition p5 : com :=
-  WHILE (BNot (BEq (AId X) (ANum 1))) DO
+  WHILE ! (X = 1) DO
     HAVOC X
   END.
 
 Definition p6 : com :=
-  X ::= ANum 1.
+  X ::= 1.
 
 
 Theorem p5_p6_equiv : cequiv p5 p6.
@@ -2073,7 +2063,7 @@ End Himp.
 (** **** 練習問題: ★★★★, optional (for_while_equiv) *)
 (*
 (** This exercise extends the optional [add_for_loop] exercise from
-    the \CHAPV1{Imp} chapter, where you were asked to extend the language
+    the [Imp] chapter, where you were asked to extend the language
     of commands with C-style [for] loops.  Prove that the command:
 
       for (c1 ; b ; c2) {
@@ -2141,7 +2131,7 @@ Proof.
 Definition capprox (c1 c2 : com) : Prop := forall (st st' : state),
   c1 / st \\ st' -> c2 / st \\ st'.
 
-(** For example, the program [c1 = WHILE X <> 1 DO X ::= X - 1 END]
+(** For example, the program [c1 = WHILE !(X = 1) DO X ::= X - 1 END]
     approximates [c2 = X ::= 1], but [c2] does not approximate [c1]
     since [c1] does not terminate when [X = 0] but [c2] does.  If two
     programs approximate each other in both directions, then they are
@@ -2175,5 +2165,4 @@ Theorem zprop_preserving : forall c c',
 Proof. (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** $Date: 2017-08-22 17:13:32 -0400 (Tue, 22 Aug 2017) $ *)
 

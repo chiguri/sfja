@@ -9,34 +9,57 @@
 *)
 (** 始める前に、前の章の定義をここに持ってきます。 *)
 
-Require Export LF.Basics.
+Require Export Basics.
 
 (*
 (** For the [Require Export] to work, you first need to use
     [coqc] to compile [Basics.v] into [Basics.vo].  This is like
-    making a .class file from a .java file, or a .o file from a .c
-    file.  There are two ways to do it:
+    making a [.class] file from a [.java] file, or a [.o] file from a
+    [.c] file.  There are two ways to do it:
 
      - In CoqIDE:
 
          Open [Basics.v].  In the "Compile" menu, click on "Compile
          Buffer".
 
-         (N.b.: These instructions need to be updated to take the "-R
-         LF ." into account.  Can a CoqIDE expert tell me how this is
-         done, please?)
-
-     - From the command line:
+     - From the command line: Either
 
          [make Basics.vo]
 
-   If you have trouble (e.g., if you get complaints about missing
-   identifiers later in the file), it may be because the "load path"
-   for Coq is not set up correctly.  The [Print LoadPath.] command may
-   be helpful in sorting out such issues. *)
+       (assuming you've downloaded the whole LF directory and have a
+       working [make] command) or
+
+         [coqc Basics.v]
+
+       (which should work from any terminal window).
+
+    If you have trouble (e.g., if you get complaints about missing
+    identifiers later in the file), it may be because the "load path"
+    for Coq is not set up correctly.  The [Print LoadPath.] command may
+    be helpful in sorting out such issues.
+
+    In particular, if you see a message like
+
+        [Compiled library Foo makes inconsistent assumptions over
+        library Coq.Init.Bar]
+
+    you should check whether you have multiple installations of Coq on
+    your machine.  If so, it may be that commands (like [coqc]) that
+    you execute in a terminal window are getting a different version of
+    Coq than commands executed by Proof General or CoqIDE.
+
+    One more tip for CoqIDE users: If you see messages like [Error:
+    Unable to locate library Basics], a likely reason is
+    inconsistencies between compiling things _within CoqIDE_ vs _using
+    coqc_ from the command line.  This typically happens when there are
+    two incompatible versions of [coqc] installed on your system (one
+    associated with CoqIDE, and one associated with [coqc] from the
+    terminal).  The workaround for this situation is compiling using
+    CoqIDE only (i.e. choosing "make" from the menu), and avoiding
+    using [coqc] directly at all. *)
 *)
 (** [Require Export]を動かすには、[coqc]で[Basics.v]をコンパイルして[Basics.vo]を作る必要があります。
-    ちょうど .java のファイルから .class を作ったり、 .c のファイルから .o を作ったりするのと同じです。
+    ちょうど [.java] のファイルから [.class] を作ったり、 [.c] のファイルから [.o] を作ったりするのと同じです。
     コンパイルする方法を二つ紹介します。
  
      - CoqIDEを使って：
@@ -45,10 +68,25 @@ Require Export LF.Basics.
  
      - コマンドラインで：
  
-         [make Basics.vo]を実行します。（訳注：[make]や[coqc]のあるフォルダにパスを通すのを忘れないでください。）
+         [make Basics.vo]を実行する（LFの中身全体をダウンロードしていて、かつ[make]が動く環境である場合）か、
+
+         [coqc Basics.v]を実行してください（こちらは[coqc]がパスに存在すればどのターミナルからでも可能です）。
  
    もし識別子が見つからないなどのエラーが出たりしたら、Coqの"load path"が正しく設定されていないせいかもしれません。
-   [Print LoadPath.]と言うコマンドで正しく設定されているか確認してみてください。 *)
+   [Print LoadPath.]というコマンドで正しく設定されているか確認してみてください。
+
+   特に、
+
+        [Compiled library Foo makes inconsistent assumptions over
+        library Coq.Init.Bar]
+
+   というメッセージが表示される場合、Coqが複数インストールされていないか確認してください。
+   入っていた場合、ターミナルからコマンドとして使っているCoq（[coqc]など）とProof GeneralやCoqIDEが使っているCoqが異なる可能性があります。
+
+   もう一点CoqIDEユーザへ：
+   もし[Error: Unable to locate library Basics] というメッセージが表示される場合、「CoqIDE内」のコンパイルと「ターミナル上の[coqc]」のコンパイルによる不整合が考えられます。
+   よくある原因としては、互換性のない二つのバージョンの[coqc]（一方はCoqIDEから使われ、もう一方はターミナルから使用されている）が存在するというものです。
+   この場合、常にコンパイルをCoqIDEからのみ（例えば"make"をメニューから選んで）コンパイルし、ターミナルから呼び出さないようにしましょう。 *)
 
 (* ################################################################# *)
 (*
@@ -184,6 +222,7 @@ Proof.
     これは帰納法の仮定である[IHn']から示せます。 *)
 (* 訳注：指摘の結果ほとんど直っているが、三段落目に[n' + 0 = n']という左右逆の等式が残っている。 *)
 
+
 Theorem minus_diag : forall n,
   minus n n = 0.
 Proof.
@@ -218,21 +257,26 @@ Theorem mult_0_r : forall n:nat,
   n * 0 = 0.
 Proof.
   (* FILL IN HERE *) Admitted.
+(* GRADE_THEOREM 0.5: mult_0_r *)
 
 Theorem plus_n_Sm : forall n m : nat,
   S (n + m) = n + (S m).
 Proof.
   (* FILL IN HERE *) Admitted.
+(* GRADE_THEOREM 0.5: plus_n_Sm *)
+
 
 Theorem plus_comm : forall n m : nat,
   n + m = m + n.
 Proof.
   (* FILL IN HERE *) Admitted.
+(* GRADE_THEOREM 0.5: plus_comm *)
 
 Theorem plus_assoc : forall n m p : nat,
   n + (m + p) = (n + m) + p.
 Proof.
   (* FILL IN HERE *) Admitted.
+(* GRADE_THEOREM 0.5: plus_assoc *)
 (** [] *)
 
 (*
@@ -639,15 +683,16 @@ Proof.
     Theorem: [true = beq_nat n n] for any [n].
 
     Proof: (* FILL IN HERE *)
-[] *)
 *)
+ *)
 (** [plus_assoc]の非形式的証明を参考に、次の定理の非形式的証明を書きなさい。
     Coqのタクティックを日本語に変換するだけではだめです！
   
     定理： 任意の[n]について、[true = beq_nat n n]が成立する。
      
     証明： (* FILL IN HERE *) 
-[]  *)
+ *)
+(** [] *)
 
 (* ################################################################# *)
 (*
@@ -910,4 +955,4 @@ Proof.
 (* FILL IN HERE *)
 (** [] *)
 
-(** $Date: 2017-08-22 17:13:32 -0400 (Tue, 22 Aug 2017) $ *)
+

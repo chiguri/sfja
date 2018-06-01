@@ -1,4 +1,5 @@
 (** * Extract: Running Coq programs in ML *)
+Require Extraction.
 
 (** Coq's [Extraction] feature allows you to write a functional
     program inside Coq; (presumably) use Coq's logic to prove some
@@ -6,12 +7,12 @@
     Haskell) program that you can compile with your optimizing ML (or
     Haskell) compiler.
 
-    The \CHAPV1{Extraction} chapter of _Logical Foundations_ gave a
+    The [Extraction] chapter of _Logical Foundations_ gave a
     simple example of Coq's program extraction features.  In this
     chapter, we'll take a deeper look. *)
 
 Set Warnings "-extraction-inside-module".  (* turn off a warning message *)
-From VFA Require Import Perm.
+Require Import Perm.
 
 Module Sort1.
 Fixpoint insert (i:nat) (l: list nat) := 
@@ -28,6 +29,7 @@ end.
 
 (** The [Extraction] command prints out a function as Ocaml code. *)
 
+Require Coq.extraction.Extraction.
 Extraction sort.
 
 (** You can see the translation of "sort" from Coq to Ocaml,
@@ -37,7 +39,7 @@ Extraction sort.
   However, we really want the whole program, including the [insert]
   function.  We get that as follows: *)
 
-Recursive Extraction  sort.
+Recursive Extraction sort.
 
 (** The first thing you see there is a redefinition of the [bool] type.
   But Ocaml already has a [bool] type whose inductive structure is
@@ -385,7 +387,7 @@ Insert and lookup 20000 consecutive integers in 0.374 seconds.
    So instead, we'll use the SearchTree module, 
    where everything runs inside Coq. *)
 
-From VFA Require SearchTree.
+Require SearchTree.
 Module Experiments.
 Open Scope nat_scope.
 Definition empty_tree := SearchTree.empty_tree nat.

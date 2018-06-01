@@ -10,13 +10,14 @@
 
 (* Suppress some annoying warnings from Coq: *)
 Set Warnings "-notation-overridden,-parsing".
-From LF Require Export Lists.
+Require Export Lists.
 
 (* ################################################################# *)
 (*
-(** * Polymorphism *)
+(** * FULL: Polymorphism *)
 *)
-(** * ポリモルフィズム（多相性） *)
+(** * ポリモルフィズム（多相性）(Polymorphism) *)
+(* 訳注：何がFULLなのか不明なので省略 *)
 
 (*
 (** In this chapter we continue our development of basic
@@ -133,7 +134,7 @@ Check (cons nat 3 (nil nat)).
 Check nil.
 (* ===> nil : forall X : Type, list X *)
 
-(** Similarly, the type of [cons] as read off from the definition is
+(** Similarly, the type of [cons] from the definition looks like
     [X -> list X -> list X], but using this convention to explain the
     meaning of [X] results in the type [forall X, X -> list X -> list
     X]. *)
@@ -152,7 +153,7 @@ Check cons.
 (*
 (** Having to supply a type argument for each use of a list
     constructor may seem an awkward burden, but we will soon see
-    ways of reducing that burden. *) 
+    ways of reducing that burden. *)
 *)
 (** リストのコンストラクタに毎回型引数を与えることは無駄な手間だと感じるかもしれません。
     すぐにこれを回避する方法について見ていきます。 *)
@@ -229,10 +230,8 @@ Inductive grumble (X:Type) : Type :=
       - [e bool true]
       - [e mumble (b c 0)]
       - [e bool (b c 0)]
-      - [c]
-(* FILL IN HERE *)
+      - [c]  *)
 *)
- *)
 (** 以下の項の中から、型が[grumble X]の形で付けられるものを選びなさい。
       - [d (b a 5)] 
       - [d mumble (b a 5)] 
@@ -240,9 +239,8 @@ Inductive grumble (X:Type) : Type :=
       - [e bool true] 
       - [e mumble (b c 0)] 
       - [e bool (b c 0)] 
-      - [c] 
-(* FILL IN HERE *) 
- *)
+      - [c]   *)
+(* FILL IN HERE *)
 (** [] *)
 
 End MumbleGrumble.
@@ -280,7 +278,7 @@ Check repeat.
 (* ===> forall X : Type, X -> nat -> list X *)
 
 (*
-(** It has exactly the same type type as [repeat].  Coq was able
+(** It has exactly the same type as [repeat].  Coq was able
     to use _type inference_ to deduce what the types of [X], [x], and
     [count] must be, based on how they are used.  For example, since
     [X] is used as an argument to [cons], it must be a [Type], since
@@ -369,7 +367,6 @@ Check repeat.
     いずれも、Coqに、欠落している情報を推論させるもので、ちょうど引数を構成することに相当します。
  
     暗黙の引数を使うと、[repeat]関数は以下のように書けます。 *)
-(* 訳注：原文は[count]関数といっているがそんなものはない *)
 
 Fixpoint repeat'' X x count : list X :=
   match count with
@@ -409,14 +406,17 @@ Definition list123' :=
 (*
 (** We can go further and even avoid writing [_]'s in most cases by
     telling Coq _always_ to infer the type argument(s) of a given
-    function.  The [Arguments] directive specifies the name of the
-    function (or constructor) and then lists its argument names, with
-    curly braces around any arguments to be treated as implicit.  (If
-    some arguments of a definition don't have a name, as is often the
-    case for constructors, they can be marked with a wildcard pattern
+    function.
+
+    The [Arguments] directive specifies the name of the function (or
+    constructor) and then lists its argument names, with curly braces
+    around any arguments to be treated as implicit.  (If some
+    arguments of a definition don't have a name, as is often the case
+    for constructors, they can be marked with a wildcard pattern
     [_].) *)
 *)
 (** さらに先に進めて、プログラムにほとんど[_]を書かなくてすむように、特定の関数の引数については「常に」型推論するよう指定できます。
+ 
     [Arguments]命令は関数（や構成子）に対し、引数の名前を波括弧で覆うことで暗黙のものとすることができます。
     （構成子でよく起こるのですが、もし名前がない変数を暗黙にしたい場合はワイルドカードパターンとして[_]を指定します。） *)
 
@@ -715,7 +715,7 @@ Fixpoint combine {X Y : Type} (lx : list X) (ly : list Y)
 (** **** 練習問題: ★ (combine_checks) *)
 (*
 (** Try answering the following questions on paper and
-    checking your answers in coq:
+    checking your answers in Coq:
     - What is the type of [combine] (i.e., what does [Check
       @combine] print?)
     - What does
@@ -1183,7 +1183,7 @@ Definition option_map {X Y : Type} (f : X -> Y) (xo : option X)
     type parameters where necessary and use Coq to check that you've
     done so correctly.  (This exercise is not to be turned in; it is
     probably easiest to do it on a _copy_ of this file that you can
-    throw away afterwards.) 
+    throw away afterwards.)
 *)
  *)
 (** [filter]や[map]関数を定義したり使ったりするケースでは、多くの場合暗黙的な型引数が使われます。
@@ -1356,7 +1356,7 @@ Module Exercises.
 (** **** 練習問題: ★★ (fold_length) *)
 (*
 (** Many common functions on lists can be implemented in terms of
-   [fold].  For example, here is an alternative definition of [length]: *)
+    [fold].  For example, here is an alternative definition of [length]: *)
 *)
 (** リストに関する多くの一般的な関数は[fold]を使って実装できます。
     例えば、次に示すのは[length]の別な実装です。 *)
@@ -1374,6 +1374,7 @@ Proof. reflexivity. Qed.
 
 Theorem fold_length_correct : forall X (l : list X),
   fold_length l = length l.
+Proof.
 (* FILL IN HERE *) Admitted.
 (** [] *)
 
@@ -1491,8 +1492,6 @@ Proof.
    Write an informal proof of the following theorem:
 
    forall X n l, length l = n -> @nth_error X l n = None
-
-(* FILL IN HERE *)
 *)
  *)
 (** [nth_error]関数の定義を思い出してください。
@@ -1507,8 +1506,8 @@ Proof.
 [[
    forall X n l, length l = n -> @nth_error X l n = None 
 ]]
-(* FILL IN HERE *) 
  *)
+(* FILL IN HERE *)
 (** [] *)
 
 (*
@@ -1663,5 +1662,4 @@ End Church.
 
 End Exercises.
 
-(** $Date: 2017-08-22 17:13:32 -0400 (Tue, 22 Aug 2017) $ *)
 

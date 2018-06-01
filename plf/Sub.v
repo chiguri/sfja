@@ -4,9 +4,9 @@
 *)
 
 Set Warnings "-notation-overridden,-parsing".
-From PLF Require Import Maps.
-From PLF Require Import Types.
-From PLF Require Import Smallstep.
+Require Import Maps.
+Require Import Types.
+Require Import Smallstep.
 
 (* ################################################################# *)
 (*
@@ -442,8 +442,8 @@ From PLF Require Import Smallstep.
     field will simply be ignored.  For example,
 
     {name:String, age:Nat, gpa:Nat} <: {name:String, age:Nat}
-
-    {name:String, age:Nat} <: {name:String} {name:String} <: {}
+    {name:String, age:Nat} <: {name:String} 
+    {name:String} <: {}
 
     This is known as "width subtyping" for records. *)
 *)
@@ -454,8 +454,8 @@ From PLF Require Import Smallstep.
     例えば次の通りです。
 [[
     {name:String, age:Nat, gpa:Nat} <: {name:String, age:Nat} 
- 
-    {name:String, age:Nat} <: {name:String} {name:String} <: {} 
+    {name:String, age:Nat} <: {name:String}  
+    {name:String} <: {} 
 ]]
    これはレコードの「幅サブタイプ(width subtyping)」として知られます。 *)
 
@@ -641,7 +641,8 @@ From PLF Require Import Smallstep.
     execution.  (Use informal syntax.  No need to prove formally that 
     the application gets stuck.)
 
-[] *)
+
+    [] *)
 *)
 (** 関数型のサブタイプについて、誤って矢印の左右両方とも共変として定義してしまったとする。
 <<
@@ -658,7 +659,8 @@ From PLF Require Import Smallstep.
     （非形式的な構文で構いません。
     行き詰まることの形式的な証明を与える必要もありません。）
  
-[]  *)
+ 
+    []  *)
 
 (* ----------------------------------------------------------------- *)
 (** *** Top *)
@@ -757,7 +759,8 @@ From PLF Require Import Smallstep.
 
     - [S*V <: T*U]
 
-[] *)
+
+    [] *)
 
 (** **** Exercise: 2 stars (subtype_order)  *)
 (** The following types happen to form a linear order with respect to subtyping:
@@ -770,8 +773,11 @@ From PLF Require Import Smallstep.
 Write these types in order from the most specific to the most general.
 
 Where does the type [Top->Top->Student] fit into this order?
+That is, state how [Top -> (Top -> Student)] compares with each
+of the five types above. It may be unrelated to some of them.
 
-[] *)
+
+    [] *)
 
 (** **** Exercise: 1 star (subtype_instances_tf_2)  *)
 (** Which of the following statements are true?  Write _true_ or
@@ -801,8 +807,8 @@ Where does the type [Top->Top->Student] fit into this order?
            S <: T1*T2 ->
            exists S1 S2,
               S = S1*S2  /\  S1 <: T1  /\  S2 <: T2  
-
-[] *)
+*)
+(** [] *)
 
 (** **** Exercise: 1 star (subtype_concepts_tf)  *)
 (** Which of the following statements are true, and which are false?
@@ -832,7 +838,8 @@ Where does the type [Top->Top->Student] fit into this order?
       [S0], [S1], etc., such that all the [Si]'s are different and
       each [S(i+1)] is a supertype of [Si].
 
-[] *)
+
+    [] *)
 
 (** **** Exercise: 2 stars (proper_subtypes)  *)
 (** Is the following statement true or false?  Briefly explain your
@@ -844,8 +851,8 @@ Where does the type [Top->Top->Student] fit into this order?
          ~(T = TBool \/ exists n, T = TBase n) ->
          exists S,
             S <: T  /\  S <> T
-
-[] *)
+*)
+(** [] *)
 
 
 (** **** Exercise: 2 stars (small_large_1)  *)
@@ -860,7 +867,8 @@ Where does the type [Top->Top->Student] fit into this order?
 
    - What is the _largest_ type [T] that makes the same assertion true?
 
-[] *)
+
+    [] *)
 
 (** **** Exercise: 2 stars (small_large_2)  *)
 (**
@@ -872,7 +880,8 @@ Where does the type [Top->Top->Student] fit into this order?
 
    - What is the _largest_ type [T] that makes the same assertion true?
 
-[] *)
+
+    [] *)
 
 (** **** Exercise: 2 stars, optional (small_large_3)  *)
 (**
@@ -884,7 +893,8 @@ Where does the type [Top->Top->Student] fit into this order?
 
    - What is the _largest_ type [T] that makes the same assertion true?
 
-[] *)
+
+    [] *)
 
 (** **** Exercise: 2 stars (small_large_4)  *)
 (**
@@ -898,7 +908,8 @@ Where does the type [Top->Top->Student] fit into this order?
    - What is the _largest_ type [T] that makes the same
      assertion true?
 
-[] *)
+
+    [] *)
 
 (** **** Exercise: 2 stars (smallest_1)  *)
 (** What is the _smallest_ type [T] that makes the following
@@ -906,16 +917,16 @@ Where does the type [Top->Top->Student] fit into this order?
 
       exists S, exists t,
         empty |- (\x:T. x x) t : S
-]] 
-[] *)
+*)
+(** [] *)
 
 (** **** Exercise: 2 stars (smallest_2)  *)
 (** What is the _smallest_ type [T] that makes the following
     assertion true?
 
       empty |- (\x:Top. x) ((\z:A.z) , (\z:B.z)) : T
-]] 
-[] *)
+*)
+(** [] *)
 
 (** **** Exercise: 3 stars, optional (count_supertypes)  *)
 (** How many supertypes does the record type [{x:A, y:C->C}] have?  That is,
@@ -924,7 +935,8 @@ Where does the type [Top->Top->Student] fit into this order?
     differently, even if each is a subtype of the other.  For example,
     [{x:A,y:B}] and [{y:B,x:A}] are different.)
 
-[] *)
+
+    [] *)
 
 (** **** Exercise: 2 stars (pair_permutation)  *)
 (** The subtyping rule for product types
@@ -941,7 +953,8 @@ Where does the type [Top->Top->Student] fit into this order?
 
     for products.  Is this a good idea? Briefly explain why or why not.
 
-[] *)
+
+    [] *)
 
 (* ################################################################# *)
 (*
@@ -989,15 +1002,15 @@ Where does the type [Top->Top->Student] fit into this order?
 Inductive ty : Type :=
   | TTop   : ty
   | TBool  : ty
-  | TBase  : id -> ty
+  | TBase  : string -> ty
   | TArrow : ty -> ty -> ty
   | TUnit  : ty
 .
 
 Inductive tm : Type :=
-  | tvar : id -> tm
+  | tvar : string -> tm
   | tapp : tm -> tm -> tm
-  | tabs : id -> ty -> tm -> tm
+  | tabs : string -> ty -> tm -> tm
   | ttrue : tm
   | tfalse : tm
   | tif : tm -> tm -> tm -> tm
@@ -1016,12 +1029,12 @@ Inductive tm : Type :=
 *)
 (** 置換の定義はSTLCと全く同じです。 *)
 
-Fixpoint subst (x:id) (s:tm)  (t:tm) : tm :=
+Fixpoint subst (x:string) (s:tm)  (t:tm) : tm :=
   match t with
   | tvar y =>
-      if beq_id x y then s else t
+      if beq_string x y then s else t
   | tabs y T t1 =>
-      tabs y T (if beq_id x y then t1 else (subst x s t1))
+      tabs y T (if beq_string x y then t1 else (subst x s t1))
   | tapp t1 t2 =>
       tapp (subst x s t1) (subst x s t2)
   | ttrue =>
@@ -1135,17 +1148,18 @@ Hint Constructors subtype.
 
 Module Examples.
 
-Notation x := (Id "x").
-Notation y := (Id "y").
-Notation z := (Id "z").
+Open Scope string_scope.  
+Notation x := "x".
+Notation y := "y".
+Notation z := "z".
 
-Notation A := (TBase (Id "A")).
-Notation B := (TBase (Id "B")).
-Notation C := (TBase (Id "C")).
+Notation A := (TBase "A").
+Notation B := (TBase "B").
+Notation C := (TBase "C").
 
-Notation String := (TBase (Id "String")).
-Notation Float := (TBase (Id "Float")).
-Notation Integer := (TBase (Id "Integer")).
+Notation String := (TBase "String").
+Notation Float := (TBase "Float").
+Notation Integer := (TBase "Integer").
 
 Example subtyping_example_0 :
   (TArrow C TBool) <: (TArrow C TTop).
@@ -1157,8 +1171,8 @@ Proof. auto. Qed.
 *)
 (** **** 練習問題: ★★, optional (subtyping_judgements)  *)
 (*
-(** (Wait to do this exercise after you have added product types to the
-    language -- see exercise [products] -- at least up to this point 
+(** (Wait to do this exercise until after you have added product types to 
+    the language -- see exercise [products] -- at least up to this point 
     in the file).
 
     Recall that, in chapter [MoreStlc], the optional section "Encoding
@@ -1260,14 +1274,14 @@ Inductive has_type : context -> tm -> ty -> Prop :=
   (* Same as before *)
   | T_Var : forall Gamma x T,
       Gamma x = Some T ->
-      Gamma |- (tvar x) \in T
+      Gamma |- tvar x \in T
   | T_Abs : forall Gamma x T11 T12 t12,
-      (update Gamma x T11) |- t12 \in T12 ->
-      Gamma |- (tabs x T11 t12) \in (TArrow T11 T12)
+      Gamma & {{x-->T11}} |- t12 \in T12 ->
+      Gamma |- tabs x T11 t12 \in TArrow T11 T12
   | T_App : forall T1 T2 Gamma t1 t2,
-      Gamma |- t1 \in (TArrow T1 T2) ->
+      Gamma |- t1 \in TArrow T1 T2 ->
       Gamma |- t2 \in T1 ->
-      Gamma |- (tapp t1 t2) \in T2
+      Gamma |- tapp t1 t2 \in T2
   | T_True : forall Gamma,
        Gamma |- ttrue \in TBool
   | T_False : forall Gamma,
@@ -1276,7 +1290,7 @@ Inductive has_type : context -> tm -> ty -> Prop :=
        Gamma |- t1 \in TBool ->
        Gamma |- t2 \in T ->
        Gamma |- t3 \in T ->
-       Gamma |- (tif t1 t2 t3) \in T
+       Gamma |- tif t1 t2 t3 \in T
   | T_Unit : forall Gamma,
       Gamma |- tunit \in TUnit
   (* New rule of subsumption *)
@@ -1407,20 +1421,21 @@ End Examples2.
 (** **** 練習問題: ★★, optional (sub_inversion_Bool)  *)
 Lemma sub_inversion_Bool : forall U,
      U <: TBool ->
-       U = TBool.
+     U = TBool.
 Proof with auto.
   intros U Hs.
   remember TBool as V.
   (* FILL IN HERE *) Admitted.
+(** [] *)
 
 (*
-(** **** Exercise: 3 stars, optional (sub_inversion_arrow)  *)
+(** **** Exercise: 3 stars (sub_inversion_arrow)  *)
 *)
-(** **** 練習問題: ★★★, optional (sub_inversion_arrow)  *)
+(** **** 練習問題: ★★★ (sub_inversion_arrow)  *)
 Lemma sub_inversion_arrow : forall U V1 V2,
-     U <: (TArrow V1 V2) ->
+     U <: TArrow V1 V2 ->
      exists U1, exists U2,
-       U = (TArrow U1 U2) /\ (V1 <: U1) /\ (U2 <: V2).
+       U = TArrow U1 U2 /\ V1 <: U1 /\ U2 <: V2.
 Proof with eauto.
   intros U V1 V2 Hs.
   remember (TArrow V1 V2) as V.
@@ -1479,7 +1494,7 @@ Proof with eauto.
 *)
 (** **** 練習問題: ★★★, optional (canonical_forms_of_arrow_types)  *)
 Lemma canonical_forms_of_arrow_types : forall Gamma s T1 T2,
-  Gamma |- s \in (TArrow T1 T2) ->
+  Gamma |- s \in TArrow T1 T2 ->
   value s ->
   exists x, exists S1, exists s2,
      s = tabs x S1 s2.
@@ -1496,7 +1511,7 @@ Proof with eauto.
 Lemma canonical_forms_of_Bool : forall Gamma s,
   Gamma |- s \in TBool ->
   value s ->
-  (s = ttrue \/ s = tfalse).
+  s = ttrue \/ s = tfalse.
 Proof with eauto.
   intros Gamma s Hty Hv.
   remember TBool as T.
@@ -1567,7 +1582,9 @@ Qed.
     - If the final step of the derivation is by [T_Sub], then there is
       a type [S] such that [S <: T] and [empty |- t : S].  The desired
       result is exactly the induction hypothesis for the typing
-      subderivation. *)
+      subderivation. 
+   
+    Formally: *)
 *)
 (** 「定理」（進行）: 任意の項[t]と型[T]について、もし [empty |- t : T] ならば[t]は値であるか、ある項[t']について [t ==> t'] である。
  
@@ -1603,7 +1620,9 @@ Qed.
        - もし[t1]がステップを進めることができるならば、規則[ST_If]より[t]もまたステップを進めることができる。
  
     - 導出の最後のステップが規則[T_Sub]による場合、型[S]があって [S <: T] かつ [empty |- t : S] となっている。
-      求める結果は型付け導出の帰納法の仮定そのものである。 *)
+      求める結果は型付け導出の帰納法の仮定そのものである。
+    
+    形式的には： *)
 
 Theorem progress : forall t T,
      empty |- t \in T ->
@@ -1668,7 +1687,7 @@ Qed.
 
 (*
 (** _Lemma_: If [Gamma |- \x:S1.t2 : T], then there is a type [S2]
-    such that [Gamma, x:S1 |- t2 : S2] and [S1 -> S2 <: T].
+    such that [Gamma & {{x-->S1}} |- t2 : S2] and [S1 -> S2 <: T].
 
     (Notice that the lemma does _not_ say, "then [T] itself is an arrow
     type" -- this is tempting, but false!)
@@ -1688,9 +1707,11 @@ Qed.
        S].  The IH for the typing subderivation tell us that there is
        some type [S2] with [S1 -> S2 <: S] and [Gamma, x:S1 |- t2 :
        S2].  Picking type [S2] gives us what we need, since [S1 -> S2
-       <: T] then follows by [S_Trans]. *)
+       <: T] then follows by [S_Trans]. 
+
+    Formally: *)
 *)
-(** 「補題」: もし [Gamma |- \x:S1.t2 : T] ならば、型[S2]が存在して [Gamma, x:S1 |- t2 : S2] かつ [S1 -> S2 <: T] となる。
+(** 「補題」: もし [Gamma |- \x:S1.t2 : T] ならば、型[S2]が存在して [Gamma & {{x-->S1}} |- t2 : S2] かつ [S1 -> S2 <: T] となる。
  
     （この補題は「[T]はそれ自身が関数型である」とは言っていないことに注意します。
     そうしたいところですが、それは成立しません!）
@@ -1705,12 +1726,15 @@ Qed.
  
      - 導出の最後のステップ使われた規則が[T_Sub]の場合、型[S]が存在して [S <: T] かつ [Gamma |- \x:S1.t2 : S] となる。
        型付け導出の帰納仮定より、型[S2]が存在して [S1 -> S2 <: S] かつ [Gamma, x:S1 |- t2 : S2] である。
-       この[S2]を採用すれば、 [S1 -> S2 <: T] であるから[S_Trans]より求める性質が成立する。 *)
+       この[S2]を採用すれば、 [S1 -> S2 <: T] であるから[S_Trans]より求める性質が成立する。
+ 
+    形式的には： *)
 
 Lemma typing_inversion_abs : forall Gamma x S1 t2 T,
      Gamma |- (tabs x S1 t2) \in T ->
-     (exists S2, (TArrow S1 S2) <: T
-              /\ (update Gamma x S1) |- t2 \in S2).
+     exists S2, 
+       TArrow S1 S2 <: T
+       /\ Gamma & {{x-->S1}} |- t2 \in S2.
 Proof with eauto.
   intros Gamma x S1 t2 T H.
   remember (tabs x S1 t2) as t.
@@ -1811,7 +1835,7 @@ Qed.
 Lemma abs_arrow : forall x S1 s2 T1 T2,
   empty |- (tabs x S1 s2) \in (TArrow T1 T2) ->
      T1 <: S1
-  /\ (update empty x S1) |- s2 \in T2.
+  /\ empty & {{x-->S1}} |- s2 \in T2.
 Proof with eauto.
   intros x S1 s2 T1 T2 Hty.
   apply typing_inversion_abs in Hty.
@@ -1832,7 +1856,7 @@ Proof with eauto.
 *)
 (** コンテキスト不変性補題は、純粋なSTLCと同じパターンをとります。 *)
 
-Inductive appears_free_in : id -> tm -> Prop :=
+Inductive appears_free_in : string -> tm -> Prop :=
   | afi_var : forall x,
       appears_free_in x (tvar x)
   | afi_app1 : forall x t1 t2,
@@ -1868,7 +1892,7 @@ Proof with eauto.
     apply T_Var... rewrite <- Heqv...
   - (* T_Abs *)
     apply T_Abs... apply IHhas_type. intros x0 Hafi.
-    unfold update, t_update. destruct (beq_idP x x0)...
+    unfold update, t_update. destruct (beq_stringP x x0)...
   - (* T_If *)
     apply T_If... 
 Qed.
@@ -1884,7 +1908,7 @@ Proof with eauto.
   - (* T_Abs *)
     destruct (IHHtyp H4) as [T Hctx]. exists T.
     unfold update, t_update in Hctx.
-    rewrite <- beq_id_false_iff in H2.
+    rewrite <- beq_string_false_iff in H2.
     rewrite H2 in Hctx... Qed.
 
 (* ================================================================= *)
@@ -1907,19 +1931,19 @@ Proof with eauto.
     Coqの[inversion]タクティックを使う代わりに上で証明した反転補題を使う必要があることです。 *)
 
 Lemma substitution_preserves_typing : forall Gamma x U v t S,
-     (update Gamma x U) |- t \in S  ->
+     Gamma & {{x-->U}} |- t \in S  ->
      empty |- v \in U   ->
-     Gamma |- ([x:=v]t) \in S.
+     Gamma |- [x:=v]t \in S.
 Proof with eauto.
   intros Gamma x U v t S Htypt Htypv.
   generalize dependent S. generalize dependent Gamma.
   induction t; intros; simpl.
   - (* tvar *)
-    rename i into y.
+    rename s into y.
     destruct (typing_inversion_var _ _ _ Htypt)
         as [T [Hctx Hsub]].
     unfold update, t_update in Hctx.
-    destruct (beq_idP x y) as [Hxy|Hxy]; eauto;
+    destruct (beq_stringP x y) as [Hxy|Hxy]; eauto;
     subst.
     inversion Hctx; subst. clear Hctx.
     apply context_invariance with empty...
@@ -1932,22 +1956,22 @@ Proof with eauto.
         as [T1 [Htypt1 Htypt2]].
     eapply T_App...
   - (* tabs *)
-    rename i into y. rename t into T1.
+    rename s into y. rename t into T1.
     destruct (typing_inversion_abs _ _ _ _ _ Htypt)
       as [T2 [Hsub Htypt2]].
     apply T_Sub with (TArrow T1 T2)... apply T_Abs...
-    destruct (beq_idP x y) as [Hxy|Hxy].
+    destruct (beq_stringP x y) as [Hxy|Hxy].
     + (* x=y *)
       eapply context_invariance...
       subst.
       intros x Hafi. unfold update, t_update.
-      destruct (beq_id y x)...
+      destruct (beq_string y x)...
     + (* x<>y *)
       apply IHt. eapply context_invariance...
       intros z Hafi. unfold update, t_update.
-      destruct (beq_idP y z)...
+      destruct (beq_stringP y z)...
       subst.
-      rewrite <- beq_id_false_iff in Hxy. rewrite Hxy...
+      rewrite <- beq_string_false_iff in Hxy. rewrite Hxy...
   - (* ttrue *)
       assert (TBool <: S)
         by apply (typing_inversion_true _ _  Htypt)...
@@ -1955,9 +1979,9 @@ Proof with eauto.
       assert (TBool <: S)
         by apply (typing_inversion_false _ _  Htypt)...
   - (* tif *)
-    assert ((update Gamma x U) |- t1 \in TBool
-            /\ (update Gamma x U) |- t2 \in S
-            /\ (update Gamma x U) |- t3 \in S)
+    assert  (Gamma & {{x-->U}} |- t1 \in TBool
+         /\ Gamma & {{x-->U}} |- t2 \in S
+         /\ Gamma & {{x-->U}} |- t3 \in S)
       by apply (typing_inversion_if _ _ _ _ _ Htypt).
     inversion H as [H1 [H2 H3]].
     apply IHt1 in H1. apply IHt2 in H2. apply IHt3 in H3.
@@ -2175,8 +2199,8 @@ Qed.
                           S1->S2 <: T1->T2
 
  
-[] *)
 *)
+ *)
 (** この問題の各部分は、Unitとサブタイプを持つSTLCの定義を変更する別々の方法を導きます。
     （これらの変更は累積的ではありません。各部分はいずれも元々の言語から始まります。）
     各部分について、（進行、保存の）性質のうち偽になるものをリストアップしなさい。
@@ -2188,48 +2212,49 @@ Qed.
                     -----------------------------------    (T_Funny1) 
                             Gamma |- t : T1->T2 
 >>
- 
+  
     - 次の簡約規則を追加する:
 <<
                              --------------------         (ST_Funny21)  
                              unit ==> (\x:Top. x) 
 >>
- 
+  
     - 次のサブタイプ規則を追加する:
 <<
                                ----------------          (S_Funny3)  
                                Unit <: Top->Top 
 >>
- 
+  
     - 次のサブタイプ規則を追加する:
 <<
                                ----------------          (S_Funny4)  
                                Top->Top <: Unit 
 >>
- 
+  
     - 次の評価規則を追加する:
 <<
                              ---------------------      (ST_Funny5)  
                              (unit t) ==> (t unit) 
 >>
- 
+  
     - 上と同じ評価規則と新たな型付け規則を追加する:
 <<
                              ---------------------       (ST_Funny5)  
                              (unit t) ==> (t unit) 
- 
+  
                            ------------------------      (T_Funny6)  
                            empty |- unit : Top->Top 
 >>
- 
+  
     - 関数型のサブタイプ規則を次のものに変更する:
 <<
                           S1 <: T1 S2 <: T2 
                           -----------------              (S_Arrow')  
                           S1->S2 <: T1->T2 
 >>
- 
-[]  *)
+  
+ *)
+(** [] *)
 
 (* ################################################################# *)
 (*
@@ -2296,15 +2321,15 @@ Module ProductExtension.
 Inductive ty : Type :=
   | TTop   : ty
   | TBool  : ty
-  | TBase  : id -> ty
+  | TBase  : string -> ty
   | TArrow : ty -> ty -> ty
   | TUnit  : ty
   | TProd : ty -> ty -> ty.
 
 Inductive tm : Type :=
-  | tvar : id -> tm
+  | tvar : string -> tm
   | tapp : tm -> tm -> tm
-  | tabs : id -> ty -> tm -> tm
+  | tabs : string -> ty -> tm -> tm
   | ttrue : tm
   | tfalse : tm
   | tif : tm -> tm -> tm -> tm
@@ -2332,5 +2357,5 @@ Proof.
 End ProductExtension.  
 (** [] *)
 
-(** $Date: 2017-08-24 17:13:02 -0400 (Thu, 24 Aug 2017) $ *)
+(** $Date$ *)
 

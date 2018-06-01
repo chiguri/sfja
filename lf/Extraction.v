@@ -10,6 +10,7 @@
     OCaml (the most mature), Haskell (mostly works), and Scheme (a bit
     out of date). *)
 
+Require Coq.extraction.Extraction.
 Extraction Language Ocaml.
 
 (** Now we load up the Coq environment with some definitions, either
@@ -17,7 +18,7 @@ Extraction Language Ocaml.
 
 Require Import Coq.Arith.Arith.
 Require Import Coq.Arith.EqNat.
-From LF Require Import ImpCEvalFun.
+Require Import ImpCEvalFun.
 
 (** Finally, we tell Coq the name of a definition to extract and the
     name of a file to put the extracted code into. *)
@@ -93,8 +94,11 @@ Extract Inductive sumbool => "bool" ["true" "false"].
 
 (** The extraction is the same as always. *)
 
-From LF Require Import Imp.
-From LF Require Import ImpParser.
+Require Import Imp.
+Require Import ImpParser.
+
+Require Import Maps.
+Definition empty_state := { --> 0 }.
 Extraction "imp.ml" empty_state ceval_step parse.
 
 (** Now let's run our generated Imp evaluator.  First, have a look at
@@ -125,4 +129,3 @@ Extraction "imp.ml" empty_state ceval_step parse.
     chapter in _Verified Functional Algorithms_ (_Software
     Foundations_ volume 3). *)
 
-(** $Date: 2017-08-24 17:13:02 -0400 (Thu, 24 Aug 2017) $ *)

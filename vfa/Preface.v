@@ -69,7 +69,7 @@
 
 (** Coq runs on Windows, Linux, and OS X.  The Preface of Volume 1
     describes the Coq installation you will need.  This edition was
-    built with Coq 8.6.
+    built with Coq 8.7.1.
 
     In addition, two of the chapters ask you to compile and run an
     OCaml program; having OCaml installed on your computer is helpful,
@@ -133,7 +133,7 @@
 
 (** If you plan to use these materials in your own course, you will
     undoubtedly find things you'd like to change, improve, or add.
-    Your contributions are welcome!  Please see the \CHAPV1{Preface}
+    Your contributions are welcome!  Please see the [Preface]
     to _Logical Foundations_ for instructions. *)
 
 (* ################################################################# *)

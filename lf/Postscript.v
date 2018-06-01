@@ -12,7 +12,7 @@
 (** * ふりかえり *)
 
 (*
-(** We've covered quite a bit of ground so far.  Here's a quick review...  
+(** We've covered quite a bit of ground so far.  Here's a quick review...
 
    - _Functional programming_:
           - "declarative" programming style (recursion over persistent
@@ -112,9 +112,9 @@
          that you may find useful.  Take a look at the table of contents and the chapter dependency diagram to find
          them.
 
-       - If you're interested in real-world applications of formal
-         verification to critical software, see the Postscript chapter
-         of _Programming Language Foundations_.
+       - For questions about Coq, the #coq area of Stack
+         Overflow (https://stackoverflow.com/questions/tagged/coq)
+         is an excellent community resource.
 
        - Here are some great books on functional programming
             - Learn You a Haskell for Great Good, by Miran Lipovaca
@@ -131,6 +131,10 @@
              Coq'Art: The Calculus of Inductive Constructions, by Yves
              Bertot and Pierre Casteran [Bertot 2004].
 
+       - If you're interested in real-world applications of formal
+         verification to critical software, see the Postscript chapter
+         of _Programming Language Foundations_.
+
        - For applications of Coq in building verified systems, the
          lectures and course materials for the 2017 DeepSpec Summer
          School are a great resource.
@@ -142,7 +146,8 @@
        - この本のオプションの章。
          目次と依存関係のページを眺めてみてください。
  
-       - 実際の重要なソフトウェアに対する検証の適用について、第二巻「プログラミング言語の基礎」のあとがきの章に挙げています。
+       - Coqに関する疑問には、Stack Overflowの #coq タグの情報が非常に有用です。
+         （訳注：日本語のStack Overflowもあるので、そちらも参照すると良いでしょう）
  
        - 関数型プログラミングについてよい本をいくつか:
             - Learn You a Haskell for Great Good, by Miran Lipovaca [Lipovaca 2011]
@@ -156,8 +161,8 @@
            - Interactive Theorem Proving and Program Development: Coq'Art: The Calculus of Inductive Constructions,
              by Yves Bertot and Pierre Casteran [Bertot 2004]
  
+       - 実際の重要なソフトウェアに対する検証の適用について、第二巻「プログラミング言語の基礎」のあとがきの章に挙げています。
+ 
        - Coqを用いて検証済みシステムを構築するという話については、2017年のDeepSpec Summer Schoolの講義資料が有用でしょう。
          https://deepspec.org/event/dsss17/index.html 
  *)
-
-(** $Date: 2017-08-24 17:13:02 -0400 (Thu, 24 Aug 2017) $ *)

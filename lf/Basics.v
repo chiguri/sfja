@@ -10,7 +10,6 @@
           #####################################################
 
    (See the [Preface] for why.)
-
 *)
 (** 再掲：
 <<
@@ -77,9 +76,14 @@
 
 (* ################################################################# *)
 (*
-(** * Enumerated Types *)
+(** * Data and Functions *)
 *)
-(** * 列挙型 *)
+(** * データと関数 *)
+(* ================================================================= *)
+(*
+(** ** Enumerated Types *)
+*)
+(** ** 列挙型 *)
 
 (*
 (** One notable aspect of Coq is that its set of built-in
@@ -142,7 +146,6 @@ Inductive day : Type :=
  
     [day]が何かを定義できれば、それを利用した関数を書くこともできます。 *)
 
-
 Definition next_weekday (d:day) : day :=
   match d with
   | monday    => tuesday
@@ -189,15 +192,16 @@ Compute (next_weekday (next_weekday saturday)).
     Coq interpreter under your favorite IDE -- either CoqIde or Proof
     General -- and try this for yourself.  Load this file, [Basics.v],
     from the book's Coq sources, find the above example, submit it to
-    Coq, and observe the result.)
-
-    Second, we can record what we _expect_ the result to be in the
-    form of a Coq example: *)
+    Coq, and observe the result.) *)
 *)
 (** （もし今手元にコンピュータがあるなら、CoqのIDEのうち好きなもの（CoqIdeやProofGeneralなど）を選んで起動し、実際に上のコマンドを入力し動かしてみるといいでしょう。
-    この本に付随するCoqのソースから [Basics.v] を開き、上のサンプルを探してCoqに読み込ませ、結果を観察してください。）
- 
-    二番目の方法は、評価の結果として我々が期待しているものをCoqに対してあらかじめ以下のような形で例示しておくというものです。 *)
+    この本に付随するCoqのソースから [Basics.v] を開き、上のサンプルを探してCoqに読み込ませ、結果を観察してください。） *)
+
+(*
+(** Second, we can record what we _expect_ the result to be in the
+    form of a Coq example: *)
+*)
+(** 二番目の方法は、評価の結果として我々が期待しているものをCoqに対してあらかじめ以下のような形で例示しておくというものです。 *)
 
 Example test_next_weekday:
   (next_weekday (next_weekday saturday)) = tuesday.
@@ -256,26 +260,32 @@ Proof. simpl. reflexivity.  Qed.
     In order for these scripts to work correctly (so that you get full
     credit for your work!), please be careful to follow these rules:
       - The grading scripts work by extracting marked regions of the
-        .v files that you submit.  It is therefore important that you
-        do not alter the "markup" that delimits exercises: the
+        [.v] files that you submit.  It is therefore important that
+        you do not alter the "markup" that delimits exercises: the
         Exercise header, the name of the exercise, the "empty square
         bracket" marker at the end, etc.  Please leave this markup
         exactly as you find it.
       - Do not delete exercises.  If you skip an exercise (e.g.,
         because it is marked Optional, or because you can't solve it),
-        it is OK to leave a partial proof in your .v file, but in this
-        case please make sure it ends with [Admitted] (not, for
-        example [Abort]). *)
+        it is OK to leave a partial proof in your [.v] file, but in
+        this case please make sure it ends with [Admitted] (not, for
+        example [Abort]).
+      - It is fine to use additional definitions (of helper functions,
+        useful lemmas, etc.) in your solutions.  You can put these
+        between the exercise header and the theorem you are asked to
+        prove. *)
 *)
 (** ソフトウェアの基礎を講義で使用する場合、おそらく講師が宿題の採点用自動スクリプトを使うでしょう。
     このスクリプトが正常に動くように（皆さんの解答が適切に採点されるように）、以下の規則を守ってください。
-      - 採点スクリプトは、.vファイルのなかから、マークのついた箇所を抜き出して採点します。
+      - 採点スクリプトは、[.v]ファイルのなかから、マークのついた箇所を抜き出して採点します。
         演習問題についている「マーク付け」を変更しないでください。
         マークは、演習問題のヘッダ、名前、末尾の「空の角括弧」などです。
         これらのマークを編集したりしないでください。
       - 演習問題自体を消さないでください。
-        もし（オプションとなっていたり、解けなかったりして）演習問題を飛ばしたとしても、そのまま.vのなかに残して問題ありません。
-        ただし、この場合は（[Abort]などではなく）[Admitted]で終わるようにしてください。 *)
+        もし（オプションとなっていたり、解けなかったりして）演習問題を飛ばしたとしても、そのまま[.v]のなかに残して問題ありません。
+        ただし、この場合は（[Abort]などではなく）[Admitted]で終わるようにしてください。
+      - 解答に追加の定義（補助関数、補題、など）を書くのは全く問題ありません。
+        これらは課題の宣言から証明を書く場所の間に書いてください。 *)
 
 (* ================================================================= *)
 (*
@@ -352,14 +362,14 @@ Proof. simpl. reflexivity.  Qed.
 
 (*
 (** We can also introduce some familiar syntax for the boolean
-    operations we have just defined. The [Infix] command defines a new
+    operations we have just defined. The [Notation] command defines a new
     symbolic notation for an existing definition. *)
 *)
 (** これらのブール演算に見慣れた表記法を導入することができます。
-    [Infix]コマンドで、定義したものに記号表記を割り当てることができます。 *)
+    [Notation]コマンドで、定義したものに記号表記を割り当てることができます。 *)
 
-Infix "&&" := andb.
-Infix "||" := orb.
+Notation "x && y" := (andb x y).
+Notation "x || y" := (orb x y).
 
 Example test_orb5:  false || false || true = true.
 Proof. simpl. reflexivity. Qed.
@@ -368,7 +378,7 @@ Proof. simpl. reflexivity. Qed.
 (** _A note on notation_: In [.v] files, we use square brackets
     to delimit fragments of Coq code within comments; this convention,
     also used by the [coqdoc] documentation tool, keeps them visually
-    separate from the surrounding text.  In the html version of the
+    separate from the surrounding text.  In the HTML version of the
     files, these pieces of text appear in a [different font].
 
     The command [Admitted] can be used as a placeholder for an
@@ -482,6 +492,80 @@ Check negb.
 
 (* ================================================================= *)
 (*
+(** ** Compound Types *)
+*)
+(** ** 合成型 *)
+
+(*
+(** The types we have defined so far are examples of "enumerated
+    types": their definitions explicitly enumerate a finite set of
+    elements, each of which is just a bare constructor.  Here is a
+    more interesting type definition, where one of the constructors
+    takes an argument: *)
+*)
+(** 我々がここまでで定義してきた型は「列挙型」でした。
+    このような型は、有限の要素をすべて列挙することによって定義されます。
+    もう少し興味深い型定義として、コンストラクタが引数を取る場合を説明します。 *)
+
+Inductive rgb : Type :=
+  | red : rgb
+  | green : rgb
+  | blue : rgb.
+
+Inductive color : Type :=
+  | black : color
+  | white : color
+  | primary : rgb -> color.
+
+(** Let's look at this in a little more detail.
+
+    Every inductively defined type ([day], [bool], [rgb], [color],
+    etc.) contains a set of _constructor expressions_ built from
+    _constructors_ like [red], [primary], [true], [false], [monday],
+    etc.  The definitions of [rgb] and [color] say how expressions in
+    the sets [rgb] and [color] can be built:
+
+    - [red], [green], and [blue] are the constructors of [rgb];
+    - [black], [white], and [primary] are the constructors of [color];
+    - the expression [red] belongs to the set [rgb], as do the
+      expressions [green] and [blue];
+    - the expressions [black] and [white] belong to the set [color];
+    - if [p] is an expression belonging to the set [rgb], then
+      [primary p] (pronounced "the constructor [primary] applied to
+      the argument [p]") is an expression belonging to the set
+      [color]; and
+    - expressions formed in these ways are the _only_ ones belonging
+      to the sets [rgb] and [color]. *)
+
+(** We can define functions on colors using pattern matching just as
+    we have done for [day] and [bool]. *)
+
+Definition monochrome (c : color) : bool :=
+  match c with
+  | black => true
+  | white => true
+  | primary p => false
+  end.
+
+(** Since the [primary] constructor takes an argument, a pattern
+    matching [primary] should include either a variable (as above) or
+    a constant of appropriate type (as below). *)
+
+Definition isred (c : color) : bool :=
+  match c with
+  | black => false
+  | white => false
+  | primary red => true
+  | primary _ => false
+  end.
+
+(** The pattern [primary _] here is shorthand for "[primary] applied
+    to any [rgb] constructor except [red]."  (The wildcard pattern [_]
+    has the same effect as the dummy pattern variable [p] in the
+    definition of [monochrome].) *)
+
+(* ================================================================= *)
+(*
 (** ** Modules *)
 *)
 (** ** モジュール *)
@@ -514,16 +598,15 @@ Module NatPlayground.
 (** ** 数値 *)
 
 (*
-(** The types we have defined so far are examples of "enumerated
-    types": their definitions explicitly enumerate a finite set of
-    elements.  A more interesting way of defining a type is to give a
-    collection of _inductive rules_ describing its elements.  For
-    example, we can define (a unary representation of) the natural
+(** An even more interesting way of defining a type is to allow its
+    constructors to take arguments from the very same type -- that is,
+    to allow the rules describing its elements to be _inductive_.
+
+    For example, we can define (a unary representation of) natural
     numbers as follows: *)
 *)
-(** 我々がここまでで定義してきた型は「列挙型」の型定義でした。
-    このような型は、有限の要素をすべて列挙することによって定義されます。
-    型を定義するもう一つの方法は、「帰納的な規則(_inductive rule_)」を並べることで要素を記述する方法です。
+(** より興味深い型の定義方法として、コンストラクタに自身と同じ型の引数を与えられるというものがあります。
+    これにより、要素を「帰納的(_inductive_)」に記述するための規則が書けます。
     例えば、（1進表現の）自然数を以下のように定義できます。 *)
 
 Inductive nat : Type :=
@@ -542,12 +625,8 @@ Inductive nat : Type :=
       - [S]は自然数の前に置くことで別の自然数を生成できる。つまり、[n]が自然数なら[S n]も自然数である。 *)
 
 (*
-(** Let's look at this in a little more detail.
-
-    Every inductively defined set ([day], [nat], [bool], etc.) is
-    actually a set of _expressions_ built from _constructors_
-    like [O], [S], [true], [false], [monday], etc.  The definition of
-    [nat] says how expressions in the set [nat] can be built:
+(** Again, let's look at this in a little more detail.  The definition
+    of [nat] says how expressions in the set [nat] can be built:
 
     - [O] and [S] are constructors;
     - the expression [O] belongs to the set [nat];
@@ -556,9 +635,7 @@ Inductive nat : Type :=
     - expressions formed in these two ways are the only ones belonging
       to the set [nat]. *)
 *)
-(** この定義にして、もう少し詳しく見ていきましょう。
- 
-    これまでに定義してきた帰納的な型（[weekday]、[nat]、[bool]など）は、実際には[O]、[S]、[true]、[false]、[monday]などの「コンストラクタ(_constructor_)」から作られる「式(_expression_)」の集合です。
+(** もう一度この定義をより詳細に見ていきましょう。
     [nat]の定義は、[nat]の要素となる式がどのように構築されるかを表しています。
  
     - [O]と[S]はコンストラクタである。
@@ -567,10 +644,8 @@ Inductive nat : Type :=
     - これら二つの方法で表された式のみが[nat]に属するものの全てである。*)
 
 (*
-(** The same rules apply for our definitions of [day] and
-    [bool]. (The annotations we used for their constructors are
-    analogous to the one for the [O] constructor, indicating that they
-    don't take any arguments.)
+(** The same rules apply for our definitions of [day], [bool],
+    [color], etc.
 
     The above conditions are the precise force of the [Inductive]
     declaration.  They imply that the expression [O], the expression
@@ -588,8 +663,7 @@ Inductive nat : Type :=
     [O]).  If we like, we can write essentially the same definition
     this way: *)
 *)
-(** 同様のルールが[day]や[bool]にも当てはまります。
-    （これらの型のコンストラクタに付けたアノテーションは[O]と同じで、引数をとらないことを表しています。）
+(** 同様のルールが[day]や[bool]、[color]などにも当てはまります。
  
     これらの条件によって、帰納的([Inductive])な宣言を厳格に定義しています。
     条件から、式 [O]、式 [S O]、式  [S (S O)]、式 [S (S (S O))]...が全て[nat]に属する式であることがわかります。
@@ -634,13 +708,6 @@ Definition pred (n : nat) : nat :=
 
 End NatPlayground.
 
-Definition minustwo (n : nat) : nat :=
-  match n with
-    | O => O
-    | S O => O
-    | S (S n') => n'
-  end.
-
 (*
 (** Because natural numbers are such a pervasive form of data,
     Coq provides a tiny bit of built-in magic for parsing and printing
@@ -655,15 +722,24 @@ Definition minustwo (n : nat) : nat :=
 
 Check (S (S (S (S O)))).
   (* ===> 4 : nat *)
+
+Definition minustwo (n : nat) : nat :=
+  match n with
+    | O => O
+    | S O => O
+    | S (S n') => n'
+  end.
+
 Compute (minustwo 4).
   (* ===> 2 : nat *)
 
 (*
-(** The constructor [S] has the type [nat -> nat], just like the
-    functions [minustwo] and [pred]: *)
+(** The constructor [S] has the type [nat -> nat], just like
+    [pred] and functions like [minustwo]: *)
 *)
 (** [nat]のコンストラクタ[S]は[nat -> nat]型に属します。
-    関数[minustwo]や[pred]と同じ型になっています。 *)
+    [pred]や[minustwo]などの関数と同じ型になっています。 *)
+(* 訳注：[pred]も関数のはずだが、英語の説明はまるで[pred]が関数でないかのように見える。改訂前はそうなっていなかったが。 *)
 
 Check S.
 Check pred.
@@ -809,21 +885,21 @@ Proof. simpl. reflexivity.  Qed.
 (** matchに引数を与える際、複数の引数を次のようにカンマで区切って一度に渡すことができます。 *)
 
 Fixpoint minus (n m:nat) : nat :=
-  match (n, m) with
-  | (O   , _)    => O
-  | (S _ , O)    => n
-  | (S n', S m') => minus n' m'
+  match n, m with
+  | O   , _    => O
+  | S _ , O    => n
+  | S n', S m' => minus n' m'
   end.
 
 (*
-(** The _ in the first line is a _wildcard pattern_.  Writing _ in a
-    pattern is the same as writing some variable that doesn't get used
-    on the right-hand side.  This avoids the need to invent a variable
-    name. *)
+(** Again, the [_] in the first line is a _wildcard pattern_.  Writing
+    [_] in a pattern is the same as writing some variable that doesn't
+    get used on the right-hand side.  This avoids the need to invent a
+    variable name. *)
 *)
-(** [minus]の[match]の行に現れる「 _ 」は、ワイルドカードパターンと呼ばれるものです。
-    パターンの中に _ を書くと、それはその部分が何であってもマッチし、その値が使用されないことを意味します。
-    この _ は、このような場合に変数名をつける必要をなくしてくれます。 *)
+(** 前にも出ましたが、最初の句に現れる[_]は「ワイルドカードパターン(_wildcard pattern_)」です。
+    パターンの中に[_]を書くと、右辺に出てこないような変数を書いたのと同じようになります。
+    これによりわざわざ変数名を考える必要がなくなります。 *)
 
 End NatPlayground2.
 
@@ -1022,7 +1098,7 @@ Proof.
     before finishing the proof.  Here is a shorter proof of the
     theorem: *)
 *)
-(** （訳注：原文ではここでHTMLと[.v]ファイルの見え方の違いが説明されているのですが、日本語訳では表記の変更を行わないようにしていますので、飛ばします）
+(** （訳注：原文ではここでHTMLと[.v]ファイルの見え方の違いが説明されているのですが、日本語訳ではHTML側の表記の変更を行わないようにしていますので、飛ばします）
  
     [reflexivity]はこれまでの使い方よりももっと強力です。
     ここまでの例では[simpl]を使っていましたが、実際にはこれは必要ではありません。
@@ -1067,9 +1143,7 @@ Proof.
     _tactics_.  A tactic is a command that is used between [Proof] and
     [Qed] to guide the process of checking some claim we are making.
     We will see several more tactics in the rest of this chapter and
-    yet more in future chapters.
-
-    Other similar theorems can be proved with the same pattern. *)
+    yet more in future chapters. *)
 *)
 (** [reflexivity]は[simpl]より多くの簡約を行います。
     例えば、定義した項を定義の右辺に置き換える「展開(unfolding)」を行います。
@@ -1090,9 +1164,12 @@ Proof.
     [intros]や[simpl]、[reflexivity]は「タクティック(_tactic_)」の例です。
     タクティックは、[Proof]と[Qed]の間に記述され、示そうとしている言明を確かめる方法を表します。
     本章の残りでは、まだ出てきていないタクティックのうちのいくつかを紹介していきましょう。
-    さらにその後の講義ではもっと色々出てきます。
- 
-    似た定理も、同じパターンで証明できます。 *)
+    さらにその後の講義ではもっと色々出てきます。 *)
+
+(*
+(** Other similar theorems can be proved with the same pattern. *)
+*)
+(** 似た定理も、同じパターンで証明できます。 *)
 
 Theorem plus_1_l : forall n:nat, 1 + n = S n.
 Proof.
@@ -1112,44 +1189,10 @@ Proof.
 (** It is worth stepping through these proofs to observe how the
     context and the goal change.  You may want to add calls to [simpl]
     before [reflexivity] to see the simplifications that Coq performs
-    on the terms before checking that they are equal.
-
-    Although simplification is powerful enough to prove some fairly
-    general facts, there are many statements that cannot be handled by
-    simplification alone.  For instance, we cannot use it to prove
-    that [0] is also a neutral element for [+] _on the right_. *)
+    on the terms before checking that they are equal. *)
 *)
 (** 文脈やゴールがどのように変化していくかを見ていきましょう。
-    [simpl]を[reflexivity]の前に呼ぶことで、等価かを判定する前に簡約できます。
- 
-    簡約は簡単な事実なら示せますが、ほとんどの言明は簡約だけでは証明できません。
-    例えば、[0]が[+]の「右零元」であることは示せません。 *)
-
-Theorem plus_n_O : forall n, n = n + 0.
-Proof.
-  intros n. simpl. (* Doesn't do anything! *)
-(*
-(** (Can you explain why this happens?  Step through both proofs
-    with Coq and notice how the goal and context change.)
-
-    When stuck in the middle of a proof, we can use the [Abort]
-    command to give up on it for the moment. *)
-*)
-(** なんと[simpl]後もなにも変わりません！
-    （どうしてこうなるか分かるでしょうか？
-    証明の過程を1ステップずつ見て、ゴールと文脈がどのように変化していくかを見てください。）
- 
-    証明に行き詰まったので、[Abort]コマンドを使って諦めましょう。 *)
-
-Abort.
-
-(*
-(** The next chapter will introduce _induction_, a powerful
-    technique that can be used for proving this goal.  For the moment,
-    though, let's look at a few more simple tactics. *)
-*)
-(** 次章では、このゴールの証明を可能にする「帰納法(_induction_)」について述べます。
-    とりあえずここでは、簡単なタクティックをもう少し見ていきましょう。 *)
+    [simpl]を[reflexivity]の前に呼ぶことで、等価かを判定する前に簡約できます。 *)
 
 (* ################################################################# *)
 (*
@@ -1289,9 +1332,9 @@ Theorem mult_S_1 : forall n m : nat,
 Proof.
   (* FILL IN HERE *) Admitted.
 
-  (* (N.b. This proof can actually be completed without using [rewrite],
-     but please do use [rewrite] for the sake of the exercise.) *)
-  (** （注意：この証明は[rewrite]なしにできますが、ここでは課題のためと思って[rewrite]を使ってください。） *)
+  (* (N.b. This proof can actually be completed with tactics other than
+     [rewrite], but please do use [rewrite] for the sake of the exercise.) *)
+  (** （注意：この証明は[rewrite]以外のタクティックでできますが、ここでは課題のためと思って[rewrite]を使ってください。） *)
 (** [] *)
 
 (* ################################################################# *)
@@ -1305,11 +1348,13 @@ Proof.
     calculation and rewriting: In general, unknown, hypothetical
     values (arbitrary numbers, booleans, lists, etc.) can block
     simplification.  For example, if we try to prove the following
-    fact using the [simpl] tactic as above, we get stuck. *)
+    fact using the [simpl] tactic as above, we get stuck.  (We then
+    use the [Abort] command to give up on it for the moment.)*)
 *)
 (** もちろん、どんな命題でも簡単な計算や書き換えだけで証明できるという訳ではありません。
     一般に、未知だったり仮定の値（任意の自然数、bool値、リストなど）は、簡単化を止めてしまいます。
-    例えば、下の命題を[simpl]タクティックだけで証明しようとすると、すぐに行き詰まってしまいます。 *)
+    例えば、下の命題を[simpl]タクティックだけで証明しようとすると、すぐに行き詰まってしまいます。
+    （そういう場合は諦めたことを表すために[Abort]コマンドを使います。） *)
 
 Theorem plus_1_neq_0_firsttry : forall n : nat,
   beq_nat (n + 1) 0 = false.
@@ -1438,6 +1483,7 @@ Proof.
     [destruct]タクティックは帰納的に定義された型に対して使用できます。
     例として、bool値の否定が対合(_involutive_)であること、つまり否定の否定が元と同じになることを証明してみましょう。 *)
 
+
 Theorem negb_involutive : forall b : bool,
   negb (negb b) = b.
 Proof.
@@ -1469,6 +1515,7 @@ Proof.
  
     [destruct]を、まだ他のサブゴールが残っている状態で使うこともあります。
     このとき、バレットを使うときは異なる「レベル」を表すために異なる記号をバレットとして使います。 *)
+
 
 Theorem andb_commutative : forall b c, andb b c = andb c b.
 Proof.
@@ -1539,9 +1586,9 @@ Proof.
 Qed.
 
 (*
-(** Before closing the chapter, let's mention one final
-    convenience.  As you may have noticed, many proofs perform case
-    analysis on a variable right after introducing it:
+(** Before closing the chapter, let's mention one final convenience.
+    As you may have noticed, many proofs perform case analysis on a variable
+    right after introducing it:
 
        intros x y. destruct y as [|y].
 
@@ -1794,6 +1841,7 @@ Theorem andb_eq_orb :
   b = c.
 Proof.
   (* FILL IN HERE *) Admitted.
+
 (** [] *)
 
 (*
@@ -1813,18 +1861,24 @@ Proof.
     (a) First, write an inductive definition of the type [bin]
         corresponding to this description of binary numbers.
 
-    (Hint: Recall that the definition of [nat] above,
+        (Hint: Recall that the definition of [nat] above,
 
-         Inductive nat : Type := | O : nat | S : nat -> nat.
+         Inductive nat : Type :=
+           | O : nat
+           | S : nat -> nat.
 
-    says nothing about what [O] and [S] "mean."  It just says "[O] is
-    in the set called [nat], and if [n] is in the set then so is [S
-    n]."  The interpretation of [O] as zero and [S] as successor/plus
-    one comes from the way that we _use_ [nat] values, by writing
-    functions to do things with them, proving things about them, and
-    so on.  Your definition of [bin] should be correspondingly simple;
-    it is the functions you will write next that will give it
-    mathematical meaning.)
+        says nothing about what [O] and [S] "mean."  It just says "[O]
+        is in the set called [nat], and if [n] is in the set then so
+        is [S n]."  The interpretation of [O] as zero and [S] as
+        successor/plus one comes from the way that we _use_ [nat]
+        values, by writing functions to do things with them, proving
+        things about them, and so on.  Your definition of [bin] should
+        be correspondingly simple; it is the functions you will write
+        next that will give it mathematical meaning.)
+
+        One caveat: If you use [O] or [S] as constructor names in your
+        definition, it will confuse the auto-grader script in
+        [BasicsTest.v].  Please choose different names.
 
     (b) Next, write an increment function [incr] for binary numbers,
         and a function [bin_to_nat] to convert binary numbers to unary
@@ -1847,15 +1901,20 @@ Proof.
  
     (a) 上の規則で定義できる2進数に対応する[bin]という帰納型を定義しなさい。
  
-    （ヒント：[nat]が以下のように定義されていたことを思い出しましょう。
+        （ヒント：[nat]が以下のように定義されていたことを思い出しましょう。
 [[
-         Inductive nat : Type := | O : nat | S : nat -> nat. 
+         Inductive nat : Type := 
+           | O : nat 
+           | S : nat -> nat. 
 ]]
-    そして、この中では[O]や[S]が「何を意味しているか」は何も書かれていないことに注意してください。
-    この定義は、単に「[O]は[nat]という集合に入っていて、また[n]がもし[nat]に入っていたら[S n]も[nat]に入っている」ということを言っているに過ぎません。
-    [O]をゼロに、[S]を次の数のコンストラクタ（[+1]）に解釈することで、[nat]を「自然数として使って」関数を作ったり性質を証明したりしました。
-    ここでの[bin]の定義は規則の数相応に簡単なものになるでしょう。
-    これから作る[bin]に関する関数を書くことこそが、[bin]に数学的な意味づけをするのです。）
+        そして、この中では[O]や[S]が「何を意味しているか」は何も書かれていないことに注意してください。
+        この定義は、単に「[O]は[nat]という集合に入っていて、また[n]がもし[nat]に入っていたら[S n]も[nat]に入っている」ということを言っているに過ぎません。
+        [O]をゼロに、[S]を次の数のコンストラクタ（[+1]）に解釈することで、[nat]を「自然数として使って」関数を作ったり性質を証明したりしました。
+        ここでの[bin]の定義は規則の数相応に簡単なものになるでしょう。
+        これから作る[bin]に関する関数を書くことこそが、[bin]に数学的な意味づけをするのです。）
+ 
+        注意：この課題で定義するコンストラクタに[O]や[S]といった名前を使うと、採点スクリプト（[BasicsTest.v]訳注：このバージョンではこのファイルは同梱されません）において他の型と混同され正常に採点されません。
+        違う名前を使ってください。
  
     (b) 次に、[incr]という名前でインクリメント関数を、[bin_to_nat]という名前で2進数を1進数に変換する関数を書きなさい。
  
@@ -1865,6 +1924,4 @@ Proof.
 
 (* FILL IN HERE *)
 (** [] *)
-
-(** $Date: 2017-08-24 17:13:02 -0400 (Thu, 24 Aug 2017) $ *)
 

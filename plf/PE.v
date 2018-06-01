@@ -10,15 +10,15 @@
     program transformation and proved that it preserves the meaning of
     programs.  Constant folding operates on manifest constants such as
     [ANum] expressions.  For example, it simplifies the command [Y ::=
-    APlus (ANum 3) (ANum 1)] to the command [Y ::= ANum 4].  However,
+    3 + 1] to the command [Y ::= 4].  However,
     it does not propagate known constants along data flow.  For
     example, it does not simplify the sequence
 
-      X ::= ANum 3;; Y ::= APlus (AId X) (ANum 1)
+      X ::= 3;; Y ::= X + 1
 
     to
 
-      X ::= ANum 3;; Y ::= ANum 4
+      X ::= 3;; Y ::= 4
 
     because it forgets that [X] is [3] by the time it gets to [Y].
 
@@ -30,28 +30,27 @@
     evaluated because only part of the input to the program is known.
     For example, we can only simplify the program
 
-      X ::= ANum 3;; Y ::= AMinus (APlus (AId X) (ANum 1)) (AId Y)
+      X ::= 3;; Y ::= (X + 1) - Y
 
     to
 
-      X ::= ANum 3;; Y ::= AMinus (ANum 4) (AId Y)
+      X ::= 3;; Y ::= 4 - Y
 
     without knowing the initial value of [Y]. *)
 *)
 (** [Equiv] の章ではプログラム変換の例として定数畳み込みを紹介し、それがプログラムの意味を保存することを証明しました。
     定数畳み込みは[ANum]式のような明らかな定数を処理します。
-    例えば、コマンド [Y ::= APlus (ANum 3) (ANum 1)] をコマンド [Y ::= ANum 4] に単純化します。
+    例えば、コマンド [Y ::= 3 + 1] をコマンド [Y ::= 4] に単純化します。
     しかしながら、この操作は、定数とわかったことをデータフローに沿って伝播することは行いません。
     例えば、次の列
 [[
-        X ::= ANum 3; Y ::= APlus (AId X) (ANum 1) 
+      X ::= 3;; Y ::= X + 1 
 ]]
     を
 [[
-        X ::= ANum 3; Y ::= ANum 4 
+      X ::= 3;; Y ::= 4 
 ]]
-    に単純化することはありません。なぜなら、[X]が[3]であったことは、
-    [Y]に渡された時には忘れられてしまうからです。
+    に単純化することはありません。なぜなら、[X]が[3]であったことは、[Y]にたどり着いた時には忘れられてしまうからです。
  
     定数畳み込みを強化して、定数と分かったことを伝播し、それを使ってプログラムを単純化したいと思うのは自然なことです。
     これは「部分評価(_partial evaluation_)」の初歩的な形となります。 
@@ -59,11 +58,11 @@
     ただ違うのは、プログラムの入力の一部だけが分かってる状態から始めるため、プログラムの一部だけが評価されることです。
     例えば、プログラム
 [[
-        X ::= ANum 3; Y ::= AMinus (APlus (AId X) (ANum 1)) (AId Y) 
+      X ::= 3;; Y ::= (X + 1) - Y 
 ]]
     を
 [[
-        X ::= ANum 3; Y ::= AMinus (ANum 4) (AId Y) 
+      X ::= 3;; Y ::= 4 - Y 
 ]]
     まで単純化するのに、[Y]の初期値を知る必要はありません。 *)
 
@@ -75,9 +74,9 @@ Require Import Coq.Logic.FunctionalExtensionality.
 Require Import Coq.Lists.List.
 Import ListNotations.
 
-From PLF Require Import Maps.
-From PLF Require Import Imp.
-From PLF Require Import Smallstep.
+Require Import Maps.
+Require Import Imp.
+Require Import Smallstep.
 
 (* ################################################################# *)
 (*
@@ -103,79 +102,76 @@ From PLF Require Import Smallstep.
 
 (*
 (** Conceptually speaking, we can think of such partial states as the
-    type [id -> option nat] (as opposed to the type [id -> nat] of
+    type [string -> option nat] (as opposed to the type [string -> nat] of
     concrete, full states).  However, in addition to looking up and
     updating the values of individual variables in a partial state, we
     may also want to compare two partial states to see if and where
     they differ, to handle conditional control flow.  It is not possible
     to compare two arbitrary functions in this way, so we represent
-    partial states in a more concrete format: as a list of [id * nat]
+    partial states in a more concrete format: as a list of [string * nat]
     pairs. *)
 *)
-(** 概念的には、(完全な具体的状態の型が [id -> nat] であるのに対して)
-    部分状態は型 [id -> option nat] と考えることができます。
+(** 概念的には、（完全な具体的状態の型が [string -> nat] であるのに対して）部分状態は型 [string -> option nat] と考えることができます。
     しかしながら、部分状態の個別の変数の状態を参照/更新するだけでなく、
-    条件分岐の制御フローを扱うために、2つの部分状態を比較して、同じかどうか、
-    あるいは違いはどこかを知りたいことがあるでしょう。
+    条件分岐の制御フローを扱うために、2つの部分状態を比較して、同じかどうか、あるいは違いはどこかを知りたいことがあるでしょう。
     2つの任意の関数をこのように比較することはできません。
-    このため、部分状態をより具体的な形、つまり [id * nat] 対のリストとして表現します。 *)
+    このため、部分状態をより具体的な形、つまり [string * nat] 対のリストとして表現します。 *)
 
-Definition pe_state := list (id * nat).
+Definition pe_state := list (string * nat).
 
 (*
-(** The idea is that a variable [id] appears in the list if and only
+(** The idea is that a variable (of type [string]) appears in the list if and only
     if we know its current [nat] value.  The [pe_lookup] function thus
     interprets this concrete representation.  (If the same variable
-    [id] appears multiple times in the list, the first occurrence
+    appears multiple times in the list, the first occurrence
     wins, but we will define our partial evaluator to never construct
     such a [pe_state].) *)
 *)
-(** これは、変数[id]がこのリストに現れることが、
-    その変数の現在の[nat]値を知っていることとするというアイデアです。
+(** これは、（[string]型の）変数がこのリストに現れることが、その変数の現在の[nat]値を知っていることとするというアイデアです。
     そして[pe_lookup]関数はこの具体的表現を解釈します。
-    (もし同じ変数[id]がこのリストに複数回現れるならば、最初の出現が有効です。
-    ただ、部分評価器はそのような[pe_state]を構成することがないように定義します。) *)
+    （もし同じ変数がこのリストに複数回現れるならば、最初の出現が有効です。
+    ただ、部分評価器はそのような[pe_state]を構成することがないように定義します。） *)
 
-Fixpoint pe_lookup (pe_st : pe_state) (V:id) : option nat :=
+Fixpoint pe_lookup (pe_st : pe_state) (V:string) : option nat :=
   match pe_st with
   | [] => None
-  | (V',n')::pe_st => if beq_id V V' then Some n'
+  | (V',n')::pe_st => if beq_string V V' then Some n'
                       else pe_lookup pe_st V
   end.
 
 (*
 (** For example, [empty_pe_state] represents complete ignorance about
-    every variable -- the function that maps every [id] to [None]. *)
+    every variable -- the function that maps every identifier to [None]. *)
 *)
 (** 例えば、[empty_pe_state]はすべての変数を完全に無視することを表します。
-    すべての[id]を[None]に写像する関数です。 *)
+    すべての識別子を[None]に写像する関数です。 *)
 
 Definition empty_pe_state : pe_state := [].
 
 (*
 (** More generally, if the [list] representing a [pe_state] does not
-    contain some [id], then that [pe_state] must map that [id] to
+    contain some identifier, then that [pe_state] must map that identifier to
     [None].  Before we prove this fact, we first define a useful
-    tactic for reasoning with [id] equality.  The tactic
+    tactic for reasoning with [string] equality.  The tactic
 
       compare V V'
 
-    means to reason by cases over [beq_id V V'].
+    means to reason by cases over [beq_string V V'].
     In the case where [V = V'], the tactic
     substitutes [V] for [V'] throughout. *)
 *)
-(** より一般に、もし[pe_state]を表現する[list]がある[id]を含まないならば、[pe_state]は[id]を[None]に写像しなければなりません。
-    この事実を証明する前に、まず[id]の等価関係の推論に関する便利なタクティックを定義します。
+(** より一般に、もし[pe_state]を表現する[list]がある識別子を含まないならば、[pe_state]は識別子を[None]に写像しなければなりません。
+    この事実を証明する前に、まず[string]の等価関係の推論に関する便利なタクティックを定義します。
     タクティック
 [[
       compare V V' 
 ]]
-    は [beq_id V V'] が[true]か[false]かで場合分けする推論をすることを意味します。
+    は [beq_string V V'] が[true]か[false]かで場合分けする推論をすることを意味します。
     [V = V'] の場合、このタクティックは全ての場所で[V]を[V']に置換します。 *)
 
 Tactic Notation "compare" ident(i) ident(j) :=
   let H := fresh "Heq" i j in
-  destruct (beq_idP i j);
+  destruct (beq_stringP i j);
   [ subst j | ].
 
 Theorem pe_domain: forall pe_st V n,
@@ -276,14 +272,17 @@ Fixpoint pe_aexp (pe_st : pe_state) (a : aexp) : aexp :=
 *)
 (** この部分評価器は定数を畳み込みしますが、可算の結合性の処理はしません。 *)
 
+Open Scope aexp_scope.
+Open Scope bexp_scope.
+
 Example test_pe_aexp1:
-  pe_aexp [(X,3)] (APlus (APlus (AId X) (ANum 1)) (AId Y))
-  = APlus (ANum 4) (AId Y).
+  pe_aexp [(X,3)] (X + 1 + Y)
+  = (4 + Y).
 Proof. reflexivity. Qed.
 
 Example text_pe_aexp2:
-  pe_aexp [(Y,3)] (APlus (APlus (AId X) (ANum 1)) (AId Y))
-  = APlus (APlus (AId X) (ANum 1)) (ANum 3).
+  pe_aexp [(Y,3)] (X + 1 + Y)
+  = (X + 1 + 3).
 Proof. reflexivity. Qed.
 
 (*
@@ -316,7 +315,7 @@ Proof. unfold pe_consistent. intros st pe_st H a.
   (* Compared to fold_constants_aexp_sound,
      the only interesting case is AId *)
   - (* AId *)
-    remember (pe_lookup pe_st i) as l. destruct l.
+    remember (pe_lookup pe_st s) as l. destruct l.
     + (* Some *) rewrite H with (n:=n) by apply Heql. reflexivity.
     + (* None *) reflexivity.
 Qed.
@@ -325,29 +324,29 @@ Qed.
 (** However, we will soon want our partial evaluator to remove
     assignments.  For example, it will simplify
 
-    X ::= ANum 3;; Y ::= AMinus (AId X) (AId Y);; X ::= ANum 4
+    X ::= 3;; Y ::= X - Y;; X ::= 4
 
     to just
 
-    Y ::= AMinus (ANum 3) (AId Y);; X ::= ANum 4
+    Y ::= 3 - Y;; X ::= 4
 
     by delaying the assignment to [X] until the end.  To accomplish
     this simplification, we need the result of partial evaluating
 
-    pe_aexp [(X,3)] (AMinus (AId X) (AId Y))
+    pe_aexp [(X,3)] (X - Y)
 
-    to be equal to [AMinus (ANum 3) (AId Y)] and _not_ the original
-    expression [AMinus (AId X) (AId Y)].  After all, it would be
+    to be equal to [3 - Y] and _not_ the original
+    expression [X - Y].  After all, it would be
     incorrect, not just inefficient, to transform
 
-    X ::= ANum 3;; Y ::= AMinus (AId X) (AId Y);; X ::= ANum 4
+    X ::= 3;; Y ::= X - Y;; X ::= 4
 
     to
 
-    Y ::= AMinus (AId X) (AId Y);; X ::= ANum 4
+    Y ::= X - Y;; X ::= 4
 
-    even though the output expressions [AMinus (ANum 3) (AId Y)] and
-    [AMinus (AId X) (AId Y)] both satisfy the correctness criterion
+    even though the output expressions [3 - Y] and
+    [X - Y] both satisfy the correctness criterion
     that we just proved.  Indeed, if we were to just define [pe_aexp
     pe_st a = a] then the theorem [pe_aexp_correct'] would already
     trivially hold.
@@ -364,28 +363,28 @@ Qed.
 (** しかしながらすぐに、部分評価器で代入を削除することも行いたくなるでしょう。
     例えば、
 [[
-        X ::= ANum 3; Y ::= AMinus (AId X) (AId Y); X ::= ANum 4 
+    X ::= 3;; Y ::= X - Y;; X ::= 4 
 ]]
     を簡単化するには、[X]の代入を最後に遅らせることで、単に
 [[
-        Y ::= AMinus (ANum 3) (AId Y); X ::= ANum 4 
+    Y ::= 3 - Y;; X ::= 4 
 ]]
     となります。
     この単純化を達成するためには、
 [[
-        pe_aexp [(X,3)] (AMinus (AId X) (AId Y)) 
+    pe_aexp [(X,3)] (X - Y) 
 ]]
-    を部分評価した結果は [AMinus (ANum 3) (AId Y)] であるべきで、オリジナルの式 [AMinus (AId X) (AId Y)] ではありません。
+    を部分評価した結果は [3 - Y] であるべきで、オリジナルの式 [X - Y)] ではありません。
     何といっても、
 [[
-        X ::= ANum 3; Y ::= AMinus (AId X) (AId Y); X ::= ANum 4 
+    X ::= 3;; Y ::= X - Y;; X ::= 4 
 ]]
     を
 [[
-        Y ::= AMinus (AId X) (AId Y); X ::= ANum 4 
+    Y ::= X - Y;; X ::= 4 
 ]]
     に変換することは、非効率であるだけではなく、間違っています。
-    出力式 [AMinus (ANum 3) (AId Y)] と [AMinus (AId X) (AId Y)]  は両方とも正しさの基準を満たすにもかかわらずです。
+    出力式 [3 - Y] と [X - Y]  は両方とも正しさの基準を満たすにもかかわらずです。
     実のところ、単に [pe_aexp pe_st a = a] と定義したとしても、定理 [pe_aexp_correct'] は成立してしまいます。
  
     その代わりに、[pe_aexp]がより強い意味で正しいことを証明します。
@@ -400,8 +399,8 @@ Fixpoint pe_update (st:state) (pe_st:pe_state) : state :=
   end.
 
 Example test_pe_update:
-  pe_update (t_update empty_state Y 1) [(X,3);(Z,2)]
-  = t_update (t_update (t_update empty_state Y 1) Z 2) X 3.
+  pe_update { Y --> 1 } [(X,3);(Z,2)]
+  = { Y --> 1 ; Z --> 2 ; X --> 3 }.
 Proof. reflexivity. Qed.
 
 (*
@@ -419,7 +418,7 @@ Theorem pe_update_correct: forall st pe_st V0,
   end.
 Proof. intros. induction pe_st as [| [V n] pe_st]. reflexivity.
   simpl in *. unfold t_update.
-  compare V0 V; auto. rewrite <- beq_id_refl; auto. rewrite false_beq_id; auto. Qed.
+  compare V0 V; auto. rewrite <- beq_string_refl; auto. rewrite false_beq_string; auto. Qed.
 
 (*
 (** We can relate [pe_consistent] to [pe_update] in two ways.
@@ -478,7 +477,7 @@ Proof.
          rewrite IHa1; rewrite IHa2; reflexivity).
   (* Compared to fold_constants_aexp_sound, the only
      interesting case is AId. *)
-  rewrite pe_update_correct. destruct (pe_lookup pe_st i); reflexivity.
+  rewrite pe_update_correct. destruct (pe_lookup pe_st s); reflexivity.
 Qed.
 
 (* ================================================================= *)
@@ -526,12 +525,12 @@ Fixpoint pe_bexp (pe_st : pe_state) (b : bexp) : bexp :=
   end.
 
 Example test_pe_bexp1:
-  pe_bexp [(X,3)] (BNot (BLe (AId X) (ANum 3)))
-  = BFalse.
+  pe_bexp [(X,3)] (!(X <= 3))
+  = false.
 Proof. reflexivity. Qed.
 
-Example test_pe_bexp2: forall b,
-  b = BNot (BLe (AId X) (APlus (AId X) (ANum 1))) ->
+Example test_pe_bexp2: forall b:bexp,
+  b = !(X <= (X + 1)) ->
   pe_bexp [] b = b.
 Proof. intros b H. rewrite -> H. reflexivity. Qed.
 
@@ -604,8 +603,8 @@ Qed.
     initial partial state [st] yields the residual command [c1'] and
     the final partial state [st'].  For example, we want something like
 
-      (X ::= ANum 3 ;; Y ::= AMult (AId Z) (APlus (AId X) (AId X)))
-      / [] \\ (Y ::= AMult (AId Z) (ANum 6)) / [(X,3)]
+      (X ::= 3 ;; Y ::= Z * (X + X)
+      / [] \\ (Y ::= Z * 6) / [(X,3)]
 
     to hold.  The assignment to [X] appears in the final partial state,
     not the residual command. *)
@@ -635,8 +634,8 @@ Qed.
     残留コマンド[c1']と最終部分状態[st']になることを意味します。
     例えば、次のようなことが成立することを期待するでしょう:
 [[
-      (X ::= ANum 3 ;; Y ::= AMult (AId Z) (APlus (AId X) (AId X))) 
-      / [] \\ (Y ::= AMult (AId Z) (ANum 6)) / [(X,3)] 
+      (X ::= 3 ;; Y ::= Z * (X + X) 
+      / [] \\ (Y ::= Z * 6) / [(X,3)] 
 ]]
     [X]への代入は残留コマンドではなく、最終部分状態に現れます。 *)
 
@@ -649,12 +648,12 @@ Qed.
 (*
 (** Let's start by considering how to partially evaluate an
     assignment.  The two assignments in the source program above needs
-    to be treated differently.  The first assignment [X ::= ANum 3],
+    to be treated differently.  The first assignment [X ::= 3],
     is _static_: its right-hand-side is a constant (more generally,
     simplifies to a constant), so we should update our partial state
     at [X] to [3] and produce no residual code.  (Actually, we produce
-    a residual [SKIP].)  The second assignment [Y ::= AMult (AId Z)
-    (APlus (AId X) (AId X))] is _dynamic_: its right-hand-side does
+    a residual [SKIP].)  The second assignment [Y ::= Z * (X + X)] 
+    is _dynamic_: its right-hand-side does
     not simplify to a constant, so we should leave it in the residual
     code and remove [Y], if present, from our partial state.  To
     implement these two cases, we define the functions [pe_add] and
@@ -665,11 +664,11 @@ Qed.
 *)
 (** 代入がどのように部分評価されるかを考えることから始めましょう。
     上述のソースプログラムにおける2つの代入は、違った形で扱う必要があります。
-    最初の代入 [X ::= ANum 3] は「静的」です。
+    最初の代入 [X ::= 3] は「静的」です。
     その右辺は定数(より一般には定数に簡単化されるもの)です。
     これから部分状態の[X]を[3]に更新し、残留コードは生成しません。
     (実際には、残留コードとして [SKIP] を作ります。)
-    2つ目の代入 [Y ::= AMult (AId Z) (APlus (AId X) (AId X))] は「動的」です。
+    2つ目の代入 [Y ::= Z * (X + X)] は「動的」です。
     右辺は定数に単純化されることはありません。これから、この代入は残留コードに残され、
     [Y]がもし部分状態に存在していたなら、その[Y]が除去されます。
     この2つの場合を実装するために、関数[pe_add]と[pe_remove]を定義します。
@@ -678,38 +677,38 @@ Qed.
     定理[pe_add_correct]と[pe_remove_correct]はこれらの関数のふるまいを
     [pe_state]の[pe_lookup]による解釈にもとづいて規定します。 *)
 
-Fixpoint pe_remove (pe_st:pe_state) (V:id) : pe_state :=
+Fixpoint pe_remove (pe_st:pe_state) (V:string) : pe_state :=
   match pe_st with
   | [] => []
-  | (V',n')::pe_st => if beq_id V V' then pe_remove pe_st V
+  | (V',n')::pe_st => if beq_string V V' then pe_remove pe_st V
                       else (V',n') :: pe_remove pe_st V
   end.
 
 Theorem pe_remove_correct: forall pe_st V V0,
   pe_lookup (pe_remove pe_st V) V0
-  = if beq_id V V0 then None else pe_lookup pe_st V0.
+  = if beq_string V V0 then None else pe_lookup pe_st V0.
 Proof. intros pe_st V V0. induction pe_st as [| [V' n'] pe_st].
-  - (* [] *) destruct (beq_id V V0); reflexivity.
+  - (* [] *) destruct (beq_string V V0); reflexivity.
   - (* :: *) simpl. compare V V'.
     + (* equal *) rewrite IHpe_st.
-      destruct (beq_idP V V0).  reflexivity.  
-      rewrite false_beq_id; auto.
+      destruct (beq_stringP V V0).  reflexivity.  
+      rewrite false_beq_string; auto.
     + (* not equal *) simpl. compare V0 V'.
-      * (* equal *) rewrite false_beq_id; auto.
+      * (* equal *) rewrite false_beq_string; auto.
       * (* not equal *) rewrite IHpe_st. reflexivity.
 Qed.
 
-Definition pe_add (pe_st:pe_state) (V:id) (n:nat) : pe_state :=
+Definition pe_add (pe_st:pe_state) (V:string) (n:nat) : pe_state :=
   (V,n) :: pe_remove pe_st V.
 
 Theorem pe_add_correct: forall pe_st V n V0,
   pe_lookup (pe_add pe_st V n) V0
-  = if beq_id V V0 then Some n else pe_lookup pe_st V0.
+  = if beq_string V V0 then Some n else pe_lookup pe_st V0.
 Proof. intros pe_st V n V0. unfold pe_add. simpl.
   compare V V0.
-  - (* equal *) rewrite <- beq_id_refl; auto.
+  - (* equal *) rewrite <- beq_string_refl; auto.
   - (* not equal *) rewrite pe_remove_correct. 
-    repeat rewrite false_beq_id; auto.
+    repeat rewrite false_beq_string; auto.
 Qed.
 
 (*
@@ -725,7 +724,7 @@ Theorem pe_update_update_remove: forall st pe_st V n,
   pe_update (t_update st V n) (pe_remove pe_st V).
 Proof. intros st pe_st V n. apply functional_extensionality. 
   intros V0. unfold t_update. rewrite !pe_update_correct.
-  rewrite pe_remove_correct. destruct (beq_id V V0); reflexivity.
+  rewrite pe_remove_correct. destruct (beq_string V V0); reflexivity.
   Qed.
 
 Theorem pe_update_update_add: forall st pe_st V n,
@@ -733,7 +732,7 @@ Theorem pe_update_update_add: forall st pe_st V n,
   pe_update st (pe_add pe_st V n).
 Proof. intros st pe_st V n. apply functional_extensionality. intros V0.
   unfold t_update. rewrite !pe_update_correct. rewrite pe_add_correct.
-  destruct (beq_id V V0); reflexivity. Qed.
+  destruct (beq_string V V0); reflexivity. Qed.
 
 (* ================================================================= *)
 (*
@@ -751,10 +750,10 @@ Proof. intros st pe_st V n. apply functional_extensionality. intros V0.
 
     The following program illustrates the difficulty:
 
-      X ::= ANum 3;;
-      IFB BLe (AId Y) (ANum 4) THEN
-          Y ::= ANum 4;;
-          IFB BEq (AId X) (AId Y) THEN Y ::= ANum 999 ELSE SKIP FI
+      X ::= 3;;
+      IFB Y <= 4 THEN
+          Y ::= 4;;
+          IFB X <= Y THEN Y ::= 999 ELSE SKIP FI
       ELSE SKIP FI
 
     Suppose the initial partial state is empty.  We don't know
@@ -770,14 +769,14 @@ Proof. intros st pe_st V n. apply functional_extensionality. intros V0.
     this example, we take the intersection of [(Y,4),(X,3)] and
     [(X,3)], so the overall final partial state is [(X,3)].  To
     compensate for forgetting that [Y] is [4], we need to add an
-    assignment [Y ::= ANum 4] to the end of the [THEN] branch.  So,
+    assignment [Y ::= 4] to the end of the [THEN] branch.  So,
     the residual program will be something like
 
       SKIP;;
-      IFB BLe (AId Y) (ANum 4) THEN
+      IFB Y <= 4 THEN
           SKIP;;
           SKIP;;
-          Y ::= ANum 4
+          Y ::= 4
       ELSE SKIP FI
 
     Programming this case in Coq calls for several auxiliary
@@ -797,10 +796,10 @@ Proof. intros st pe_st V n. apply functional_extensionality. intros V0.
  
     次のプログラムは、問題の難しさを表します:
 [[
-      X ::= ANum 3;; 
-      IFB BLe (AId Y) (ANum 4) THEN 
-          Y ::= ANum 4;; 
-          IFB BEq (AId X) (AId Y) THEN Y ::= ANum 999 ELSE SKIP FI 
+      X ::= 3;; 
+      IFB Y <= 4 THEN 
+          Y ::= 4;; 
+          IFB X <= Y THEN Y ::= 999 ELSE SKIP FI 
       ELSE SKIP FI 
 ]]
     初期部分状態が空とします。
@@ -812,14 +811,14 @@ Proof. intros st pe_st V n. apply functional_extensionality. intros V0.
     このような動的条件分岐を扱う一つの方法は、2つの選択肢の最終部分状態の共通部分をとるというものです。
     この例では、[(Y,4),(X,3)] と [(X,3)] の共通部分をとります。
     従って、全体の最終部分状態は [(X,3)] です。
-    [Y]が[4]であるという情報を失なった代償として、[THEN]選択肢の最後に代入 [Y ::= ANum 4] を追加する必要があります。
+    [Y]が[4]であるという情報を失なった代償として、[THEN]選択肢の最後に代入 [Y ::= 4] を追加する必要があります。
     結局、残留プログラムは次のようなものになります:
 [[
       SKIP;; 
-      IFB BLe (AId Y) (ANum 4) THEN 
+      IFB Y <= 4 THEN 
           SKIP;; 
           SKIP;; 
-          Y ::= ANum 4 
+          Y ::= 4 
       ELSE SKIP FI 
 ]]
     Coqでこの場合をプログラミングするには、いくつものさらなる関数が必要です。
@@ -829,14 +828,14 @@ Proof. intros st pe_st V n. apply functional_extensionality. intros V0.
     最初に、2つの[pe_state]が特定の変数について不一致かどうかを計算する方法を示します。
     定理[pe_disagree_domain]において、2つの[pe_state]が変数について不一致になるのは、少なくとも一方にその変数が現れるときだけであることを証明します。 *)
 
-Definition pe_disagree_at (pe_st1 pe_st2 : pe_state) (V:id) : bool :=
+Definition pe_disagree_at (pe_st1 pe_st2 : pe_state) (V:string) : bool :=
   match pe_lookup pe_st1 V, pe_lookup pe_st2 V with
   | Some x, Some y => negb (beq_nat x y)
   | None, None => false
   | _, _ => true
   end.
 
-Theorem pe_disagree_domain: forall (pe_st1 pe_st2 : pe_state) (V:id),
+Theorem pe_disagree_domain: forall (pe_st1 pe_st2 : pe_state) (V:string),
   true = pe_disagree_at pe_st1 pe_st2 V ->
   In V (map (@fst _ _) pe_st1 ++ map (@fst _ _) pe_st2).
 Proof. unfold pe_disagree_at. intros pe_st1 pe_st2 V H.
@@ -859,11 +858,11 @@ Proof. unfold pe_disagree_at. intros pe_st1 pe_st2 V H.
     このリストはまさに、定理[pe_compare_correct]に従うならば、このリストにある変数が現れることと、与えられた2つの[pe_state]がその変数で不一致であることが同値である、というものです。
     さらに、リストから重複を除去するために[pe_unique]関数を使います。 *)
 
-Fixpoint pe_unique (l : list id) : list id :=
+Fixpoint pe_unique (l : list string) : list string :=
   match l with
   | [] => []
   | x::l =>
-      x :: filter (fun y => if beq_id x y then false else true) (pe_unique l)
+      x :: filter (fun y => if beq_string x y then false else true) (pe_unique l)
   end.
 
 Theorem pe_unique_correct: forall l x,
@@ -873,18 +872,18 @@ Proof. intros l x. induction l as [| h t]. reflexivity.
   - (* -> *)
     intros. inversion H; clear H.
       left. assumption.
-      destruct (beq_idP h x).
+      destruct (beq_stringP h x).
          left.  assumption.
          right.  apply filter_In. split.
            apply IHt. assumption.
-           rewrite false_beq_id; auto.
+           rewrite false_beq_string; auto.
   - (* <- *)
     intros. inversion H; clear H.
        left. assumption.
        apply filter_In in H0.  inversion H0. right. apply IHt. assumption.
 Qed.
 
-Definition pe_compare (pe_st1 pe_st2 : pe_state) : list id :=
+Definition pe_compare (pe_st1 pe_st2 : pe_state) : list string :=
   pe_unique (filter (pe_disagree_at pe_st1 pe_st2)
     (map (@fst _ _) pe_st1 ++ map (@fst _ _) pe_st2)).
 
@@ -939,7 +938,7 @@ Proof. intros pe_st1 pe_st2 V.
     [pe_update]もまた2つの部分状態のどちらから変数を除去するかに関係ないことが言えます。
     定理[pe_compare_override]は正しさの証明の中で簡単に使われます。 *)
 
-Fixpoint pe_removes (pe_st:pe_state) (ids : list id) : pe_state :=
+Fixpoint pe_removes (pe_st:pe_state) (ids : list string) : pe_state :=
   match ids with
   | [] => pe_st
   | V::ids => pe_remove (pe_removes pe_st ids) V
@@ -947,12 +946,12 @@ Fixpoint pe_removes (pe_st:pe_state) (ids : list id) : pe_state :=
 
 Theorem pe_removes_correct: forall pe_st ids V,
   pe_lookup (pe_removes pe_st ids) V =
-  if inb beq_id V ids then None else pe_lookup pe_st V.
+  if inb beq_string V ids then None else pe_lookup pe_st V.
 Proof. intros pe_st ids V. induction ids as [| V' ids]. reflexivity.
   simpl. rewrite pe_remove_correct. rewrite IHids.
   compare V' V.
-  - rewrite <- beq_id_refl. reflexivity.
-  - rewrite false_beq_id; try congruence. reflexivity.
+  - rewrite <- beq_string_refl. reflexivity.
+  - rewrite false_beq_string; try congruence. reflexivity.
 Qed.
 
 Theorem pe_compare_removes: forall pe_st1 pe_st2 V,
@@ -960,7 +959,7 @@ Theorem pe_compare_removes: forall pe_st1 pe_st2 V,
   pe_lookup (pe_removes pe_st2 (pe_compare pe_st1 pe_st2)) V.
 Proof.
   intros pe_st1 pe_st2 V. rewrite !pe_removes_correct.
-  destruct (inbP _ _ beq_idP V (pe_compare pe_st1 pe_st2)).
+  destruct (inbP _ _ beq_stringP V (pe_compare pe_st1 pe_st2)).
   - reflexivity.
   - apply pe_compare_correct. auto. Qed.
 
@@ -981,7 +980,7 @@ Qed.
     より詳しくは、[assign pe_st ids] は、
     [ids]にリストアップされたそれぞれの変数に対して代入コマンドを生成します。 *)
 
-Fixpoint assign (pe_st : pe_state) (ids : list id) : com :=
+Fixpoint assign (pe_st : pe_state) (ids : list string) : com :=
   match ids with
   | [] => SKIP
   | V::ids => match pe_lookup pe_st V with
@@ -1004,8 +1003,8 @@ Fixpoint assign (pe_st : pe_state) (ids : list id) : com :=
     そして定理[assign_removes]は、
     生成された代入の列が部分状態からの変数の除去を完全に補償することを保証します。 *)
 
-Definition assigned (pe_st:pe_state) (ids : list id) (st:state) : state :=
-  fun V => if inb beq_id V ids then
+Definition assigned (pe_st:pe_state) (ids : list string) (st:state) : state :=
+  fun V => if inb beq_string V ids then
                 match pe_lookup pe_st V with
                 | Some n => n
                 | None => st V
@@ -1017,7 +1016,7 @@ Theorem assign_removes: forall pe_st ids st,
   pe_update (assigned pe_st ids st) (pe_removes pe_st ids).
 Proof. intros pe_st ids st. apply functional_extensionality. intros V.
   rewrite !pe_update_correct. rewrite pe_removes_correct. unfold assigned.
-  destruct (inbP _ _ beq_idP V ids); destruct (pe_lookup pe_st V); reflexivity.
+  destruct (inbP _ _ beq_stringP V ids); destruct (pe_lookup pe_st V); reflexivity.
 Qed.
 
 Lemma ceval_extensionality: forall c st st1 st2,
@@ -1034,14 +1033,14 @@ Proof. intros pe_st ids st. induction ids as [| V ids]; simpl.
     + (* Some *) eapply E_Seq. apply IHids. unfold assigned. simpl.
       eapply ceval_extensionality. apply E_Ass. simpl. reflexivity.
       intros V0. unfold t_update.  compare V V0.
-      * (* equal *) rewrite <- Heqlookup. rewrite <- beq_id_refl. reflexivity.
-      * (* not equal *) rewrite false_beq_id; simpl; congruence.
+      * (* equal *) rewrite <- Heqlookup. rewrite <- beq_string_refl. reflexivity.
+      * (* not equal *) rewrite false_beq_string; simpl; congruence.
     + (* None *) eapply ceval_extensionality. apply IHids.
       unfold assigned. intros V0. simpl. compare V V0.
       * (* equal *) rewrite <- Heqlookup.
-        rewrite <- beq_id_refl.
-        destruct (inbP _ _ beq_idP V ids); reflexivity.
-      * (* not equal *) rewrite false_beq_id; simpl; congruence.
+        rewrite <- beq_string_refl.
+        destruct (inbP _ _ beq_stringP V ids); reflexivity.
+      * (* not equal *) rewrite false_beq_string; simpl; congruence.
 Qed.
 
 (* ================================================================= *)
@@ -1121,27 +1120,27 @@ Hint Constructors ceval.
     それは難しいことではありませんが、ここでは必要ありません。 *)
 
 Example pe_example1:
-  (X ::= ANum 3 ;; Y ::= AMult (AId Z) (APlus (AId X) (AId X)))
-  / [] \\ (SKIP;; Y ::= AMult (AId Z) (ANum 6)) / [(X,3)].
+  (X ::= 3 ;; Y ::= Z * (X + X))
+  / [] \\ (SKIP;; Y ::= Z * 6) / [(X,3)].
 Proof. eapply PE_Seq. eapply PE_AssStatic. reflexivity.
   eapply PE_AssDynamic. reflexivity. intros n H. inversion H. Qed.
 
 Example pe_example2:
-  (X ::= ANum 3 ;; IFB BLe (AId X) (ANum 4) THEN X ::= ANum 4 ELSE SKIP FI)
+  (X ::= 3 ;; IFB X <= 4 THEN X ::= 4 ELSE SKIP FI)
   / [] \\ (SKIP;; SKIP) / [(X,4)].
 Proof. eapply PE_Seq. eapply PE_AssStatic. reflexivity.
   eapply PE_IfTrue. reflexivity.
   eapply PE_AssStatic. reflexivity. Qed.
 
 Example pe_example3:
-  (X ::= ANum 3;;
-   IFB BLe (AId Y) (ANum 4) THEN
-     Y ::= ANum 4;;
-     IFB BEq (AId X) (AId Y) THEN Y ::= ANum 999 ELSE SKIP FI
+  (X ::= 3;;
+   IFB Y <= 4 THEN
+     Y ::= 4;;
+     IFB X = Y THEN Y ::= 999 ELSE SKIP FI
    ELSE SKIP FI) / []
   \\ (SKIP;;
-       IFB BLe (AId Y) (ANum 4) THEN
-         (SKIP;; SKIP);; (SKIP;; Y ::= ANum 4)
+       IFB Y <= 4 THEN
+         (SKIP;; SKIP);; (SKIP;; Y ::= 4)
        ELSE SKIP;; SKIP FI)
       / [(X,3)].
 Proof. erewrite f_equal2 with (f := fun c st => _ / _ \\ c / st).
@@ -1265,9 +1264,9 @@ Qed.
     are easy to deal with.  Considered this repeated-squaring loop,
     for example:
 
-      WHILE BLe (ANum 1) (AId X) DO
-          Y ::= AMult (AId Y) (AId Y);;
-          X ::= AMinus (AId X) (ANum 1)
+      WHILE 1 <= X DO
+          Y ::= Y * Y;;
+          X ::= X - 1
       END
 
     If we know neither [X] nor [Y] statically, then the entire loop is
@@ -1275,9 +1274,9 @@ Qed.
     [X] but not [Y], then the loop can be unrolled all the way and the
     residual command should be, for example,
 
-      Y ::= AMult (AId Y) (AId Y);;
-      Y ::= AMult (AId Y) (AId Y);;
-      Y ::= AMult (AId Y) (AId Y)
+      Y ::= Y * Y;;
+      Y ::= Y * Y;;
+      Y ::= Y * Y
 
     if [X] is initially [3] (and finally [0]).  In general, a loop is
     easy to partially evaluate if the final partial state of the loop
@@ -1288,25 +1287,25 @@ Qed.
     residual program we want in Imp.  For example, take this program
     for checking whether [Y] is even or odd:
 
-      X ::= ANum 0;;
-      WHILE BLe (ANum 1) (AId Y) DO
-          Y ::= AMinus (AId Y) (ANum 1);;
-          X ::= AMinus (ANum 1) (AId X)
+      X ::= 0;;
+      WHILE 1 <= Y DO
+          Y ::= Y - 1 ;;
+          X ::= 1 - X
       END
 
     The value of [X] alternates between [0] and [1] during the loop.
     Ideally, we would like to unroll this loop, not all the way but
     _two-fold_, into something like
 
-      WHILE BLe (ANum 1) (AId Y) DO
-          Y ::= AMinus (AId Y) (ANum 1);;
-          IF BLe (ANum 1) (AId Y) THEN
-              Y ::= AMinus (AId Y) (ANum 1)
+      WHILE 1 <= Y DO
+          Y ::= Y - 1;;
+          IF 1 <= Y THEN
+              Y ::= Y - 1
           ELSE
-              X ::= ANum 1;; EXIT
+              X ::= 1;; EXIT
           FI
       END;;
-      X ::= ANum 0
+      X ::= 0
 
     Unfortunately, there is no [EXIT] command in Imp.  Without
     extending the range of control structures available in our
@@ -1322,18 +1321,18 @@ Qed.
     実際、多くのループは扱うのは簡単です。
     例えば次の、二乗を繰り返すループを考えます:
 [[
-      WHILE BLe (ANum 1) (AId X) DO 
-          Y ::= AMult (AId Y) (AId Y);; 
-          X ::= AMinus (AId X) (ANum 1) 
+      WHILE 1 <= X DO 
+          Y ::= Y * Y;; 
+          X ::= X - 1 
       END 
 ]]
     [X]も[Y]も静的には分からないとき、ループ全体が動的で、残留コマンドはループ全体と同じです。
     [X]が分かり[Y]が分からないときは、ループは完全に展開でき、
     もし[X]が最初は[3](で最後は[0])だとすると、残留コマンドは
 [[
-      Y ::= AMult (AId Y) (AId Y);; 
-      Y ::= AMult (AId Y) (AId Y);; 
-      Y ::= AMult (AId Y) (AId Y) 
+      Y ::= Y * Y;; 
+      Y ::= Y * Y;; 
+      Y ::= Y * Y 
 ]]
     となります。一般にループは、
     ループ本体の最終部分状態が初期状態と同じである場合、
@@ -1342,25 +1341,25 @@ Qed.
     しかし、Impには、残留プログラムを示すのが難しい別のループが存在します。
     例えば、[Y]が偶数か奇数かをチェックする次のプログラムを考えます:
 [[
-      X ::= ANum 0;; 
-      WHILE BLe (ANum 1) (AId Y) DO 
-          Y ::= AMinus (AId Y) (ANum 1);; 
-          X ::= AMinus (ANum 1) (AId X) 
+      X ::= 0;; 
+      WHILE 1 <= Y DO 
+          Y ::= Y - 1 ;; 
+          X ::= 1 - X 
       END 
 ]]
     [X]の値はループの間、[0]と[1]を交互にとります。
     理想的には、ループを完全にではなく2段階展開したいところです。
     次のような感じです:
 [[
-      WHILE BLe (ANum 1) (AId Y) DO 
-          Y ::= AMinus (AId Y) (ANum 1);; 
-          IF BLe (ANum 1) (AId Y) THEN 
-              Y ::= AMinus (AId Y) (ANum 1) 
+      WHILE 1 <= Y DO 
+          Y ::= Y - 1;; 
+          IF 1 <= Y THEN 
+              Y ::= Y - 1 
           ELSE 
-              X ::= ANum 1;; EXIT 
+              X ::= 1;; EXIT 
           FI 
       END;; 
-      X ::= ANum 0 
+      X ::= 0 
 ]]
     残念ながら、Impには[EXIT]コマンドはありません。
     言語の制御構造を拡張しない範囲では、できることは、ループのガードのテストを繰り返すか、フラグ変数を追加することです。
@@ -1473,27 +1472,27 @@ Ltac step i :=
                | intuition eauto; solve_by_invert])).
 
 Definition square_loop: com :=
-  WHILE BLe (ANum 1) (AId X) DO
-    Y ::= AMult (AId Y) (AId Y);;
-    X ::= AMinus (AId X) (ANum 1)
+  WHILE 1 <= X DO
+    Y ::= Y * Y;;
+    X ::= X - 1
   END.
 
 Example pe_loop_example1:
   square_loop / []
-  \\ (WHILE BLe (ANum 1) (AId X) DO
-         (Y ::= AMult (AId Y) (AId Y);;
-          X ::= AMinus (AId X) (ANum 1));; SKIP
+  \\ (WHILE 1 <= X DO
+         (Y ::= Y * Y;;
+          X ::= X - 1);; SKIP
        END) / [] / SKIP.
 Proof. erewrite f_equal2 with (f := fun c st => _ / _ \\ c / st / SKIP).
   step PE_WhileFixed. step PE_WhileFixedEnd. reflexivity.
   reflexivity. reflexivity. Qed.
 
 Example pe_loop_example2:
-  (X ::= ANum 3;; square_loop) / []
+  (X ::= 3;; square_loop) / []
   \\ (SKIP;;
-       (Y ::= AMult (AId Y) (AId Y);; SKIP);;
-       (Y ::= AMult (AId Y) (AId Y);; SKIP);;
-       (Y ::= AMult (AId Y) (AId Y);; SKIP);;
+       (Y ::= Y * Y;; SKIP);;
+       (Y ::= Y * Y;; SKIP);;
+       (Y ::= Y * Y;; SKIP);;
        SKIP) / [(X,0)] / SKIP.
 Proof. erewrite f_equal2 with (f := fun c st => _ / _ \\ c / st / SKIP).
   eapply PE_Seq. eapply PE_AssStatic. reflexivity.
@@ -1505,21 +1504,21 @@ Proof. erewrite f_equal2 with (f := fun c st => _ / _ \\ c / st / SKIP).
   reflexivity. reflexivity. Qed.
 
 Example pe_loop_example3:
-  (Z ::= ANum 3;; subtract_slowly) / []
+  (Z ::= 3;; subtract_slowly) / []
   \\ (SKIP;;
-       IFB BNot (BEq (AId X) (ANum 0)) THEN
-         (SKIP;; X ::= AMinus (AId X) (ANum 1));;
-         IFB BNot (BEq (AId X) (ANum 0)) THEN
-           (SKIP;; X ::= AMinus (AId X) (ANum 1));;
-           IFB BNot (BEq (AId X) (ANum 0)) THEN
-             (SKIP;; X ::= AMinus (AId X) (ANum 1));;
-             WHILE BNot (BEq (AId X) (ANum 0)) DO
-               (SKIP;; X ::= AMinus (AId X) (ANum 1));; SKIP
+       IFB !(X = 0) THEN
+         (SKIP;; X ::= X - 1);;
+         IFB !(X = 0) THEN
+           (SKIP;; X ::= X - 1);;
+           IFB !(X = 0) THEN
+             (SKIP;; X ::= X - 1);;
+             WHILE !(X = 0) DO
+               (SKIP;; X ::= X - 1);; SKIP
              END;;
-             SKIP;; Z ::= ANum 0
-           ELSE SKIP;; Z ::= ANum 1 FI;; SKIP
-         ELSE SKIP;; Z ::= ANum 2 FI;; SKIP
-       ELSE SKIP;; Z ::= ANum 3 FI) / [] / SKIP.
+             SKIP;; Z ::= 0
+           ELSE SKIP;; Z ::= 1 FI;; SKIP
+         ELSE SKIP;; Z ::= 2 FI;; SKIP
+       ELSE SKIP;; Z ::= 3 FI) / [] / SKIP.
 Proof. erewrite f_equal2 with (f := fun c st => _ / _ \\ c / st / SKIP).
   eapply PE_Seq. eapply PE_AssStatic. reflexivity.
   step PE_While.
@@ -1531,10 +1530,10 @@ Proof. erewrite f_equal2 with (f := fun c st => _ / _ \\ c / st / SKIP).
   reflexivity. reflexivity. Qed.
 
 Example pe_loop_example4:
-  (X ::= ANum 0;;
-   WHILE BLe (AId X) (ANum 2) DO
-     X ::= AMinus (ANum 1) (AId X)
-   END) / [] \\ (SKIP;; WHILE BTrue DO SKIP END) / [(X,0)] / SKIP.
+  (X ::= 0;;
+   WHILE X <= 2 DO
+     X ::= 1 - X
+   END) / [] \\ (SKIP;; WHILE true DO SKIP END) / [(X,0)] / SKIP.
 Proof. erewrite f_equal2 with (f := fun c st => _ / _ \\ c / st / SKIP).
   eapply PE_Seq. eapply PE_AssStatic. reflexivity.
   step PE_WhileFixedLoop.
@@ -1625,6 +1624,8 @@ Proof. intros pe_st1 pe_st2 H st.
 Reserved Notation "c' '/' pe_st' '/' c'' '/' st '\\' st'' '#' n"
   (at level 40, pe_st' at level 39, c'' at level 39,
    st at level 39, st'' at level 39).
+
+Close Scope bexp_scope.
 
 Inductive pe_ceval_count (c':com) (pe_st':pe_state) (c'':com)
                          (st:state) (st'':state) (n:nat) : Prop :=
@@ -1864,7 +1865,7 @@ End Loop.
 Inductive block (Label:Type) : Type :=
   | Goto : Label -> block Label
   | If : bexp -> Label -> Label -> block Label
-  | Assign : id -> aexp -> block Label -> block Label.
+  | Assign : string -> aexp -> block Label -> block Label.
 
 Arguments Goto {Label} _.
 Arguments If   {Label} _ _ _.
@@ -1892,8 +1893,8 @@ Inductive parity_label : Type :=
 (** 以下の[block]は例プログラムの[body]ラベルに対する基本ブロックです。 *)
 
 Definition parity_body : block parity_label :=
-  Assign Y (AMinus (AId Y) (ANum 1))
-   (Assign X (AMinus (ANum 1) (AId X))
+  Assign Y (Y - 1)
+   (Assign X (1 - X)
      (Goto loop)).
 
 (*
@@ -1917,8 +1918,8 @@ Fixpoint keval {L:Type} (st:state) (k : block L) : state * L :=
   end.
 
 Example keval_example:
-  keval empty_state parity_body
-  = (t_update (t_update empty_state Y 0) X 1, loop).
+  keval { --> 0 } parity_body
+  = ({ Y --> 0 ; X --> 1 }, loop).
 Proof. reflexivity. Qed.
 
 (* ================================================================= *)
@@ -1944,8 +1945,8 @@ Definition program (L:Type) : Type := L -> option (block L).
 
 Definition parity : program parity_label := fun l =>
   match l with
-  | entry => Some (Assign X (ANum 0) (Goto loop))
-  | loop => Some (If (BLe (ANum 1) (AId Y)) body done)
+  | entry => Some (Assign X 0 (Goto loop))
+  | loop => Some (If (1 <= Y) body done)
   | body => Some parity_body
   | done => None (* halt *)
   end.
@@ -1969,7 +1970,7 @@ Inductive peval {L:Type} (p : program L)
     peval p st' l' st'' l'' ->
     peval p st l st'' l''.
 
-Example parity_eval: peval parity empty_state entry empty_state done.
+Example parity_eval: peval parity { --> 0 } entry  { --> 0 } done.
 Proof. erewrite f_equal with (f := fun st => peval _ _ _ st _).
   eapply E_Some. reflexivity. reflexivity.
   eapply E_Some. reflexivity. reflexivity.
@@ -2018,7 +2019,7 @@ Fixpoint pe_block {L:Type} (pe_st:pe_state) (k : block L)
 
 Example pe_block_example:
   pe_block [(X,0)] parity_body
-  = Assign Y (AMinus (AId Y) (ANum 1)) (Goto ([(X,1)], loop)).
+  = Assign Y (Y - 1) (Goto ([(X,1)], loop)).
 Proof. reflexivity. Qed.
 
 Theorem pe_block_correct: forall (L:Type) st pe_st k st' pe_st' (l':L),
@@ -2094,4 +2095,4 @@ Proof. intros.
       eapply E_Some; eauto. apply pe_block_correct. apply Hkeval.
 Qed.
 
-(** $Date: 2017-08-24 17:13:02 -0400 (Thu, 24 Aug 2017) $ *)
+(** $Date$ *)

@@ -246,7 +246,7 @@
 (*
 (** If you plan to use these materials in your own course, you will
     undoubtedly find things you'd like to change, improve, or add.
-    Your contributions are welcome!  Please see the \CHAPV1{Preface}
+    Your contributions are welcome!  Please see the [Preface]
     to _Logical Foundations_ for instructions. *)
 *)
 (** この資料を自分のコースで使おうと思った場合、ほぼまちがいなく書き直しや追加したいところが出てくるでしょう。
@@ -261,4 +261,4 @@
     NSF Expeditions grant 1521523, _The Science of Deep
     Specification_. *)
 
-(** $Date: 2017-08-24 17:13:02 -0400 (Thu, 24 Aug 2017) $ *)
+(** $Date$ *)
