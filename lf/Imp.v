@@ -1,9 +1,9 @@
 (** * Imp: 単純な命令型プログラム *)
-(*
+(* begin hide *)
 (** * Imp: Simple Imperative Programs *)
-*)
+(* end hide *)
 
-(*
+(* begin hide *)
 (** In this chapter, we'll take a more serious look at how to use Coq
     to study interesting things outside of itself.  Our case study is
     a _simple imperative programming language_ called Imp, embodying a
@@ -18,7 +18,7 @@
          Z ::= Z - 1 
        END
 *)
- *)
+(* end hide *)
 (** この章では、別のものを学ぶためにCoqを使う方法に焦点を当てます。
     学ぶ対象は、Imp と呼ばれる単純な命令型プログラミング言語です。
     Imp は C や Java のような標準的に広く使われている言語の中心部分の機能だけを取り出したものです。
@@ -33,13 +33,13 @@
 >>
  *)
 
-(*
+(* begin hide *)
 (** This chapter looks at how to define the _syntax_ and _semantics_
     of Imp; further chapters in _Programming Language Foundations_
     (_Software Foundations_, volume 2) develop a theory of _program
     equivalence_ and introduce _Hoare Logic_, a widely used logic for
     reasoning about imperative programs. *)
-*)
+(* end hide *)
 (** この章ではImpの構文(_syntax_)と意味(_semantics_)をどのように定義するかを見ます。
     「プログラミング言語の基礎(_Programming Language Foundations_)」（ソフトウェアの基礎、第二巻）の章では、プログラムの同値性(_program equivalence_)の理論を展開し、命令型プログラムについての推論のための論理として一番知られているホーア論理(_Hoare Logic_)を紹介します。 *)
 
@@ -55,33 +55,33 @@ Import ListNotations.
 Require Import Maps.
 
 (* ################################################################# *)
-(*
+(* begin hide *)
 (** * Arithmetic and Boolean Expressions *)
-*)
+(* end hide *)
 (** * 算術式とブール式 *)
 
-(*
+(* begin hide *)
 (** We'll present Imp in three parts: first a core language of
     _arithmetic and boolean expressions_, then an extension of these
     expressions with _variables_, and finally a language of _commands_
     including assignment, conditions, sequencing, and loops. *)
-*)
+(* end hide *)
 (** Impを三つの部分に分けて示します：
     最初に算術式(_arithmetic expressions_)とブール式(_boolean expressions_)、次にこれらの式に変数(_variables_)を加えたもの、
     そして最後に代入(assignment)、条件分岐(conditions)、コマンド合成(sequencing)、ループ(loops)を持つコマンド(_commands_)の言語です。*)
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Syntax *)
-*)
+(* end hide *)
 (** ** 構文 *)
 
 Module AExp.
 
-(*
+(* begin hide *)
 (** These two definitions specify the _abstract syntax_ of
     arithmetic and boolean expressions. *)
-*)
+(* end hide *)
 (** 次の2つの定義は、算術式とブール式の抽象構文(_abstract syntax_)を定めます。*)
 
 Inductive aexp : Type :=
@@ -98,7 +98,7 @@ Inductive bexp : Type :=
   | BNot : bexp -> bexp
   | BAnd : bexp -> bexp -> bexp.
 
-(*
+(* begin hide *)
 (** In this chapter, we'll mostly elide the translation from the
     concrete syntax that a programmer would actually write to these
     abstract syntax trees -- the process that, for example, would
@@ -112,7 +112,7 @@ Inductive bexp : Type :=
     understand this one, but if you haven't taken a course where these
     techniques are covered (e.g., a compilers course) you may want to
     skim it. *)
-*)
+(* end hide *)
 (** この章では、プログラマが実際に書く具象構文から抽象構文木への変換はほとんど省略します。
     例えば、文字列["1+2*3"]をAST（Abstract Syntax Tree, 抽象構文木）
 [[
@@ -122,7 +122,7 @@ Inductive bexp : Type :=
     この変換ができる単純な字句解析器と構文解析器をオプションの章[ImpParser]で実装します。
     このファイル（[Imp.v]）を理解するには[ImpParser]章の理解は必要ではありませんが、もしそれらの技術についてのコース（例えばコンパイラコース）を受講していないならば、ざっと見てみるのも良いでしょう。 *)
 
-(*
+(* begin hide *)
 (** For comparison, here's a conventional BNF (Backus-Naur Form)
     grammar defining the same abstract syntax:
 
@@ -138,7 +138,7 @@ Inductive bexp : Type :=
         | not b
         | b and b
 *)
- *)
+(* end hide *)
 (** 比較のため、同じ抽象構文を定義する慣習的なBNF(Backus-Naur Form)文法を以下に示します:
 <<
     a ::= nat 
@@ -155,7 +155,7 @@ Inductive bexp : Type :=
 >>
  *)
 
-(*
+(* begin hide *)
 (** Compared to the Coq version above...
 
        - The BNF is more informal -- for example, it gives some
@@ -187,7 +187,7 @@ Inductive bexp : Type :=
     It's good to be comfortable with both sorts of notations: informal
     ones for communicating between humans and formal ones for carrying
     out implementations and proofs. *)
-*)
+(* end hide *)
 (** 上述のCoq版と比較して...
  
        - BNFはより非形式的です。
@@ -208,14 +208,14 @@ Inductive bexp : Type :=
     非形式的なものは人間とのコミュニケーションに、形式的なものは実装と証明に便利です。 *)
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Evaluation *)
-*)
+(* end hide *)
 (** ** 評価 *)
 
-(*
+(* begin hide *)
 (** _Evaluating_ an arithmetic expression produces a number. *)
-*)
+(* end hide *)
 (** 算術式を評価する(_evaluating_)と、式から1つの数を生成します。 *)
 
 Fixpoint aeval (a : aexp) : nat :=
@@ -230,9 +230,9 @@ Example test_aeval1:
   aeval (APlus (ANum 2) (ANum 2)) = 4.
 Proof. reflexivity. Qed.
 
-(*
+(* begin hide *)
 (** Similarly, evaluating a boolean expression yields a boolean. *)
-*)
+(* end hide *)
 (** 同様に、ブール式を評価するとブール値になります。*)
 
 Fixpoint beval (b : bexp) : bool :=
@@ -246,18 +246,18 @@ Fixpoint beval (b : bexp) : bool :=
   end.
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Optimization *)
-*)
+(* end hide *)
 (** ** 最適化(Optimization) *)
 
-(*
+(* begin hide *)
 (** We haven't defined very much yet, but we can already get
     some mileage out of the definitions.  Suppose we define a function
     that takes an arithmetic expression and slightly simplifies it,
     changing every occurrence of [0+e] (i.e., [(APlus (ANum 0) e])
     into just [e]. *)
-*)
+(* end hide *)
 (** ここまで定義したものはわずかですが、その定義から既にいくらかのものを得ることができます。
     算術式をとって、それを少し簡単化する関数を定義するとします。
     すべての [0+e] （つまり[APlus (ANum 0) e]）を単に[e]にするものです。 *)
@@ -276,10 +276,10 @@ Fixpoint optimize_0plus (a:aexp) : aexp :=
       AMult (optimize_0plus e1) (optimize_0plus e2)
   end.
 
-(*
+(* begin hide *)
 (** To make sure our optimization is doing the right thing we
     can test it on some examples and see if the output looks OK. *)
-*)
+(* end hide *)
 (** この最適化が正しいことをすることを確認するために、
     いくつかの例についてテストして出力がよさそうかを見てみることができます。 *)
 
@@ -290,11 +290,11 @@ Example test_optimize_0plus:
   = APlus (ANum 2) (ANum 1).
 Proof. reflexivity. Qed.
 
-(*
+(* begin hide *)
 (** But if we want to be sure the optimization is correct --
     i.e., that evaluating an optimized expression gives the same
     result as the original -- we should prove it. *)
-*)
+(* end hide *)
 (** しかし、もし最適化が正しいことを確認したいならば、つまり、最適化した式がオリジナルの式と同じ評価結果を返すことを確認したいならば、証明すべきです。 *)
 
 Theorem optimize_0plus_sound: forall a,
@@ -321,12 +321,12 @@ Proof.
     simpl. rewrite IHa1. rewrite IHa2. reflexivity.  Qed.
 
 (* ################################################################# *)
-(*
+(* begin hide *)
 (** * Coq Automation *)
-*)
+(* end hide *)
 (** * Coq の自動化 *)
 
-(*
+(* begin hide *)
 (** The amount of repetition in this last proof is a little
     annoying.  And if either the language of arithmetic expressions or
     the optimization being proved sound were significantly more
@@ -341,7 +341,7 @@ Proof.
     to scale up our efforts to more complex definitions and more
     interesting properties without becoming overwhelmed by boring,
     repetitive, low-level details. *)
-*)
+(* end hide *)
 (** 前の証明の最後の繰り返しはちょっと面倒です。
     証明対象の言語や最適化の健全性証明が今に比べて著しく複雑だったら、現実的な問題になるでしょう。
  
@@ -353,30 +353,30 @@ Proof.
     しかし自動化機構を使うことで、より複雑な定義や、より興味深い性質について、退屈で繰り返しの多いローレベルな詳細に飲み込まれることなく、作業をスケールアップできます。 *)
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Tacticals *)
-*)
+(* end hide *)
 (** ** タクティカル(Tacticals) *)
 
-(*
+(* begin hide *)
 (** _Tacticals_ is Coq's term for tactics that take other tactics as
     arguments -- "higher-order tactics," if you will.  *)
-*)
+(* end hide *)
 (* 訳注: _Tacticals_ is -> areでは？ *)
 (** タクティカル(_tactical_)は Coq の用語で、他のタクティックを引数に取るタクティックのことです。
     「高階タクティック(higher-order tactics)」と言っても良いでしょう。 *)
 
 (* ----------------------------------------------------------------- *)
-(*
+(* begin hide *)
 (** *** The [try] Tactical *)
-*)
+(* end hide *)
 (** *** [try]タクティカル *)
 
-(*
+(* begin hide *)
 (** If [T] is a tactic, then [try T] is a tactic that is just like [T]
     except that, if [T] fails, [try T] _successfully_ does nothing at
     all (instead of failing). *)
-*)
+(* end hide *)
 (** [T]がタクティックのとき、タクティック [try T] は[T]と同様ですが、[T]が失敗するとき[try T] は（失敗せずに）成功として何もしない点が違います。 *)
 
 Theorem silly1 : forall ae, aeval ae = aeval ae.
@@ -395,22 +395,22 @@ Qed.
     next. *)
 
 (* ----------------------------------------------------------------- *)
-(*
+(* begin hide *)
 (** *** The [;] Tactical (Simple Form) *)
-*)
+(* end hide *)
 (** *** [;]タクティカル（基本形） *)
 
-(*
+(* begin hide *)
 (** In its most common form, the [;] tactical takes two tactics as
     arguments.  The compound tactic [T;T'] first performs [T] and then
     performs [T'] on _each subgoal_ generated by [T]. *)
-*)
+(* end hide *)
 (** 一番よくある形として、[;] タクティカルは二つのタクティックを引数として取ります。
     [T]と[T']がタクティックのとき、[T;T'] はタクティックで、最初に[T]を行い、[T]が生成した「サブゴールそれぞれ」に[T']を行います。 *)
 
-(*
+(* begin hide *)
 (** For example, consider the following trivial lemma: *)
-*)
+(* end hide *)
 (** 例えば、次の簡単な補題を考えます: *)
 
 Lemma foo : forall n, leb 0 n = true.
@@ -422,9 +422,9 @@ Proof.
     - (* n=Sn' *) simpl. reflexivity.
 Qed.
 
-(*
+(* begin hide *)
 (** We can simplify this proof using the [;] tactical: *)
-*)
+(* end hide *)
 (** 上の証明を[;]タクティカルを使って簡単化できます。 *)
 
 Lemma foo' : forall n, leb 0 n = true.
@@ -438,10 +438,10 @@ Proof.
   reflexivity.
 Qed.
 
-(*
+(* begin hide *)
 (** Using [try] and [;] together, we can get rid of the repetition in
     the proof that was bothering us a little while ago. *)
-*)
+(* end hide *)
 (** [try]と[;]の両方を使うと、ちょっと前に悩まされた証明の繰り返しを取り除くことができます。 *)
 
 Theorem optimize_0plus_sound': forall a,
@@ -467,7 +467,7 @@ Proof.
     + (* a1 = ANum n *) destruct n;
       simpl; rewrite IHa2; reflexivity.   Qed.
 
-(*
+(* begin hide *)
 (** Coq experts often use this "[...; try... ]" idiom after a tactic
     like [induction] to take care of many similar cases all at once.
     Naturally, this practice has an analog in informal proofs.  For
@@ -507,7 +507,7 @@ Proof.
         hand, if [n = S n'] for some [n'], then again [optimize_0plus]
         simply calls itself recursively, and the result follows from
         the IH.  [] *)
-*)
+(* end hide *)
 (** Coqの専門家は、[try]を[induction]のようなタクティックと一緒に使うことで、多くの似たような「簡単な」場合を一度に処理します。
     これは自然に非形式的な証明に対応します。
     例えば、この定理の形式的な証明の構造にマッチする非形式的な証明は次の通りです:
@@ -543,7 +543,7 @@ Proof.
         そして[a2]についての帰納仮定がまさに求めるものである。
         一方、ある[n']について [n = S n'] ならば、[optimize_0plus]はやはり自分自身を再帰的に呼び出し、結果は帰納仮定から得られる。 [] *)
 
-(*
+(* begin hide *)
 (** However, this proof can still be improved: the first case (for
     [a = ANum n]) is very trivial -- even more trivial than the cases
     that we said simply followed from the IH -- yet we have chosen to
@@ -552,7 +552,7 @@ Proof.
     direct from the IH.  The only interesting case is the one for
     [APlus]..."  We can make the same improvement in our formal proof
     too.  Here's how it looks: *)
-*)
+(* end hide *)
 (** しかし、この証明はさらに改良できます。
     最初の場合（[a = ANum n] のとき）はかなり自明です。
     帰納仮定からすぐに得られるとわざわざ言う必要もないくらい自明でしょう。
@@ -631,18 +631,18 @@ Qed.
     process diverges, this simply means that we have failed to
     construct a proof, not that we have constructed a wrong one. *)
 
-(*
+(* begin hide *)
 (** **** Exercise: 3 stars (optimize_0plus_b_sound)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★★★ (optimize_0plus_b_sound) *)
-(*
+(* begin hide *)
 (** Since the [optimize_0plus] transformation doesn't change the value
     of [aexp]s, we should be able to apply it to all the [aexp]s that
     appear in a [bexp] without changing the [bexp]'s value.  Write a
     function that performs this transformation on [bexp]s and prove
     it is sound.  Use the tacticals we've just seen to make the proof
     as elegant as possible. *)
-*)
+(* end hide *)
 (** [optimize_0plus]の変換が[aexp]の値を変えないことから、[bexp]の値を変えずに、[bexp]に現れる[aexp]をすべて変換するために[optimize_0plus]が適用できるべきでしょう。
     [bexp]についてこの変換をする関数を記述しなさい。
     そして、それが健全であることを証明しなさい。
@@ -657,11 +657,11 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(*
+(* begin hide *)
 (** **** Exercise: 4 stars, optional (optimizer)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★★★★, optional (optimizer) *)
-(*
+(* begin hide *)
 (** _Design exercise_: The optimization implemented by our
     [optimize_0plus] function is only one of many possible
     optimizations on arithmetic and boolean expressions.  Write a more
@@ -672,7 +672,7 @@ Proof.
 
 (* FILL IN HERE *)
 *)
- *)
+(* end hide *)
 (** 設計練習: 定義した[optimize_0plus]関数で実装された最適化は、算術式やブール式に対して考えられるいろいろな最適化の単なる1つに過ぎません。
     より洗練された最適化関数を記述し、その正しさを証明しなさい。
     （本当に簡単な最適化を作って証明し、それを少しずつ面白いものに仕立て上げていくと良いでしょう。）
@@ -682,12 +682,12 @@ Proof.
 (** [] *)
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Defining New Tactic Notations *)
-*)
+(* end hide *)
 (** ** 新しいタクティック記法を定義する *)
 
-(*
+(* begin hide *)
 (** Coq also provides several ways of "programming" tactic
 scripts.
 
@@ -711,7 +711,7 @@ scripts.
     The [Tactic Notation] mechanism is the easiest to come to grips
     with, and it offers plenty of power for many purposes.  Here's an
     example. *)
-*)
+(* end hide *)
 (** Coqはまた、タクティックスクリプトを「プログラミングする」いろいろな方法も提供します。
  
     - [Tactic Notation] コマンドは、「略記法タクティック("shorthand tactics")」を定義する簡単な方法を提供します。
@@ -731,24 +731,24 @@ Tactic Notation "simpl_and_try" tactic(c) :=
   simpl;
   try c.
 
-(*
+(* begin hide *)
 (** This defines a new tactical called [simpl_and_try] that takes one
     tactic [c] as an argument and is defined to be equivalent to the
     tactic [simpl; try c].  Now writing "[simpl_and_try reflexivity.]"
     in a proof will be the same as writing "[simpl; try
     reflexivity.]" *)
-*)
+(* end hide *)
 (** これは1つのタクティック[c]を引数としてとる[simpl_and_try]という新しいタクティカルを定義しています。
     [simpl_and_try c] はタクティック [simpl; try c] と同値です。
     例えば、証明内で"[simpl_and_try reflexivity.]"と書くことは「[simpl; try reflexivity.]」と書くことと同じでしょう。 *)
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** The [omega] Tactic *)
-*)
+(* end hide *)
 (** ** [omega]タクティック *)
 
-(*
+(* begin hide *)
 (** The [omega] tactic implements a decision procedure for a subset of
     first-order logic called _Presburger arithmetic_.  It is based on
     the Omega algorithm invented by William Pugh [Pugh 1991].
@@ -766,7 +766,7 @@ Tactic Notation "simpl_and_try" tactic(c) :=
     then invoking [omega] will either solve the goal or fail, meaning
     that the goal is actually false.  (If the goal is _not_ of this
     form, [omega] will also fail.) *)
-*)
+(* end hide *)
 (** [omega]タクティックは「プレスバーガー算術」(_Presburger arithmetic_、「プレスブルガー算術」とも)と呼ばれる一階述語論理のサブセットの決定手続き(decision procedure)を実装します。
     William Pugh が発明したOmegaアルゴリズム [Pugh 1991] に基いています。
  
@@ -793,12 +793,12 @@ Qed.
     the file.) *)
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** A Few More Handy Tactics *)
-*)
+(* end hide *)
 (** ** 便利なタクティックをさらにいくつか *)
 
-(*
+(* begin hide *)
 (** Finally, here are some miscellaneous tactics that you may find
     convenient.
 
@@ -830,7 +830,7 @@ Qed.
        like [apply c].
 
     We'll see examples as we go along. *)
-*)
+(* end hide *)
 (** 最後に、役に立ちそうないろいろなタクティックをいくつか紹介します。
  
      - [clear H]: 仮定[H]をコンテキストから消去します。
@@ -854,18 +854,18 @@ Qed.
     進むにしたがって、たくさんの例を見ることになります。 *)
 
 (* ################################################################# *)
-(*
+(* begin hide *)
 (** * Evaluation as a Relation *)
-*)
+(* end hide *)
 (** * 関係としての評価 *)
 
-(*
+(* begin hide *)
 (** We have presented [aeval] and [beval] as functions defined by
     [Fixpoint]s.  Another way to think about evaluation -- one that we
     will see is often more flexible -- is as a _relation_ between
     expressions and their values.  This leads naturally to [Inductive]
     definitions like the following one for arithmetic expressions... *)
-*)
+(* end hide *)
 (** [aeval]と[beval]を[Fixpoint]によって定義された関数として示しました。
     評価について考える別の方法は、それを式と値との間の関係(_relation_)と見ることです。
     この方法は、多くの場合[Fixpoint]を用いたものより柔軟です。
@@ -889,11 +889,11 @@ Inductive aevalR : aexp -> nat -> Prop :=
       aevalR e2 n2 ->
       aevalR (AMult e1 e2) (n1 * n2).
 
-(*
+(* begin hide *)
 (** It will be convenient to have an infix notation for
     [aevalR].  We'll write [e \\ n] to mean that arithmetic expression
     [e] evaluates to value [n]. *)
-*)
+(* end hide *)
 (** [aevalR]の中置記法を定義するのと便利です。
     算術式[e]が値[n]に評価されることを [e \\ n] と書きます。 *)
 
@@ -904,7 +904,7 @@ Notation "e '\\' n"
 
 End aevalR_first_try.
 
-(*
+(* begin hide *)
 (** In fact, Coq provides a way to use this notation in the
     definition of [aevalR] itself.  This reduces confusion by avoiding
     situations where we're working on a proof involving statements in
@@ -914,7 +914,7 @@ End aevalR_first_try.
     We do this by first "reserving" the notation, then giving the
     definition together with a declaration of what the notation
     means. *)
-*)
+(* end hide *)
 (** 実際は、Coqには[aevalR]自身の定義中でこの記法を使う方法があります。
     これにより、[e \\ n] の形の主張を含む証明で、[aevalR e n]という形の定義に戻らなければならない状況にならずに済みます。
  
@@ -998,10 +998,10 @@ Inductive aevalR : aexp -> nat -> Prop :=
 (* ================================================================= *)
 (** ** Equivalence of the Definitions *)
 
-(*
+(* begin hide *)
 (** It is straightforward to prove that the relational and functional
     definitions of evaluation agree: *)
-*)
+(* end hide *)
 (** 評価の、関係による定義と関数による定義が一致することを証明するのは簡単です。 *)
 
 Theorem aeval_iff_aevalR : forall a n,
@@ -1039,10 +1039,10 @@ Proof.
       apply IHa2. reflexivity.
 Qed.
 
-(*
+(* begin hide *)
 (** We can make the proof quite a bit shorter by making more
     use of tacticals. *)
-*)
+(* end hide *)
 (** さらにタクティカルを使うことで証明をより短くできます。 *)
 
 Theorem aeval_iff_aevalR' : forall a n,
@@ -1058,14 +1058,14 @@ Proof.
        try apply IHa1; try apply IHa2; reflexivity.
 Qed.
 
-(*
+(* begin hide *)
 (** **** Exercise: 3 stars (bevalR)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★★★ (bevalR) *)
-(*
+(* begin hide *)
 (** Write a relation [bevalR] in the same style as
     [aevalR], and prove that it is equivalent to [beval].*)
-*)
+(* end hide *)
 (** 関係[bevalR]を[aevalR]と同じスタイルで記述し、それが[beval]と同値であることを証明しなさい。 *)
 
 Inductive bevalR: bexp -> bool -> Prop :=
@@ -1083,14 +1083,14 @@ End AExp.
 (* ================================================================= *)
 (** ** Computational vs. Relational Definitions *)
 
-(*
+(* begin hide *)
 (** For the definitions of evaluation for arithmetic and boolean
     expressions, the choice of whether to use functional or relational
     definitions is mainly a matter of taste: either way works.
 
     However, there are circumstances where relational definitions of
     evaluation work much better than functional ones.  *)
-*)
+(* end hide *)
 (** 算術式とブール式の評価の定義について、関数を使うか関係を使うかはほとんど趣味の問題です。
     どちらでも問題ありません。
  
@@ -1203,25 +1203,25 @@ End aevalR_extended.
     of view to the other at will.*)
 
 (* ################################################################# *)
-(*
+(* begin hide *)
 (** * Expressions With Variables *)
-*)
+(* end hide *)
 (** * 変数を持つ式 *)
 
-(*
+(* begin hide *)
 (** Let's turn our attention back to defining Imp.  The next thing we
     need to do is to enrich our arithmetic and boolean expressions
     with variables.  To keep things simple, we'll assume that all
     variables are global and that they only hold numbers. *)
-*)
+(* end hide *)
 (** さて、Impの定義に戻りましょう。
     次にしなければならないことは、算術式とブール式に変数を拡張することです。
     話を単純にするため、すべての変数はグローバルで、数値だけを持つとしましょう。 *)
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** States *)
-*)
+(* end hide *)
 (** ** 状態 *)
 
 (** Since we'll want to look variables up to find out their current
@@ -1231,7 +1231,7 @@ End aevalR_extended.
     A _machine state_ (or just _state_) represents the current values
     of _all_ variables at some point in the execution of a program. *)
 
-(*
+(* begin hide *)
 (** For simplicity, we assume that the state is defined for
     _all_ variables, even though any given program is only going to
     mention a finite number of them.  The state captures all of the
@@ -1240,7 +1240,7 @@ End aevalR_extended.
     mapping from strings to [nat], and will use [0] as default value 
     in the store. For more complex programming languages, the state 
     might have more structure. *)
-*)
+(* end hide *)
 (** 簡単にするため、どのようなプログラムも有限個の変数しか使いませんが、状態はすべての変数について定義されているものとします。
     状態はメモリ中に格納されている全ての情報を持ちます。
     Imp で書かれたプログラムでは全ての変数が自然数だけを格納することから、状態を文字列から [nat] への写像で表現できます。
@@ -1250,15 +1250,15 @@ End aevalR_extended.
 Definition state := total_map nat.
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Syntax  *)
-*)
+(* end hide *)
 (** ** 構文  *)
 
-(*
+(* begin hide *)
 (** We can add variables to the arithmetic expressions we had before by
     simply adding one more constructor: *)
-*)
+(* end hide *)
 (** 前に定義した算術式に、単にもう1つコンストラクタを追加することで変数を追加できます: *)
 
 Inductive aexp : Type :=
@@ -1276,19 +1276,19 @@ Definition X : string := "X".
 Definition Y : string := "Y".
 Definition Z : string := "Z".
 
-(*
+(* begin hide *)
 (** (This convention for naming program variables ([X], [Y],
     [Z]) clashes a bit with our earlier use of uppercase letters for
     types.  Since we're not using polymorphism heavily in the chapters
     developed to Imp, this overloading should not cause confusion.) *)
-*)
+(* end hide *)
 (** （プログラム変数のこの慣習（[X], [Y], [Z]）は、大文字は型を表すのに使うという使用法と衝突します。
     Impを構成していく章では多相性を多用はしないので、このことが混乱を招くことはないはずです。） *)
 
-(*
+(* begin hide *)
 (** The definition of [bexp]s is unchanged (except that it now refers
     to the new [aexp]s): *)
-*)
+(* end hide *)
 (** [bexp]の定義は（新しい[aexp]を使うこと以外）変わっていません: *)
 
 Inductive bexp : Type :=
@@ -1337,16 +1337,16 @@ Notation "'!' b" := (BNot b) (at level 60) : bexp_scope.
     and [true && !(X <= 4)] instead of [BAnd true (BNot (BLe X 4))]. *)
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Evaluation *)
-*)
+(* end hide *)
 (** ** 評価  *)
 
-(*
+(* begin hide *)
 (** The arith and boolean evaluators are extended to handle
     variables in the obvious way, taking a state as an extra
     argument: *)
-*)
+(* end hide *)
 (** 算術とブールの評価器は、状態を引数に追加するという自明な方法で変数を扱うように拡張できます: *)
 
 Fixpoint aeval (st : state) (a : aexp) : nat :=
@@ -1395,24 +1395,24 @@ Example bexp1 :
 Proof. reflexivity. Qed.
 
 (* ################################################################# *)
-(*
+(* begin hide *)
 (** * Commands *)
-*)
+(* end hide *)
 (** * コマンド *)
 
-(*
+(* begin hide *)
 (** Now we are ready define the syntax and behavior of Imp
     _commands_ (sometimes called _statements_). *)
-*)
+(* end hide *)
 (** さて、Imp コマンド（「文(statement)」と呼ばれることもあります）の構文と挙動を定義する準備が出来ました。 *)
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Syntax *)
-*)
+(* end hide *)
 (** ** 構文 *)
 
-(*
+(* begin hide *)
 (** Informally, commands [c] are described by the following BNF
     grammar.  (We choose this slightly awkward concrete syntax for the
     sake of being able to define Imp syntax using Coq's Notation
@@ -1422,7 +1422,7 @@ Proof. reflexivity. Qed.
      c ::= SKIP | x ::= a | c ;; c | IFB b THEN c ELSE c FI
          | WHILE b DO c END
 *)
- *)
+(* end hide *)
 (** 非形式的には、コマンド [c] は以下の BNF で表現されます。
     （すこし不格好な具象構文を使っていますが、これはImpの構文をCoqのNotationの機能を使って記述するためです。
     特に、[IFB]は標準ライブラリの[if]との衝突を避けてのものです。）
@@ -1431,7 +1431,7 @@ Proof. reflexivity. Qed.
          | WHILE b DO c END 
 >>
  *)
-(*
+(* begin hide *)
 (**
     For example, here's factorial in Imp:
 
@@ -1444,7 +1444,7 @@ Proof. reflexivity. Qed.
 
    When this command terminates, the variable [Y] will contain the
    factorial of the initial value of [X]. *)
-*)
+(* end hide *)
 (**
     例えば、Imp における階乗の計算は以下のようになります。
 <<
@@ -1458,10 +1458,10 @@ Proof. reflexivity. Qed.
    このコマンドが終わったとき、変数 [Y] は変数 [X] の階乗の値を持つでしょう。
 *)
 
-(*
+(* begin hide *)
 (** Here is the formal definition of the abstract syntax of
     commands: *)
-*)
+(* end hide *)
 (** 以下に、コマンドの抽象構文の形式的定義を示します。 *)
 
 Inductive com : Type :=
@@ -1471,10 +1471,10 @@ Inductive com : Type :=
   | CIf : bexp -> com -> com -> com
   | CWhile : bexp -> com -> com.
 
-(*
+(* begin hide *)
 (** As for expressions, we can use a few [Notation] declarations to make 
     reading and writing Imp programs more convenient. *)
-*)
+(* end hide *)
 (** 式と同様、Impプログラムを読み書きしやすくするために、いくつかの [Notation] 宣言が使えます。 *)
 
 Bind Scope com_scope with com.
@@ -1493,10 +1493,10 @@ Notation "'IFB' c1 'THEN' c2 'ELSE' c3 'FI'" :=
     notations in match patterns. *)
 Open Scope com_scope.
 
-(*
+(* begin hide *)
 (** For example, here is the factorial function again, written as a
     formal definition to Coq: *)
-*)
+(* end hide *)
 (** 例えば先の階乗関数を Coq での形式的な定義として記述し直すと、以下のようになります。*)
 
 Definition fact_in_coq : com :=
@@ -1508,14 +1508,14 @@ Definition fact_in_coq : com :=
   END.
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** More Examples *)
-*)
+(* end hide *)
 (** ** 他の例 *)
 
-(*
+(* begin hide *)
 (** Assignment: *)
-*)
+(* end hide *)
 (** 代入: *)
 
 Definition plus2 : com :=
@@ -1529,9 +1529,9 @@ Definition subtract_slowly_body : com :=
   X ::= X - 1.
 
 (* ----------------------------------------------------------------- *)
-(*
+(* begin hide *)
 (** *** Loops *)
-*)
+(* end hide *)
 (** *** ループ *)
 
 Definition subtract_slowly : com :=
@@ -1545,9 +1545,9 @@ Definition subtract_3_from_5_slowly : com :=
   subtract_slowly.
 
 (* ----------------------------------------------------------------- *)
-(*
+(* begin hide *)
 (** *** An infinite loop: *)
-*)
+(* end hide *)
 (** *** 無限ループ: *)
 
 Definition loop : com :=
@@ -1556,29 +1556,29 @@ Definition loop : com :=
   END.
 
 (* ################################################################# *)
-(*
+(* begin hide *)
 (** * Evaluating Commands *)
-*)
+(* end hide *)
 (** * コマンドの評価 *)
 
-(*
+(* begin hide *)
 (** Next we need to define what it means to evaluate an Imp command.
     The fact that [WHILE] loops don't necessarily terminate makes
     defining an evaluation function tricky... *)
-*)
+(* end hide *)
 (** 次に、Imp のコマンドの実行が何を意味するかを定義する必要があります。
     [WHILE] ループが終了しなくても良くするため、評価関数の定義を少し変わった形にしています ... *)
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Evaluation as a Function (Failed Attempt) *)
-*)
+(* end hide *)
 (** ** 関数としての評価（失敗版） *)
 
-(*
+(* begin hide *)
 (** Here's an attempt at defining an evaluation function for commands,
     omitting the [WHILE] case. *)
-*)
+(* end hide *)
 (** 以下は [WHILE] 以外のコマンドの評価関数を定義しようとした、最初の試みです。 *)
 
 Fixpoint ceval_fun_no_while (st : state) (c : com)
@@ -1634,50 +1634,50 @@ Fixpoint ceval_fun_no_while (st : state) (c : com)
     if you're curious about what those might be). *)
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Evaluation as a Relation *)
-*)
+(* end hide *)
 (** ** 関係としての評価 *)
 
-(*
+(* begin hide *)
 (** Here's a better way: define [ceval] as a _relation_ rather than a
     _function_ -- i.e., define it in [Prop] instead of [Type], as we
     did for [aevalR] above. *)
-*)
+(* end hide *)
 (** 改善策はこうです。
     [ceval] を関数ではなく関係(_relation_) として定義します。
     つまり、上の [aevalR] と [bevalR] と同様に [Type] ではなく [Prop] で定義するのです。 *)
 
-(*
+(* begin hide *)
 (** This is an important change.  Besides freeing us from awkward
     workarounds, it gives us a lot more flexibility in the definition.
     For example, if we add nondeterministic features like [any] to the
     language, we want the definition of evaluation to be
     nondeterministic -- i.e., not only will it not be total, it will
     not even be a function! *)
-*)
+(* end hide *)
 (** これは重要な変更です。
     厄介な回避策から解放されるばかりでなく、定義での柔軟性も与えてくれます。
     例えば、もし言語に[any]のような並行性の要素を導入したら、評価の定義を非決定的に書きたくなるでしょう。
     つまり、それは全域でないだけでなく、そもそも関数ですらないかも知れないのです！ *)
 
-(*
+(* begin hide *)
 (** We'll use the notation [c / st \\ st'] for the [ceval] relation:
     [c / st \\ st'] means that executing program [c] in a starting
     state [st] results in an ending state [st'].  This can be
     pronounced "[c] takes state [st] to [st']". *)
-*)
+(* end hide *)
 (** [ceavl] 関係に対する表記として [c / st \\ st'] を使います。
     正確に言うと、[c / st \\ st'] と書いたら、プログラム [c] を初期状態 [st] で評価すると、その結果は最終状態 [st'] になる、ということを意味します。
     これは「[c] は状態 [st] を [st'] にする」と読みます。 *)
 
 (* ----------------------------------------------------------------- *)
-(*
+(* begin hide *)
 (** *** Operational Semantics *)
-*)
+(* end hide *)
 (** *** 操作的意味論 *)
 
-(*
+(* begin hide *)
 (** Here is an informal definition of evaluation, presented as inference
     rules for readability:
 
@@ -1713,7 +1713,7 @@ Fixpoint ceval_fun_no_while (st : state) (c : com)
                   ---------------------------------               (E_WhileTrue)
                     WHILE b DO c END / st \\ st''
 *)
- *)
+(* end hide *)
 (** 評価の推論規則を読みやすく非形式的に書くと、以下のようになります。
 <<
                            ----------------                            (E_Skip) 
@@ -1748,12 +1748,12 @@ Fixpoint ceval_fun_no_while (st : state) (c : com)
                   ---------------------------------               (E_WhileTrue) 
                     WHILE b DO c END / st \\ st'' 
 >>
-*)
+ *)
 
-(*
+(* begin hide *)
 (** Here is the formal definition.  Make sure you understand
     how it corresponds to the inference rules. *)
-*)
+(* end hide *)
 (** 以下に形式的な定義を挙げます。
     上の推論規則とどのように対応するか、確認しておきましょう。 *)
 
@@ -1789,12 +1789,12 @@ Inductive ceval : com -> state -> state -> Prop :=
 
   where "c1 '/' st '\\' st'" := (ceval c1 st st').
 
-(*
+(* begin hide *)
 (** The cost of defining evaluation as a relation instead of a
     function is that we now need to construct _proofs_ that some
     program evaluates to some result state, rather than just letting
     Coq's computation mechanism do it for us. *)
-*)
+(* end hide *)
 (** 評価を関数ではなく関係として定義することのコストは、あるプログラムを実行した結果がとある状態になる、というのを Coq の計算機構にやってもらう代わりに、その「証明」を構築する必要がある、ということです。*)
 
 Example ceval_example1:
@@ -1814,9 +1814,9 @@ Proof.
       reflexivity.
       apply E_Ass. reflexivity.  Qed.
 
-(*
+(* begin hide *)
 (** **** Exercise: 2 stars (ceval_example2)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★★ (ceval_example2) *)
 Example ceval_example2:
   (X ::= 0;; Y ::= 1;; Z ::= 2) / { --> 0 } \\
@@ -1842,12 +1842,12 @@ Proof.
 (** [] *)
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Determinism of Evaluation *)
-*)
+(* end hide *)
 (** ** 評価の決定性 *)
 
-(*
+(* begin hide *)
 (** Changing from a computational to a relational definition of
     evaluation is a good move because it frees us from the artificial
     requirement that evaluation should be a total function.  But it
@@ -1858,7 +1858,7 @@ Proof.
     [st'']?
 
     In fact, this cannot happen: [ceval] _is_ a partial function: *)
-*)
+(* end hide *)
 (** 評価の定義を計算的なものから関係的なものに変更するのはとても良いことです。
     というのも、評価が全関数でなければならないという不自然な要求から解放されるからです。
     しかしこの変更は新たな疑問を生みます。
@@ -1906,17 +1906,17 @@ Proof.
       apply IHE1_2. assumption.  Qed.
 
 (* ################################################################# *)
-(*
+(* begin hide *)
 (** * Reasoning About Imp Programs *)
-*)
+(* end hide *)
 (** * Imp プログラムに関する推論 *)
 
-(*
+(* begin hide *)
 (** We'll get deeper into systematic techniques for reasoning about
     Imp programs in _Programming Language Foundations_, but we can do
     quite a bit just working with the bare definitions.  This section
     explores some examples. *)
-*)
+(* end hide *)
 (** 「プログラミング言語の基礎」では、Imp におけるプログラムの検証に対する系統だったテクニックに触れていきます。
     しかし、その多くはむき出しの（もとの）定義を扱うだけで出来ます。
     この節では、いくつかの例に触れます。 *)
@@ -1936,21 +1936,21 @@ Proof.
   inversion Heval. subst. clear Heval. simpl.
   apply t_update_eq.  Qed.
 
-(*
+(* begin hide *)
 (** **** Exercise: 3 stars, recommended (XtimesYinZ_spec)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★★★, recommended (XtimesYinZ_spec)  *)
-(*
+(* begin hide *)
 (** State and prove a specification of [XtimesYinZ]. *)
-*)
+(* end hide *)
 (** [XtimesYinZ] の仕様を書いて証明しなさい。*)
 
 (* FILL IN HERE *)
 (** [] *)
 
-(*
+(* begin hide *)
 (** **** Exercise: 3 stars, recommended (loop_never_stops)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★★★, recommended (loop_never_stops)  *)
 Theorem loop_never_stops : forall st st',
   ~(loop / st \\ st').
@@ -1967,13 +1967,13 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(*
+(* begin hide *)
 (** **** Exercise: 3 stars (no_whiles_eqv)  *)
-*)
+(* end hide *)
 (** **** Exercise: ★★★ (no_whiles_eqv)  *)
-(*
+(* begin hide *)
 (** Consider the following function: *)
-*)
+(* end hide *)
 (** 以下の関数を考える。 *)
 
 Fixpoint no_whiles (c : com) : bool :=
@@ -1990,12 +1990,12 @@ Fixpoint no_whiles (c : com) : bool :=
       false
   end.
 
-(*
+(* begin hide *)
 (** This predicate yields [true] just on programs that have no while
     loops.  Using [Inductive], write a property [no_whilesR] such that
     [no_whilesR c] is provable exactly when [c] is a program with no
     while loops.  Then prove its equivalence with [no_whiles]. *)
-*)
+(* end hide *)
 (** この性質はプログラムが while ループを含まない場合 [true] を返します。
     [Inductive] を使って [c] が while ループのないプログラムのとき、かつそのときに限り [no_whilesR c] が証明可能となる性質 [no_whilesR] を書きなさい。
     さらに、それが [no_whiles] と等価であることを示しなさい。*)
@@ -2010,35 +2010,35 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(*
+(* begin hide *)
 (** **** Exercise: 4 stars (no_whiles_terminating)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★★★★ (no_whiles_terminating) *)
-(*
+(* begin hide *)
 (** Imp programs that don't involve while loops always terminate.
     State and prove a theorem [no_whiles_terminating] that says this. *)
-*)
+(* end hide *)
 (** while ループを含まない Imp プログラムは必ず停止します。
     この性質を定理 [no_whiles_terminating] として記述し、証明しなさい。 *)
-(*
+(* begin hide *)
 (** Use either [no_whiles] or [no_whilesR], as you prefer. *)
-*)
+(* end hide *)
 (** [no_whiles] と [no_whilesR] のどちらでも好きなほうを使いなさい。 *)
 
 (* FILL IN HERE *)
 (** [] *)
 
 (* ################################################################# *)
-(*
+(* begin hide *)
 (** * Additional Exercises *)
-*)
+(* end hide *)
 (** * 追加の練習問題 *)
 
-(*
+(* begin hide *)
 (** **** Exercise: 3 stars (stack_compiler)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★★★ (stack_compiler) *)
-(*
+(* begin hide *)
 (** Old HP Calculators, programming languages like Forth and Postscript,
     and abstract machines like the Java Virtual Machine all evaluate
     arithmetic expressions using a _stack_. For instance, the expression
@@ -2075,7 +2075,7 @@ Proof.
                   push the result onto the stack.
      - [SMinus]:  Similar, but subtract.
      - [SMult]:   Similar, but multiply. *)
-*)
+(* end hide *)
 (** 古い HP の電卓、Forth や Postscript などのプログラミング言語、および Java Virtual Machine などの抽象機械はすべて、「スタック(_stack_)」を使って算術式を評価します。
    例えば、
 <<
@@ -2116,7 +2116,7 @@ Inductive sinstr : Type :=
 | SMinus : sinstr
 | SMult : sinstr.
 
-(*
+(* begin hide *)
 (** Write a function to evaluate programs in the stack language. It
     should take as input a state, a stack represented as a list of
     numbers (top stack item is the head of the list), and a program
@@ -2129,7 +2129,7 @@ Inductive sinstr : Type :=
     stack contains less than two elements.  In a sense, it is
     immaterial what we do, since our compiler will never emit such a
     malformed program. *)
-*)
+(* end hide *)
 (** スタック言語のプログラムを評価するための関数を書きなさい。
     関数は入力として、状態、数のリストで表現されたスタック（スタックの先頭要素はリストの先頭）、および命令のリストで表現されたプログラムを受け取り、受け取ったプログラムの実行後のスタックを返す。
     下にある例で、その関数のテストをしなさい。
@@ -2156,11 +2156,11 @@ Example s_execute2 :
 (* FILL IN HERE *) Admitted.
 (* GRADE_THEOREM 0.5: s_execute2 *)
 
-(*
+(* begin hide *)
 (** Next, write a function that compiles an [aexp] into a stack
     machine program. The effect of running the program should be the
     same as pushing the value of the expression on the stack. *)
-*)
+(* end hide *)
 (** 次に、[aexp] をスタック機械のプログラムにコンパイルする関数を書きなさい。
     このプログラムを実行した後の状態は、単に式の評価結果をスタックに積んだのと同じでなければなりません。 *)
 
@@ -2176,11 +2176,11 @@ Example s_compile1 :
 (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(*
+(* begin hide *)
 (** **** Exercise: 4 stars, advanced (stack_compiler_correct)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★★★★, advanced (stack_compiler_correct)  *)
-(*
+(* begin hide *)
 (** Now we'll prove the correctness of the compiler implemented in the
     previous exercise.  Remember that the specification left
     unspecified what to do when encountering an [SPlus], [SMinus], or
@@ -2191,7 +2191,7 @@ Example s_compile1 :
     Prove the following theorem.  You will need to start by stating a
     more general lemma to get a usable induction hypothesis; the main
     theorem will then be a simple corollary of this lemma. *)
-*)
+(* end hide *)
 (** 一つ前の練習問題で実装したコンパイラの正当性を証明します。
     スタックに二つ未満しか要素がない状態で [SPlus] や [SMinus] 、 [SMult] 命令が来たときの仕様が規定されていないことを思い出してください。
     （正当性を簡単に示すために、戻って定義を書き換えた方が良いと気づくこともあるでしょう！）
