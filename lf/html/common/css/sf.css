@@ -31,6 +31,8 @@ body {
 /* Menu */
 ul#menu { 
     padding: 0;
+    display: block;
+    margin: auto;
 }
 
 ul#menu li, div.button {
@@ -39,7 +41,7 @@ ul#menu li, div.button {
     padding: 5px;
     font-size: .70em;
     text-transform: uppercase;
-    width: 23.25%;
+    width: 30%;
     text-align: center;
     font-weight: 600;
 }
@@ -118,7 +120,7 @@ ul#menu a.hover li  {
     margin: 5px auto; 
     font-weight: 300;
     letter-spacing: 1px;
-    font-size: 120%;
+    font-size: 125%;
     margin-left: 0px;
  }
 
@@ -156,7 +158,8 @@ h3.section {
     padding-left: 0px;
     /* padding-top: 7px;  */
     padding-top: 0px; 
-    padding-bottom: 0px; 
+    /* padding-bottom: 0px; */
+    padding-bottom: 0.5em; 
     /* margin-top: 9px; */
     margin-top: 4px;
     font-size : 115%;
@@ -266,7 +269,8 @@ h1 .inlinecode .id, h1.section span.inlinecode {
 } 
 
 .show::before {
-    content: "more";
+    /* content: "more"; */
+    content: "+";
 }
 
 .show { 
@@ -350,7 +354,7 @@ h1 .inlinecode .id, h1.section span.inlinecode {
     padding-left: 20px;
     font-size: 14px;
     font-family: monospace;
-    line-height: 18px;
+    line-height: 17px;
 } 
 
 /* Working:
@@ -365,17 +369,23 @@ h1 .inlinecode .id, h1.section span.inlinecode {
 .code-space {
     max-width: 50em;
     margin-top: 0em;
-    margin-bottom: -.5em;
+    /* margin-bottom: -.5em; */
     margin-left: auto;
     margin-right: auto;
 }
 
 .code-tight {
     max-width: 50em;
-    margin-top: -0.5em;
-    margin-bottom: -.3em;
+    margin-top: .6em;
+    /* margin-bottom: -.7em; */
     margin-left: auto;
     margin-right: auto;
+}
+
+hr.doublespaceincode {
+    height: 1pt;
+    visibility: hidden;
+    font-size: 10px;                   
 }
 
 /*
@@ -392,8 +402,8 @@ code.br {
 table.infrule {
     border: 0px;
     margin-left: 50px;
-    margin-top: 10px;
-    margin-bottom: 10px;
+    margin-top: .5em;
+    margin-bottom: 1.2em;
 }
 
 td.infrule {
