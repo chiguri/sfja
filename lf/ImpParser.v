@@ -1,9 +1,9 @@
 (** * ImpParser: Coqでの字句解析と構文解析 *)
-(*
+(* begin hide *)
 (** * ImpParser: Lexing and Parsing in Coq *)
-*)
+(* end hide *)
 
-(*
+(* begin hide *)
 (** The development of the Imp language in [Imp.v] completely ignores
     issues of concrete syntax -- how an ascii string that a programmer
     might write gets translated into abstract syntax trees defined by
@@ -11,12 +11,12 @@
     illustrate how the rest of the story can be filled in by building
     a simple lexical analyzer and parser using Coq's functional
     programming facilities. *)
-*)
+(* end hide *)
 (** [Imp.v]でのImp言語の開発は、具象構文の問題を完全に無視しています。
     つまり、プログラマが書く文字列をデータ型[aexp]、[bexp]、[com]で定義された抽象構文木にどうやって変換するか、という問題です。
     この章では、Coqの関数プログラミング機能によって簡単な字句解析器と構文解析器（パーサ）を構築することで、この残っている問題を終わらせます。 *)
 
-(*
+(* begin hide *)
 (** It is not important to understand all the details here (and
     accordingly, the explanations are fairly terse and there are no
     exercises).  The main point is simply to demonstrate that it can
@@ -25,7 +25,7 @@
     "monadic" programming idioms that may require a little work to
     make out -- but most readers will probably want to just skim down
     to the Examples section at the very end to get the punchline. *)
-*)
+(* end hide *)
 (** ここでやることは、細部まで理解する必要はありません（説明はかなり少なく、練習問題もありません。）
     一番のポイントは単に、それができることを示すことです。
     コードを眺めてみて欲しいところです。ほとんどの部分はそれほど複雑ではありません。
@@ -42,15 +42,15 @@ Import ListNotations.
 Require Import Maps Imp.
 
 (* ################################################################# *)
-(*
+(* begin hide *)
 (** * Internals *)
-*)
+(* end hide *)
 (** * 内部処理 *)
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Lexical Analysis *)
-*)
+(* end hide *)
 (** ** 字句解析 *)
 
 Definition isWhite (c : ascii) : bool :=
@@ -134,20 +134,20 @@ Example tokenize_ex1 :
 Proof. reflexivity. Qed.
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Parsing *)
-*)
+(* end hide *)
 (** ** 構文解析 *)
 
 (* ----------------------------------------------------------------- *)
-(*
+(* begin hide *)
 (** *** Options With Errors *)
-*)
+(* end hide *)
 (** *** Error付きOption *)
 
-(*
+(* begin hide *)
 (** An [option] type with error messages: *)
-*)
+(* end hide *)
 (** エラーメッセージを付けた[option]です。 *)
 
 Inductive optionE (X:Type) : Type :=
@@ -157,10 +157,10 @@ Inductive optionE (X:Type) : Type :=
 Arguments SomeE {X}.
 Arguments NoneE {X}.
 
-(*
+(* begin hide *)
 (** Some syntactic sugar to make writing nested match-expressions on
     optionE more convenient. *)
-*)
+(* end hide *)
 (** ネストされたoptionEの上のマッチ式をより簡単に書くための構文糖衣。 *)
 
 Notation "'DO' ( x , y ) <== e1 ; e2"
@@ -178,9 +178,9 @@ Notation "'DO' ( x , y ) <-- e1 ; e2 'OR' e3"
    (right associativity, at level 60, e2 at next level).
 
 (* ----------------------------------------------------------------- *)
-(*
+(* begin hide *)
 (** *** Generic Combinators for Building Parsers *)
-*)
+(* end hide *)
 (** *** パーサ構築のための一般コンビネータ *)
 
 Open Scope string_scope.
@@ -203,9 +203,9 @@ Fixpoint many_helper {T} (p : parser T) acc steps xs :=
 Fixpoint many {T} (p : parser T) (steps : nat) : parser (list T) :=
   many_helper p [] steps.
 
-(*
+(* begin hide *)
 (** A parser that expects a given token, followed by [p]: *)
-*)
+(* end hide *)
 (** [p]の前のトークンを設定するパーサ *)
 
 Definition firstExpect {T} (t : token) (p : parser T)
@@ -219,23 +219,23 @@ Definition firstExpect {T} (t : token) (p : parser T)
               NoneE ("expected '" ++ t ++ "'.")
             end.
 
-(*
+(* begin hide *)
 (** A parser that expects a particular token: *)
-*)
+(* end hide *)
 (** 特定のトークンを設定するパーサ *)
 
 Definition expect (t : token) : parser unit :=
   firstExpect t (fun xs => SomeE(tt, xs)).
 
 (* ----------------------------------------------------------------- *)
-(*
+(* begin hide *)
 (** *** A Recursive-Descent Parser for Imp *)
-*)
+(* end hide *)
 (** *** Impの再帰下降パーサ *)
 
-(*
+(* begin hide *)
 (** Identifiers: *)
-*)
+(* end hide *)
 (** 識別子 *)
 
 Definition parseIdentifier (xs : list token)
@@ -249,9 +249,9 @@ match xs with
       NoneE ("Illegal identifier:'" ++ x ++ "'")
 end.
 
-(*
+(* begin hide *)
 (** Numbers: *)
-*)
+(* end hide *)
 (** 数値 *)
 
 Definition parseNumber (xs : list token)
@@ -271,9 +271,9 @@ match xs with
       NoneE "Expected number"
 end.
 
-(*
+(* begin hide *)
 (** Parse arithmetic expressions *)
-*)
+(* end hide *)
 (** 算術式の構文解析 *)
 
 Fixpoint parsePrimaryExp (steps:nat) 
@@ -333,9 +333,9 @@ with parseSumExp (steps:nat) (xs : list token)  :=
 
 Definition parseAExp := parseSumExp.
 
-(*
+(* begin hide *)
 (** Parsing boolean expressions: *)
-*)
+(* end hide *)
 (** ブール式の構文解析 *)
 
 Fixpoint parseAtomicExp (steps:nat)
@@ -405,9 +405,9 @@ Eval compute in
   testParsing parseConjunctionExp "not((x=x||x*x<=(x*x)*x)&&x=x". 
 *)
 
-(*
+(* begin hide *)
 (** Parsing commands: *)
-*)
+(* end hide *)
 (** コマンドの構文解析 *)
 
 Fixpoint parseSimpleCommand (steps:nat) 
@@ -466,9 +466,9 @@ Definition parse (str : string) : optionE (com * list token) :=
   parseSequencedCommand bignumber tokens.
 
 (* ################################################################# *)
-(*
+(* begin hide *)
 (** * Examples *)
-*)
+(* end hide *)
 (** * 例 *)
 
 Example eg1 : parse "
