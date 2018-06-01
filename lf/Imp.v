@@ -361,8 +361,8 @@ Proof.
 (* begin hide *)
 (** _Tacticals_ is Coq's term for tactics that take other tactics as
     arguments -- "higher-order tactics," if you will.  *)
-(* end hide *)
 (* 訳注: _Tacticals_ is -> areでは？ *)
+(* end hide *)
 (** タクティカル(_tactical_)は Coq の用語で、他のタクティックを引数に取るタクティックのことです。
     「高階タクティック(higher-order tactics)」と言っても良いでしょう。 *)
 
