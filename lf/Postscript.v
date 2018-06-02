@@ -1,17 +1,17 @@
 (** * Postscript: あとがき *)
-(*
+(* begin hide *)
 (** * Postscript *)
-*)
+(* end hide *)
 
 (** Congratulations: We've made it to the end! *)
 
 (* ################################################################# *)
-(*
+(* begin hide *)
 (** * Looking Back *)
-*)
+(* end hide *)
 (** * ふりかえり *)
 
-(*
+(* begin hide *)
 (** We've covered quite a bit of ground so far.  Here's a quick review...
 
    - _Functional programming_:
@@ -20,7 +20,7 @@
             or pointer structures)
           - higher-order functions
           - polymorphism *)
-*)
+(* end hide *)
 (** ここまでとても多くのことを学んできました。
     簡単に振り返ってみましょう。
  
@@ -29,7 +29,7 @@
           - 高階関数
           - 多相性 *)
 
-(*
+(* begin hide *)
 (**
      - _Logic_, the mathematical basis for software engineering:
 
@@ -41,7 +41,7 @@
           - inductively defined sets and relations
           - inductive proofs
           - proof objects *)
-*)
+(* end hide *)
 (** 
      - 論理、ソフトウェア工学の数学的基盤:
 <<
@@ -54,14 +54,14 @@
           - 帰納的証明
           - 証明オブジェクト *)
 
-(*
+(* begin hide *)
 (**
      - _Coq_, an industrial-strength proof assistant
           - functional core language
           - core tactics
           - automation
 *)
- *)
+(* end hide *)
 (** 
      - _Coq_、産業用途に耐え得る証明支援器
           - 関数型のコア言語
@@ -70,12 +70,12 @@
  *)
 
 (* ################################################################# *)
-(*
+(* begin hide *)
 (** * Looking Forward *)
-*)
+(* end hide *)
 (** * これからの指針 *)
 
-(*
+(* begin hide *)
 (** If what you've seen so far has whetted your interest, you have two
     choices for further reading in the _Software Foundations_ series:
 
@@ -90,7 +90,7 @@
              program verification in Coq, addressing a range of topics
              that might be found in a standard data structures course,
              with an eye to formal verification. *)
-*)
+(* end hide *)
 (** もしここまでの内容に興味を抱いたなら、続きとして「ソフトウェアの基礎」のシリーズに二つの選択肢があります。
  
            - 「プログラミング言語の基礎(_Programming Language Foundations_)」（この本とほとんど同じ著者たちに寄って書かれた第二巻）では、院生向けのプログラミング言語理論が説明されています。
@@ -100,12 +100,12 @@
              一般的なデータ構造に関して広く、検証という視点を交えて述べられています。 *)
 
 (* ################################################################# *)
-(*
+(* begin hide *)
 (** * Other sources *)
-*)
+(* end hide *)
 (** * その他の資料 *)
 
-(*
+(* begin hide *)
 (** Here are some other good places to learn more...
 
        - This book includes some optional chapters covering topics
@@ -140,7 +140,7 @@
          School are a great resource.
          https://deepspec.org/event/dsss17/index.html
 *)
- *)
+(* end hide *)
 (** その他に先に進む資料としてよいものをいくつか...
  
        - この本のオプションの章。

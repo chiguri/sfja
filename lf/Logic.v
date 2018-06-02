@@ -1,7 +1,7 @@
 (** * Logic: Coqにおける論理 *)
-(*
+(* begin hide *)
 (** * Logic: Logic in Coq *)
-*)
+(* end hide *)
 
 Set Warnings "-notation-overridden,-parsing".
 Require Export Tactics.
@@ -114,9 +114,9 @@ Check @eq.
 (** * Logical Connectives *)
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Conjunction *)
-*)
+(* end hide *)
 (** ** 論理積、連言(Conjunction)) *)
 
 (** The _conjunction_, or _logical and_, of propositions [A] and [B]
@@ -233,9 +233,9 @@ Proof.
   intros P Q [HP HQ].
   apply HP.  Qed.
 
-(*
+(* begin hide *)
 (** **** Exercise: 1 star, optional (proj2)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★, optional (proj2)  *)
 Lemma proj2 : forall P Q : Prop,
   P /\ Q -> Q.
@@ -256,16 +256,16 @@ Proof.
     - (* left *) apply HQ.
     - (* right *) apply HP.  Qed.
 
-(*
+(* begin hide *)
 (** **** Exercise: 2 stars (and_assoc)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★★ (and_assoc) *)
-(*
+(* begin hide *)
 (** (In the following proof of associativity, notice how the _nested_
     [intros] pattern breaks the hypothesis [H : P /\ (Q /\ R)] down into
     [HP : P], [HQ : Q], and [HR : R].  Finish the proof from
     there.) *)
-*)
+(* end hide *)
 (** （次の結合則の証明では、入れ子になったイントロパターンが命題[H : P /\ (Q /\ R)]を
     どのように[HP: P], [HQ : Q], [HR : R] に分解するか、を書いています。
     そこからの証明を完成させなさい。） *)
@@ -285,9 +285,9 @@ Check and.
 (* ===> and : Prop -> Prop -> Prop *)
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Disjunction *)
-*)
+(* end hide *)
 (** ** 論理和、選言(Disjunction) *)
 
 (** Another important connective is the _disjunction_, or _logical or_,

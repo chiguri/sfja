@@ -1,15 +1,15 @@
 (** * Preface: 前書き *)
-(*
+(* begin hide *)
 (** * Preface *)
-*)
+(* end hide *)
 
 (* ################################################################# *)
-(*
+(* begin hide *)
 (** * Welcome *)
-*)
+(* end hide *)
 (** * ようこそ *)
 
-(*
+(* begin hide *)
 (** This is the entry point in a series of electronic textbooks on
     various aspects of _Software Foundations_ -- the mathematical
     underpinnings of reliable software.  Topics in the series include
@@ -38,7 +38,7 @@
     This book, _Logical Foundations_, lays groundwork for the others,
     introducing the reader to the basic ideas of functional
     programming, constructive logic, and the Coq proof assistant. *)
-*)
+(* end hide *)
 (** これは「ソフトウェアの基礎」という、高信頼ソフトウェアの数学的基礎に関するシリーズの導入です。
     このシリーズでは、論理、コンピュータによる定理証明、証明支援系Coq、関数型プログラミング、操作的意味論、プログラムの推論のための論理、そして静的型などの基礎を学ぶことができます。
     読者は、学部生から博士課程の学生や研究者に至るまでの広範囲を想定しています。
@@ -58,12 +58,12 @@
 
 
 (* ################################################################# *)
-(*
+(* begin hide *)
 (** * Overview *)
-*)
+(* end hide *)
 (** * 概要 *)
 
-(*
+(* begin hide *)
 (** Building reliable software is really hard.  The scale and
     complexity of modern systems, the number of people involved, and
     the range of demands placed on them make it extremely difficult to
@@ -99,7 +99,7 @@
     Some suggestions for further reading can be found in the
     [Postscript] chapter.  Bibliographic information for all
     cited works can be found in the file [Bib]. *)
-*)
+(* end hide *)
 (** 信頼性の高いソフトウェアを構築することは実に困難です。
     現代のシステムは大きく複雑に、関係者の数は膨大に、さらには要求も多岐にわたっています。
     これらが原因で、100パーセント正しいもの以前に、ある程度うまく動くソフトウェアを構築することでさえも難しくなっています。
@@ -120,12 +120,12 @@
     これらの本の参照情報は[Bib]ファイルにあります。 *)
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Logic *)
-*)
+(* end hide *)
 (** ** 論理 *)
 
-(*
+(* begin hide *)
 (** Logic is the field of study whose subject matter is _proofs_ --
     unassailable arguments for the truth of particular propositions.
     Volumes have been written about the central role of logic in
@@ -144,7 +144,7 @@
     before, perhaps in a course on discrete math or analysis of
     algorithms, but in this course we will examine them more deeply
     than you have probably done so far. *)
-*)
+(* end hide *)
 (** 論理とは、「証明」を対象とした学問領域です。
     ここでいう証明とは、特定の命題が真実であることの、反証しようのない根拠を指します。
     計算機科学において論理が果たす役割に関しては、非常にたくさんの文献で述べられています。
@@ -158,12 +158,12 @@
 (* 訳注：calculusをここでは微積分学と訳している。「基礎を成すもの」のニュアンスなのか、素直に「微積分学」なのか、それとも「計算」なのか、元の文書を見ないことには分からないが、そもそも元の文書がなにかもよく分からない。本があるようだが、中身が見られないので現状放置。 *)
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Proof Assistants *)
-*)
+(* end hide *)
 (** ** 証明支援系 *)
 
-(*
+(* begin hide *)
 (** The flow of ideas between logic and computer science has not been
     unidirectional: CS has also made important contributions to logic.
     One of these has been the development of software tools for
@@ -247,7 +247,7 @@
    which it is based."  The rooster is also the national symbol of
    France, and C-o-q are the first three letters of the name of
    Thierry Coquand, one of Coq's early developers. *)
-*)
+(* end hide *)
 (** 論理と計算機科学の間の影響は一方方向ではありません。
     計算機科学もまた論理の発展に寄与してきました。
     そのうちの一つが、論理命題に対する証明の構築を助けるソフトウェアの開発です。
@@ -297,12 +297,12 @@
    なお、雄鶏はフランスのシンボルでもありますし、またCoqという並びはThierry CoquandというCoqの初期の開発者の名前の三文字でもあります。 *)
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Functional Programming *)
-*)
+(* end hide *)
 (** ** 関数型プログラミング *)
 
-(*
+(* begin hide *)
 (** The term _functional programming_ refers both to a collection of
     programming idioms that can be used in almost any programming
     language and to a family of programming languages designed to
@@ -361,7 +361,7 @@
     logical assertions.  Moreover, when we come to look more closely,
     we find that these two sides of Coq are actually aspects of the
     very same underlying machinery -- i.e., _proofs are programs_.  *)
-*)
+(* end hide *)
 (** 「関数型プログラミング」という語には、どの言語でも使えるプログラミング手法としての用法と、これらの手法に重点を置いたプログラミング言語としての用法があります。
     なお、後者における言語としては、HaskellやOCaml、Standard ML、F##、Scala、Scheme、Racket、Common Lisp、Clojure、Erlang、そしてCoqが挙げられます。
  
@@ -391,44 +391,44 @@
 
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Further Reading *)
-*)
+(* end hide *)
 (** ** 参考文献 *)
 
-(*
+(* begin hide *)
 (** This text is intended to be self contained, but readers looking
     for a deeper treatment of particular topics will find some
     suggestions for further reading in the [Postscript]
     chapter. *)
-*)
+(* end hide *)
 (** この本は単体で読めるようにしてありますが、それぞれの内容でより進んだ話を見たければ、[Postscript]章に挙げた参考文献を見ると良いでしょう。 *)
 
 (* ################################################################# *)
-(*
+(* begin hide *)
 (** * Practicalities *)
-*)
+(* end hide *)
 (** * 実際の学習について *)
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Chapter Dependencies *)
-*)
+(* end hide *)
 (** ** 章間の依存関係 *)
 
-(*
+(* begin hide *)
 (** A diagram of the dependencies between chapters and some suggested
     paths through the material can be found in the file [deps.html]. *)
-*)
+(* end hide *)
 (** 章と章の間の依存関係をまとめた図と、代表的な学習の流れを、[deps.html]にまとめてあります。 *)
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** System Requirements *)
-*)
+(* end hide *)
 (** ** 学習に必要なもの *)
 
-(*
+(* begin hide *)
 (** Coq runs on Windows, Linux, and macOS.  You will need:
 
        - A current installation of Coq, available from the Coq home
@@ -451,7 +451,7 @@
              installed.  It can also be compiled from scratch, but on
              some platforms this may involve installing additional
              packages for GUI libraries and such. *)
-*)
+(* end hide *)
 (** Coqは、Windowsと多くのUNIX変種（LinuxやMacOSを含む）で動きます。具体的には
  
        - Coqホームページにある最新版のCoq。
@@ -471,12 +471,12 @@
              1からビルドし直すこともできますが、環境によってはGUIライブラリなどの追加パッケージをインストールする必要があります。 *)
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Exercises *)
-*)
+(* end hide *)
 (** * 練習問題について *)
 
-(*
+(* begin hide *)
 (** Each chapter includes numerous exercises.  Each is marked with a
     "star rating," which can be interpreted as follows:
 
@@ -507,7 +507,7 @@
     assignments.  We especially request that readers not post
     solutions to the exercises anyplace where they can be found by
     search engines. *)
- *)
+(* end hide *)
 (** この資料の各章には、たくさんの練習問題がついています。
     練習問題についている「スターレーティング」には、以下のような意味があります。
  
@@ -539,12 +539,12 @@
 (* 訳注：注意書きを大きく見せたかったので、Basics.vを参考に表記を変えている。日本語だと強調表示できずに埋もれてしまうため。 *)
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Downloading the Coq Files *)
-*)
+(* end hide *)
 (** ** 教材となるCoqファイルの入手方法 *)
 
-(*
+(* begin hide *)
 (** A tar file containing the full sources for the "release version"
     of this book (as a collection of Coq scripts and HTML files) is
     available at http://www.cis.upenn.edu/~bcpierce/sf.
@@ -552,34 +552,34 @@
     (If you are using the book as part of a class, your professor may
     give you access to a locally modified version of the files, which
     you should use instead of the release version.) *)
-*)
+(* end hide *)
 (** この教材のリリース版のソース（CoqスクリプトとHTMLファイル）をtarで固めたものが、 http://www.cis.upenn.edu/~bcpierce/sf から取得できます。
  
     （講義でこの本の一部だけを使用している場合、講師からリリース版の代わりに使う変更版について説明されると思います。） *)
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Lecture Videos *)
-*)
+(* end hide *)
 (** ** 講義ビデオ *)
 
-(*
+(* begin hide *)
 (** Lectures for an intensive summer course based on _Logical
     Foundations_ (part of the DeepSpec summer school in 2017) can be
     found at https://deepspec.org/event/dsss17/coq_intensive.html.
     The video quality is poor at the beginning but gets better in the
     later lectures. *)
-*)
+(* end hide *)
 (** 「論理の基礎」を元にした集中講義（2017年のDeepSpec summer schoolの一部）の様子が https://deepspec.org/event/dsss17/coq_intensive.html から見られます。
     最初の方は画質が悪いのですが、後の講義になるに従って徐々に良くなっていきます。 *)
 
 (* ################################################################# *)
-(*
+(* begin hide *)
 (** * Note for Instructors *)
-*)
+(* end hide *)
 (** * 教育関係者へ *)
 
-(*
+(* begin hide *)
 (** If you plan to use these materials in your own course, you will
     undoubtedly find things you'd like to change, improve, or add.
     Your contributions are welcome!
@@ -614,7 +614,7 @@
     We'll set you up with access to the subversion repository and
     developers' mailing lists.  In the repository you'll find a
     file [INSTRUCTORS] with further instructions. *)
-*)
+(* end hide *)
 (** この資料を自分のコースで使おうと思った場合、ほぼまちがいなく書き直しや追加したいところが出てくるでしょう。
     そういった貢献は大歓迎です。
  
@@ -654,17 +654,17 @@
     リポジトリには、[INSTRUCTORS]ファイルがありますので、次にどうすべきかはそれを参照してください。 *)
 
 (* ################################################################# *)
-(*
+(* begin hide *)
 (** * Translations *)
-*)
+(* end hide *)
 (** * 翻訳について *)
 
-(*
+(* begin hide *)
 (** Thanks to the efforts of a team of volunteer translators,
     _Software Foundations_ can be enjoyed in Japanese at
     http://proofcafe.org/sf.  A Chinese translation is also underway;
     you can preview it at https://coq-zh.github.io/SF-zh/. *)
-*)
+(* end hide *)
 (** ボランティアによる翻訳のおかげで、「ソフトウェアの基礎」は http://proofcafe.org/sf から日本語で読めます。
     中国語の翻訳も進行中で、状況を https://coq-zh.github.io/SF-zh/ から見られます。 *)
 
