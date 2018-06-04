@@ -1,9 +1,9 @@
 (** * HoareAsLogic: 論理としてのホーア論理 *)
-(*
+(* begin hide *)
 (** * HoareAsLogic: Hoare Logic as a Logic *)
-*)
+(* end hide *)
 
-(*
+(* begin hide *)
 (** The presentation of Hoare logic in chapter [Hoare] could be
     described as "model-theoretic": the proof rules for each of the
     constructors were presented as _theorems_ about the evaluation
@@ -21,7 +21,7 @@
     This chapter is optional.  Before reading it, you'll want to read
     the [ProofObjects] chapter in _Logical
     Foundations_ (_Software Foundations_, volume 1). *)
-*)
+(* end hide *)
 (** [Hoare]の章におけるホーア論理の提示を「モデル理論的」("model-theoretic")に行うこともできたでしょう。
     それぞれのコンストラクタに対する証明規則をプログラムの振舞いについての「定理」として提示し、プログラムの正しさ（ホーアの三つ組の正しさ）の証明は、
     それらの定理をCoq内で直接組み合わせることで構成するのです。
@@ -38,9 +38,9 @@ Require Import Imp.
 Require Import Hoare.
 
 (* ################################################################# *)
-(*
+(* begin hide *)
 (** * Definitions *)
-*)
+(* end hide *)
 (** * 定義 *)
 
 Inductive hoare_proof : Assertion -> com -> Assertion -> Type :=
@@ -83,7 +83,7 @@ Proof.
   intros. eapply H_Consequence.
     apply X. intros. apply H0.  apply H. Qed.
 
-(*
+(* begin hide *)
 (** As an example, let's construct a proof object representing a
     derivation for the hoare triple
 
@@ -92,7 +92,7 @@ Proof.
       {{X=3}}.
 
     We can use Coq's tactics to help us construct the proof object. *)
-*)
+(* end hide *)
 (** 例として、ホーアの三つ組
 [[
       {{(X=3) [X |-> X + 2] [X |-> X + 1]}} 
@@ -130,18 +130,18 @@ Print sample_proof.
 *)
 
 (* ################################################################# *)
-(*
+(* begin hide *)
 (** * Properties *)
-*)
+(* end hide *)
 (** * 性質 *)
 
-(*
+(* begin hide *)
 (** **** Exercise: 2 stars (hoare_proof_sound)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★★ *)
-(*
+(* begin hide *)
 (** Prove that such proof objects represent true claims. *)
-*)
+(* end hide *)
 (** これらの証明オブジェクトが真の主張を表現することを証明しなさい。*)
 
 Theorem hoare_proof_sound : forall P c Q,
@@ -150,7 +150,7 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(*
+(* begin hide *)
 (** We can also use Coq's reasoning facilities to prove metatheorems
     about Hoare Logic.  For example, here are the analogs of two
     theorems we saw in chapter [Hoare] -- this time expressed in terms
@@ -162,7 +162,7 @@ Proof.
     proof is more complex than the semantic proof in [Hoare]: we
     actually need to perform an induction over the structure of the
     command [c]. *)
-*)
+(* end hide *)
 (** Coqの推論機構をホーア論理についてのメタ定理を証明することに使うこともできます。
     例えば、[Hoare]で見た2つの定理に対応するものを以下に示します。
     ここではホーアの三つ組の意味論から直接にではなく、ホーア論理の導出（証明可能性）の構文の面から表現します。
@@ -206,10 +206,10 @@ Proof.
     intros; apply I.
 Qed.
 
-(*
+(* begin hide *)
 (** Similarly, we can show that [{{False}} c {{Q}}] is provable for
     any [c] and [Q]. *)
-*)
+(* end hide *)
 (** 同様に、任意の[c]と[Q]について[{{False}} c {{Q}}]が証明可能であることを示すことができます。*)
 
 Lemma False_and_P_imp: forall P Q,
@@ -313,7 +313,7 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(*
+(* begin hide *)
 (** Finally, we might hope that our axiomatic Hoare logic is
     _decidable_; that is, that there is an (terminating) algorithm (a
     _decision procedure_) that can determine whether or not a given
@@ -336,7 +336,7 @@ Proof.
     writing down such proofs in practice: it is quite verbose.  The
     section of chapter [Hoare2] on formalizing decorated programs
     shows how we can do even better. *)
-*)
+(* end hide *)
 (** 最後に、この公理的ホーア論理が「決定可能(_decidable_)」であればとても喜ばしいでしょう。
     つまり、ある（終了する）アルゴリズム（決定手続き(_decision procedure_)）が、ホーアの三つ組が妥当（導出可能）かを判定してくれると嬉しいでしょう。
     しかしそんな決定手続きは存在しないのです！
