@@ -1,7 +1,7 @@
 (** * MoreStlc: 単純型付きラムダ計算についてさらに *)
-(*
+(* begin hide *)
 (** * MoreStlc: More on the Simply Typed Lambda-Calculus *)
-*)
+(* end hide *)
  
 Set Warnings "-notation-overridden,-parsing".
 Require Import Maps.
@@ -10,12 +10,12 @@ Require Import Smallstep.
 Require Import Stlc.
 
 (* ################################################################# *)
-(*
+(* begin hide *)
 (** * Simple Extensions to STLC *)
-*)
+(* end hide *)
 (** * STLCの単純な拡張 *)
 
-(*
+(* begin hide *)
 (** The simply typed lambda-calculus has enough structure to make its
     theoretical properties interesting, but it is not much of a
     programming language.
@@ -23,15 +23,15 @@ Require Import Stlc.
     In this chapter, we begin to close the gap with real-world
     languages by introducing a number of familiar features that have
     straightforward treatments at the level of typing. *)
-*)
+(* end hide *)
 (** 単純型付きラムダ計算は理論的性質を興味深いものにするには十分な構造を持っていますが、プログラミング言語といえるようなものではありません。
  
     この章では、型における扱いが明らかないくつもの馴染み深い機能を導入することで、実世界の言語とのギャップを埋め始めます。*)
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Numbers *)
-*)
+(* end hide *)
 (** ** 数値 *)
 
 (** As we saw in exercise [stlc_arith] at the end of the [StlcProp]
@@ -43,12 +43,12 @@ Require Import Stlc.
     numeric primitives become more fiddly. *)
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Let Bindings *)
-*)
+(* end hide *)
 (** ** [let]束縛 *)
 
-(*
+(* begin hide *)
 (** When writing a complex expression, it is useful to be able
     to give names to some of its subexpressions to avoid repetition
     and increase readability.  Most languages provide one or more ways
@@ -68,7 +68,7 @@ Require Import Stlc.
     At this point in the book, it's probably easier simply to look at
     the rules defining this new feature than to wade through a lot of
     English text conveying the same information.  Here they are: *)
-*)
+(* end hide *)
 (** 複雑な式を書くとき、部分式に名前をつけられると便利なことがよくあります。
     同じことを繰り返すのを避けることができ、またしばしば可読性が向上します。
     ほとんどの言語はこのための1つ以上の方法を持っています。
@@ -81,14 +81,14 @@ Require Import Stlc.
  
     本資料のこの時点では、新しい機能の定義のためにたくさんの日本語の文章を読み通すより、同じ情報を伝える規則を単に見る方が、おそらく簡単でしょう。以下がその規則です: *)
 
-(*
+(* begin hide *)
 (** Syntax:
 
        t ::=                Terms
            | ...               (other terms same as before)
            | let x=t in t      let-binding
 *)
- *)
+(* end hide *)
 (** 構文:
 <<
        t ::=                項
@@ -97,7 +97,7 @@ Require Import Stlc.
 >>
  *)
 
-(*
+(* begin hide *)
 (**
     Reduction:
 
@@ -114,7 +114,7 @@ Require Import Stlc.
              ---------------------------------------------------        (T_Let)
                         Gamma |- let x=t1 in t2 : T2
 *)
- *)
+(* end hide *)
 (**
     簡約:
 <<
@@ -134,12 +134,12 @@ Require Import Stlc.
  *)
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Pairs *)
-*)
+(* end hide *)
 (** ** 対 *)
 
-(*
+(* begin hide *)
 (** Our functional programming examples in Coq have made
     frequent use of _pairs_ of values.  The type of such a pair is
     called a _product type_.
@@ -147,14 +147,14 @@ Require Import Stlc.
     The formalization of pairs is almost too simple to be worth
     discussing.  However, let's look briefly at the various parts of
     the definition to emphasize the common pattern. *)
-*)
+(* end hide *)
 (** ここまでのCoqを用いた関数プログラミングの例では、値の対(_pairs_)を頻繁に使ってきました。
     そのような対の型は「直積型(_product type_)」と呼ばれます。
  
     対の形式化はほとんど議論する余地がないほど簡単です。
     しかし、共通パターンを強調するため、定義のいろいろな部分をちょっと見てみましょう。 *)
 
-(*
+(* begin hide *)
 (** In Coq, the primitive way of extracting the components of a pair
     is _pattern matching_.  An alternative is to take [fst] and
     [snd] -- the first- and second-projection operators -- as
@@ -167,7 +167,7 @@ Require Import Stlc.
           let diff = x.fst - x.snd in
           (sum,diff)
 *)
- *)
+(* end hide *)
 (** Coqでは、対の構成要素を抽出する基本的な方法は、パターンマッチング(_pattern matching_)です。
     別の方法としては、[fst]と[snd]、つまり、1番目と2番目の要素の射影操作を基本操作として持つ方法があります。
     お遊びで、対をこの方法でやってみましょう。
@@ -180,19 +180,19 @@ Require Import Stlc.
 >>
  *)
 
-(*
+(* begin hide *)
 (** Adding pairs to the simply typed lambda-calculus, then, involves
     adding two new forms of term -- pairing, written [(t1,t2)], and
     projection, written [t.fst] for the first projection from [t] and
     [t.snd] for the second projection -- plus one new type constructor,
     [T1*T2], called the _product_ of [T1] and [T2].  *)
-*)
+(* end hide *)
 (** これから、単純型付きラムダ計算に対を追加するには、2つの新しい項の形を追加することが含まれます。
     1つは対で [(t1,t2)] と書きます。もう1つは射影で、第1射影は [t.fst]、第2射影は [t.snd]と書きます。
     さらに1つの型コンストラクタ [T1*T2] を追加します。
     これを[T1]と[T2]の直積と呼びます。 *)
 
-(*
+(* begin hide *)
 (** Syntax:
 
        t ::=                Terms
@@ -209,7 +209,7 @@ Require Import Stlc.
            | T * T             product type
            | ...
 *)
- *)
+(* end hide *)
 (** 構文:
 <<
        t ::=                項
@@ -228,12 +228,12 @@ Require Import Stlc.
 >>
  *)
 
-(*
+(* begin hide *)
 (** For reduction, we need several new rules specifying how pairs and
     projection behave. *)
- *)
+(* end hide *)
 (** 簡約については、対と射影がどう振る舞うかを規定するいくつかの新しい規則が必要です。 *)
-(*
+(* begin hide *)
 (**
 
                               t1 ==> t1'
@@ -258,7 +258,7 @@ Require Import Stlc.
                           ------------------                       (ST_SndPair)
                           (v1,v2).snd ==> v2
 *)
- *)
+(* end hide *)
 (** 
 <<
                               t1 ==> t1' 
@@ -285,7 +285,7 @@ Require Import Stlc.
 >>
  *)
 
-(*
+(* begin hide *)
 (** Rules [ST_FstPair] and [ST_SndPair] say that, when a fully
     reduced pair meets a first or second projection, the result is
     the appropriate component.  The congruence rules [ST_Fst1] and
@@ -302,7 +302,7 @@ Require Import Stlc.
     value must themselves be values ensures that a pair passed as an
     argument to a function will be fully reduced before the function
     body starts executing. *)
-*)
+(* end hide *)
 (** 規則[ST_FstPair]と[ST_SndPair]は、完全に簡約された対が第1射影または第2射影に遭遇したとき、結果が対応する要素であると言っています。
     合同規則[ST_Fst1]と[ST_Snd1]は、射影の対象の項が完全に評価されきっていないとき、対象の簡約を認めるものです。
     [ST_Pair1]と[ST_Pair2]は対の構成部分の簡約です。
@@ -312,11 +312,11 @@ Require Import Stlc.
     また値の定義に節を加え、[(v1,v2)] が値であることを規定しています。
     値の対自体が値でなければならないという事実は、関数の引数として渡された対が、関数の本体の実行が開始される前に完全に簡約されることを保証します。 *)
 
-(*
+(* begin hide *)
 (** The typing rules for pairs and projections are straightforward. *)
- *)
+(* end hide *)
 (** 対と射影の型付け規則はそのまま直ぐに得られます。 *)
-(*
+(* begin hide *)
 (**
 
                Gamma |- t1 : T1       Gamma |- t2 : T2
@@ -331,7 +331,7 @@ Require Import Stlc.
                         ---------------------                           (T_Snd)
                         Gamma |- t1.snd : T12
 *)
- *)
+(* end hide *)
 (** 
 <<
                Gamma |- t1 : T1       Gamma |- t2 : T2 
@@ -348,40 +348,40 @@ Require Import Stlc.
 >>
  *)
 
-(*
+(* begin hide *)
 (** [T_Pair] says that [(t1,t2)] has type [T1*T2] if [t1] has
    type [T1] and [t2] has type [T2].  Conversely, [T_Fst] and [T_Snd]
    tell us that, if [t1] has a product type [T11*T12] (i.e., if it
    will reduce to a pair), then the types of the projections from
    this pair are [T11] and [T12]. *)
-*)
+(* end hide *)
 (** [T_Pair]は、[t1]が型[T1]を持ち、[t2]が型[T2]を持つならば、 [(t1,t2)] が型 [T1*T2] を持つことを言っています。
     逆に、[T_Fst]と[T_Snd]は、[t1]が直積型[T11*T12]を持つ（つまり評価結果が対になる）ならば、射影の型は[T11]と[T12]になることを定めます。 *)
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Unit *)
-*)
+(* end hide *)
 (** ** [Unit]型 *)
 
-(*
+(* begin hide *)
 (** Another handy base type, found especially in languages in
     the ML family, is the singleton type [Unit]. *)
-*)
+(* end hide *)
 (** もう一つの便利な基本型は、MLファミリーの言語に特に見られるものですが、1要素の型[Unit]です。 *)
-(*
+(* begin hide *)
 (** It has a single element -- the term constant [unit] (with a small
     [u]) -- and a typing rule making [unit] an element of [Unit].  We
     also add [unit] to the set of possible values -- indeed, [unit] is
     the _only_ possible result of reducing an expression of type
     [Unit]. *)
-*)
+(* end hide *)
 (** この型は要素を1つ持ちます。それは項定数[unit]です（先頭の文字は小文字の[u]です）。
     型付け規則は [unit]を[Unit]の要素と定めます。
     取りうる値の集合にも[unit]を加えます。
     実際、[unit]は型[Unit]の式の評価結果としてとり得る唯一の値です。 *)
 
-(*
+(* begin hide *)
 (** Syntax:
 
        t ::=                Terms
@@ -401,7 +401,7 @@ Require Import Stlc.
                          --------------------                          (T_Unit)
                          Gamma |- unit : Unit
 *)
- *)
+(* end hide *)
 (** 構文:
 <<
        t ::=                項
@@ -423,7 +423,7 @@ Require Import Stlc.
 >>
  *)
 
-(*
+(* begin hide *)
 (** It may seem a little strange to bother defining a type that
     has just one element -- after all, wouldn't every computation
     living in such a type be trivial?
@@ -436,7 +436,7 @@ Require Import Stlc.
     control structures, etc.  In such languages, it is convenient to
     have a type for the (trivial) result of an expression that is
     evaluated only for its effect. *)
-*)
+(* end hide *)
 (** 1つの要素だけしか持たない型を定義することにわずらわされるのは、少々奇妙なことに見えるかもしれません。
     結局のところ、このような型に属する計算は自明なものだけではないのでしょうか？
  
@@ -447,12 +447,12 @@ Require Import Stlc.
     そのような言語では、副作用のためだけに評価される式の(どうでもよい)結果のための型が便利なのです。 *)
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Sums *)
-*)
+(* end hide *)
 (** ** 直和 *)
 
-(*
+(* begin hide *)
 (** Many programs need to deal with values that can take two distinct
    forms.  For example, we might identify employees in an accounting
    application using _either_ their name _or_ their id number.
@@ -465,7 +465,7 @@ Require Import Stlc.
 
        Nat + Bool
 *)
- *)
+(* end hide *)
 (** 多くのプログラムでは2つの異なった形を持つ値を扱うことが求められます。
    例えばアカウント処理をするアプリケーションの認証で、名前か、「または」、IDナンバーを使うという場合があります。
    探索関数は、マッチした値か、「または」、エラーコードを返すかもしれません。
@@ -477,7 +477,7 @@ Require Import Stlc.
        Nat + Bool 
 >>
  *)
-(*
+(* begin hide *)
 (** We create elements of these types by _tagging_ elements of
     the component types.  For example, if [n] is a [Nat] then [inl n]
     is an element of [Nat+Bool]; similarly, if [b] is a [Bool] then
@@ -492,7 +492,7 @@ Require Import Stlc.
     actually treat them as functions in the way we formalize them:
     [inl] and [inr] are keywords, and [inl t] and [inr t] are primitive
     syntactic forms, not function applications.) *)
-*)
+(* end hide *)
 (** この型の要素を、それぞれの構成部分の型の要素にタグ付けする(_tagging_)ことで生成します。
    例えば、[n]が[Nat]ならば [inl n] は [Nat+Bool] の要素です。
    同様に、[b]が[Bool]ならば [inr b] は [Nat+Bool] の要素です。
@@ -507,15 +507,15 @@ Require Import Stlc.
    （しかし、実際にはこれらを関数としては扱いません。
    [inl]と[inr]はキーワードで、[inl t] と [inr t] は基本構文形であり、関数適用ではありません。） *)
 
-(*
+(* begin hide *)
 (** In general, the elements of a type [T1 + T2] consist of the
     elements of [T1] tagged with the token [inl], plus the elements of
     [T2] tagged with [inr]. *)
-*)
+(* end hide *)
 (** 一般に、型 [T1 + T2] の要素は [T1]の要素に[inl]をタグ付けしたものと、
    [T2]の要素に[inr]をタグ付けしたものから成ります。 *)
 
-(*
+(* begin hide *)
 (** One important usage of sums is signaling errors:
 
       div : Nat -> Nat -> (Nat + Unit) =
@@ -526,7 +526,7 @@ Require Import Stlc.
           else
             inl ...
 *)
- *)
+(* end hide *)
 (** 直和型の重要な用途の一つに、エラー報告があります。
 << 
       div : Nat -> Nat -> (Nat + Unit) = 
@@ -538,23 +538,23 @@ Require Import Stlc.
             inl ... 
 >>
  *)
-(*
+(* begin hide *)
 (** The type [Nat + Unit] above is in fact isomorphic to [option
     nat] in Coq -- i.e., it's easy to write functions that translate
     back and forth. *) 
-*)
+(* end hide *)
 (** この型 [Nat + Unit] は Coq における [option nat] と同型です。
     つまり、簡単に両方向へ変換する関数が書けます。 *)
 
-(*
+(* begin hide *)
 (** To _use_ elements of sum types, we introduce a [case]
     construct (a very simplified form of Coq's [match]) to destruct
     them. For example, the following procedure converts a [Nat+Bool]
     into a [Nat]: *)
-*)
+(* end hide *)
 (** 直和型の要素を「利用する」ために、分解する構文として[case]構文を導入します（これはCoqの[match]の非常に単純化された形です）。
    例えば、以下の手続きは、[Nat+Bool] を[Nat]に変換します: *)
-(*
+(* begin hide *)
 (** 
 
     getNat =
@@ -563,7 +563,7 @@ Require Import Stlc.
           inl n => n
         | inr b => if b then 1 else 0
 *)
- *)
+(* end hide *)
 (**  
 <<
     getNat = 
@@ -573,12 +573,12 @@ Require Import Stlc.
         | inr b => if b then 1 else 0 
 >>
  *)
-(*
+(* begin hide *)
 (** More formally... *)
-*)
+(* end hide *)
 (** より形式的に... *)
 
-(*
+(* begin hide *)
 (** Syntax:
 
        t ::=                Terms
@@ -598,7 +598,7 @@ Require Import Stlc.
            | T + T             sum type
            | ...
 *)
- *)
+(* end hide *)
 (** 構文:
 <<
        t ::=                項
@@ -620,7 +620,7 @@ Require Import Stlc.
 >>
  *)
 
-(*
+(* begin hide *)
 (** Reduction:
 
 
@@ -645,7 +645,7 @@ Require Import Stlc.
             case (inr T v0) of inl x1 => t1 | inr x2 => t2
                            ==>  [x2:=v0]t2
 *)
- *)
+(* end hide *)
 (**  簡約:
 <<
                               t1 ==> t1' 
@@ -671,7 +671,7 @@ Require Import Stlc.
 >>
 *)
 
-(*
+(* begin hide *)
 (** Typing:
 
                           Gamma |- t1 :  T1
@@ -691,7 +691,7 @@ Require Import Stlc.
 
     We use the type annotation in [inl] and [inr] to make the typing 
     relation simpler, similarly to what we did for functions. *)
-*)
+(* end hide *)
 (** 型付け:
 <<
                           Gamma |- t1 :  T1 
@@ -710,7 +710,7 @@ Require Import Stlc.
 >>
     [inl]と[inr]の形に型を付記する理由は、関数に対して行ったのと同様、型付け規則を単純にするためです。 *)
 
-(*
+(* begin hide *)
 (** Without this extra information, the typing rule [T_Inl], for
     example, would have to say that, once we have shown that [t1] is
     an element of type [T1], we can derive that [inl t1] is an element
@@ -727,7 +727,7 @@ Require Import Stlc.
     an injection.  This is a bit heavy for programmers (so real
     languages adopt other solutions), but it is easy to understand and
     formalize. *)
-*)
+(* end hide *)
 (** この情報がなければ、型推論規則[T_Inl]は、例えば、[t1]が型[T1]の要素であることを示した後、「任意の」型[T2]について [inl t1] が [T1 + T2] の要素であることを導出できます。
     例えば、[inl 5 : Nat + Nat] と [inl 5 : Nat + Bool] の両方（および無数の型）が導出できます。
     この奇妙さ（技術的に言えば型の一意性の欠如）は、型チェックアルゴリズムを、ここまでやってきたように「規則を下から上に読む」という単純な方法で構築することができなくなることを意味します。
@@ -738,12 +738,12 @@ Require Import Stlc.
     しかし、理解と形式化は容易な方法です。 *)
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Lists *)
-*)
+(* end hide *)
 (** ** リスト *)
 
-(*
+(* begin hide *)
 (** The typing features we have seen can be classified into _base
     types_ like [Bool], and _type constructors_ like [->] and [*] that
     build new types from old ones.  Another useful type constructor is
@@ -761,7 +761,7 @@ Require Import Stlc.
     identical to those we built in Coq.  We use [lcase] to destruct
     lists, to avoid dealing with questions like "what is the [head] of
     the empty list?" *)
-*)
+(* end hide *)
 (** ここまで見てきた型付け機能は、[Bool]のような基本型(_base types_)と、古い型から新しい型を構築する[->]や[*]のような型コンストラクタ(_type constructors_)に分類できます。
     もう一つの有用な型コンストラクタが[List]です。
     すべての型[T]について、型 [List T] は[T]から抽出したものを要素とする有限長リストを表します。
@@ -775,7 +775,7 @@ Require Import Stlc.
     リストを分解するために[lcase]を使います。
     これは「空リストの[head]は何か？」というような問題を扱うことを避けるためです。 *)
 
-(*
+(* begin hide *)
 (** For example, here is a function that calculates the sum of
     the first two elements of a list of numbers:
 
@@ -784,7 +784,7 @@ Require Import Stlc.
          | a::x' => lcase x' of nil => a
                        | b::x'' => a+b
 *)
- *)
+(* end hide *)
 (** 従って、例えば、数値リストの最初の2つの要素の和を計算する関数は次の通りです:
 <<
       \x:List Nat. 
@@ -793,7 +793,7 @@ Require Import Stlc.
                        | b::x'' => a+b 
 >>
  *)
-(*
+(* begin hide *)
 (**
     Syntax:
 
@@ -812,7 +812,7 @@ Require Import Stlc.
            | List T            list of Ts
            | ...
 *)
- *)
+(* end hide *)
 (**
     構文:
 <<
@@ -833,7 +833,7 @@ Require Import Stlc.
 >>
  *)
 
-(*
+(* begin hide *)
 (** Reduction:
 
                                  t1 ==> t1'
@@ -857,7 +857,7 @@ Require Import Stlc.
             (lcase (cons vh vt) of nil => t2 | xh::xt => t3)
                           ==> [xh:=vh,xt:=vt]t3
 *)
- *)
+(* end hide *)
 (** 簡約:
 <<
                                  t1 ==> t1' 
@@ -883,7 +883,7 @@ Require Import Stlc.
 >>
  *)
 
-(*
+(* begin hide *)
 (** Typing:
 
                           -----------------------                       (T_Nil)
@@ -899,7 +899,7 @@ Require Import Stlc.
           -------------------------------------------------           (T_Lcase)
           Gamma |- (lcase t1 of nil => t2 | h::t => t3) : T
 *)
- *)
+(* end hide *)
 (** 型付け:
 <<
                           -----------------------                       (T_Nil) 
@@ -918,12 +918,12 @@ Require Import Stlc.
  *)
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** General Recursion *)
-*)
+(* end hide *)
 (** ** 一般再帰 *)
 
-(*
+(* begin hide *)
 (** Another facility found in most programming languages (including
     Coq) is the ability to define recursive functions.  For example,
     we might like to be able to define the factorial function like
@@ -940,7 +940,7 @@ Require Import Stlc.
    but it requires a bit of extra effort: in particular, we'd have to 
    pass around an "environment" of recursive function definitions in 
    the definition of the [step] relation. *)
-*)
+(* end hide *)
 (** （Coqを含む）ほとんどのプログラミング言語に現れるもう1つの機構が、再帰関数を定義する機能です。
     例えば、階乗関数を次のように定義できるとよいと思うでしょう:
 <<
@@ -952,7 +952,7 @@ Require Import Stlc.
    直接「再帰的定義」を形式化することも可能ですが、なかなかの作業が必要になります。
    特に[step]内で再帰関数定義の「環境(environment)」を持ち回る必要があるでしょう。 *)
 
-(*
+(* begin hide *)
 (** Here is another way of presenting recursive functions that is equally
     powerful (though not quite as convenient for the programmer) and 
     more straightforward to formalize: instead of writing recursive 
@@ -973,7 +973,7 @@ Require Import Stlc.
                \x:Nat.
                   if x=0 then 1 else x * (f (pred x)))
 *)
- *)
+(* end hide *)
 (** ここでは、同じくらい強力な、また直接の形式化が容易な形での再帰関数の定義方法を取ります（プログラマにとっては不便を強いられることになりますが）。
     再帰的定義を書く代わりに、[fix]という名前の「不動点演算子(_fixed-point operator_)」を定義します。
     不動点演算子は、簡約の過程で必要に応じて再帰的定義の右辺に「展開」("unfold")するものです。
@@ -992,7 +992,7 @@ Require Import Stlc.
                   if x=0 then 1 else x * (f (pred x))) 
 >>
  *)
-(*
+(* begin hide *)
 (** We can derive the latter from the former as follows:
 
       - In the right-hand side of the definition of [fact], replace 
@@ -1010,7 +1010,7 @@ Require Import Stlc.
       - Use all of this as the right-hand side of an ordinary 
         [let]-binding for [fact].  
 *)
- *)
+(* end hide *)
 (** 前者の書き方から、以下のようにして後者の書き方を得ます。
  
       - [fact]の定義の右辺から再帰的定義の対象である[fact]という名前を新しい変数名[f]で置き換えます。
@@ -1025,7 +1025,7 @@ Require Import Stlc.
       - この全体を、[fact]に対する通常の[let]束縛の右辺として利用します。
  *)
 
-(*
+(* begin hide *)
 (** The intuition is that the higher-order function [f] passed
     to [fix] is a _generator_ for the [fact] function: if [f] is
     applied to a function that "approximates" the desired behavior of
@@ -1042,7 +1042,7 @@ Require Import Stlc.
     an input [x] such that [f(x) = x].  Here, a fixed point of a
     function [F] of type [(Nat->Nat)->(Nat->Nat)] is a function [f] of
     type [Nat->Nat] such that [F f] behaves the same as [f].) *)
-*)
+(* end hide *)
 (** 直観的には[fix]に渡される高階関数[f]は[fact]関数の生成器(_generator_)です。
     [f]が、[fact]に求められる振る舞いを[n]まで「近似」する関数（つまり、[n]以下の入力に対しては正しい結果を返すが[n]より大きい入力に関してはどうでもいい関数）に適用されるとき、[f]はより良い近似、つまり、[n+1]まで正しい答えを返す関数、を返します。
     [fix]をこの生成器に適用すると、生成器の「不動点(_fixed point_)」を返します。
@@ -1052,7 +1052,7 @@ Require Import Stlc.
     通常の数学では、関数[f]の不動点とは、[f(x) = x] となる入力 [x] のことです。
     ここでは、型 [(Nat->Nat)->(Nat->Nat)] を持つ関数[F]の不動点は、[Nat->Nat]型の関数[f]のうち、[F f]が[f]と同じように振る舞うものです。） *)
 
-(*
+(* begin hide *)
 (** Syntax:
 
        t ::=                Terms
@@ -1074,7 +1074,7 @@ Require Import Stlc.
                            --------------------                         (T_Fix)
                            Gamma |- fix t1 : T1
 *)
- *)
+(* end hide *)
 (** 構文:
 <<
        t ::=                項
@@ -1098,7 +1098,7 @@ Require Import Stlc.
 >>
  *)
 
-(*
+(* begin hide *)
 (** Let's see how [ST_FixAbs] works by reducing [fact 3 = fix F 3],
     where 
 
@@ -1180,7 +1180,7 @@ Require Import Stlc.
 
     6
 *)
-*)
+(* end hide *)
 (** [fact 3 = fix F 3] の動きを追うことで、 [ST_FixAbs] がどのように動くのか見ます。
     ここで、[F]は以下の式とします。
 <<
@@ -1264,18 +1264,18 @@ Require Import Stlc.
 >>
  *)
 
-(*
+(* begin hide *)
 (** One important point to note is that, unlike [Fixpoint]
     definitions in Coq, there is nothing to prevent functions defined
     using [fix] from diverging. *)
-*)
+(* end hide *)
 (** 重要な点として、Coqの[Fixpoint]と異なり、[fix]での定義は発散するような関数も書けます。 *)
 
-(*
+(* begin hide *)
 (** **** Exercise: 1 star, optional (halve_fix)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★, optional (halve_fix) *)
-(*
+(* begin hide *)
 (** Translate this informal recursive definition into one using [fix]:
 
       halve =
@@ -1286,7 +1286,7 @@ Require Import Stlc.
 
 (* FILL IN HERE *)
 *)
- *)
+(* end hide *)
 (** 次の再帰的定義を[fix]を用いた定義に直しなさい:
 <<
       halve = 
@@ -1299,25 +1299,25 @@ Require Import Stlc.
  *)
 (** [] *)
 
-(*
+(* begin hide *)
 (** **** Exercise: 1 star, optional (fact_steps)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★, optional (fact_steps) *)
-(*
+(* begin hide *)
 (** Write down the sequence of steps that the term [fact 1] goes
     through to reduce to a normal form (assuming the usual reduction
     rules for arithmetic operations).
 
     (* FILL IN HERE *)
 *)
- *)
+(* end hide *)
 (** 項 [fact 1] が正規形まで簡約されるステップ列を書き下しなさい（ただし、算術演算については通常の簡約規則を仮定します）。
  
     (* FILL IN HERE *) 
  *)
 (** [] *)
 
-(* 
+(* begin hide *)
 (** The ability to form the fixed point of a function of type [T->T]
     for any [T] has some surprising consequences.  In particular, it
     implies that _every_ type is inhabited by some term.  To see this,
@@ -1340,7 +1340,7 @@ Require Import Stlc.
              else if n=0 then false
              else eq (pred m) (pred n))
 *)
- *)
+(* end hide *)
 (** 任意の[T]について型 [T->T] の関数の不動点が記述できる形ができたことから、驚くようなことが起こります。
     特に、すべての型が何らかの項に住まれている(inhabited)ということが導かれます。
     これを確認するため、すべての型[T]について、項
@@ -1363,7 +1363,7 @@ Require Import Stlc.
              else eq (pred m) (pred n)) 
 >>
  *)
-(*
+(* begin hide *)
 (** And finally, here is an example where [fix] is used to define a
     _pair_ of recursive functions (illustrating the fact that the type
     [T1] in the rule [T_Fix] need not be a function type):
@@ -1378,7 +1378,7 @@ Require Import Stlc.
       even = evenodd.fst
       odd  = evenodd.snd
 *)
- *)
+(* end hide *)
 (** そして最後に、次は[fix]を使って再帰関数の対を定義する例です（この例は、規則[T_Fix]の型[T1]は関数型ではなくてもよいことを示しています）:
 <<
       evenodd = 
@@ -1394,24 +1394,24 @@ Require Import Stlc.
  *)
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Records *)
-*)
+(* end hide *)
 (** ** レコード *)
 
-(*
+(* begin hide *)
 (** As a final example of a basic extension of the STLC, let's look
     briefly at how to define _records_ and their types.  Intuitively,
     records can be obtained from pairs by two straightforward
     generalizations: they are n-ary (rather than just binary) and
     their fields are accessed by _label_ (rather than position). *)
-*)
+(* end hide *)
 (** STLCの基本拡張の最後の例として、
     レコード(_records_)とその型をどのように形式化するかをちょっと見てみましょう。
     直観的には、レコードは組に二つの一般化をほどこすことで得られます。
     （二つの代わりに）n-要素の組とすること、そして（位置の代わりに）「ラベル(_label_)」で要素へアクセスできることです。 *)
 
-(*
+(* begin hide *)
 (** Syntax:
 
        t ::=                          Terms
@@ -1434,7 +1434,7 @@ Require Import Stlc.
    number of these," and we've omitted explicit mention of the usual
    side condition that the labels of a record should not contain any
    repetitions. *)
-*)
+(* end hide *)
 (** 構文:
 <<
        t ::=                          項
@@ -1454,7 +1454,7 @@ Require Import Stlc.
    しかし、ここで実際に記述したものは、以前の章で書いたものよりかなり非形式的であることは注意しておくべきです。
    いろいろなところで、"[...]"を「これらを何個か」という意味で使っていますし、レコードに同じラベルが繰り返し出てきてはいけない、という通常の付加条件を明示的に述べることを省いています。 *)
 
-(*
+(* begin hide *)
 (**
    Reduction:
 
@@ -1475,7 +1475,7 @@ Require Import Stlc.
    value and if [ti] steps to [ti'], then the whole record steps..."
    In the last rule, the intention is that there should only be one
    field called i, and that all the other fields must contain values. *)
-*)
+(* end hide *)
 (** 
    簡約:
 <<
@@ -1495,7 +1495,7 @@ Require Import Stlc.
    例えば、最初の規則は「[ti]が値でないフィールドのうち最も左のもので、[ti]は[ti']にステップで進むならば、レコード全体のステップは...」と読まれることを意図しています。
    最後の規則では、i と呼ばれるフィールドは1つだけで、他のすべてのフィールドは値を持っていることを意図しています。 *)
 
-(*
+(* begin hide *)
 (**
    The typing rules are also simple:
 
@@ -1507,7 +1507,7 @@ Require Import Stlc.
                     -----------------------------                      (T_Proj)
                           Gamma |- t.i : Ti
 *)
- *)
+(* end hide *)
 (** 
    型付けも簡単です:
 <<
@@ -1521,7 +1521,7 @@ Require Import Stlc.
 >>
  *)
 
-(*
+(* begin hide *)
 (** There are several ways to approach formalizing the above
     definitions.
 
@@ -1555,7 +1555,7 @@ Require Import Stlc.
         informal shorthands for more complex expressions involving
         pairs and product types.  We sketch this approach in the next
         section. *)
- *)
+(* end hide *)
 (** 上述の定義を精密にする方法はいくつもあります。
  
       - 構文の形と推論規則を、上記の形になるべく近いまま直接形式化するという方法があります。
@@ -1577,12 +1577,12 @@ Require Import Stlc.
         次節では、このアプローチの概略を与えます。 *)
 
 (* ----------------------------------------------------------------- *)
-(*
+(* begin hide *)
 (** *** Encoding Records (Optional) *)
-*)
+(* end hide *)
 (** *** レコードのエンコード (Optional) *)
 
-(*
+(* begin hide *)
 (** Let's see how records can be encoded using just pairs and [unit].  
 
     First, observe that we can encode arbitrary-size _tuples_ using
@@ -1654,7 +1654,7 @@ Require Import Stlc.
     "direct" presentation of records are validated by this
     encoding.  (The reduction rules are "almost validated" -- not
     quite, because the encoding reorders fields.) *)
-*)
+(* end hide *)
 (** では、レコードを[unit]と対で表現する方法を見ていきましょう。
  
     最初に、任意のサイズの「組(_tuple_)」が対と[unit]値のネストでエンコードできることを確認します。
@@ -1721,7 +1721,7 @@ Require Import Stlc.
     （簡約規則は正しさを「ほぼ」確認できます。完全に、ではありません。
     なぜなら、フィールドの並べ直しによってフィールドの簡約順序が変わりうるためです。） *)
 
-(*
+(* begin hide *)
 (** Of course, this encoding will not be very efficient if we
     happen to use a record with label [foo]!  But things are not
     actually as bad as they might seem: for example, if we assume that
@@ -1729,19 +1729,19 @@ Require Import Stlc.
     _choose_ the numbering of labels so that we assign small positions
     to the most frequently used labels.  Indeed, there are industrial
     compilers that essentially do this! *)
-*)
+(* end hide *)
 (** もちろん、ラベル[foo]を持つレコードをたまたま使ったときには、このエンコードはあまり効率的ではありません。
     しかしこの問題は見た目ほど深刻ではありません。
     もし、コンパイラがプログラム全体を同時に見ることができると仮定するなら、ラベルの番号づけをうまく選んで、一番よく使われるラベルに小さいポジションを与えることができます。
     実際、商用のコンパイラで本質的にこれをやっているものもあります! *)
 
 (* ----------------------------------------------------------------- *)
-(*
+(* begin hide *)
 (** *** Variants (Optional) *)
-*)
+(* end hide *)
 (** *** バリアント (Optional) *)
 
-(*
+(* begin hide *)
 (** Just as products can be generalized to records, sums can be
     generalized to n-ary labeled types called _variants_.  Instead of
     [T1+T2], we can write something like [<l1:T1,l2:T2,...ln:Tn>]
@@ -1754,7 +1754,7 @@ Require Import Stlc.
     type definitions.  We won't cover this here, but detailed
     treatments can be found in many textbooks -- e.g., Types and
     Programming Languages [Pierce 2002]. *)
-*)
+(* end hide *)
 (** 直積がレコードに一般化できたのと同様、直和は n-個のラベルを持った型「バリアント」(_variants_)に一般化できます。
     [T1+T2] の代わりに [<l1:T1,l2:T2,...ln:Tn>] のように書くことができます。
     ここで[l1]、[l2]、... はフィールドラベルで、インスタンスの構成と、case のラベルの両方に使われます。
@@ -1765,16 +1765,16 @@ Require Import Stlc.
     例えば "Types and Programming Languages" [Pierce 2002] です。*)
 
 (* ################################################################# *)
-(*
+(* begin hide *)
 (** * Exercise: Formalizing the Extensions *)
-*)
+(* end hide *)
 (** * 練習問題: 拡張を形式化する *)
 
-(*
+(* begin hide *)
 (** **** Exercise: 5 stars (STLC_extensions)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★★★★★ (STLC_extensions) *)
-(*
+(* begin hide *)
 (** In this exercise, you will formalize some of the extensions
     described in this chapter.  We've provided the necessary additions
     to the syntax of terms and types, and we've included a few
@@ -1799,7 +1799,7 @@ Require Import Stlc.
     reading carefully through the parts that are provided for you,
     referring to the text in the [Stlc] chapter for high-level
     intuitions and the embedded comments for detailed mechanics. *)
-*)
+(* end hide *)
 (** この課題では、本章で説明した拡張の形式化をしてもらいます。
     項と型の構文の必要な拡張は提示しておきました。
     また、読者が、自分の定義が期待された通りに動作するかをテストすることができるように、いくつかの例を示しておきました。
@@ -1828,9 +1828,9 @@ Require Import Stlc.
 Module STLCExtended.
 
 (* ----------------------------------------------------------------- *)
-(*
+(* begin hide *)
 (** *** Syntax *)
-*)
+(* end hide *)
 (** *** 構文 *)
 
 Inductive ty : Type :=
@@ -1907,7 +1907,7 @@ Inductive tm : Type :=
 >> *)
   | tfix  : tm -> tm.
 
-(*
+(* begin hide *)
 (** Note that, for brevity, we've omitted booleans and instead
     provided a single [if0] form combining a zero test and a
     conditional.  That is, instead of writing
@@ -1918,7 +1918,7 @@ Inductive tm : Type :=
 
        if0 x then ... else ...
 *)
- *)
+(* end hide *)
 (** なお、簡潔にするため、ブール値をなくし、その代わりゼロテストと条件分岐を組み合わせた [if0] 構文を提供しています。
     つまり、
 <<
@@ -1931,9 +1931,9 @@ Inductive tm : Type :=
  *)
 
 (* ----------------------------------------------------------------- *)
-(*
+(* begin hide *)
 (** *** Substitution *)
-*)
+(* end hide *)
 (** *** 置換 *)
 
 Fixpoint subst (x:string) (s:tm) (t:tm) : tm :=
@@ -1995,14 +1995,14 @@ Notation "'[' x ':=' s ']' t" := (subst x s t) (at level 20).
 
 
 (* ----------------------------------------------------------------- *)
-(*
+(* begin hide *)
 (** *** Reduction *)
-*)
+(* end hide *)
 (** *** 簡約 *)
 
-(*
+(* begin hide *)
 (** Next we define the values of our language. *)
-*)
+(* end hide *)
 (** 次にこの言語の値を定義します。 *)
 
 Inductive value : tm -> Prop :=
@@ -2131,17 +2131,17 @@ Notation "t1 '==>*' t2" := (multistep t1 t2) (at level 40).
 Hint Constructors step.
 
 (* ----------------------------------------------------------------- *)
-(*
+(* begin hide *)
 (** *** Typing *)
-*)
+(* end hide *)
 (** *** 型付け *)
 
 Definition context := partial_map ty.
 
-(*
+(* begin hide *)
 (** Next we define the typing rules.  These are nearly direct
     transcriptions of the inference rules shown above. *)
-*)
+(* end hide *)
 (** 次に型付け規則を定義します。
     上述の推論規則のほとんど直接の転写です。*)
 
@@ -2225,12 +2225,12 @@ where "Gamma '|-' t '\in' T" := (has_type Gamma t T).
 Hint Constructors has_type.
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Examples *)
-*)
+(* end hide *)
 (** ** 例 *)
 
-(*
+(* begin hide *)
 (** This section presents formalized versions of the examples from
     above (plus several more).  The ones at the beginning focus on
     specific features; you can use these to make sure your definition
@@ -2239,7 +2239,7 @@ Hint Constructors has_type.
     The later examples require all the features together, so you'll
     need to come back to these when you've got all the definitions
     filled in. *)
-*)
+(* end hide *)
 (** この節では上述の例（および追加のいくつか）の形式化版を示します。
     最初の方のものは、特定の拡張項目に焦点を当てています。
     ファイルの後の方の、その拡張項目について証明を拡張するところに進む前に、これらの例を使って拡張項目についての自分の定義が適切かを確認することができます。
@@ -2249,14 +2249,14 @@ Hint Constructors has_type.
 Module Examples.
 
 (* ----------------------------------------------------------------- *)
-(*
+(* begin hide *)
 (** *** Preliminaries *)
-*)
+(* end hide *)
 (** *** 準備 *)
 
-(*
+(* begin hide *)
 (** First, let's define a few variable names: *)
-*)
+(* end hide *)
 (** 最初に、いくつか変数名を定義しましょう: *)
 
 Open Scope string_scope.
@@ -2278,7 +2278,7 @@ Notation even := "even".
 Notation odd := "odd".
 Notation eo := "eo".
 
-(*
+(* begin hide *)
 (** Next, a bit of Coq hackery to automate searching for typing
     derivations.  You don't need to understand this bit in detail --
     just have a look over it so that you'll know what to look for if
@@ -2293,7 +2293,7 @@ Notation eo := "eo".
     [e1] and [e2].  We also include a hint to "try harder" when
     solving equality goals; this is useful to automate uses of
     [T_Var] (which includes an equality as a precondition). *)
-*)
+(* end hide *)
 (** 次に、Coq にちょっと手を入れて、型の導出の検索を自動化します。
     詳細を理解する必要はまったくありません。
     ざっと眺めておけば、もし[auto]に独自の拡張をしなければならなくなったとき、何を調べれば良いかがわかるでしょう。
@@ -2313,9 +2313,9 @@ Hint Extern 2 (has_type _ (tlcase _ _ _ _ _) _) =>
 Hint Extern 2 (_ = _) => compute; reflexivity.
 
 (* ----------------------------------------------------------------- *)
-(*
+(* begin hide *)
 (** *** Numbers *)
-*)
+(* end hide *)
 (** *** 数値 *)
 
 Module Numtest.
@@ -2336,10 +2336,10 @@ Definition test :=
     (tnat 5)
     (tnat 6).
 
-(*
+(* begin hide *)
 (** Remove the comment braces once you've implemented enough of the
     definitions that you think this should work. *)
-*)
+(* end hide *)
 (** 動くだけ定義が十分に行えたと思ったなら、以降の[Example]のコメントをはずしなさい。*)
 
 (* 
@@ -2381,9 +2381,9 @@ Qed.
 End Numtest.
 
 (* ----------------------------------------------------------------- *)
-(*
+(* begin hide *)
 (** *** Products *)
-*)
+(* end hide *)
 (** *** 直積 *)
 
 Module Prodtest.
@@ -2465,9 +2465,9 @@ Proof. unfold test. normalize. Qed.
 End LetTest.
 
 (* ----------------------------------------------------------------- *)
-(*
+(* begin hide *)
 (** *** Sums *)
-*)
+(* end hide *)
 (** *** 直和 *)
 
 Module Sumtest1.
@@ -2563,9 +2563,9 @@ Proof. unfold test. normalize. Qed.
 End Sumtest2.
 
 (* ----------------------------------------------------------------- *)
-(*
+(* begin hide *)
 (** *** Lists *)
-*)
+(* end hide *)
 (** *** リスト *)
 
 Module ListTest.
@@ -2639,10 +2639,10 @@ Definition fact :=
               (tvar a)
               (tapp (tvar f) (tpred (tvar a))))))).
 
-(*
+(* begin hide *)
 (** (Warning: you may be able to typecheck [fact] but still have some
     rules wrong!) *)
-*)
+(* end hide *)
 (** （警告: [fact]の型チェックが通るかもしれませんが、それでもいくつかの規則が間違ったままです。） *)
 
 (* 
@@ -2859,22 +2859,22 @@ End FixTest4.
 End Examples.
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Properties of Typing *)
-*)
+(* end hide *)
 (** ** 型付けの性質 *)
 
-(*
+(* begin hide *)
 (** The proofs of progress and preservation for this enriched system
     are essentially the same (though of course longer) as for the pure
     STLC. *)
-*)
+(* end hide *)
 (** 拡張したシステムの進行と保存の証明は、純粋な単純型付きラムダ計算のものと本質的に同じです（もちろん長くはなりますが）。 *)
 
 (* ----------------------------------------------------------------- *)
-(*
+(* begin hide *)
 (** *** Progress *)
-*)
+(* end hide *)
 (** *** 進行 *)
 
 Theorem progress : forall t T,
@@ -3070,9 +3070,9 @@ Proof with eauto.
 Qed.
 
 (* ----------------------------------------------------------------- *)
-(*
+(* begin hide *)
 (** *** Context Invariance *)
-*)
+(* end hide *)
 (** *** コンテキスト不変性 *)
 
 Inductive appears_free_in : string -> tm -> Prop :=
@@ -3242,9 +3242,9 @@ Proof with eauto.
 Qed.
 
 (* ----------------------------------------------------------------- *)
-(*
+(* begin hide *)
 (** *** Substitution *)
-*)
+(* end hide *)
 (** *** 置換 *)
 
 Lemma substitution_preserves_typing : forall Gamma x U v t S,
