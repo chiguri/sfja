@@ -1,9 +1,9 @@
 (** * Stlc: 単純型付きラムダ計算 *)
-(*
+(* begin hide *)
 (** * Stlc: The Simply Typed Lambda-Calculus *)
-*)
+(* end hide *)
 
-(*
+(* begin hide *)
 (** The simply typed lambda-calculus (STLC) is a tiny core
     calculus embodying the key concept of _functional abstraction_,
     which shows up in pretty much every real-world programming
@@ -15,7 +15,7 @@
     The new technical challenges arise from the mechanisms of
     _variable binding_ and _substitution_.  It which will take some
     work to deal with these. *)
-*)
+(* end hide *)
 (** 単純型付きラムダ計算(Simply Typed Lambda-Calculus, STLC)は、
     関数抽象(_functional abstraction_)を具現する、小さな、核となる計算体系です。
     関数抽象は、ほとんどすべての実世界のプログラミング言語に何らかの形
@@ -33,12 +33,12 @@ Require Import Smallstep.
 Require Import Types.
 
 (* ################################################################# *)
-(*
+(* begin hide *)
 (** * Overview *)
-*)
+(* end hide *)
 (** ** 概観 *)
 
-(*
+(* begin hide *)
 (** The STLC is built on some collection of _base types_: 
     booleans, numbers, strings, etc.  The exact choice of base types
     doesn't matter much -- the construction of the language and its
@@ -58,7 +58,7 @@ Require Import Types.
     This gives us the following collection of abstract syntax
     constructors (written out first in informal BNF notation -- we'll
     formalize it below). *)
-*)
+(* end hide *)
 (** STLC は基本型(_base types_)の何らかの集まりの上に構成されます。
     基本型はブール型、数値、文字列などです。
     実際にどの基本型を入れるかは問題ではありません。
@@ -75,7 +75,7 @@ Require Import Types.
  
     これから、以下の抽象構文コンストラクタが出てきます。
     （まずは非形式的BNF記法で書き出します。後に形式化します。） *)
-(*
+(* begin hide *)
 (**
 
        t ::= x                       variable
@@ -85,7 +85,7 @@ Require Import Types.
            | false                   constant false
            | if t1 then t2 else t3   conditional
 *)
- *)
+(* end hide *)
 (** 
 [[
        t ::= x                       変数
@@ -97,19 +97,19 @@ Require Import Types.
 ]]
  *)
 
-(*
+(* begin hide *)
 (** The [\] symbol in a function abstraction [\x:T1.t2] is generally
     written as a Greek letter "lambda" (hence the name of the
     calculus).  The variable [x] is called the _parameter_ to the
     function; the term [t2] is its _body_.  The annotation [:T1]
     specifies the type of arguments that the function can be applied
     to. *)
-*)
+(* end hide *)
 (** 関数抽象 [\x:T1.t2] の [\]記号はよくギリシャ文字のラムダ(λ)で記述されます（これがラムダ計算の名前の由来です）（訳注：日本語環境では円マークに見えることがあります）。
     変数[x]は関数のパラメータ(_parameter_)、項[t2]は関数の本体(_body_)と呼ばれます。
     付記された [:T] は関数が適用される引数の型を定めます。 *)
 
-(*
+(* begin hide *)
 (** Some examples:
 
       - [\x:Bool. x]
@@ -128,7 +128,7 @@ Require Import Types.
 
         The constant function that takes every (boolean) argument to
         [true]. *)
-*)
+(* end hide *)
 (** 例をいくつか:
  
       - [\x:Bool. x] 
@@ -146,7 +146,7 @@ Require Import Types.
       - [\x:Bool. true] 
  
         すべての(ブール値の)引数に対して[true]を返す定数関数。 *)
-(*
+(* begin hide *)
 (**
       - [\x:Bool. \y:Bool. x]
 
@@ -173,7 +173,7 @@ Require Import Types.
 
         The same higher-order function, applied to the constantly
         [false] function. *)
-*)
+(* end hide *)
 (** 
       - [\x:Bool. \y:Bool. x] 
  
@@ -197,7 +197,7 @@ Require Import Types.
  
         上記高階関数を、常に[false]を返す定数関数に適用したもの。 *)
 
-(*
+(* begin hide *)
 (** As the last several examples show, the STLC is a language of
     _higher-order_ functions: we can write down functions that take
     other functions as arguments and/or return other functions as
@@ -213,7 +213,7 @@ Require Import Types.
     boolean constants [true] and [false] as well as more complex
     computations that yield booleans, plus _arrow types_ that classify
     functions. *)
-*)
+(* end hide *)
 (** 最後のいくつかの例で示されたように、STLCは高階(_higher-order_)関数の言語です。
     他の関数を引数として取る関数や、結果として他の関数を返す関数を書き下すことができます。
  
@@ -225,7 +225,7 @@ Require Import Types.
     STLCの型には[Bool]が含まれます。
     この型はブール定数[true]と[false]、および結果がブール値になるより複雑な計算の型です。
     その他に、関数の型である「関数型」(_arrow types_)があります。 *)
-(*
+(* begin hide *)
 (**
 
       T ::= Bool
@@ -245,7 +245,7 @@ Require Import Types.
       - [(\x:Bool. \y:Bool. x) false] has type [Bool->Bool]
 
       - [(\x:Bool. \y:Bool. x) false true] has type [Bool] *)
-*)
+(* end hide *)
 (**
 [[
       T ::= Bool 
@@ -268,9 +268,9 @@ Require Import Types.
 
 
 (* ################################################################# *)
-(*
+(* begin hide *)
 (** * Syntax *)
-*)
+(* end hide *)
 (** * 構文 *)
 
 (** We next formalize the syntax of the STLC. *)
@@ -278,9 +278,9 @@ Require Import Types.
 Module STLC.
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Types *)
-*)
+(* end hide *)
 (** ** 型 *)
 
 Inductive ty : Type :=
@@ -288,9 +288,9 @@ Inductive ty : Type :=
   | TArrow : ty -> ty -> ty.
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Terms *)
-*)
+(* end hide *)
 (** ** 項 *)
 
 Inductive tm : Type :=
@@ -301,22 +301,22 @@ Inductive tm : Type :=
   | tfalse : tm
   | tif : tm -> tm -> tm -> tm.
 
-(*
+(* begin hide *)
 (** Note that an abstraction [\x:T.t] (formally, [tabs x T t]) is
     always annotated with the type [T] of its parameter, in contrast
     to Coq (and other functional languages like ML, Haskell, etc.),
     which use type inference to fill in missing annotations.  We're
     not considering type inference here. *)
-*)
+(* end hide *)
 (** この中では、関数抽象 [\x:T.t] （形式的には [tabs x T t]）には常にパラメータの型[T]が付記されます。
     これは Coq（あるいは他のML、Haskellといった関数型言語）のように、型推論(type inference)によって補うものと対照的です。
     ここでは型推論は考えません。 *)
 
 Open Scope string_scope.
      
-(*
+(* begin hide *)
 (** Some examples... *)
-*)
+(* end hide *)
 (** いくつかの例... *)
 
 Definition x := "x".
@@ -352,58 +352,58 @@ Notation k := (tabs x TBool (tabs y TBool (tvar x))).
 
 Notation notB := (tabs x TBool (tif (tvar x) tfalse ttrue)).
 
-(*
+(* begin hide *)
 (** (We write these as [Notation]s rather than [Definition]s to make
     things easier for [auto].) *)
-*)
+(* end hide *)
 (** (これらを[Definition]ではなく[Notation]とすることで、[auto]に扱いやすくしています。) *)
 
 (* ################################################################# *)
-(*
+(* begin hide *)
 (** * Operational Semantics *)
-*)
+(* end hide *)
 (** * 操作的意味論 *)
 
-(*
+(* begin hide *)
 (** To define the small-step semantics of STLC terms, we begin,
     as always, by defining the set of values.  Next, we define the
     critical notions of _free variables_ and _substitution_, which are
     used in the reduction rule for application expressions.  And
     finally we give the small-step relation itself. *)
-*)
+(* end hide *)
 (** STLC項のスモールステップ意味論を定義するために、いつものように、値の集合を定義することから始めます。
     次に、自由変数(_free variables_)と置換(_substitution_)という、重大な概念を定義します。
     これらは関数適用式の簡約規則に使われます。
     そして最後に、スモールステップ関係自体を与えます。 *)
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Values *)
-*)
+(* end hide *)
 (** ** 値 *)
 
-(*
+(* begin hide *)
 (** To define the values of the STLC, we have a few cases to consider.
 
     First, for the boolean part of the language, the situation is
     clear: [true] and [false] are the only values.  An [if]
     expression is never a value. *)
-*)
+(* end hide *)
 (** STLCの値を定義するために、いくつかの場合を考えなければなりません。
  
     最初に、言語のブール値については、状況は明確です:
     [true]と[false]だけが値です。[if]式は決して値ではありません。 *)
 
-(*
+(* begin hide *)
 (** Second, an application is clearly not a value: It represents a
     function being invoked on some argument, which clearly still has
     work left to do. *)
-*)
+(* end hide *)
 (** 二番目に、関数適用は明らかに値ではありません。
     関数適用は関数が何らかの引数に対して呼ばれたことを表しているのですから、
     明らかにこれからやることが残っています。 *)
 
-(*
+(* begin hide *)
 (** Third, for abstractions, we have a choice:
 
       - We can say that [\x:T. t1] is a value only when [t1] is a
@@ -426,7 +426,7 @@ Notation notB := (tabs x TBool (tif (tvar x) tfalse ttrue)).
     choice -- reduction of a function's body only begins when the
     function is actually applied to an argument.  We also make the
     second choice here. *)
-*)
+(* end hide *)
 (** 三番目に、関数抽象については選択肢があります:
  
       - [\x:T.t1] が値であるのは、[t1]が値であるときのみである、とすることができます。
@@ -456,7 +456,7 @@ Inductive value : tm -> Prop :=
 
 Hint Constructors value.
 
-(*
+(* begin hide *)
 (** Finally, we must consider what constitutes a _complete_ program.
 
     Intuitively, a "complete program" must not refer to any undefined
@@ -471,7 +471,7 @@ Hint Constructors value.
     need to worry about whether variables are values, since we'll
     always be reducing programs "from the outside in," and that means
     the [step] relation will always be working with closed terms.  *)
-*)
+(* end hide *)
 (** 最後に、「完全な(_complete_)」プログラムの性質について考えます。
  
     直観的には、「完全なプログラム」は未定義の変数を参照しないでしょう。
@@ -483,12 +483,12 @@ Hint Constructors value.
     なぜなら、プログラムの簡約は常に「外側から内側に」行われ、[step]関係は常に閉じた項だけを対象とするからです。 *)
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Substitution *)
-*)
+(* end hide *)
 (** ** 置換 *)
 
-(*
+(* begin hide *)
 (** Now we come to the heart of the STLC: the operation of
     substituting one term for a variable in another term.  This
     operation is used below to define the operational semantics of
@@ -509,7 +509,7 @@ Hint Constructors value.
     for occurrences of some variable [x] in another term [t].  In
     informal discussions, this is usually written [ [x:=s]t ] and
     pronounced "substitute [x] with [s] in [t]." *)
-*)
+(* end hide *)
 (** これから問題の核心に入ります: 項の変数を別の項で置換する操作です。
     この操作は後で関数適用の操作的意味論を定義するために使います。
     関数適用では、関数本体の中の関数パラメータを引数項で置換することが必要になります。
@@ -526,7 +526,7 @@ Hint Constructors value.
     一般に、ある項[t]の変数[x]の出現を、与えらえた項[s]で置換できることが必要です。
     非形式的な議論では、通常これを [ [x:=s]t ] と書き、「[t]の[x]を[s]で置換する」と読みます。 *)
 
-(*
+(* begin hide *)
 (** Here are some examples:
 
       - [[x:=true] (if x then x else false)] 
@@ -554,7 +554,7 @@ Hint Constructors value.
     this is that the [x] in the body of [\x:Bool. x] is _bound_ by the
     abstraction: it is a new, local name that just happens to be
     spelled the same as some global name [x]. *)
-*)
+(* end hide *)
 (** いくつかの例を示します:
  
       - [[x:=true] (if x then x else false)] は [if true then true else false] となります。
@@ -581,7 +581,7 @@ Hint Constructors value.
     理由は、[\x:Bool. x] の本体の [x] は関数抽象で束縛されている(_bound_)からです。
     この[x]は新しいローカルな名前で、たまたまグローバルな名前[x]と同じ綴りであったものです。 *)
 
-(*
+(* begin hide *)
 (** Here is the definition, informally...
 
        [x:=s]x               = s
@@ -594,7 +594,7 @@ Hint Constructors value.
        [x:=s](if t1 then t2 else t3) =
                        if [x:=s]t1 then [x:=s]t2 else [x:=s]t3
 *)
- *)
+(* end hide *)
 (** 以下が、非形式的な定義です...
 [[
        [x:=s]x               = s 
@@ -609,9 +609,9 @@ Hint Constructors value.
 ]]
  *)
 
-(*
+(* begin hide *)
 (** ... and formally: *)
-*)
+(* end hide *)
 (** ... そして形式的には: *)
 
 Reserved Notation "'[' x ':=' s ']' t" (at level 20).
@@ -634,7 +634,7 @@ Fixpoint subst (x:string) (s:tm) (t:tm) : tm :=
 
 where "'[' x ':=' s ']' t" := (subst x s t).
 
-(*
+(* begin hide *)
 (** _Technical note_: Substitution becomes trickier to define if we
     consider the case where [s], the term being substituted for a
     variable in some other term, may itself contain free variables.
@@ -643,7 +643,7 @@ where "'[' x ':=' s ']' t" := (subst x s t).
     binders for all of the variables they mention), we can avoid this
     extra complexity here, but it must be dealt with when formalizing
     richer languages. *)
-*)
+(* end hide *)
 (** 技術的注釈: 置換は、もし[s]、つまり他の項の変数を置換する項が、それ自身に自由変数を含むときを考えると、定義がよりトリッキーなものになります。
     ここで興味があるのは「閉じた(_closed_)」項（つまり [\x:Bool. x] のように、出現する全ての変数についての束縛子を含む項）についての[step]関係の定義のみなので、そのさらなる複雑さは避けることができます。
     しかし、より表現力の強い言語を形式化する場合には考慮する必要があるでしょう。 *)
@@ -689,12 +689,12 @@ Proof.
 (** [] *)
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Reduction *)
-*)
+(* end hide *)
 (** ** 簡約 *)
 
-(*
+(* begin hide *)
 (** The small-step reduction relation for STLC now follows the
     same pattern as the ones we have seen before.  Intuitively, to
     reduce a function application, we first reduce its left-hand
@@ -707,7 +707,7 @@ Proof.
       (\x:T.t12) v2 ==> [x:=v2]t12
 
     is traditionally called "beta-reduction". *)
-*)
+(* end hide *)
 (** STLCのスモールステップ簡約関係は、これまで見てきたものと同じパターンに従います。
     直観的には、関数適用を簡約するため、最初に左側（関数）を関数値になるまで簡約します。
     次に右側（引数）を値になるまで簡約します。
@@ -718,7 +718,7 @@ Proof.
 ]]
     これは伝統的にベータ簡約("beta-reduction")と呼ばれます。 *)
 
-(*
+(* begin hide *)
 (** 
                                value v2
                      ----------------------------                   (ST_AppAbs)
@@ -733,7 +733,7 @@ Proof.
                            ----------------                           (ST_App2)
                            v1 t2 ==> v1 t2'
 *)
- *)
+(* end hide *)
 (**
 <<
                                value v2 
@@ -750,7 +750,7 @@ Proof.
                            v1 t2 ==> v1 t2' 
 >>
  *)
-(*
+(* begin hide *)
 (** ... plus the usual rules for conditionals:
 
                     --------------------------------                (ST_IfTrue)
@@ -763,7 +763,7 @@ Proof.
          ----------------------------------------------------           (ST_If)
          (if t1 then t2 else t3) ==> (if t1' then t2 else t3)
 *)
- *)
+(* end hide *)
 (** ...以上に加えて、通常の条件文に関する規則:
 <<
                     --------------------------------                (ST_IfTrue) 
@@ -809,9 +809,9 @@ Notation multistep := (multi step).
 Notation "t1 '==>*' t2" := (multistep t1 t2) (at level 40).
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Examples *)
-*)
+(* end hide *)
 (** ** 例 *)
 
 (** Example:
@@ -901,10 +901,10 @@ Proof.
     apply ST_AppAbs. auto. simpl.
   apply multi_refl.  Qed.
 
-(*
+(* begin hide *)
 (** We can use the [normalize] tactic defined in the [Types] chapter
     to simplify these proofs. *)
-*)
+(* end hide *)
 (** [Types]章で定義した[normalize]タクティックを使って、証明を簡単にすることができます。*)
 
 Lemma step_example1' :
@@ -923,13 +923,13 @@ Lemma step_example4' :
   tapp idBB (tapp notB ttrue) ==>* tfalse.
 Proof. normalize.  Qed.
 
-(*
+(* begin hide *)
 (** **** Exercise: 2 stars (step_example5)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★★ (step_example5)  *)
-(*
+(* begin hide *)
 (** Try to do this one both with and without [normalize]. *)
-*)
+(* end hide *)
 (** 次の証明を[normalize]を使う方法と使わない方法の両方で行いなさい。*)
 
 Lemma step_example5 :
@@ -946,20 +946,20 @@ Proof.
 (** [] *)
 
 (* ################################################################# *)
-(*
+(* begin hide *)
 (** * Typing *)
-*)
+(* end hide *)
 (** * 型付け *)
 
 (** Next we consider the typing relation of the STLC. *)
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Contexts *)
-*)
+(* end hide *)
 (** ** コンテキスト *)
 
-(*
+(* begin hide *)
 (** _Question_: What is the type of the term "[x y]"?
 
     _Answer_: It depends on the types of [x] and [y]!
@@ -971,7 +971,7 @@ Proof.
     This leads us to a three-place _typing judgment_, informally
     written [Gamma |- t \in T], where [Gamma] is a
     "typing context" -- a mapping from variables to their types. *)
-*)
+(* end hide *)
 (** 問い: 項 "[x y]" の型は何でしょう？
  
     答え: それは [x] と [y] の型に依存します!
@@ -989,12 +989,12 @@ Proof.
 Definition context := partial_map ty.
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Typing Relation *)
-*)
+(* end hide *)
 (** ** 型付け関係 *)
 
-(*
+(* begin hide *)
 (** 
                              Gamma x = T
                             --------------                              (T_Var)
@@ -1022,7 +1022,7 @@ Definition context := partial_map ty.
 
     We can read the three-place relation [Gamma |- t \in T] as:
     "under the assumptions in Gamma, the term [t] has the type [T]." *)
-*)
+(* end hide *)
 (**
 <<
                              Gamma x = T 
@@ -1080,9 +1080,9 @@ where "Gamma '|-' t '\in' T" := (has_type Gamma t T).
 Hint Constructors has_type.
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Examples *)
-*)
+(* end hide *)
 (** ** 例 *)
 
 Example typing_example_1 :
@@ -1090,10 +1090,10 @@ Example typing_example_1 :
 Proof.
   apply T_Abs. apply T_Var. reflexivity.  Qed.
 
-(*
+(* begin hide *)
 (** Note that since we added the [has_type] constructors to the hints
     database, auto can actually solve this one immediately. *)
-*)
+(* end hide *)
 (** なお、[has_type]のコンストラクタをヒントデータベースに追加したことから、
     auto でこれを直接解けます。*)
 
@@ -1101,13 +1101,13 @@ Example typing_example_1' :
   empty |- tabs x TBool (tvar x) \in TArrow TBool TBool.
 Proof. auto.  Qed.
 
-(*
+(* begin hide *)
 (** Another example:
 
        empty |- \x:A. \y:A->A. y (y x)
              \in A -> (A->A) -> A.
 *)
- *)
+(* end hide *)
 (** 他の例:
 [[
        empty |- \x:A. \y:A->A. y (y x) 
@@ -1129,14 +1129,14 @@ Proof with auto using update_eq.
   apply T_Var...
 Qed.
 
-(*
+(* begin hide *)
 (** **** Exercise: 2 stars, optional (typing_example_2_full)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★★, optional (typing_example_2_full)  *)
-(*
+(* begin hide *)
 (** Prove the same result without using [auto], [eauto], or
     [eapply] (or [...]). *)
-*)
+(* end hide *)
 (** [auto]、[eauto]、[eapply] （またはタクティックの後ろに付ける[...]）を使わずに同じ結果を証明しなさい。 *)
 
 Example typing_example_2_full :
@@ -1149,21 +1149,21 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(*
+(* begin hide *)
 (** **** Exercise: 2 stars (typing_example_3)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★★ (typing_example_3)  *)
-(*
+(* begin hide *)
 (** Formally prove the following typing derivation holds: *)
-*)
+(* end hide *)
 (** 次の型付けが成立することを形式的に証明しなさい: *)
-(*
+(* begin hide *)
 (** 
        empty |- \x:Bool->B. \y:Bool->Bool. \z:Bool.
                    y (x z)
              \in T.
 *)
- *)
+(* end hide *)
 (**  
 [[
        empty |- \x:Bool->B. \y:Bool->Bool. \z:Bool. 
@@ -1184,7 +1184,7 @@ Proof with auto.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(*
+(* begin hide *)
 (** We can also show that terms are _not_ typable.  For example, let's
     formally check that there is no typing derivation assigning a type
     to the term [\x:Bool. \y:Bool, x y] -- i.e.,
@@ -1192,7 +1192,7 @@ Proof with auto.
     ~ exists T,
         empty |- \x:Bool. \y:Bool, x y \in T.
 *)
- *)
+(* end hide *)
 (** 項が「型付けできない」ことを証明することもできます。
     例えば [\x:Bool. \y:Bool, x y] に型をつける型付けが存在しないこと、つまり、
 [[
@@ -1220,17 +1220,17 @@ Proof.
   inversion H5. subst. clear H5.
   inversion H1.  Qed.
 
-(*
+(* begin hide *)
 (** **** Exercise: 3 stars, optional (typing_nonexample_3)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★★★, optional (typing_nonexample_3)  *)
-(*
+(* begin hide *)
 (** Another nonexample:
 
     ~ (exists S, exists T,
           empty |- \x:S. x x \in T).
 *)
- *)
+(* end hide *)
 (** 別の、型を持たない例:
 [[
     ~ (exists S, exists T, 
