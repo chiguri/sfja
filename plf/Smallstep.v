@@ -1,7 +1,7 @@
 (** * Smallstep: スモールステップ操作的意味論 *)
-(*
+(* begin hide *)
 (** * Smallstep: Small-step Operational Semantics *)
-*)
+(* end hide *)
 
 Set Warnings "-notation-overridden,-parsing".
 Require Import Coq.Arith.Arith.
@@ -12,7 +12,7 @@ Import ListNotations.
 Require Import Maps.
 Require Import Imp. 
 
-(*
+(* begin hide *)
 (** The evaluators we have seen so far (for [aexp]s, [bexp]s,
     commands, ...) have been formulated in a "big-step" style: they
     specify how a given expression can be evaluated to its final
@@ -74,7 +74,7 @@ Require Import Imp.
     "big-step" [eval] relation with a "small-step" relation that
     specifies, for a given program, how the "atomic steps" of
     computation are performed. *)
-*)
+(* end hide *)
 (** ここまで見てきた評価器（例えば[aexp]用、[bexp]用、コマンド用、などなど）は「ビッグステップスタイル」で記述されてきました。
     つまり、与えられた式がどのように最終的な値になるか（またはコマンドと記憶状態の組がどのように最終記憶状態になるか）を「すべて大きな1ステップ」として決定しました。
  
@@ -114,19 +114,19 @@ Require Import Imp.
     目標は、与えられたプログラムに対して計算の「アトミックなステップ」がどのように行われるかを定める「スモールステップ」の関係によって、「ビッグステップ」の[eval]関係を置き換えることです。*)
 
 (* ################################################################# *)
-(*
+(* begin hide *)
 (** * A Toy Language *)
-*)
+(* end hide *)
 (** * おもちゃの言語 *)
 
-(*
+(* begin hide *)
 (** To save space in the discussion, let's go back to an
     incredibly simple language containing just constants and
     addition.  (We use single letters -- [C] and [P] (for Constant and
     Plus) -- as constructor names, for brevity.)  At the end of the
     chapter, we'll see how to apply the same techniques to the full
     Imp language.  *)
-*)
+(* end hide *)
 (** 無駄な議論を省くため、定数と足し算だけの極端に単純な言語に戻りましょう。
     （可読性のために、定数と足し算を表すコンストラクタに[C]と[P]という一文字の名前を用います。）
     この章の終わりには、同じテクニックをImp言語全体に適用する方法がわかるでしょう。*)
@@ -135,10 +135,10 @@ Inductive tm : Type :=
   | C : nat -> tm         (* Constant *)
   | P : tm -> tm -> tm.   (* Plus *)
 
-(*
+(* begin hide *)
 (** Here is a standard evaluator for this language, written in
     the big-step style that we've been using up to this point. *)
-*)
+(* end hide *)
 (** 次がこの言語の標準的な評価器です。
     ここまでやってきたのと同じビッグステップスタイルで記述されています。 *)
 
@@ -148,14 +148,14 @@ Fixpoint evalF (t : tm) : nat :=
   | P a1 a2 => evalF a1 + evalF a2
   end.
 
-(*
+(* begin hide *)
 (** Here is the same evaluator, written in exactly the same
     style, but formulated as an inductively defined relation.  Again,
     we use the notation [t \\ n] for "[t] evaluates to [n]." *)
-*)
+(* end hide *)
 (** 同じ評価器を、まったく同じスタイルながら、帰納的に定義された関係によって定式化したものです。
     ここでも、「[t]が[n]に評価される」を記法 [t \\ n] で表しています。*)
-(*
+(* begin hide *)
 (**
 
                                --------                                (E_Const)
@@ -166,7 +166,7 @@ Fixpoint evalF (t : tm) : nat :=
                            ------------------                          (E_Plus)
                            P t1 t2 \\ n1 + n2
 *)
- *)
+(* end hide *)
 (** 
 <<
                                --------                                (E_Const) 
@@ -193,11 +193,11 @@ Inductive eval : tm -> nat -> Prop :=
 
 Module SimpleArith1.
 
-(*
+(* begin hide *)
 (** Now, here is the corresponding _small-step_ evaluation relation. *)
-*)
+(* end hide *)
 (** そして、次が対応する「スモールステップ」版です。*)
-(*
+(* begin hide *)
 (** 
                      -------------------------------        (ST_PlusConstConst)
                      P (C n1) (C n2) ==> C (n1 + n2)
@@ -210,7 +210,7 @@ Module SimpleArith1.
                       ---------------------------                    (ST_Plus2)
                       P (C n1) t2 ==> P (C n1) t2'
 *)
- *)
+(* end hide *)
 (**
 <<
                      -------------------------------        (ST_PlusConstConst) 
@@ -240,7 +240,7 @@ Inductive step : tm -> tm -> Prop :=
 
   where " t '==>' t' " := (step t t').
 
-(*
+(* begin hide *)
 (** Things to notice:
 
     - We are defining just a single reduction step, in which
@@ -252,7 +252,7 @@ Inductive step : tm -> tm -> Prop :=
       itself; the other two rules tell how to find it.
 
     - A term that is just a constant cannot take a step. *)
-*)
+(* end hide *)
 (** 注目すること:
  
     - 定義しているのは簡約のちょうど1ステップです。
@@ -267,10 +267,10 @@ Inductive step : tm -> tm -> Prop :=
 (** Let's pause and check a couple of examples of reasoning with
     the [step] relation... *)
 
-(*
+(* begin hide *)
 (** If [t1] can take a step to [t1'], then [P t1 t2] steps
     to [P t1' t2]: *)
-*)
+(* end hide *)
 (** もし[t1]が1ステップで[t1']になるならば、
     [P t1 t2] は1ステップで [P t1' t2] になります: *)
 
@@ -285,16 +285,16 @@ Example test_step_1 :
 Proof.
   apply ST_Plus1. apply ST_PlusConstConst.  Qed.
 
-(*
+(* begin hide *)
 (** **** Exercise: 1 star (test_step_2)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★ (test_step_2)  *)
-(*
+(* begin hide *)
 (** Right-hand sides of sums can take a step only when the
     left-hand side is finished: if [t2] can take a step to [t2'],
     then [P (C n) t2] steps to [P (C n)
     t2']: *)
-*)
+(* end hide *)
 (** 和の右側がステップを進むことができるのは、左側が終了したときだけです:
     もし[t2]が1ステップで[t2']になるならば、
     [P (C n) t2] は1ステップで [P (C n) t2']
@@ -342,21 +342,21 @@ Definition relation (X: Type) := X -> X -> Prop.
     to," and "is the square of" relations on numbers, and the "prefix
     of" relation on lists and strings. *)
 
-(*
+(* begin hide *)
 (** One simple property of the [==>] relation is that, like the
     big-step evaluation relation for Imp, it is _deterministic_.
 
     _Theorem_: For each [t], there is at most one [t'] such that [t]
     steps to [t'] ([t ==> t'] is provable).  This is the
     same as saying that [==>] is deterministic. *)
-*)
+(* end hide *)
 (** 関係 [==>] のおもしろい性質の1つは、Imp プログラムの言語の評価関係と同様、決定性を持つ(_deterministic_)ということです。
  
     「定理」: 各[t]に対して、[t]が1ステップで[t']になる([t ==> t'] が証明可能な)
     [t']は高々1つである。
     これは、[==>]が部分関数であるというのと同じです。 *)
 
-(*
+(* begin hide *)
 (** _Proof sketch_: We show that if [x] steps to both [y1] and
     [y2], then [y1] and [y2] are equal, by induction on a derivation
     of [step x y1].  There are several cases to consider, depending on
@@ -378,7 +378,7 @@ Definition relation (X: Type) := X -> X -> Prop.
         other is [ST_Plus2], since this would imply that [x] has the
         form [P t1 t2] where [t1] has both the form [P t11 t12] and the
         form [C n]. [] *)
-*)
+(* end hide *)
 (** 「証明スケッチ」:[x]が1ステップで[y1]と[y2]のどちらにもなるとき、[y1]と[y2]
     が等しいことを、[step x y1] の導出についての帰納法で示す。
     この導出と [step x y2] の導出のそれぞれで使われた最後の規則によって、
@@ -494,19 +494,19 @@ Qed.
 End SimpleArith3.
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Values *)
-*)
+(* end hide *)
 (** ** 値 *)
 
-(*
+(* begin hide *)
 (** Next, it will be useful to slightly reformulate the
     definition of single-step reduction by stating it in terms of
     "values." *)
-*)
+(* end hide *)
 (** 次に、1ステップ簡約を再定義して、「値」であることを明示するようにしましょう。 *)
 
-(*
+(* begin hide *)
 (** It is useful to think of the [==>] relation as defining an
     _abstract machine_:
 
@@ -517,7 +517,7 @@ End SimpleArith3.
 
       - The _halting states_ of the machine are ones where there is no
         more computation to be done. *)
-*)
+(* end hide *)
 (** 関係 [==>] を抽象機械(_abstract machine_)の定義と考えるのは便利です:
  
       - どの時点でも、機械の状態(_state_)は項です。
@@ -545,11 +545,11 @@ End SimpleArith3.
  
       - もう簡約ができなくなったとき、機械の最終状態を、実行結果として「読み出し」ます。 *)
 
-(*
+(* begin hide *)
 (** Intuitively, it is clear that the final states of the
     machine are always terms of the form [C n] for some [n].
     We call such terms _values_. *)
-*)
+(* end hide *)
 (** 直観的には、機械の最終状態が常に、
     ある[n]についての [C n] という形の項になることは明らかです。
     そのような項を「値」(_values_)と呼びます。*)
@@ -557,15 +557,15 @@ End SimpleArith3.
 Inductive value : tm -> Prop :=
   | v_const : forall n, value (C n).
 
-(*
+(* begin hide *)
 (** Having introduced the idea of values, we can use it in the
     definition of the [==>] relation to write [ST_Plus2] rule in a
     slightly more elegant way: *)
-*)
+(* end hide *)
 (** 値の概念を導入したので、これを [==>] 関係の定義に使うことで、
     [ST_Plus2] 規則をもう少しだけきれいなものにできます: *)
 
-(*
+(* begin hide *)
 (** 
                      -------------------------------        (ST_PlusConstConst)
                      P (C n1) (C n2) ==> C (n1 + n2)
@@ -579,7 +579,7 @@ Inductive value : tm -> Prop :=
                          --------------------                        (ST_Plus2)
                          P v1 t2 ==> P v1 t2'
 *)
- *)
+(* end hide *)
 (**
 <<
                      -------------------------------        (ST_PlusConstConst) 
@@ -595,7 +595,7 @@ Inductive value : tm -> Prop :=
                          P v1 t2 ==> P v1 t2' 
 >>
  *)
-(*
+(* begin hide *)
 (** Again, the variable names here carry important information:
     by convention, [v1] ranges only over values, while [t1] and [t2]
     range over arbitrary terms.  (Given this convention, the explicit
@@ -603,7 +603,7 @@ Inductive value : tm -> Prop :=
     to maintain a close correspondence between the informal and Coq
     versions of the rules, but later on we'll drop it in informal
     rules for brevity.) *)
-*)
+(* end hide *)
 (** 再び、変数名が重要な情報を担っています:
     慣習として、[v1]は値のみを変域とし、一方[t1]と[t2]は任意の項を変域とします。
     （この慣習により、明示的に[value]仮定を用いることは冗長となります。
@@ -627,11 +627,11 @@ Inductive step : tm -> tm -> Prop :=
 
   where " t '==>' t' " := (step t t').
 
-(*
+(* begin hide *)
 (** **** Exercise: 3 stars, recommended (redo_determinism)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★★★, recommended (redo_determinacy)  *)
-(*
+(* begin hide *)
 (** As a sanity check on this change, let's re-verify determinism.
 
     _Proof sketch_: We must show that if [x] steps to both [y1] and
@@ -652,7 +652,7 @@ Inductive step : tm -> tm -> Prop :=
 
     - The cases when both derivations end with [ST_Plus1] or
       [ST_Plus2] follow by the induction hypothesis. [] *)
-*)
+(* end hide *)
 (** この変更のサニティチェックのため、決定性を再検証しましょう。
  
     「証明スケッチ」: もし[x]が1ステップで[y1]にも[y2]にも進むならば、
@@ -674,12 +674,12 @@ Inductive step : tm -> tm -> Prop :=
     - 導出が両者とも [ST_Plus1] または [ST_Plus2] で終わるならば、
       帰納法の仮定から成立する。[] *)
 
-(*
+(* begin hide *)
 (** Most of this proof is the same as the one above.  But to get
     maximum benefit from the exercise you should try to write your
     formal version from scratch and just use the earlier one if you
     get stuck. *)
-*)
+(* end hide *)
 (** 証明のほとんどは前のものと同じです。しかし、練習問題の効果を最大にするために、
     ゼロから形式的証明を書き、前のものを見るのは行き詰まった時だけにしなさい。 *)
 
@@ -690,32 +690,32 @@ Proof.
 (** [] *)
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Strong Progress and Normal Forms *)
-*)
+(* end hide *)
 (** ** 強進行と正規形 *)
 
-(*
+(* begin hide *)
 (** The definition of single-step reduction for our toy language
     is fairly simple, but for a larger language it would be easy to
     forget one of the rules and accidentally create a situation where
     some term cannot take a step even though it has not been
     completely reduced to a value.  The following theorem shows that
     we did not, in fact, make such a mistake here. *)
-*)
+(* end hide *)
 (** おもちゃの言語に対する1ステップの簡約の定義はかなり単純です。
     しかし、より大きな言語に対しては、何か規則を忘れてしまうことは簡単に起き、
     項が完全に値に簡約されていないのにステップを進めなくなってしまうことが発生します。
     次の定理は、このような間違いをしていないことを示します。*)
 
-(*
+(* begin hide *)
 (** _Theorem_ (_Strong Progress_): If [t] is a term, then either [t]
     is a value or else there exists a term [t'] such that [t ==> t']. *)
-*)
+(* end hide *)
 (** 「定理(強進行)」(_Strong Progress_): [t] が項であるならば、
     [t]は値であるか、そうでなければある項[t']が存在して [t ==> t'] となる。 *)
 
-(*
+(* begin hide *)
 (** _Proof_: By induction on [t].
 
     - Suppose [t = C n]. Then [t] is a value.
@@ -734,7 +734,7 @@ Proof.
       - If [t1] can take a step, then so can [t], by [ST_Plus1].  [] 
 
    Or, formally: *)
-*)
+(* end hide *)
 (** 「証明」: [t]についての帰納法で証明する。
  
     - [t = C n] とする。すると、[t] は値である。
@@ -773,20 +773,20 @@ Proof.
           exists (P t' t2).
           apply ST_Plus1. apply H0.  Qed.
 
-(*
+(* begin hide *)
 (** This important property is called _strong progress_, because
     every term either is a value or can "make progress" by stepping to
     some other term.  (The qualifier "strong" distinguishes it from a
     more refined version that we'll see in later chapters, called
     just _progress_.) *)
-*)
+(* end hide *)
 (** この重要な性質は「強進行」(_strong progress_)と呼ばれます。
     これは、すべての項が値であるか、別の項に「進行できる」("make progress")
     ことからきた名称です。「強」("strong")という修飾句は、
     後の章のより細分されたバージョン（単に「進行」("progress")と呼ばれる）
     と区別するためのものです。*)
 
-(*
+(* begin hide *)
 (** The idea of "making progress" can be extended to tell us something
     interesting about values: in this language, values are exactly the
     terms that _cannot_ make progress in this sense.
@@ -794,7 +794,7 @@ Proof.
     To state this observation formally, let's begin by giving a name
     to terms that cannot make progress.  We'll call them _normal
     forms_.  *)
-*)
+(* end hide *)
 (** 「進行する」という概念の拡張から、[value](値)についての興味深い性質がわかります:
     値とはこの意味で進行「できない」項のことに他なりません。
  
@@ -803,24 +803,24 @@ Proof.
 Definition normal_form {X:Type} (R:relation X) (t:X) : Prop :=
   ~ exists t', R t t'.
 
-(*
+(* begin hide *)
 (** Note that this definition specifies what it is to be a normal form
     for an _arbitrary_ relation [R] over an arbitrary set [X], not
     just for the particular single-step reduction relation over terms
     that we are interested in at the moment.  We'll re-use the same
     terminology for talking about other relations later in the
     course. *)
-*)
+(* end hide *)
 (** この定義は実際には、任意の集合[X]の上の「任意の」関係[R]について、
     何が正規形であるかを定めています。
     今興味対象としている、項の上の特定の1ステップ簡約関係に限るものではありません。
     このコースで後に、別の関係の議論において同じ用語法を用います。*)
 
-(*
+(* begin hide *)
 (** We can use this terminology to generalize the observation we made
     in the strong progress theorem: in this language, normal forms and
     values are actually the same thing. *)
-*)
+(* end hide *)
 (** 強進行定理の洞察を一般化するためにこの用語を使います。
     この言語では、正規形と値とは実質的に同じものです。*)
 
@@ -846,14 +846,14 @@ Corollary nf_same_as_value : forall t,
 Proof.
   split. apply nf_is_value. apply value_is_nf. Qed.
 
-(*
+(* begin hide *)
 (** Why is this interesting?
 
     Because [value] is a syntactic concept -- it is defined by looking
     at the form of a term -- while [normal_form] is a semantic one --
     it is defined by looking at how the term steps.  It is not obvious
     that these concepts should coincide!  *)
-*)
+(* end hide *)
 (** なぜこれが興味深いのでしょう？
  
     なぜなら[value](値)は構文的概念です。つまり項の形を見ることで定義されます。
@@ -861,20 +861,20 @@ Proof.
     つまり項がどのようにステップを進むかによって定義されます。
     この2つの概念が一致することは自明ではないのです! *)
 
-(*
+(* begin hide *)
 (** Indeed, we could easily have written the definitions so that they
     would _not_ coincide. *)
-*)
+(* end hide *)
 (** 実際、正規形と値の概念が一致「しない」定義も簡単に書けます。*)
 
-(*
+(* begin hide *)
 (** **** Exercise: 3 stars, optional (value_not_same_as_normal_form1)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★★★, optional (value_not_same_as_normal_form1)  *)
-(*
+(* begin hide *)
 (** We might, for example, mistakenly define [value] so that it
     includes some terms that are not finished reducing. *)
-*)
+(* end hide *)
 (** 例えば、[value](値)の定義を間違えていて、簡約が完了していない項を含んでいるかもしれません。*)
 (** (Even if you don't work this exercise and the following ones
     in Coq, make sure you can think of an example of such a term.) *)
@@ -909,14 +909,14 @@ End Temp1.
 
 (** [] *)
 
-(*
+(* begin hide *)
 (** **** Exercise: 2 stars, optional (value_not_same_as_normal_form2)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★★, optional (value_not_same_as_normal_form2)  *)
-(*
+(* begin hide *)
 (** Alternatively, we might mistakenly define [step] so that it
     permits something designated as a value to reduce further. *)
-*)
+(* end hide *)
 (** あるいは、[step]の定義を間違えていて、
     値とされたものをさらに簡約するようになっているかもしれません。*)
 
@@ -950,18 +950,18 @@ Proof.
 End Temp2.
 (** [] *)
 
-(*
+(* begin hide *)
 (** **** Exercise: 3 stars, optional (value_not_same_as_normal_form3)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★★★, optional (value_not_same_as_normal_form3)  *)
-(*
+(* begin hide *)
 (** Finally, we might define [value] and [step] so that there is some
     term that is not a value but that cannot take a step in the [step]
     relation.  Such terms are said to be _stuck_. In this case this is
     caused by a mistake in the semantics, but we will also see
     situations where, even in a correct language definition, it makes
     sense to allow some terms to be stuck. *)
-*)
+(* end hide *)
 (** 最後に、[value]と[step]の定義が、ある項について、値でもなく、
     [step]関係で1ステップ進むこともできないようになっているかもしれません。
     そのような項は「行き詰まった」(_stuck_)と言うべきでしょう。この場合の
@@ -984,9 +984,9 @@ Inductive step : tm -> tm -> Prop :=
 
   where " t '==>' t' " := (step t t').
 
-(*
+(* begin hide *)
 (** (Note that [ST_Plus2] is missing.) *)
-*)
+(* end hide *)
 (** ([ST_Plus2] がないことに注意します。) *)
 
 Lemma value_not_same_as_normal_form :
@@ -998,18 +998,18 @@ End Temp3.
 (** [] *)
 
 (* ----------------------------------------------------------------- *)
-(*
+(* begin hide *)
 (** *** Additional Exercises *)
-*)
+(* end hide *)
 (** *** さらなる練習問題 *)
 
 Module Temp4.
 
-(*
+(* begin hide *)
 (** Here is another very simple language whose terms, instead of being
     just addition expressions and numbers, are just the booleans true
     and false and a conditional expression... *)
-*)
+(* end hide *)
 (** 以下は、別の非常に簡単な言語です。項は、加算式と数の代わりに、
     真理値 true と false、および条件式です... *)
 
@@ -1035,15 +1035,15 @@ Inductive step : tm -> tm -> Prop :=
 
   where " t '==>' t' " := (step t t').
 
-(*
+(* begin hide *)
 (** **** Exercise: 1 star (smallstep_bools)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★ (smallstep_bools)  *)
-(*
+(* begin hide *)
 (** Which of the following propositions are provable?  (This is just a
     thought exercise, but for an extra challenge feel free to prove
     your answers in Coq.) *)
-*)
+(* end hide *)
 (** 以下の命題のうち証明できるものはどれでしょう？
     (これは単に頭の体操です。
     しかしさらなるチャレンジとしてCoqで自分の答えを自由に証明してみなさい。) *)
@@ -1077,14 +1077,14 @@ Definition bool_step_prop3 :=
 (* FILL IN HERE *)
 (** [] *)
 
-(*
+(* begin hide *)
 (** **** Exercise: 3 stars, optional (progress_bool)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★★★, optional (progress_bool)  *)
-(*
+(* begin hide *)
 (** Just as we proved a progress theorem for plus expressions, we can
     do so for boolean expressions, as well. *)
-*)
+(* end hide *)
 (** 加算式についてと同様に、ブール式についても進行定理が証明できます。
     (やってみなさい。) *)
 
@@ -1094,9 +1094,9 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(*
+(* begin hide *)
 (** **** Exercise: 2 stars, optional (step_deterministic)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★★, optional (step_deterministic)  *)
 Theorem step_deterministic :
   deterministic step.
@@ -1106,11 +1106,11 @@ Proof.
 
 Module Temp5.
 
-(*
+(* begin hide *)
 (** **** Exercise: 2 stars (smallstep_bool_shortcut)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★★ (smallstep_bool_shortcut)  *)
-(*
+(* begin hide *)
 (** Suppose we want to add a "short circuit" to the step relation for
     boolean expressions, so that it can recognize when the [then] and
     [else] branches of a conditional are the same value (either
@@ -1126,7 +1126,7 @@ Module Temp5.
      ==>
          tfalse.
 *)
- *)
+(* end hide *)
 (** 条件式の[then]と[else]の枝が同じ値のとき(ともに[tm_true]であるか、
     ともに[tm_false]であるかのとき)、ガードが値に簡約されていなくても、
     条件式全体を枝の値に簡約するように、ステップ関係にバイパスを追加したいとします。
@@ -1141,10 +1141,10 @@ Module Temp5.
 ]]
  *)
 
-(*
+(* begin hide *)
 (** Write an extra clause for the step relation that achieves this
     effect and prove [bool_step_prop4]. *)
-*)
+(* end hide *)
 (** ステップ関係にこのための追加の節を記述し、[bool_step_prop4]を証明しなさい。*)
 
 Reserved Notation " t '==>' t' " (at level 40).
@@ -1175,11 +1175,11 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(*
+(* begin hide *)
 (** **** Exercise: 3 stars, optional (properties_of_altered_step)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★★★, optional (properties_of_altered_step)  *)
-(*
+(* begin hide *)
 (** It can be shown that the determinism and strong progress theorems
     for the step relation in the lecture notes also hold for the
     definition of step given above.  After we add the clause
@@ -1189,7 +1189,7 @@ Proof.
       briefly (1 sentence) explain your answer.
 
       Optional: prove your answer correct in Coq. *)
-*)
+(* end hide *)
 (** 講義ノートのステップ関係についての決定性定理と強進行定理が、
     上記のステップの定義についても証明できます。
     [ST_ShortCircuit]節を追加した後で...
@@ -1200,14 +1200,14 @@ Proof.
       Optional: Coq でその答えが正しいことを証明しなさい。 *)
 
 (* FILL IN HERE *)
-(*
+(* begin hide *)
 (**
    - Does a strong progress theorem hold? Write yes or no and
      briefly (1 sentence) explain your answer.
 
      Optional: prove your answer correct in Coq.
 *)
- *)
+(* end hide *)
 (**
    - 強進行定理は成立するでしょうか？
      yes または no と書き、簡潔に(1文で)その答えを説明しなさい。
@@ -1216,7 +1216,7 @@ Proof.
  *)
 
 (* FILL IN HERE *)
-(*
+(* begin hide *)
 (**
    - In general, is there any way we could cause strong progress to
      fail if we took away one or more constructors from the original
@@ -1225,7 +1225,7 @@ Proof.
 
 (* FILL IN HERE *)
 *)
- *)
+(* end hide *)
 (** 
    - 一般に、オリジナルのステップ関係から1つ以上のコンストラクタを取り除いて、
      強進行性を持たなくする方法はあるでしょうか？
@@ -1239,12 +1239,12 @@ End Temp5.
 End Temp4.
 
 (* ################################################################# *)
-(*
+(* begin hide *)
 (** * Multi-Step Reduction *)
-*)
+(* end hide *)
 (** * マルチステップ簡約 *)
 
-(*
+(* begin hide *)
 (** We've been working so far with the _single-step reduction_
     relation [==>], which formalizes the individual steps of an
     abstract machine for executing programs.
@@ -1259,7 +1259,7 @@ End Temp4.
 
     - Then we define a "result" of a term [t] as a normal form that
       [t] can reach by multi-step reduction. *)
-*)
+(* end hide *)
 (** ここまでは、1ステップ簡約関係 [==>] に取り組んできました。
     これは、プログラムを実行する抽象機械の1つのステップを形式化したものです。
  
@@ -1375,10 +1375,10 @@ Proof.
   apply multi_R.
   apply ST_PlusConstConst. Qed.
 
-(*
+(* begin hide *)
 (** Here's an alternate proof of the same fact that uses [eapply] to
     avoid explicitly constructing all the intermediate terms. *)
-*)
+(* end hide *)
 (** 以下は別証です。
     [eapply]を使うことで、すべての中間的な項を明示的に構成する必要をなくしたものです。*)
 
@@ -1395,9 +1395,9 @@ Proof.
   eapply multi_step. apply ST_PlusConstConst.
   apply multi_refl.  Qed.
 
-(*
+(* begin hide *)
 (** **** Exercise: 1 star, optional (test_multistep_2)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★, optional (test_multistep_2)  *)
 Lemma test_multistep_2:
   C 3 ==>* C 3.
@@ -1405,9 +1405,9 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(*
+(* begin hide *)
 (** **** Exercise: 1 star, optional (test_multistep_3)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★, optional (test_multistep_3)  *)
 Lemma test_multistep_3:
       P (C 0) (C 3)
@@ -1417,9 +1417,9 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(*
+(* begin hide *)
 (** **** Exercise: 2 stars (test_multistep_4)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★★ (test_multistep_4)  *)
 Lemma test_multistep_4:
       P
@@ -1436,15 +1436,15 @@ Proof.
 (** [] *)
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Normal Forms Again *)
-*)
+(* end hide *)
 (** ** 正規形再び *)
 
-(*
+(* begin hide *)
 (** If [t] reduces to [t'] in zero or more steps and [t'] is a
     normal form, we say that "[t'] is a normal form of [t]." *)
-*)
+(* end hide *)
 (** [t]が0以上のステップで[t']に簡約され、[t']が正規形のとき、
     「[t']は[t]の正規形である」と言います。*)
 
@@ -1453,14 +1453,14 @@ Definition step_normal_form := normal_form step.
 Definition normal_form_of (t t' : tm) :=
   (t ==>* t' /\ step_normal_form t').
 
-(*
+(* begin hide *)
 (** We have already seen that, for our language, single-step reduction is
     deterministic -- i.e., a given term can take a single step in
     at most one way.  It follows from this that, if [t] can reach
     a normal form, then this normal form is unique.  In other words, we
     can actually pronounce [normal_form t t'] as "[t'] is _the_
     normal form of [t]." *)
-*)
+(* end hide *)
 (** この言語が1ステップ簡約が決定性を持つことを既に見ました。
     つまり、項が1ステップ進む方法は高々1種類だということです。
     このことから、[t]が正規形に到達するならば、その正規形は1つに決まることになります。
@@ -1471,9 +1471,9 @@ Definition normal_form_of (t t' : tm) :=
     (訳注：原文では "_the_ normal form of [t]" 
     と定冠詞を使ってよいことと記述されています。) *)
 
-(*
+(* begin hide *)
 (** **** Exercise: 3 stars, optional (normal_forms_unique)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★★★, optional (normal_forms_unique)  *)
 Theorem normal_forms_unique:
   deterministic normal_form_of.
@@ -1487,13 +1487,13 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(*
+(* begin hide *)
 (** Indeed, something stronger is true for this language (though not
     for all languages): the reduction of _any_ term [t] will
     eventually reach a normal form -- i.e., [normal_form_of] is a
     _total_ function.  Formally, we say the [step] relation is
     _normalizing_. *)
-*)
+(* end hide *)
 (** 実のところ、この言語については、より強いことが成立します
     (これは他のすべての言語で成立することではありません):
     「任意の」項[t]はいつかは正規形に到達する、ということです。
@@ -1504,7 +1504,7 @@ Definition normalizing {X:Type} (R:relation X) :=
   forall t, exists t',
     (multi R) t t' /\ normal_form R t'.
 
-(*
+(* begin hide *)
 (** To prove that [step] is normalizing, we need a couple of lemmas.
 
     First, we observe that, if [t] reduces to [t'] in many steps, then
@@ -1512,7 +1512,7 @@ Definition normalizing {X:Type} (R:relation X) :=
     when [t] appears as the left-hand child of a [P] node, and
     similarly when [t] appears as the right-hand child of a [P]
     node whose left-hand child is a value. *)
-*)
+(* end hide *)
 (** [step]が正規化性を持つことを証明するため、二つの補題を必要とします。
  
     一つは、[t]が[t']に何ステップかで簡約されるならば、
@@ -1532,9 +1532,9 @@ Proof.
         apply ST_Plus1. apply H.
         apply IHmulti.  Qed.
 
-(*
+(* begin hide *)
 (** **** Exercise: 2 stars (multistep_congr_2)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★★ (multistep_congr_2)  *)
 Lemma multistep_congr_2 : forall t1 t2 t2',
      value t1 ->
@@ -1544,7 +1544,7 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(*
+(* begin hide *)
 (** With these lemmas in hand, the main proof is a straightforward
     induction.
 
@@ -1571,7 +1571,7 @@ Proof.
 
       It is clear that our choice of [t' = C (n1 + n2)] is a value,
       which is in turn a normal form. [] *)
-*)
+(* end hide *)
 (** これらの補題を使えば、後は単純な帰納法で証明できます。
  
     「定理」: [step] 関数は正規化性を持つ。つまり、
@@ -1628,26 +1628,26 @@ Proof.
           rewrite nf_same_as_value. apply v_const.  Qed.
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Equivalence of Big-Step and Small-Step *)
-*)
+(* end hide *)
 (** ** ビッグステップとスモールステップの同値性 *)
 
-(*
+(* begin hide *)
 (** Having defined the operational semantics of our tiny programming
     language in two different ways (big-step and small-step), it makes
     sense to ask whether these definitions actually define the same
     thing!  They do, though it takes a little work to show it.  The
     details are left as an exercise. *)
-*)
+(* end hide *)
 (** 小さなプログラミング言語に対して2つの異なった方法（ビッグステップとスモールステップ）で操作的意味論を定義したので、
     その2つの定義が本当に同じものを定義しているのかを考えるのは意味があります!
     実際に定義は一致しているのですが、それを示すにはもう少し準備が必要です。
     詳細は練習問題として残しています。　*)
 
-(*
+(* begin hide *)
 (** **** Exercise: 3 stars (eval__multistep)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★★★ (eval__multistep)  *)
 Theorem eval__multistep : forall t n,
   t \\ n -> t ==>* C n.
@@ -1686,16 +1686,16 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(*
+(* begin hide *)
 (** **** Exercise: 3 stars, advanced (eval__multistep_inf)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★★★, advanced (eval__multistep_inf)  *)
-(*
+(* begin hide *)
 (** Write a detailed informal version of the proof of [eval__multistep].
 
 (* FILL IN HERE *)
 *)
- *)
+(* end hide *)
 (** eval__multistep の非形式的証明を詳細に記述しなさい。
  
 (* ここを埋めなさい *)
@@ -1705,9 +1705,9 @@ Proof.
 (** For the other direction, we need one lemma, which establishes a
     relation between single-step reduction and big-step evaluation. *)
 
-(*
+(* begin hide *)
 (** **** Exercise: 3 stars (step__eval)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★★★ (step__eval)  *)
 Lemma step__eval : forall t t' n,
      t ==> t' ->
@@ -1727,9 +1727,9 @@ Proof.
 (** Make sure you understand the statement before you start to
     work on the proof.  *)
 
-(*
+(* begin hide *)
 (** **** Exercise: 3 stars (multistep__eval)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★★★ (multistep__eval)  *)
 Theorem multistep__eval : forall t t',
   normal_form_of t t' -> exists n, t' = C n /\ t \\ n.
@@ -1738,14 +1738,14 @@ Proof.
 (** [] *)
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Additional Exercises *)
-*)
+(* end hide *)
 (** ** さらなる練習問題 *)
 
-(*
+(* begin hide *)
 (** **** Exercise: 3 stars, optional (interp_tm)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★★★, optional (interp_tm)  *)
 (** Remember that we also defined big-step evaluation of terms as a
     function [evalF].  Prove that it is equivalent to the existing
@@ -1759,14 +1759,14 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(*
+(* begin hide *)
 (** **** Exercise: 4 stars (combined_properties)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★★★★ (combined_properties)  *)
-(*
+(* begin hide *)
 (** We've considered arithmetic and conditional expressions
     separately.  This exercise explores how the two interact. *)
-*)
+(* end hide *)
 (** ここまでに算術式と条件式を別々に考えてきました。
     この練習問題ではこの2つがどのように相互作用するかを調べます。*)
 
@@ -1806,7 +1806,7 @@ Inductive step : tm -> tm -> Prop :=
 
   where " t '==>' t' " := (step t t').
 
-(*
+(* begin hide *)
 (** Earlier, we separately proved for both plus- and if-expressions...
 
     - that the step relation was deterministic, and
@@ -1817,7 +1817,7 @@ Inductive step : tm -> tm -> Prop :=
     Formally prove or disprove these two properties for the combined
     language.  (That is, state a theorem saying that the property
     holds or does not hold, and prove your theorem.) *)
-*)
+(* end hide *)
 (** 前には、plus式とif式について、以下のことを別々に証明しました...
  
     - ステップ関係が部分関数であること(つまり、決定性を持つこと)。
@@ -1833,15 +1833,15 @@ End Combined.
 (** [] *)
 
 (* ################################################################# *)
-(*
+(* begin hide *)
 (** * Small-Step Imp *)
-*)
+(* end hide *)
 (** * スモールステップ Imp *)
 
-(*
+(* begin hide *)
 (** Now for a more serious example: a small-step version of the Imp
     operational semantics. *)
-*)
+(* end hide *)
 (** ここではより本気の例として、Impの操作的意味論のスモールステップ版を示します。 *)
 
 (** The small-step reduction relations for arithmetic and
@@ -1853,12 +1853,12 @@ End Combined.
 Inductive aval : aexp -> Prop :=
   | av_num : forall n, aval (ANum n).
 
-(*
+(* begin hide *)
 (** We are not actually going to bother to define boolean
     values, since they aren't needed in the definition of [==>b]
     below (why?), though they might be if our language were a bit
     larger (why?). *)
-*)
+(* end hide *)
 (** ここでは、わざわざブール値の定義をする必要がありません。
     なぜならば、以下の [==>b] の定義にはブール値の定義が必要ないからです(なぜでしょう？)。
     言語がちょっと大きかったら必要になったかもしれません(なぜでしょう？)。 *)
@@ -1945,7 +1945,7 @@ Inductive bstep : state -> bexp -> bexp -> Prop :=
 
 where " t '/' st '==>b' t' " := (bstep st t t').
 
-(*
+(* begin hide *)
 (** The semantics of commands is the interesting part.  We need two
     small tricks to make it work:
 
@@ -1962,7 +1962,7 @@ where " t '/' st '==>b' t' " := (bstep st t t').
 
        - We reduce a [WHILE] command by transforming it into a
          conditional followed by the same [WHILE]. *)
-*)
+(* end hide *)
 (** コマンドの意味論は興味深い部分です。
     うまくやるために2つの小さなトリックを使います:
  
@@ -1976,12 +1976,12 @@ where " t '/' st '==>b' t' " := (bstep st t t').
  
        - [WHILE]コマンドの簡約は、条件文とそれに続く同じ[WHILE]コマンドになります。 *)
 
-(*
+(* begin hide *)
 (** (There are other ways of achieving the effect of the latter
     trick, but they all share the feature that the original [WHILE]
     command needs to be saved somewhere while a single copy of the loop
     body is being reduced.) *)
-*)
+(* end hide *)
 (** (後者の効果を得るには他にもいろいろな方法がありますが、
     いずれも、もとの[WHILE]コマンドをどこかに保存して、ループ本体の1コピーを簡約することには変わりありません。) *)
 
@@ -2014,19 +2014,19 @@ Inductive cstep : (com * state) -> (com * state) -> Prop :=
   where " t '/' st '==>' t' '/' st' " := (cstep (t,st) (t',st')).
 
 (* ################################################################# *)
-(*
+(* begin hide *)
 (** * Concurrent Imp *)
-*)
+(* end hide *)
 (** * 並行 Imp *)
 
-(*
+(* begin hide *)
 (** Finally, to show the power of this definitional style, let's
     enrich Imp with a new form of command that runs two subcommands in
     parallel and terminates when both have terminated.  To reflect the
     unpredictability of scheduling, the actions of the subcommands may
     be interleaved in any order, but they share the same memory and
     can communicate by reading and writing the same variables. *)
-*)
+(* end hide *)
 (** 最後に、この定義スタイルの力を示すために、Imp に並行動作のコマンドを拡張しましょう。
     このコマンドは2つのサブコマンドを並行実行し、両者が終了した時点で終了します。
     スケジューリングの予測不能性を反映して、
@@ -2097,11 +2097,11 @@ Notation " t '/' st '==>*' t' '/' st' " :=
    (multi cstep  (t,st) (t',st'))
    (at level 40, st at level 39, t' at level 39).
 
-(*
+(* begin hide *)
 (** Among the many interesting properties of this language is the fact
     that the following program can terminate with the variable [X] set
     to any value. *)
-*)
+(* end hide *)
 (** この言語のいろいろな興味深い性質の中でも格別なものは、次のプログラムが、
     変数[X]にどのような値を入れても停止するという事実です。 *)
 
@@ -2114,9 +2114,9 @@ Definition par_loop : com :=
     END
   END.
 
-(*
+(* begin hide *)
 (** In particular, it can terminate with [X] set to [0]: *)
-*)
+(* end hide *)
 (** 特に、[X]を[0]にしても停止できます: *)
 
 Example par_loop_example_0:
@@ -2138,9 +2138,9 @@ Proof.
   eapply multi_refl.
   reflexivity. Qed.
 
-(*
+(* begin hide *)
 (** It can also terminate with [X] set to [2]: *)
-*)
+(* end hide *)
 (** [X]を[2]にしても停止します: *)
 
 Example par_loop_example_2:
@@ -2188,14 +2188,14 @@ Proof.
   eapply multi_refl.
   reflexivity. Qed.
 
-(*
+(* begin hide *)
 (** More generally... *)
-*)
+(* end hide *)
 (** より一般に... *)
 
-(*
+(* begin hide *)
 (** **** Exercise: 3 stars, optional (par_body_n__Sn)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★★★, optional (par_body_n__Sn)  *)
 Lemma par_body_n__Sn : forall n st,
   st X = n /\ st Y = 0 ->
@@ -2204,9 +2204,9 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(*
+(* begin hide *)
 (** **** Exercise: 3 stars, optional (par_body_n)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★★★, optional (par_body_n)  *)
 Lemma par_body_n : forall n st,
   st X = 0 /\ st Y = 0 ->
@@ -2216,10 +2216,10 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(*
+(* begin hide *)
 (** ... the above loop can exit with [X] having any value
     whatsoever. *)
-*)
+(* end hide *)
 (** ... 上のループは[X]がどんな値をとっても抜け出せます。 *)
 
 Theorem par_loop_any_X:
