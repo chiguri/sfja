@@ -1,7 +1,7 @@
 (** * Hoare: ホーア論理、第一部 *)
-(*
+(* begin hide *)
 (** * Hoare: Hoare Logic, Part I *)
-*)
+(* end hide *)
 
 Set Warnings "-notation-overridden,-parsing".
 Require Import Coq.Bool.Bool.
@@ -11,7 +11,7 @@ Require Import Coq.omega.Omega.
 Require Import Imp. 
 Require Import Maps.
 
-(*
+(* begin hide *)
 (** In the final chaper of _Logical Foundations_ (_Software
     Foundations_, volume 1), we began applying the mathematical tools
     developed in the first part of the course to studying the theory
@@ -44,7 +44,7 @@ Require Import Maps.
 
         - behavioral equivalence of programs (in the [Equiv]
           chapter). *)
-*)
+(* end hide *)
 (** 「論理の基礎」（「ソフトウェアの基礎」第一巻）の最後の章では、コースの最初に用意した数学的道具を、小さなプログラミング言語 Imp の理論の学習に適用してみました。
  
     - Imp の抽象構文木(_abstract syntax trees_)の型を定義しました。
@@ -67,7 +67,7 @@ Require Import Maps.
  
         - プログラムの動作の同値性（[Equiv]の章において） *)
 
-(*
+(* begin hide *)
 (** If we stopped here, we would already have something useful: a set
     of tools for defining and discussing programming languages and
     language features that are mathematically precise, flexible, and
@@ -105,7 +105,7 @@ Require Import Maps.
     such specifications -- where by "compositional" we mean that the
     structure of proofs directly mirrors the structure of the programs
     that they are about. *)
-*)
+(* end hide *)
 (** もしここで止めたとしても、有用なものを持っていることになります。
     それは、プログラミング言語とその特性を定義し議論する、数学的に正確で、柔軟で、使いやすい、主要な性質に適合した道具です。
     これらの性質は、言語を設計する人、コンパイラを書く人、そしてユーザも知っておくべきものです。
@@ -143,33 +143,33 @@ Require Import Maps.
       - examples *)
 
 (* ################################################################# *)
-(*
+(* begin hide *)
 (** * Assertions *)
-*)
+(* end hide *)
 (** * 表明 *)
 
-(*
+(* begin hide *)
 (** To talk about specifications of programs, the first thing we
     need is a way of making _assertions_ about properties that hold at
     particular points during a program's execution -- i.e., claims
     about the current state of the memory when execution reaches that
     point.  Formally, an assertion is just a family of propositions
     indexed by a [state]. *)
-*)
+(* end hide *)
 (** プログラムの仕様について話そうとするとき、最初に欲しくなるのは、実行中のある特定の時点で成立している性質
     -- つまり、プログラム実行時にその箇所に来た時の状態に関して成り立つ言明 -- についての表明(_assertions_)を作る方法です。
     形式的には、表明は状態に関する述語です。 *)
 
 Definition Assertion := state -> Prop.
 
-(*
+(* begin hide *)
 (** **** Exercise: 1 star, optional (assertions)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★, optional (assertions) *)
-(*
+(* begin hide *)
 (** Paraphrase the following assertions in English (or your favorite
     natural language). *)
-*)
+(* end hide *)
 (** 以下の表明を日本語（または好きな自然言語）に直しなさい。 *)
 
 Module ExAssertions.
@@ -186,7 +186,7 @@ Definition as6 : Assertion := fun st => False.
 End ExAssertions.
 (** [] *)
 
-(*
+(* begin hide *)
 (** This way of writing assertions can be a little bit heavy,
     for two reasons: (1) every single assertion that we ever write is
     going to begin with [fun st => ]; and (2) this state [st] is the
@@ -195,14 +195,14 @@ End ExAssertions.
     same time).  For discussing examples informally, we'll adopt some
     simplifying conventions: we'll drop the initial [fun st =>], and
     we'll write just [X] to mean [st X].  Thus, instead of writing *)
-*)
+(* end hide *)
 (** この方法で表明を書くことは、2つの理由から、若干ヘビーに見えます。
     (1)すべての個々の表明は、[fun st => ]から始まっています。
     (2)状態[st]は表明から変数を参照するために使う唯一の状態です（2つの別々の状態を同時に考える必要はありません）。
     例について非形式的に議論するときには、いくらか簡単にします。
     最初の[fun st =>]は書かず、[st X]のかわりに単に[X]と書きます。
     つまり、非形式的には、次のように書くかわりに *)
-(*
+(* begin hide *)
 (**
 
       fun st => (st Z) * (st Z) <= m /\
@@ -212,7 +212,7 @@ End ExAssertions.
 
       Z * Z <= m /\ ~((S Z) * (S Z) <= m).
 *)
- *)
+(* end hide *)
 (** 
 [[
       fun st => (st Z) * (st Z) <= m /\ 
@@ -224,7 +224,7 @@ End ExAssertions.
 ]]
  *)
 
-(*
+(* begin hide *)
 (** This example also illustrates a convention that we'll use
     throughout the Hoare Logic chapters: in informal assertions,
     capital letters like [X], [Y], and [Z] are Imp variables, while
@@ -232,7 +232,7 @@ End ExAssertions.
     variables (of type [nat]).  This is why, when translating from
     informal to formal, we replace [X] with [st X] but leave [m]
     alone. *)
-*)
+(* end hide *)
 (** この例は、ホーア論理の章を通じて使う慣習に則っています。
     非形式的な表明では、[X]、[Y]、[Z]のような大文字の変数をImpの変数とし、[x]、[y]、[m]、[n]などの小文字の変数をCoqの（[nat]型の）変数とします。
     そのため、この非形式的な表明を形式的な表明に変換する際には、[X]を[st X]に置き換えますが、[m]はそのままにします。 *)
@@ -248,12 +248,12 @@ Notation "P ->> Q" := (assert_implies P Q)
                       (at level 80) : hoare_spec_scope.
 Open Scope hoare_spec_scope.
 
-(*
+(* begin hide *)
 (** (The [hoare_spec_scope] annotation here tells Coq that this
     notation is not global but is intended to be used in particular
     contexts.  The [Open Scope] tells Coq that this file is one such
     context.) *)
-*)
+(* end hide *)
 (** この[hoare_spec_scope]アノテーションは、Coqに、この記法はグローバルではなく特定のコンテキストで使うものであることを伝えるものです。
     [Open Scope]は、このファイルがそのコンテキストであることを Coq に伝えます。 *)
 
@@ -264,18 +264,18 @@ Notation "P <<->> Q" :=
   (P ->> Q /\ Q ->> P) (at level 80) : hoare_spec_scope.
 
 (* ################################################################# *)
-(*
+(* begin hide *)
 (** * Hoare Triples *)
-*)
+(* end hide *)
 (** * ホーアの三つ組 *)
 
-(*
+(* begin hide *)
 (** Next, we need a way of making formal claims about the
     behavior of commands. *)
-*)
+(* end hide *)
 (** 次に、コマンドの振舞いについての形式的表明を作る方法が必要です。*)
 
-(*
+(* begin hide *)
 (** In general, the behavior of a command is to transform one state to
     another, so it is natural to express claims about commands in
     terms of assertions that are true before and after the command
@@ -288,7 +288,7 @@ Notation "P <<->> Q" :=
     Such a claim is called a _Hoare Triple_.  The assertion [P] is
     called the _precondition_ of [c], while [Q] is the
     _postcondition_.  *)
-*)
+(* end hide *)
 (** 一般に、コマンドの振舞いは、状態を別の状態に変換するものです。
     そのため、コマンドについて言及するには、コマンドの実行前と後の状態で真になる表明を用いるのが自然でしょう。
  
@@ -298,9 +298,9 @@ Notation "P <<->> Q" :=
     表明[P]は[c]の事前条件(_precondition_)と呼ばれます。
     [Q]は[c]の事後条件(_postcondition_)と呼ばれます。 *)
 
-(*
+(* begin hide *)
 (** Formally: *)
-*)
+(* end hide *)
 (** 形式的には以下の通りです。 *)
 
 Definition hoare_triple
@@ -310,22 +310,22 @@ Definition hoare_triple
      P st  ->
      Q st'.
 
-(*
+(* begin hide *)
 (** Since we'll be working a lot with Hoare triples, it's useful to
     have a compact notation:
 
        {{P}} c {{Q}}.
 *)
- *)
+(* end hide *)
 (** ホーアの三つ組を今後多用するので、簡潔な記法を用意すると便利です:
 [[
        {{P}} c {{Q}} 
 ]]
  *)
-(*
+(* begin hide *)
 (** (The traditional notation is [{P} c {Q}], but single braces
     are already used for other things in Coq.)  *)
-*)
+(* end hide *)
 (** （伝統的には、ホーアの三つ組は [{P} c {Q}]と書かれます。
     しかし Coq では一重の波カッコは別の意味で既に使われています。） *)
 
@@ -333,11 +333,11 @@ Notation "{{ P }}  c  {{ Q }}" :=
   (hoare_triple P c Q) (at level 90, c at next level)
   : hoare_spec_scope.
 
-(*
+(* begin hide *)
 (** **** Exercise: 1 star, optional (triples)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★, optional (triples) *)
-(*
+(* begin hide *)
 (** Paraphrase the following Hoare triples in English.
 
    1) {{True}} c {{X = 5}}
@@ -356,7 +356,7 @@ Notation "{{ P }}  c  {{ Q }}" :=
       c
       {{(Z * Z) <= m /\ ~ (((S Z) * (S Z)) <= m)}}
 *)
- *)
+(* end hide *)
 (** 以下のホーアの三つ組を日本語に直しなさい。
 [[
    1) {{True}} c {{X = 5}} 
@@ -379,11 +379,11 @@ Notation "{{ P }}  c  {{ Q }}" :=
 
 (** [] *)
 
-(*
+(* begin hide *)
 (** **** Exercise: 1 star, optional (valid_triples)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★, optional (valid_triples) *)
-(*
+(* begin hide *)
 (** Which of the following Hoare triples are _valid_ -- i.e., the
     claimed relation between [P], [c], and [Q] is true?
 
@@ -409,7 +409,7 @@ Notation "{{ P }}  c  {{ Q }}" :=
         WHILE !(X = 0) DO X ::= X + 1 END
       {{X = 100}}
 *)
- *)
+(* end hide *)
 (** 以下のホーアの三つ組のうち、正しい(_valid_)ものを選択しなさい。
     -- 正しいとは、[P],[c],[Q]の関係が真であるということです。
 [[
@@ -438,10 +438,10 @@ Notation "{{ P }}  c  {{ Q }}" :=
  *)
 (** [] *)
 
-(*
+(* begin hide *)
 (** To get us warmed up for what's coming, here are two simple facts
     about Hoare triples.  (Make sure you understand what they mean.) *)
-*)
+(* end hide *)
 (** ウォーミングアップとして、ホーアの三つ組についての2つの事実を見てみます。
     （何を意味しているのかしっかり理解してください。） *)
 
@@ -463,12 +463,12 @@ Proof.
   inversion HP.  Qed.
 
 (* ################################################################# *)
-(*
+(* begin hide *)
 (** * Proof Rules *)
-*)
+(* end hide *)
 (** * 証明規則 *)
 
-(*
+(* begin hide *)
 (** The goal of Hoare logic is to provide a _compositional_
     method for proving the validity of specific Hoare triples.  That
     is, we want the structure of a program's correctness proof to
@@ -479,7 +479,7 @@ Proof.
     a couple of "structural" rules for gluing things together.  We
     will then be able to prove programs correct using these proof
     rules, without ever unfolding the definition of [hoare_triple]. *)
-*)
+(* end hide *)
 (** ホーア論理のゴールは、特定のホーアの三つ組の正しさを証明する"合成的"手法を提供することです。
     つまり、プログラムの正しさの証明の構造を、プログラムの構造を反映させたものにしたいということです。
     このために、以降の節では、Impのコマンドの構文要素それぞれに対して、推論するための規則を1つずつ導入します。
@@ -488,12 +488,12 @@ Proof.
     これらの規則を用いて、[hoare_triple]の定義を展開することなしにプログラムの正しさを証明していきます。 *)
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Assignment *)
-*)
+(* end hide *)
 (** ** 代入 *)
 
-(*
+(* begin hide *)
 (** The rule for assignment is the most fundamental of the Hoare logic
     proof rules.  Here's how it works.
 
@@ -506,7 +506,7 @@ Proof.
     state where [X] is [1].  
     That is, the property of being equal to [1] gets transferred 
     from [Y] to [X]. *)
-*)
+(* end hide *)
 (** 代入の規則は、ホーア論理の証明規則の中で最も基本的なものです。
     この規則は次のように働きます。
  
@@ -517,7 +517,7 @@ Proof.
     日本語で言うと、[Y]の値が[1]である状態から始めて、[X]に[Y]を代入すれば、[X]が[1]である状態になる、ということです。
     つまり、[1]である、という性質が[Y]から[X]に移された、ということです。 *)
 
-(*
+(* begin hide *)
 (** Similarly, in
 
        {{ Y + Z = 1 }}  X ::= Y + Z  {{ X = 1 }}
@@ -525,27 +525,27 @@ Proof.
     the same property (being equal to one) gets transferred to
     [X] from the expression [Y + Z] on the right-hand side of
     the assignment. *)
-*)
+(* end hide *)
 (** 同様に、
 [[
        {{ Y + Z = 1 }}  X ::= Y + Z  {{ X = 1 }} 
 ]]
     においては、同じ性質（1であること）が代入の右辺の[Y+Z]から[X]に移動されています。 *)
 
-(*
+(* begin hide *)
 (** More generally, if [a] is _any_ arithmetic expression, then
 
        {{ a = 1 }}  X ::= a {{ X = 1 }}
 
     is a valid Hoare triple. *)
-*)
+(* end hide *)
 (** より一般に、[a]が「任意の」算術式のとき、
 [[
        {{ a = 1 }}  X ::= a {{ X = 1 }} 
 ]]
     は正しいホーアの三つ組になります。 *)
 
-(*
+(* begin hide *)
 (** Even more generally, to conclude that an arbitrary assertion [Q]
     holds after [X ::= a], we need to assume that [Q] holds before [X
     ::= a], but _with all occurrences of_ [X] replaced by [a] in
@@ -555,7 +555,7 @@ Proof.
 
     where "[Q [X |-> a]]" is pronounced "[Q] where [a] is substituted
     for [X]". *)
-*)
+(* end hide *)
 (** さらに一般化して、任意の性質[Q]が[X ::= a]の後に成り立つには、[X ::= a]の前で、[Q]内の「出現している全ての」[X]を[a]に置き換えたものが成り立っている必要があります。
     ここから次の、代入に関するホーアの三つ組が導かれます。
 [[
@@ -563,7 +563,7 @@ Proof.
 ]]
     ただし、"[Q [X |-> a]]"は「[X]を[a]に置換した[Q]」と読みます。 *)
 
-(*
+(* begin hide *)
 (** For example, these are valid applications of the assignment
     rule:
 
@@ -582,7 +582,7 @@ Proof.
       X ::= 3
       {{ 0 <= X /\ X <= 5 }}
 *)
- *)
+(* end hide *)
 (** 例えば、以下は、代入規則の正しい適用です:
 [[
       {{ (X <= 5) [X |-> X + 1] 
@@ -672,14 +672,14 @@ Notation "P [ X |-> a ]" := (assn_sub X a P) (at level 10).
     That is, [P'] is the assertion that [X+1] is at most [5].
 *)
 
-(*
+(* begin hide *)
 (** Now, using the concept of substitution, we can give the precise 
     proof rule for assignment:
 
       ------------------------------ (hoare_asgn)
       {{Q [X |-> a]}} X ::= a {{Q}}
 *)
- *)
+(* end hide *)
 (** 置換を用いることで、正確な代入の証明規則を与えます:
 [[
       ------------------------------ (hoare_asgn) 
@@ -697,9 +697,9 @@ Proof.
   inversion HE. subst.
   unfold assn_sub in HQ. assumption.  Qed.
 
-(*
+(* begin hide *)
 (** Here's a first formal proof using this rule. *)
-*)
+(* end hide *)
 (** この規則を使った最初の形式的証明が次のものです。*)
 
 Example assn_sub_example :
@@ -717,11 +717,11 @@ Proof.
 
    We will see how to do so in the next section. *)		  
 
-(*
+(* begin hide *)
 (** **** Exercise: 2 stars (hoare_asgn_examples)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★★ (hoare_asgn_examples) *)
-(*
+(* begin hide *)
 (** Translate these informal Hoare triples...
 
     1) {{ (X <= 10) [X |-> 2 * X] }}
@@ -734,7 +734,7 @@ Proof.
 
    ...into formal statements (use the names [assn_sub_ex1] 
    and [assn_sub_ex2]) and use [hoare_asgn] to prove them. *)
-*)
+(* end hide *)
 (** 次の非形式的なホーアの三つ組...
 [[
     1) {{ (X <= 10) [X |-> 2 * X] }} 
@@ -750,11 +750,11 @@ Proof.
 (* FILL IN HERE *)
 (** [] *)
 
-(*
+(* begin hide *)
 (** **** Exercise: 2 stars, recommended (hoare_asgn_wrong)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★★, recommended (hoare_asgn_wrong)  *)
-(*
+(* begin hide *)
 (** The assignment rule looks backward to almost everyone the first
     time they see it.  If it still seems puzzling, it may help
     to think a little about alternative "forward" rules.  Here is a
@@ -768,7 +768,7 @@ Proof.
     The rule universally quantifies over the arithmetic expression 
     [a], and your counterexample needs to exhibit an [a] for which 
     the rule doesn't work.) *)
-*)
+(* end hide *)
 (** 代入規則は、最初に見たとき、ほとんどの人が後向きの規則であるように感じます。
     もし今でもパズルのように見えるならば、「前向き」バージョンの規則を考えてみるのも良いでしょう。
     次のものは自然に見えます:
@@ -835,12 +835,12 @@ Proof.
 (** [] *)
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Consequence *)
-*)
+(* end hide *)
 (** ** 帰結 *)
 
-(*
+(* begin hide *)
 (** Sometimes the preconditions and postconditions we get from the
     Hoare rules won't quite be the ones we want in the particular
     situation at hand -- they may be logically equivalent but have a
@@ -868,7 +868,7 @@ Proof.
          -----------------------------   (hoare_consequence_pre_equiv)
                 {{P}} c {{Q}}
 *)
- *)
+(* end hide *)
 (** ホーア規則から得られる事前条件や事後条件が欲しいものと完全には一致しない、ということが身近な場面においてしばしば起こります。
     それらは論理的には証明しようとするゴールと同値にも関わらず、構文上違う形をしているために単一化できない、という場合がありえます。
     あるいは、想定するゴールに比べて、（事前条件について）論理的に弱かったり、（事後条件について）論理的に強かったりすることがあります。
@@ -894,7 +894,7 @@ Proof.
 ]]
  *)
 
-(*
+(* begin hide *)
 (** Taking this line of thought a bit further, we can see that
     strengthening the precondition or weakening the postcondition of a
     valid triple always produces another valid triple. This
@@ -910,7 +910,7 @@ Proof.
          -----------------------------    (hoare_consequence_post)
                 {{P}} c {{Q}}
 *)
- *)
+(* end hide *)
 (** これを進めていくと、ある正しい三つ組から別の記述による正しい三つ組を生成する、事前条件の弱化と事後条件の強化が出てきます。
     これは以下の「帰結に関する規則」に集約されます。
 [[
@@ -926,9 +926,9 @@ Proof.
 ]]
  *)
 
-(*
+(* begin hide *)
 (** Here are the formal versions: *)
-*)
+(* end hide *)
 (** 以下が形式化版です: *)
 
 Theorem hoare_consequence_pre : forall (P P' Q : Assertion) c,
@@ -951,7 +951,7 @@ Proof.
   apply (Hhoare st st').
   assumption. assumption. Qed.
 
-(*
+(* begin hide *)
 (** For example, we can use the first consequence rule like this:
 
                 {{ True }} ->>
@@ -960,7 +960,7 @@ Proof.
                 {{ X = 1 }}
 
     Or, formally... *)
-*)
+(* end hide *)
 (** 例えば、一つ目の帰結規則を次のように使うことができます:
 [[
                 {{ True }} ->> 
@@ -1024,12 +1024,12 @@ Proof.
   assumption. assumption. assumption.  Qed.
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Digression: The [eapply] Tactic *)
-*)
+(* end hide *)
 (** ** 余談: [eapply] タクティック *)
 
-(*
+(* begin hide *)
 (** This is a good moment to take another look at the [eapply] tactic,
     which we introduced briefly in the [Auto] chapter of
     _Logical Foundations_.
@@ -1049,7 +1049,7 @@ Proof.
     exactly what it should be!  We can use [eapply] instead of [apply]
     to tell Coq, essentially, "Be patient: The missing part is going
     to be filled in later in the proof." *)
-*)
+(* end hide *)
 (** 良い機会ですので、「論理の基礎」の [Auto] 章で概要を説明した [eapply] を別の観点から説明しましょう。
  
     上述の [hoare_asgn_example1] や [hoare_consequence] の証明では、 [hoare_consequence_pre] 規則のメタ変数を明示するために、[with (P' := ...)] のように書かなければいけませんでした。
@@ -1165,14 +1165,14 @@ Qed.
 (* ================================================================= *)
 (** ** Skip *)
 
-(*
+(* begin hide *)
 (** Since [SKIP] doesn't change the state, it preserves any
     assertion [P]:
 
       --------------------  (hoare_skip)
       {{ P }} SKIP {{ P }}
 *)
- *)
+(* end hide *)
 (** [SKIP]は状態を変えないことから、任意の表明 [P] を保存します:
 [[
       --------------------  (hoare_skip) 
@@ -1187,12 +1187,12 @@ Proof.
   assumption.  Qed.
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Sequencing *)
-*)
+(* end hide *)
 (** ** コマンド合成 *)
 
-(*
+(* begin hide *)
 (** More interestingly, if the command [c1] takes any state where
     [P] holds to a state where [Q] holds, and if [c2] takes any
     state where [Q] holds to one where [R] holds, then doing [c1]
@@ -1204,7 +1204,7 @@ Proof.
        ---------------------  (hoare_seq)
        {{ P }} c1;;c2 {{ R }}
 *)
-*)
+(* end hide *)
 (** より興味深いことに、コマンド[c1]が[P]が成立する任意の状態を[Q]が成立する状態にし、[c2]が[Q]が成立する任意の状態を[R]が成立する状態にするとき、
     [c1]に続いて[c2]を行うことは、[P]が成立する任意の状態を[R]が成立する状態にします:
 [[
@@ -1225,7 +1225,7 @@ Proof.
   apply (H1 st'0 st'); try assumption.
   apply (H2 st st'0); assumption. Qed.
 
-(*
+(* begin hide *)
 (** Note that, in the formal rule [hoare_seq], the premises are
     given in backwards order ([c2] before [c1]).  This matches the
     natural flow of information in many of the situations where we'll
@@ -1233,12 +1233,12 @@ Proof.
     proof is to begin at the end of the program (with the final
     postcondition) and push postconditions backwards through commands
     until we reach the beginning. *)
-*)
+(* end hide *)
 (** 形式的規則[hoare_seq]においては、前提部分が「逆順」である（[c1]の前に[c2]が来る）ことに注意してください。
     この順は、規則を使用する多くの場面で情報の自然な流れにマッチするのです。
     ホーア論理における証明の構築はプログラムの終わりから（最後の事後条件を用いて）、プログラムの始めにたどり着くまでコマンドをさかのぼる方が自然なのです。 *)
 
-(*
+(* begin hide *)
 (** Informally, a nice way of displaying a proof using the sequencing
     rule is as a "decorated program" where the intermediate assertion
     [Q] is written between [c1] and [c2]:
@@ -1249,7 +1249,7 @@ Proof.
     SKIP
       {{ X = n }}
 *)
- *)
+(* end hide *)
 (** 非形式的には、この規則を利用した証明を表す良い方法は、[c1]と[c2]の間に中間表明[Q]を記述する"修飾付きプログラム"の様にすることです:
 [[
       {{ a = n }}
@@ -1280,11 +1280,11 @@ Qed.
     [hoare_consequence_pre] and the [eapply] tactic, as in this
     example. *)
 
-(*
+(* begin hide *)
 (** **** Exercise: 2 stars, recommended (hoare_asgn_example4)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★★, recommended (hoare_asgn_example4)  *)
-(*
+(* begin hide *)
 (** Translate this "decorated program" into a formal proof:
 
                    {{ True }} ->>
@@ -1297,7 +1297,7 @@ Qed.
 
    (Note the use of "[->>]" decorations, each marking a use of 
    [hoare_consequence_pre].) *)
-*)
+(* end hide *)
 (** 次の修飾付きプログラムを形式的証明に直しなさい:
 [[
                    {{ True }} ->> 
@@ -1317,18 +1317,18 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(*
+(* begin hide *)
 (** **** Exercise: 3 stars (swap_exercise)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★★★ (swap_exercise) *)
-(*
+(* begin hide *)
 (** Write an Imp program [c] that swaps the values of [X] and [Y] and
     show that it satisfies the following specification:
 
       {{X <= Y}} c {{Y <= X}}
 
     Your proof should not need to use [unfold hoare_triple]. *)
-*)
+(* end hide *)
 (** [X]と[Y]の値を交換するImpプログラム[c]を書き、それが次の仕様を満たすことを示しなさい:
 [[
       {{X <= Y}} c {{Y <= X}} 
@@ -1346,11 +1346,11 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(*
+(* begin hide *)
 (** **** Exercise: 3 stars (hoarestate1)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★★★ (hoarestate1) *)
-(*
+(* begin hide *)
 (** Explain why the following proposition can't be proven:
 
       forall (a : aexp) (n : nat),
@@ -1358,7 +1358,7 @@ Proof.
            (X ::= 3;; Y ::= a)
          {{fun st => st Y = n}}.
 *)
-*)
+(* end hide *)
 (** 次の命題が証明できない理由を説明しなさい:
 [[
       forall (a : aexp) (n : nat),
@@ -1372,12 +1372,12 @@ Proof.
 (** [] *)
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Conditionals *)
-*)
+(* end hide *)
 (** ** 条件分岐 *)
 
-(*
+(* begin hide *)
 (** What sort of rule do we want for reasoning about conditional
     commands?  
 
@@ -1390,7 +1390,7 @@ Proof.
       --------------------------------
       {{P}} IFB b THEN c1 ELSE c2 {{Q}}
 *)
- *)
+(* end hide *)
 (** 条件分岐コマンドについて推論するために、どのような規則が必要でしょうか？
  
     もちろん、分岐のどちらの枝を実行した後でも表明[Q]が成立するならば、条件分岐全体でも[Q]が成立するでしょう。
@@ -1403,7 +1403,7 @@ Proof.
 ]]
  *)
 
-(*
+(* begin hide *)
 (** However, this is rather weak. For example, using this rule,
    we cannot show 
 
@@ -1416,7 +1416,7 @@ Proof.
 
    since the rule tells us nothing about the state in which the
    assignments take place in the "then" and "else" branches. *)
-*)
+(* end hide *)
 (** しかし、これはかなり弱いのです。
    例えば、この規則を使っても次のことを示すことができません:
 [[
@@ -1429,7 +1429,7 @@ Proof.
 ]]
    なぜなら、この規則では、"then"部と"else"部のどちらの代入が起こる状態なのかについて、何も言っていないからです。 *)
 
-(*
+(* begin hide *)
 (** Fortunately, we can say something more precise.  In the
     "then" branch, we know that the boolean expression [b] evaluates to
     [true], and in the "else" branch, we know it evaluates to [false].
@@ -1437,12 +1437,12 @@ Proof.
     us more information to work with when reasoning about the behavior
     of [c1] and [c2] (i.e., the reasons why they establish the
     postcondition [Q]). *)
-*)
+(* end hide *)
 (** 実際にはより詳しいことを言うことができます。
    "then"部では、ブール式[b]の評価結果が[true]になることがわかっています。
    また"else"部では、それが[false]になることがわかっています。
    この情報を補題の前提部分で利用できるようにすることで、[c1]と[c2]の振舞いについて（つまり事後条件[Q]が成立する理由について）推論するときに、より多くの情報を使うことができるようになります。 *)
-(*
+(* begin hide *)
 (**
 
               {{P /\  b}} c1 {{Q}}
@@ -1450,7 +1450,7 @@ Proof.
       ------------------------------------  (hoare_if)
       {{P}} IFB b THEN c1 ELSE c2 FI {{Q}}
 *)
- *)
+(* end hide *)
 (** 
 [[
               {{P /\  b}} c1 {{Q}} 
@@ -1460,7 +1460,7 @@ Proof.
 ]]
  *)
 
-(*
+(* begin hide *)
 (** To interpret this rule formally, we need to do a little work.
     Strictly speaking, the assertion we've written, [P /\ b], is the
     conjunction of an assertion and a boolean expression -- i.e., it
@@ -1468,7 +1468,7 @@ Proof.
     "lifting" any bexp [b] to an assertion.  We'll write [bassn b] for
     the assertion "the boolean expression [b] evaluates to [true] (in
     the given state)." *)
-*)
+(* end hide *)
 (** この規則を形式的に解釈するために、もう少しやることがあります。
  
     厳密には、上述の表明において、表明とブール式の連言[P /\ b]は、型チェックを通りません。
@@ -1479,9 +1479,9 @@ Proof.
 Definition bassn b : Assertion :=
   fun st => (beval st b = true).
 
-(*
+(* begin hide *)
 (** A couple of useful facts about [bassn]: *)
-*)
+(* end hide *)
 (** [bassn]についての2つの便利な事実です: *)
 
 Lemma bexp_eval_true : forall b st,
@@ -1497,10 +1497,10 @@ Proof.
   unfold bassn in contra.
   rewrite -> contra in Hbe. inversion Hbe.  Qed.
 
-(*
+(* begin hide *)
 (** Now we can formalize the Hoare proof rule for conditionals
     and prove it correct. *)
-*)
+(* end hide *)
 (** いよいよ条件分岐についてのホーア証明規則を形式化し、正しいことを証明できます。*)
 
 Theorem hoare_if : forall P Q b c1 c2,
@@ -1522,15 +1522,15 @@ Proof.
       apply bexp_eval_false. assumption. Qed.
 
 (* ----------------------------------------------------------------- *)
-(*
+(* begin hide *)
 (** *** Example *)
-*)
+(* end hide *)
 (** *** 例 *)
 
-(*
+(* begin hide *)
 (** Here is a formal proof that the program we used to motivate the
     rule satisfies the specification we gave. *)
-*)
+(* end hide *)
 (** 以下が、最初に挙げたプログラムが与えられた条件を満たすことの証明です。*)
 
 Example if_example :
@@ -1685,17 +1685,17 @@ End If1.
 (** [] *)
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Loops *)
-*)
+(* end hide *)
 (** ** ループ *)
 
-(*
+(* begin hide *)
 (** Finally, we need a rule for reasoning about while loops. *)
-*)
+(* end hide *)
 (** 最後に、ループについての推論規則が必要です。 *)
 
-(*
+(* begin hide *)
 (** Suppose we have a loop
 
       WHILE b DO c END
@@ -1706,7 +1706,7 @@ End If1.
       {{P}} WHILE b DO c END {{Q}}
 
     is a valid triple. *)
-*)
+(* end hide *)
 (** 次のループを考えます:
       WHILE b DO c END
     そして、次の三つ組が正しくなる事前条件[P]と事後条件[Q]を探します:
@@ -1715,50 +1715,50 @@ End If1.
 ]]
 *)
 
-(*
+(* begin hide *)
 (** First of all, let's think about the case where [b] is false at the
     beginning -- i.e., let's assume that the loop body never executes
     at all.  In this case, the loop behaves like [SKIP], so we might
     be tempted to write: *)
-*)
+(* end hide *)
 (** まず、[b]が最初から偽であるときを考えましょう。
     このときループの本体はまったく実行されません。
     この場合は、ループは[SKIP]と同様の振舞いをしますので、次のように書いても良いかもしれません。 *)
 
-(*
+(* begin hide *)
 (**
 
       {{P}} WHILE b DO c END {{P}}.
 *)
- *)
+(* end hide *)
 (**
 [[
       {{P}} WHILE b DO c END {{P}} 
 ]]
  *)
 
-(*
+(* begin hide *)
 (** But, as we remarked above for the conditional, we know a
     little more at the end -- not just [P], but also the fact
     that [b] is false in the current state.  So we can enrich the
     postcondition a little: *)
-*)
+(* end hide *)
 (** しかし、条件分岐について議論したのと同様に、最後でわかっていることはもう少し多いのです。
     最終状態では[P]であるだけではなく[b]が偽になっているのです。
     そこで、事後条件にちょっと付け足すことができます: *)
-(*
+(* begin hide *)
 (**
 
       {{P}} WHILE b DO c END {{P /\ ~b}}
 *)
- *)
+(* end hide *)
 (** 
 [[
       {{P}} WHILE b DO c END {{P /\ ~b}} 
 ]]
  *)
 
-(*
+(* begin hide *)
 (** What about the case where the loop body _does_ get executed?
     In order to ensure that [P] holds when the loop finally
     exits, we certainly need to make sure that the command [c]
@@ -1768,20 +1768,20 @@ End If1.
     re-establishes [P] when it finishes, we can always assume
     that [P] holds at the beginning of [c].  This leads us to the
     following rule: *)
-*)
+(* end hide *)
 (** それでは、ループの本体が実行されるときはどうなるでしょう？
     ループを最後に抜けるときには[P]が成立することを確実にするために、コマンド[c]の終了時点で常に[P]が成立することを確認する必要があるのは確かでしょう。
     さらに、[P]が[c]の最初の実行の前に成立しており、[c]を実行するたびに、終了時点で[P]の成立が再度確立されることから、[P]が[c]の実行前に常に成立していると仮定することができます。
     このことから次の規則が得られます:
 *)
-(*
+(* begin hide *)
 (**
 
                    {{P}} c {{P}}
         -----------------------------------
         {{P}} WHILE b DO c END {{P /\ ~b}}
 *)
- *)
+(* end hide *)
 (** 
 [[
                    {{P}} c {{P}} 
@@ -1789,26 +1789,26 @@ End If1.
         {{P}} WHILE b DO c END {{P /\ ~b}} 
 ]]
  *)
-(*
+(* begin hide *)
 (** This is almost the rule we want, but again it can be improved a
     little: at the beginning of the loop body, we know not only that
     [P] holds, but also that the guard [b] is true in the current
     state. *)
-*)
+(* end hide *)
 (** これで求める規則にかなり近付いたのですが、もうちょっとだけ改良できます。
     ループ本体の開始時点で、[P]が成立しているだけでなく、ガード[b]が現在の状態で真であるということも言えます。 *)
 
-(*
+(* begin hide *)
 (** This gives us a little more information to use in
     reasoning about [c] (showing that it establishes the invariant by
     the time it finishes).  *)
-*)
+(* end hide *)
 (** このことは、[c]についての（[P]が[c]の終了時にも成立することの）推論の際にいくらかの情報を与えてくれます。 *)
-(*
+(* begin hide *)
 (** This gives us the final version of the rule: *)
-*)
+(* end hide *)
 (** 結局、規則の最終バージョンはこうなります: *)
-(*
+(* begin hide *)
 (**
 
                {{P /\ b}} c {{P}}
@@ -1817,7 +1817,7 @@ End If1.
 
     The proposition [P] is called an _invariant_ of the loop.
 *)
- *)
+(* end hide *)
 (** 
 [[
                {{P /\ b}} c {{P}} 
@@ -1882,9 +1882,9 @@ Proof.
     exfalso. apply Hb; reflexivity.
     apply leb_iff_conv in Heqle. omega.
 Qed.
-(*
+(* begin hide *)
 (** We can use the WHILE rule to prove the following Hoare triple... *)
-*)
+(* end hide *)
 (** WHILE規則を使うと、次のホーアの三つ組も証明できます... *)
 
 Theorem always_loop_hoare : forall P Q,
@@ -1903,48 +1903,48 @@ Proof.
   - (* Precondition implies invariant *)
     intros st H. constructor.  Qed.
 
-(*
+(* begin hide *)
 (** Of course, this result is not surprising if we remember that
     the definition of [hoare_triple] asserts that the postcondition
     must hold _only_ when the command terminates.  If the command
     doesn't terminate, we can prove anything we like about the
     post-condition. *)
-*)
+(* end hide *)
 (** もちろん、この結果は驚くことではないのです。
     ふり返って[hoare_triple]の定義を見てみると、コマンドが停止した場合「のみ」に意味がある表明をしているのです。
     もしコマンドが終了しないなら、なんでも望むものが事後条件として示せます。 *)
 
-(*
+(* begin hide *)
 (** Hoare rules that only talk about what happens when commands
     terminate (without proving that they do) are often said to
     describe a logic of "partial" correctness.  It is also possible to
     give Hoare rules for "total" correctness, which build in the fact
     that the commands terminate. However, in this course we will only
     talk about partial correctness. *)
-*)
+(* end hide *)
 (** コマンドが停止したときに関してのみ（しかも停止することを示すことなく）何が起こるかを議論するホーア規則は、「部分」正当性("partial" correctness)を記述していると言われます。
     「完全」正当性("total" correctness)についてのホーア規則を与えることも可能です。
     それは、コマンドが停止するという事実を組み込んだものです。
     ただし、このコースでは部分正当性についてのみ説明します。 *)
 
 (* ----------------------------------------------------------------- *)
-(*
+(* begin hide *)
 (** *** Exercise: [REPEAT] *)
-*)
+(* end hide *)
 (** *** 練習問題: [REPEAT] *)
 
-(*
+(* begin hide *)
 (** **** Exercise: 4 stars, advanced (hoare_repeat)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★★★★, advanced (hoare_repeat) *)
-(*
+(* begin hide *)
 (** In this exercise, we'll add a new command to our language of
     commands: [REPEAT] c [UNTIL] a [END]. You will write the
     evaluation rule for [repeat] and add a new Hoare rule to the
     language for programs involving it.  (You may recall that the
     evaluation rule is given in an example in the [Auto] chapter.
     Try to figure it out yourself here rather than peeking.) *)
-*)
+(* end hide *)
 (** この練習問題では、言語に新たなコマンドを追加します。
     [REPEAT] c [UNTIL] a [END]という形のコマンドです。
     [repeat]の評価規則を記述し、このコマンドを含むプログラムについての評価規則と新たなホーア論理の規則を追加しなさい。
@@ -1960,12 +1960,12 @@ Inductive com : Type :=
   | CWhile : bexp -> com -> com
   | CRepeat : com -> bexp -> com.
 
-(*
+(* begin hide *)
 (** [REPEAT] behaves like [WHILE], except that the loop guard is
     checked _after_ each execution of the body, with the loop
     repeating as long as the guard stays _false_.  Because of this,
     the body will always execute at least once. *)
-*)
+(* end hide *)
 (** [REPEAT]は[WHILE]と同じように振舞います。
     ただし、ループのガードが本体の実行の「後で」評価され、それが「偽」である間はループがくりかえされるという点が違います。
     このことにより、本体は常に少なくとも1回は実行されることになります。*)
@@ -1983,12 +1983,12 @@ Notation "'IFB' e1 'THEN' e2 'ELSE' e3 'FI'" :=
 Notation "'REPEAT' e1 'UNTIL' b2 'END'" :=
   (CRepeat e1 b2) (at level 80, right associativity).
 
-(*
+(* begin hide *)
 (** Add new rules for [REPEAT] to [ceval] below.  You can use the rules
     for [WHILE] as a guide, but remember that the body of a [REPEAT]
     should always execute at least once, and that the loop ends when
     the guard becomes true. *)
-*)
+(* end hide *)
 (** 以下の[ceval]に[REPEAT]の新たな規則を追加しなさい。
     [WHILE]の規則を参考にして構いません。
     ただし、[REPEAT]の本体は1度は実行されること、ループの終了はガードが真になったときであることを忘れないで下さい。 *)
@@ -2022,10 +2022,10 @@ Inductive ceval : state -> com -> state -> Prop :=
 (* FILL IN HERE *)
 .
 
-(*
+(* begin hide *)
 (** A couple of definitions from above, copied here so they use the
     new [ceval]. *)
-*)
+(* end hide *)
 (** 上記からいくつかの定義のコピーし、新しい[ceval]を使うようにしました。*)
 
 Notation "c1 '/' st '\\' st'" := (ceval st c1 st')
