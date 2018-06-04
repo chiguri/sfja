@@ -1,7 +1,7 @@
 (** * Equiv: プログラムの同値性 *)
-(*
+(* begin hide *)
 (** * Equiv: Program Equivalence *)
-*)
+(* end hide *)
 
 Set Warnings "-notation-overridden,-parsing".
 Require Import Coq.Bool.Bool.
@@ -14,7 +14,7 @@ Import ListNotations.
 Require Import Maps.
 Require Import Imp.
 
-(*
+(* begin hide *)
 (** *** Some Advice for Working on Exercises:
 
     - Most of the Coq proofs we ask you to do are similar to proofs
@@ -36,7 +36,7 @@ Require Import Imp.
 
     - Use automation to save work!  The proofs in this chapter can get
       pretty long if you try to write out all the cases explicitly. *)
-*)
+(* end hide *)
 (** *** 課題についてのアドバイス
  
     - Coqによる証明問題は、そこまでに文中で行ってきた証明となるべく同じようにできるようにしています。
@@ -52,12 +52,12 @@ Require Import Imp.
       この章に出てくる証明は、すべての場合を明示的に書き出すととても長くなります。*)
 
 (* ################################################################# *)
-(*
+(* begin hide *)
 (** * Behavioral Equivalence *)
-*)
+(* end hide *)
 (** * 振る舞い同値性 *)
 
-(*
+(* begin hide *)
 (** In an earlier chapter, we investigated the correctness of a very
     simple program transformation: the [optimize_0plus] function.  The
     programming language we were considering was the first version of
@@ -69,7 +69,7 @@ Require Import Imp.
     To talk about the correctness of program transformations for the
     full Imp language, in particular assignment, we need to consider
     the role of variables and state. *)
-*)
+(* end hide *)
 (** これまでの章で、簡単なプログラム変換の正しさを調べました。
     [optimize_0plus]関数です。
     対象としたプログラミング言語は、算術式の言語の最初のバージョンでした。
@@ -79,16 +79,16 @@ Require Import Imp.
     Imp言語全体、特に代入について、プログラム変換の正しさを語るためには、変数の役割、および状態について考えなければなりません。*)
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Definitions *)
-*)
+(* end hide *)
 (** ** 定義 *)
 
-(*
+(* begin hide *)
 (** For [aexp]s and [bexp]s with variables, the definition we want is
     clear.  We say that two [aexp]s or [bexp]s are _behaviorally
     equivalent_ if they evaluate to the same result in every state. *)
-*)
+(* end hide *)
 (** 変数が入っている[aexp]と[bexp]については、どう定義すれば良いかは明らかです。
     2つの[aexp]または[bexp]が振る舞い同値である(_behaviorally equivalent_)とは、すべての状態で2つの評価結果が同じになることです。*)
 
@@ -116,7 +116,7 @@ Proof.
   rewrite aequiv_example. reflexivity.
 Qed.
 
-(*
+(* begin hide *)
 (** For commands, the situation is a little more subtle.  We can't
     simply say "two commands are behaviorally equivalent if they
     evaluate to the same ending state whenever they are started in the
@@ -127,7 +127,7 @@ Qed.
     or (2) both terminate in the same final state.  A compact way to
     express this is "if the first one terminates in a particular state
     then so does the second, and vice versa." *)
-*)
+(* end hide *)
 (** コマンドについては、状況はもうちょっと微妙です。
     簡単に「2つのコマンドが振る舞い同値であるとは、両者を同じ状態から開始すれば同じ状態で終わることである」と言うわけには行きません。
     コマンドによっては、特定の状態から開始したときに停止しないためどのような状態にもならないことがあるからです！
@@ -140,15 +140,15 @@ Definition cequiv (c1 c2 : com) : Prop :=
     (c1 / st \\ st') <-> (c2 / st \\ st').
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Simple Examples *)
-*)
+(* end hide *)
 (** ** 簡単な例 *)
 
-(*
+(* begin hide *)
 (** For examples of command equivalence, let's start by looking at
     some trivial program transformations involving [SKIP]: *)
-*)
+(* end hide *)
 (** コマンドの同値性の例として、
     [SKIP]にからんだ自明な変換から見てみましょう: *)
 
@@ -170,9 +170,9 @@ Proof.
     assumption.
 Qed.
 
-(*
+(* begin hide *)
 (** **** Exercise: 2 stars (skip_right)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★★ (skip_right) *)
 (** Prove that adding a [SKIP] after a command results in an
     equivalent program *)
@@ -185,10 +185,10 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(*
+(* begin hide *)
 (** Similarly, here is a simple transformation that optimizes [IFB]
     commands: *)
-*)
+(* end hide *)
 (** 同様にして、[IFB]コマンドを最適化します: *)
 
 Theorem IFB_true_simple: forall c1 c2,
@@ -203,19 +203,19 @@ Proof.
   - (* <- *)
     apply E_IfTrue. reflexivity. assumption.  Qed.
 
-(*
+(* begin hide *)
 (** Of course, no human programmer would write a conditional whose
     guard is literally [BTrue].  The interesting case is when the
     guard is _equivalent_ to true: *)
-*)
+(* end hide *)
 (** もちろん、ガードが[BTrue]そのままである条件文を書こうとするプログラマなんていないでしょう。
     興味深いのは、ガードが真と「同値である」場合です。 *)
-(*
+(* begin hide *)
 (** _Theorem_: If [b] is equivalent to [BTrue], then [IFB b THEN c1
     ELSE c2 FI] is equivalent to [c1]. *)
-*)
+(* end hide *)
 (** 「定理」:もし[b]が[BTrue]と同値ならば、[IFB b THEN c1 ELSE c2 FI]は[c1]と同値である。 *)
-(*
+(* begin hide *)
 (**
    _Proof_:
 
@@ -251,7 +251,7 @@ Proof.
        c1 ELSE c2 FI / st \\ st'].  []
 
    Here is the formal version of this proof: *)
-*)
+(* end hide *)
 (**
    「証明」:
  
@@ -301,9 +301,9 @@ Proof.
     unfold bequiv in Hb. simpl in Hb.
     rewrite Hb. reflexivity.  Qed.
 
-(*
+(* begin hide *)
 (** **** Exercise: 2 stars, recommended (IFB_false)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★★, recommended (IFB_false)  *)
 Theorem IFB_false: forall b c1 c2,
   bequiv b BFalse  ->
@@ -314,9 +314,9 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(*
+(* begin hide *)
 (** **** Exercise: 3 stars (swap_if_branches)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★★★ (swap_if_branches) *)
 (** Show that we can swap the branches of an IF if we also negate its
     guard. *)
@@ -329,13 +329,13 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(*
+(* begin hide *)
 (** For [WHILE] loops, we can give a similar pair of theorems.  A loop
     whose guard is equivalent to [BFalse] is equivalent to [SKIP],
     while a loop whose guard is equivalent to [BTrue] is equivalent to
     [WHILE BTrue DO SKIP END] (or any other non-terminating program).
     The first of these facts is easy. *)
-*)
+(* end hide *)
 (** [WHILE]ループについては、同様の2つ定理があります。
     ガードが[BFalse]と同値であるループは[SKIP]と同値である、というものと、ガードが[BTrue]と同値であるループは[WHILE BTrue DO SKIP END]（あるいは他の任意の停止しないプログラム）と同値である、というものです。
     1つ目のものは簡単です。*)
@@ -359,30 +359,30 @@ Proof.
     rewrite Hb.
     reflexivity.  Qed.
 
-(*
+(* begin hide *)
 (** **** Exercise: 2 stars, advanced, optional (WHILE_false_informal)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★★, advanced, optional (WHILE_false_informal) *)
-(*
+(* begin hide *)
 (** Write an informal proof of [WHILE_false].
 
 (* FILL IN HERE *)
-*)
  *)
+(* end hide *)
 (** [WHILE_false]の非形式的証明を記述しなさい。
  
 (* FILL IN HERE *) 
  *)
 (** [] *)
 
-(*
+(* begin hide *)
 (** To prove the second fact, we need an auxiliary lemma stating that
     [WHILE] loops whose guards are equivalent to [BTrue] never
     terminate. *)
-*)
+(* end hide *)
 (** 2つ目の事実を証明するためには、ガードが[BTrue]と同値であるwhileループが停止しないことを言う補題が1つ必要です: *)
 
-(*
+(* begin hide *)
 (** _Lemma_: If [b] is equivalent to [BTrue], then it cannot be the
     case that [(WHILE b DO c END) / st \\ st'].
 
@@ -403,7 +403,7 @@ Proof.
       - Since these are the only rules that could have been used to
         prove [(WHILE b DO c END) / st \\ st'], the other cases of
         the induction are immediately contradictory. [] *)
-*)
+(* end hide *)
 (** 「補題」:[b]が[BTrue]と同値のとき、[(WHILE b DO c END) / st \\ st']となることはない。
  
     「証明」:[(WHILE b DO c END) / st \\ st']と仮定する。
@@ -438,30 +438,30 @@ Proof.
   - (* E_WhileTrue *) (* immediate from the IH *)
     apply IHceval2. reflexivity.  Qed.
 
-(*
+(* begin hide *)
 (** **** Exercise: 2 stars, optional (WHILE_true_nonterm_informal)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★★, optional (WHILE_true_nonterm_informal) *)
-(*
+(* begin hide *)
 (** Explain what the lemma [WHILE_true_nonterm] means in English.
 
 (* FILL IN HERE *)
 *)
-*)
+(* end hide *)
 (** 補題[WHILE_true_nonterm]が意味するものを日本語で書きなさい。
  
 (* FILL IN HERE *)
 *)
 (** [] *)
 
-(*
+(* begin hide *)
 (** **** Exercise: 2 stars, recommended (WHILE_true)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★★, recommended (WHILE_true)  *)
-(*
+(* begin hide *)
 (** Prove the following theorem. _Hint_: You'll want to use
     [WHILE_true_nonterm] here. *)
-*)
+(* end hide *)
 (** 以下の定理を示しなさい。
     ヒント：ここで[WHILE_true_nonterm]を使いなさい。*)
 
@@ -502,9 +502,9 @@ Proof.
     + (* loop doesn't run *)
       inversion H5; subst. apply E_WhileFalse. assumption.  Qed.
 
-(*
+(* begin hide *)
 (** **** Exercise: 2 stars, optional (seq_assoc)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★★, optional (seq_assoc) *)
 Theorem seq_assoc : forall c1 c2 c3,
   cequiv ((c1;;c2);;c3) (c1;;(c2;;c3)).
@@ -534,9 +534,9 @@ Proof.
          rewrite t_update_same. reflexivity.
 Qed.
 
-(*
+(* begin hide *)
 (** **** Exercise: 2 stars, recommended (assign_aequiv)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★★, recommended (assign_aequiv)  *)
 Theorem assign_aequiv : forall (X:string) e,
   aequiv X e ->
@@ -611,28 +611,28 @@ Definition equiv_classes : list (list com)
 (** [] *)
 
 (* ################################################################# *)
-(*
+(* begin hide *)
 (** * Properties of Behavioral Equivalence *)
-*)
+(* end hide *)
 (** * 振る舞い同値の性質 *)
 
-(*
+(* begin hide *)
 (** We next consider some fundamental properties of program
     equivalence. *)
-*)
+(* end hide *)
 (** ここからは、プログラムの同値性に関する性質を調べていきましょう。*)
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Behavioral Equivalence Is an Equivalence *)
-*)
+(* end hide *)
 (** ** 振る舞い同値は同値関係である *)
 
-(*
+(* begin hide *)
 (** First, we verify that the equivalences on [aexps], [bexps], and
     [com]s really are _equivalences_ -- i.e., that they are reflexive,
     symmetric, and transitive.  The proofs are all easy. *)
-*)
+(* end hide *)
 (** 最初に、[aexp]、[bexp]、[com]の同値が、本当に「同値関係」であること、つまり、反射性、対称性、推移性を持つことを検証します。
     証明は簡単です。 *)
 
@@ -695,12 +695,12 @@ Proof.
   apply iff_trans with (c2 / st \\ st'). apply H12. apply H23.  Qed.
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Behavioral Equivalence Is a Congruence *)
-*)
+(* end hide *)
 (** ** 振る舞い同値は合同関係である *)
 
-(*
+(* begin hide *)
 (** Less obviously, behavioral equivalence is also a _congruence_.
     That is, the equivalence of two subprograms implies the
     equivalence of the larger programs in which they are embedded:
@@ -715,7 +715,7 @@ Proof.
          cequiv (c1;;c2) (c1';;c2')
 
     ...and so on for the other forms of commands. *)
-*)
+(* end hide *)
 (** 少しわかりにくいですが、振る舞い同値は、合同関係(_congruence_)でもあります。
     つまり、2つのサブプログラムが同値ならば、それを含むプログラム全体も同値です:
 <<
@@ -730,17 +730,17 @@ Proof.
 >>
     他のコマンドも同様です。 *)
 
-(*
+(* begin hide *)
 (** (Note that we are using the inference rule notation here not
     as part of a definition, but simply to write down some valid
     implications in a readable format. We prove these implications
     below.) *)
-*)
+(* end hide *)
 (** （注意して欲しいのですが、ここで推論規則の記法を使っていますが、これは定義の一部ではありません。
     単に正しい含意を読みやすい形で書き出しただけです。
     この含意は以下で証明します。） *)
 
-(*
+(* begin hide *)
 (** We will see a concrete example of why these congruence
     properties are important in the following section (in the proof of
     [fold_constants_com_sound]), but the main idea is that they allow
@@ -749,7 +749,7 @@ Proof.
     _without_ doing an explicit proof about the non-varying parts --
     i.e., the "proof burden" of a small change to a large program is
     proportional to the size of the change, not the program. *)
-*)
+(* end hide *)
 (** 合同性がなぜ重要なのか、次の節で具体的な例([fold_constants_com_sound]の証明)によって見ます。
     ただ、メインのアイデアは、大きなプログラムの小さな部分を同値の小さな部分で置き換えると、大きなプログラム全体が元のものと同値になることを、変化していない部分についての明示的な証明「なしに」わかるということです。
     つまり、大きなプログラムの小さな変更についての証明の負担が、プログラムではなく変更に比例するということです。 *)
@@ -767,7 +767,7 @@ Proof.
     inversion Hceval. subst. apply E_Ass.
     rewrite Heqv. reflexivity.  Qed.
 
-(*
+(* begin hide *)
 (** The congruence property for loops is a little more interesting,
     since it requires induction.
 
@@ -805,7 +805,7 @@ Proof.
             required.
 
       - ([<-]) Similar. [] *)
-*)
+(* end hide *)
 (** ループの合同性は帰納法が必要になるので、さらに少しおもしろいものになります。
  
     「定理」:[WHILE]についての同値は合同関係である。
@@ -868,9 +868,9 @@ Proof.
       * (* subsequent loop execution *)
         apply IHHce2. reflexivity.  Qed.
 
-(*
+(* begin hide *)
 (** **** Exercise: 3 stars, optional (CSeq_congruence)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★★★, optional (CSeq_congruence) *)
 Theorem CSeq_congruence : forall c1 c1' c2 c2',
   cequiv c1 c1' -> cequiv c2 c2' ->
@@ -879,9 +879,9 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(*
+(* begin hide *)
 (** **** Exercise: 3 stars (CIf_congruence)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★★★ (CIf_congruence) *)
 Theorem CIf_congruence : forall b b' c1 c1' c2 c2',
   bequiv b b' -> cequiv c1 c1' -> cequiv c2 c2' ->
@@ -891,10 +891,10 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(*
+(* begin hide *)
 (** For example, here are two equivalent programs and a proof of their
     equivalence... *)
-*)
+(* end hide *)
 (** 同値である2つのプログラムとその同値の証明の例です... *)
 
 Example congruence_example:
@@ -934,24 +934,24 @@ Qed.
 (** [] *)
 
 (* ################################################################# *)
-(*
+(* begin hide *)
 (** * Program Transformations *)
-*)
+(* end hide *)
 (** * プログラム変換 *)
 
-(*
+(* begin hide *)
 (** A _program transformation_ is a function that takes a program as
     input and produces some variant of the program as output.
     Compiler optimizations such as constant folding are a canonical
     example, but there are many others. *)
-*)
+(* end hide *)
 (** プログラム変換(_program transformation_)とは、プログラムを入力とし、出力としてそのプログラムの何らかの変形を生成する関数です。
     定数畳み込みのようなコンパイラの最適化は標準的な例ですが、それ以外のものもたくさんあります。*)
 
-(*
+(* begin hide *)
 (** A program transformation is _sound_ if it preserves the
     behavior of the original program. *)
-*)
+(* end hide *)
 (** プログラム変換が健全(_sound_)とは、その変換が元のプログラムの振る舞いを保存することです。 *)
 
 Definition atrans_sound (atrans : aexp -> aexp) : Prop :=
@@ -967,18 +967,18 @@ Definition ctrans_sound (ctrans : com -> com) : Prop :=
     cequiv c (ctrans c).
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** The Constant-Folding Transformation *)
-*)
+(* end hide *)
 (** ** 定数畳み込み変換 *)
 
-(*
+(* begin hide *)
 (** An expression is _constant_ when it contains no variable
     references.
 
     Constant folding is an optimization that finds constant
     expressions and replaces them by their values. *)
-*)
+(* end hide *)
 (** 式が定数(_constant_)であるとは、その式が変数参照を含まないことです。
  
     定数畳み込みは、定数式をその値に置換する最適化です。*)
@@ -1015,13 +1015,13 @@ Example fold_aexp_ex1 :
     fold_constants_aexp ((1 + 2) * X) = (3 * X).
 Proof. reflexivity. Qed.
 
-(*
+(* begin hide *)
 (** Note that this version of constant folding doesn't eliminate
     trivial additions, etc. -- we are focusing attention on a single
     optimization for the sake of simplicity.  It is not hard to
     incorporate other ways of simplifying expressions; the definitions
     and proofs just get longer. *)
-*)
+(* end hide *)
 (** 定数畳み込みのこのバージョンは簡単な足し算等を消去していないことに注意します。
     複雑になるのを避けるため、1つの最適化に焦点を絞っています。
     式の単純化の他の方法を組込むことはそれほど難しいことではありません。
@@ -1031,11 +1031,11 @@ Example fold_aexp_ex2 :
   fold_constants_aexp (X - ((0 * 6) + Y)) = (X - (0 + Y)).
 Proof. reflexivity. Qed.
 
-(*
+(* begin hide *)
 (** Not only can we lift [fold_constants_aexp] to [bexp]s (in the
     [BEq] and [BLe] cases); we can also look for constant _boolean_
     expressions and evaluate them in-place. *)
-*)
+(* end hide *)
 (** （[BEq]と[BLe]の場合に）[fold_constants_aexp]を[bexp]に持ち上げることができるだけでなく、定数「ブール」式をみつけてその場で置換することもできます。*)
 
 Fixpoint fold_constants_bexp (b : bexp) : bexp :=
@@ -1081,10 +1081,10 @@ Example fold_bexp_ex2 :
   ((X = Y) && true).
 Proof. reflexivity. Qed.
 
-(*
+(* begin hide *)
 (** To fold constants in a command, we apply the appropriate folding
     functions on all embedded expressions. *)
-*)
+(* end hide *)
 (** コマンド内の定数を畳み込みするために、含まれるすべての式に対応する畳み込み関数を適用します。*)
 
 Fixpoint fold_constants_com (c : com) : com :=
@@ -1144,19 +1144,19 @@ Example fold_com_ex1 :
 Proof. reflexivity. Qed.
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Soundness of Constant Folding *)
-*)
+(* end hide *)
 (** ** 定数畳み込みの健全性 *)
 
-(*
+(* begin hide *)
 (** Now we need to show that what we've done is correct. *)
-*)
+(* end hide *)
 (** 上でやったことが正しいことを示さなければなりません。 *)
 
-(*
+(* begin hide *)
 (** Here's the proof for arithmetic expressions: *)
-*)
+(* end hide *)
 (** 以下が算術式に対する証明です: *)
 
 Theorem fold_constants_aexp_sound :
@@ -1176,11 +1176,11 @@ Proof.
          destruct (fold_constants_aexp a2);
          rewrite IHa1; rewrite IHa2; reflexivity). Qed.
 
-(*
+(* begin hide *)
 (** **** Exercise: 3 stars, optional (fold_bexp_Eq_informal)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★★★, optional (fold_bexp_Eq_informal) *)
-(*
+(* begin hide *)
 (** Here is an informal proof of the [BEq] case of the soundness
     argument for boolean expression constant folding.  Read it
     carefully and compare it to the formal proof that follows.  Then
@@ -1273,7 +1273,7 @@ Proof.
 
        completing the case.  []
 *)
- *)
+(* end hide *)
 (** ここに、ブール式の定数畳み込みに関する健全性の議論の[BEq]の場合の非形式的証明を示します。
     これを丁寧に読みその後の形式的証明と比較しなさい。
     次に、形式的証明の[BLe]部分を（もし可能ならば[BEq]の場合を見ないで）記述しなさい。
@@ -1407,13 +1407,13 @@ Proof.
 (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(*
+(* begin hide *)
 (** **** Exercise: 3 stars (fold_constants_com_sound)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★★★ (fold_constants_com_sound) *)
-(*
+(* begin hide *)
 (** Complete the [WHILE] case of the following proof. *)
-*)
+(* end hide *)
 (** 次の証明の[WHILE]の場合を完成させなさい。*)
 
 Theorem fold_constants_com_sound :
@@ -1444,16 +1444,16 @@ Proof.
 (** [] *)
 
 (* ----------------------------------------------------------------- *)
-(*
+(* begin hide *)
 (** *** Soundness of (0 + n) Elimination, Redux *)
-*)
+(* end hide *)
 (** *** (0 + n)の消去の健全性、再び *)
 
-(*
+(* begin hide *)
 (** **** Exercise: 4 stars, advanced, optional (optimize_0plus)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★★★★, advanced, optional (optimize_0plus) *)
-(*
+(* begin hide *)
 (** Recall the definition [optimize_0plus] from the [Imp] chapter of _Logical 
     Foundations_: 
 
@@ -1493,7 +1493,7 @@ Proof.
 
    - Prove that the optimizer is sound.  (This part should be _very_
      easy.)  *)
-*)
+(* end hide *)
 (** 「論理の基礎」の[Imp]の章の[optimize_0plus]の定義をふり返ります。
 [[
     Fixpoint optimize_0plus (e:aexp) : aexp := 
@@ -1533,13 +1533,13 @@ Proof.
 (** [] *)
 
 (* ################################################################# *)
-(*
+(* begin hide *)
 (** * Proving Inequivalence *)
 (** * Proving That Programs Are _Not_ Equivalent *)
-*)
+(* end hide *)
 (** * 非等価性の証明 *)
 
-(*
+(* begin hide *)
 (** Suppose that [c1] is a command of the form [X ::= a1;; Y ::= a2]
     and [c2] is the command [X ::= a1;; Y ::= a2'], where [a2'] is
     formed by substituting [a1] for all occurrences of [X] in [a2].
@@ -1552,7 +1552,7 @@ Proof.
 
     Clearly, this _particular_ [c1] and [c2] are equivalent.  Is this
     true in general? *)
-*)
+(* end hide *)
 (** [c1]が[X ::= a1; Y ::= a2]という形のコマンドで、[c2]がコマンド[X ::= a1; Y ::= a2']であると仮定します。
     ただし[a2']は、[a2]の中のすべての[X]を[a1]で置換したものとします。
     例えば、[c1]と[c2]は次のようなものです。
@@ -1565,19 +1565,19 @@ Proof.
     明らかに、この例の場合は[c1]と[c2]は同値です。
     しかし、一般にそうだと言えるでしょうか？ *)
 
-(*
+(* begin hide *)
 (** We will see in a moment that it is not, but it is worthwhile
     to pause, now, and see if you can find a counter-example on your
     own. *)
-*)
+(* end hide *)
 (** この後すぐ、そうではないことを示します。
     しかし、ここでちょっと立ち止まって、自分の力で反例を見つけることができるか試してみるのは意味があることです。 *)
 
-(*
+(* begin hide *)
 (** More formally, here is the function that substitutes an arithmetic
     expression for each occurrence of a given variable in another
     expression: *)
-*)
+(* end hide *)
 (** 次が、式の中の指定された変数を別の算術式で置換する関数の形式的定義です。*)
 
 Fixpoint subst_aexp (i : string) (u : aexp) (a : aexp) : aexp :=
@@ -1599,11 +1599,11 @@ Example subst_aexp_ex :
   = (Y + (42 + 53)).
 Proof. reflexivity.  Qed.
 
-(*
+(* begin hide *)
 (** And here is the property we are interested in, expressing the
     claim that commands [c1] and [c2] as described above are
     always equivalent.  *)
-*)
+(* end hide *)
 (** そして次が、興味対象の性質です。
     上記コマンド[c1]と[c2]が常に同値であることを主張するものです。*)
 
@@ -1611,7 +1611,7 @@ Definition subst_equiv_property := forall i1 i2 a1 a2,
   cequiv (i1 ::= a1;; i2 ::= a2)
          (i1 ::= a1;; i2 ::= subst_aexp i1 a1 a2).
 
-(*
+(* begin hide *)
 (** Sadly, the property does _not_ always hold -- i.e., it is not the
     case that, for all [i1], [i2], [a1], and [a2],
 
@@ -1654,7 +1654,7 @@ Definition subst_equiv_property := forall i1 i2 a1 a2,
 
     where [st2 = { X --> 1; Y --> 2 }].  But [st1 <> st2], which is a
     contradiction, since [ceval] is deterministic!  [] *)
-*)
+(* end hide *)
 (** 残念ながら、この性質は、常には成立「しません」。
     つまり、すべての[i1], [i2], [a1], [a2]について、次が成立するわけではない、ということです。
 [[
@@ -1737,16 +1737,16 @@ Proof.
     by (rewrite Hcontra; reflexivity).
   subst. inversion Hcontra'.  Qed.
 
-(*
+(* begin hide *)
 (** **** Exercise: 4 stars, optional (better_subst_equiv)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★★★★, optional (better_subst_equiv) *)
-(*
+(* begin hide *)
 (** The equivalence we had in mind above was not complete nonsense --
     it was actually almost right.  To make it correct, we just need to
     exclude the case where the variable [X] occurs in the
     right-hand-side of the first assignment statement. *)
-*)
+(* end hide *)
 (** 上で成立すると考えていた同値は、完全に意味がないものではありません。
     それは実際、ほとんど正しいのです。それを直すためには、最初の代入の右辺に変数[X]が現れる場合を排除すれば良いのです。*)
 
@@ -1772,18 +1772,18 @@ Lemma aeval_weakening : forall i st a ni,
 Proof.
   (* FILL IN HERE *) Admitted.
 
-(*
+(* begin hide *)
 (** Using [var_not_used_in_aexp], formalize and prove a correct verson
     of [subst_equiv_property]. *)
-*)
+(* end hide *)
 (** [var_not_used_in_aexp]を使って、[subst_equiv_property]の正しいバージョンを形式化し、証明しなさい。*)
 
 (* FILL IN HERE *)
 (** [] *)
 
-(*
+(* begin hide *)
 (** **** Exercise: 3 stars (inequiv_exercise)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★★★ (inequiv_exercise)  *)
 (** Prove that an infinite loop is not equivalent to [SKIP] *)
 
@@ -2052,16 +2052,16 @@ Proof. (* FILL IN HERE *) Admitted.
 End Himp.
 
 (* ################################################################# *)
-(*
+(* begin hide *)
 (** * Additional Exercises *)
-*)
+(* end hide *)
 (** * さらなる練習問題 *)
 
-(*
+(* begin hide *)
 (** **** Exercise: 4 stars, optional (for_while_equiv)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★★★★, optional (for_while_equiv) *)
-(*
+(* begin hide *)
 (** This exercise extends the optional [add_for_loop] exercise from
     the [Imp] chapter, where you were asked to extend the language
     of commands with C-style [for] loops.  Prove that the command:
@@ -2078,7 +2078,7 @@ End Himp.
          c2
        END
 *)
- *)
+(* end hide *)
 (** この練習問題は、[Imp]の章のoptionalの練習問題 [add_for_loop] を拡張したものです。
     もとの [add_for_loop] は、コマンド言語に C言語のスタイルの [for]ループを追加しなさい、というものでした。
     ここでは次のことを証明しなさい:    
@@ -2100,13 +2100,13 @@ End Himp.
 (* FILL IN HERE *)
 (** [] *)
 
-(*
+(* begin hide *)
 (** **** Exercise: 3 stars, optional (swap_noninterfering_assignments)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★★★, optional (swap_noninterfering_assignments) *)
-(*
+(* begin hide *)
 (** (Hint: You'll need [functional_extensionality] for this one.) *)
-*)
+(* end hide *)
 (** （ヒント: 証明には[functional_extensionality]が必要でしょう。） *)
 
 Theorem swap_noninterfering_assignments: forall l1 l2 a1 a2,
