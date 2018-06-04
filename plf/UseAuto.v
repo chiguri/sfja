@@ -1,11 +1,11 @@
 (** * UseAuto: Coqの証明自動化の理論と実践 *)
-(*
+(* begin hide *)
 (** * UseAuto: Theory and Practice of Automation in Coq Proofs *)
-*)
+(* end hide *)
 
 (* Chapter written and maintained by Arthur Chargueraud *)
 
-(*
+(* begin hide *)
 (** In a machine-checked proof, every single detail has to be
     justified.  This can result in huge proof scripts. Fortunately,
     Coq comes with a proof-search mechanism and with several decision
@@ -30,7 +30,7 @@
     from STLC), and the proofs that we present make use of the tactics
     from the library [LibTactics.v], which is presented in the chapter
     [UseTactics]. *)
-*)
+(* end hide *)
 (** 機械がチェックした証明においては、細部の一つ一つの正しさが確認されています。
     これが巨大な証明記述にもなります。
     幸い、Coqは証明探索メカニズムと決定手続きを持っていて、それにより証明の小さな部分を自動合成することができます。
@@ -61,12 +61,12 @@ Require Import Coq.Lists.List.
 Import ListNotations.
 
 (* ################################################################# *)
-(*
+(* begin hide *)
 (** * Basic Features of Proof Search *)
-*)
+(* end hide *)
 (** * 証明探索の基本性質 *)
 
-(*
+(* begin hide *)
 (** The idea of proof search is to replace a sequence of tactics
     applying lemmas and assumptions with a call to a single tactic,
     for example [auto]. This form of proof automation saves a lot of
@@ -80,7 +80,7 @@ Import ListNotations.
     reasonable use of automation is generally a big win, as it saves a
     lot of time both in building proof scripts and in subsequently
     maintaining those proof scripts. *)
-*)
+(* end hide *)
 (** 証明探索のアイデアは、補題や仮定を適用するタクティックの列を、例えば[auto]のような1つのタクティックで置き換えることです。
     この形の証明自動化で、たくさんの作業を省くことができます。
     典型的には証明記述ははるかに短くなり、またその記述は典型的にはより変更に強いものになります。
@@ -92,12 +92,12 @@ Import ListNotations.
 
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Strength of Proof Search *)
-*)
+(* end hide *)
 (** ** 証明探索の強さ *)
 
-(*
+(* begin hide *)
 (** We are going to study four proof-search tactics: [auto], [eauto],
     [iauto] and [jauto]. The tactics [auto] and [eauto] are builtin
     in Coq. The tactic [iauto] is a shorthand for the builtin tactic
@@ -128,7 +128,7 @@ Import ListNotations.
     proof search is really intended to automate the final steps from
     the various branches of a proof. It is not able to discover the
     overall structure of a proof. *)
-*)
+(* end hide *)
 (** これから4つの証明探索のタクティックを勉強します:[auto]、[eauto]、[iauto]、[jauto]です。
     タクティック[auto]と[eauto]はCoqのビルトインです。
     タクティック[iauto]はビルトインのタクティック [try solve [intuition eauto]] の略記法です。
@@ -152,18 +152,18 @@ Import ListNotations.
 
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Basics *)
-*)
+(* end hide *)
 (** ** 基本 *)
 
-(*
+(* begin hide *)
 (** The tactic [auto] is able to solve a goal that can be proved
     using a sequence of [intros], [apply], [assumption], and [reflexivity].
     Two examples follow. The first one shows the ability for
     [auto] to call [reflexivity] at any time. In fact, calling
     [reflexivity] is always the first thing that [auto] tries to do. *)
-*)
+(* end hide *)
 (** タクティック[auto]は、[intros]、[apply]、[assumption]、[reflexivity]の列で証明できるゴールを証明することができます。
     以下で2つの例を示します。1つ目の例は[auto]が[reflexivity]をいつでも呼べることを示します。
     実際、[auto]は常に最初に[reflexivity]を適用しようとします。*)
@@ -172,12 +172,12 @@ Lemma solving_by_reflexivity :
   2 + 3 = 5.
 Proof. auto. Qed.
 
-(*
+(* begin hide *)
 (** The second example illustrates a proof where a sequence of
     two calls to [apply] are needed. The goal is to prove that
     if [Q n] implies [P n] for any [n] and if [Q n] holds for any [n],
     then [P 2] holds. *)
-*)
+(* end hide *)
 (** 2つ目の例は[apply]を2回続けて呼ぶ必要がある証明です。
     ゴールは、任意の[n]について [Q n] ならば [P n] であり、かつ任意の[n]について [Q n] が成立するならば、[P 2]が成立する、というものです。*)
 
@@ -204,7 +204,7 @@ Proof. auto. Qed.
 
 *)
 
-(*
+(* begin hide *)
 (** The tactic [auto] can invoke [apply] but not [eapply]. So, [auto]
     cannot exploit lemmas whose instantiation cannot be directly
     deduced from the proof goal. To exploit such lemmas, one needs to
@@ -216,7 +216,7 @@ Proof. auto. Qed.
     the hypothesis by instantiating [m] as the value [1].  The
     following proof script shows that [eauto] successfully solves the
     goal, whereas [auto] is not able to do so. *)
-*)
+(* end hide *)
 (** タクティック[auto]は[apply]を呼ぶことがありますが、[eapply]は呼びません。
     そのため[auto]は、証明のゴールから直接具体化できない補題は使うことができません。
     そのような補題を使うためにはタクティック[eauto]を呼ぶ必要があります。
@@ -235,26 +235,26 @@ Proof. auto. eauto. Qed.
 
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Conjunctions *)
-*)
+(* end hide *)
 (** ** 連言 *)
 
-(*
+(* begin hide *)
 (** So far, we've seen that [eauto] is stronger than [auto] in the
     sense that it can deal with [eapply]. In the same way, we are going
     to see how [jauto] and [iauto] are stronger than [auto] and [eauto]
     in the sense that they provide better support for conjunctions. *)
-*)
+(* end hide *)
 (** ここまで、[eauto]が[eapply]を使えるという意味で[auto]より強いことを見てきました。
     同様に、ここでは、[jauto]と[iauto]が連言に対してより優れたサポートをしているという点で、[auto]や[eauto]より強いことを見ます。*)
 
-(*
+(* begin hide *)
 (** The tactics [auto] and [eauto] can prove a goal of the form
     [F /\ F'], where [F] and [F'] are two propositions, as soon as
     both [F] and [F'] can be proved in the current context.
     An example follows. *)
-*)
+(* end hide *)
 (** タクティック[auto]と[eauto]は [F /\ F'] という形のゴールを証明できます。
     ここで[F]と[F']は2つの命題で、両者とも現在のコンテキストですぐに証明できるものです。
     次はその例です。*)
@@ -263,14 +263,14 @@ Lemma solving_conj_goal : forall (P : nat->Prop) (F : Prop),
   (forall n, P n) -> F -> F /\ P 2.
 Proof. auto. Qed.
 
-(*
+(* begin hide *)
 (** However, when an assumption is a conjunction, [auto] and [eauto]
     are not able to exploit this conjunction. It can be quite
     surprising at first that [eauto] can prove very complex goals but
     that it fails to prove that [F /\ F'] implies [F]. The tactics
     [iauto] and [jauto] are able to decompose conjunctions from the context.
     Here is an example. *)
-*)
+(* end hide *)
 (** しかしながら、仮定が連言の場合、[auto]と[eauto]はこの連言を使うことができません。
     [eauto]がとても複雑なゴールを証明できるのに、「[F /\ F'] ならば [F] 」を証明できないことに、最初はとても驚きます。
     タクティック[iauto]と[jauto]はコンテキストの連言を分解することができます。
@@ -280,12 +280,12 @@ Lemma solving_conj_hyp : forall (F F' : Prop),
   F /\ F' -> F.
 Proof. auto. eauto. jauto. (* or [iauto] *) Qed.
 
-(*
+(* begin hide *)
 (** The tactic [jauto] is implemented by first calling a
     pre-processing tactic called [jauto_set], and then calling
     [eauto]. So, to understand how [jauto] works, one can directly
     call the tactic [jauto_set]. *)
-*)
+(* end hide *)
 (** タクティック[jauto]は、最初に[jauto_set]という前処理のタクティックを呼び、その後[eauto]を呼ぶように作られています。
     これから、[jauto]がどうはたらくかを理解するためには、タクティック[jauto_set]を直接呼んでみるのが良いでしょう。*)
 
@@ -293,10 +293,10 @@ Lemma solving_conj_hyp' : forall (F F' : Prop),
   F /\ F' -> F.
 Proof. intros. jauto_set. eauto. Qed.
 
-(*
+(* begin hide *)
 (** Next is a more involved goal that can be solved by [iauto] and
     [jauto]. *)
-*)
+(* end hide *)
 (** 次は[iauto]と[jauto]で解けるより複雑なゴールです。 *)
 
 Lemma solving_conj_more : forall (P Q R : nat->Prop) (F : Prop),
@@ -306,14 +306,14 @@ Lemma solving_conj_more : forall (P Q R : nat->Prop) (F : Prop),
   P 2 /\ F.
 Proof. jauto. (* or [iauto] *) Qed.
 
-(*
+(* begin hide *)
 (** The strategy of [iauto] and [jauto] is to run a global analysis of
     the top-level conjunctions, and then call [eauto].  For this
     reason, those tactics are not good at dealing with conjunctions
     that occur as the conclusion of some universally quantified
     hypothesis. The following example illustrates a general weakness
     of Coq proof search mechanisms. *)
-*)
+(* end hide *)
 (** [iauto]と[jauto]の戦略は、トップレベルの連言をグローバルに解析し、その後[eauto]を呼ぶというものです。 
     このため、全称限量子を持つ仮定の、結論部の連言を扱うのが苦手です。
     次の例は、Coqの証明探索メカニズムの一般的な弱点を示しています。*)
@@ -326,12 +326,12 @@ Proof.
   intros. destruct (H 2). auto.
 Qed.
 
-(*
+(* begin hide *)
 (** This situation is slightly disappointing, since automation is
     able to prove the following goal, which is very similar. The
     only difference is that the universal quantification has been
     distributed over the conjunction. *)
-*)
+(* end hide *)
 (** この状況にはちょっとがっかりします。
     というのは、ほとんど同じである次のゴールは自動証明できるのです。
     唯一の違いは、全称限量子が連言のそれぞれに別々に付けられていることです。*)
@@ -342,26 +342,26 @@ Proof. jauto. (* or [iauto] *) Qed.
 
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Disjunctions *)
-*)
+(* end hide *)
 (** ** 選言 *)
 
-(*
+(* begin hide *)
 (** The tactics [auto] and [eauto] can handle disjunctions that
     occur in the goal. *)
-*)
+(* end hide *)
 (** タクティック[auto]と[eauto]はゴールに現れる選言を扱うことができます。*)
 
 Lemma solving_disj_goal : forall (F F' : Prop),
   F -> F \/ F'.
 Proof. auto. Qed.
 
-(*
+(* begin hide *)
 (** However, only [iauto] is able to automate reasoning on the
     disjunctions that appear in the context. For example, [iauto] can
     prove that [F \/ F'] entails [F' \/ F]. *)
-*)
+(* end hide *)
 (** しかし、コンテキストに現れる選言についての推論を自動化できるのは[iauto]だけです。
     例えば、[iauto]は 「[F \/ F'] ならば [F' \/ F]」を証明できます。 *)
 
@@ -369,10 +369,10 @@ Lemma solving_disj_hyp : forall (F F' : Prop),
   F \/ F' -> F' \/ F.
 Proof. auto. eauto. jauto. iauto. Qed.
 
-(*
+(* begin hide *)
 (** More generally, [iauto] can deal with complex combinations of
     conjunctions, disjunctions, and negations. Here is an example. *)
-*)
+(* end hide *)
 (** より一般に、[iauto]は連言、選言、否定の複雑な組み合わせを扱うことができます。
     次はその例です。*)
 
@@ -383,7 +383,7 @@ Lemma solving_tauto : forall (F1 F2 F3 : Prop),
   ~F2.
 Proof. iauto. Qed.
 
-(*
+(* begin hide *)
 (** However, the ability of [iauto] to automatically perform a case
     analysis on disjunctions comes with a downside: [iauto] may be
     very slow. If the context involves several hypotheses with
@@ -391,7 +391,7 @@ Proof. iauto. Qed.
     subgoals on which [eauto] is called. One major advantage of [jauto]
     compared with [iauto] is that it never spends time performing this
     kind of case analyses. *)
-*)
+(* end hide *)
 (** しかしながら、[iauto]が選言の場合分けを自動実行する能力には、悪い面もあります。
     [iauto]は非常に遅くなることがあるのです。
     コンテキストが数個の選言を含む仮定を持つとき、[iauto]は通常、その指数の数のサブゴールを作り、その1つ1つについて[eauto]を呼びます。
@@ -399,12 +399,12 @@ Proof. iauto. Qed.
 
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Existentials *)
-*)
+(* end hide *)
 (** ** 存在限量 *)
 
-(*
+(* begin hide *)
 (** The tactics [eauto], [iauto], and [jauto] can prove goals whose
     conclusion is an existential. For example, if the goal is [exists
     x, f x], the tactic [eauto] introduces an existential variable,
@@ -413,7 +413,7 @@ Proof. iauto. Qed.
     [?25] with any appropriate value. For example, if an assumption [f
     2] is available, then the variable [?25] gets instantiated with
     [2] and the goal is solved, as shown below. *)
-*)
+(* end hide *)
 (** タクティック[eauto]、[iauto]、[jauto]は結論部が存在限量であるゴールを証明することができます。
     例えばゴールが [exists x, f x] のとき、タクティック[eauto]は[x]の場所に存在変数を導入します。
     それを[?25]としましょう。残ったゴールは[f ?25]になります。
@@ -428,11 +428,11 @@ Proof.
   eauto. (* whereas [eauto], [iauto] and [jauto] solve the goal *)
 Qed.
 
-(*
+(* begin hide *)
 (** A major strength of [jauto] over the other proof search tactics is
     that it is able to exploit the existentially-quantified
     hypotheses, i.e., those of the form [exists x, P]. *)
-*)
+(* end hide *)
 (** 証明探索の他のタクティックと比べた[jauto]の主な長所は、存在限量された、つまり [exists x, P] という形の仮定を使える点です。*)
 
 Lemma solving_exists_hyp : forall (f g : nat->Prop),
@@ -447,18 +447,18 @@ Qed.
 
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Negation *)
-*)
+(* end hide *)
 (** ** 否定 *)
 
-(*
+(* begin hide *)
 (** The tactics [auto] and [eauto] suffer from some limitations with
     respect to the manipulation of negations, mostly related to the
     fact that negation, written [~ P], is defined as [P -> False] but
     that the unfolding of this definition is not performed
     automatically. Consider the following example. *)
-*)
+(* end hide *)
 (** タクティック[auto]と[eauto]は、否定の扱いに関して制限があります。
     これは主に、否定（[~ P] と記述される）が [P -> False] と定義されているのに、この定義の展開が自動では行われないことに関係しています。
     次の例を見てください。*)
@@ -471,37 +471,37 @@ Proof.
   unfold not in *. eauto.
 Qed.
 
-(*
+(* begin hide *)
 (** For this reason, the tactics [iauto] and [jauto] systematically
     invoke [unfold not in *] as part of their pre-processing. So,
     they are able to solve the previous goal right away. *)
-*)
+(* end hide *)
 (** このため、タクティック[iauto]と[jauto]は前処理の中で [unfold not in *] を組織的に呼びます。これにより、[iauto]、[jauto]は上記のゴールをすぐに解決できます。*)
 
 Lemma negation_study_2 : forall (P : nat->Prop),
   P 0 -> (forall x, ~ P x) -> False.
 Proof. jauto. (* or [iauto] *) Qed.
 
-(*
+(* begin hide *)
 (** We will come back later on to the behavior of proof search with
     respect to the unfolding of definitions. *)
-*)
+(* end hide *)
 (** 定義の展開に関する証明探索の振る舞いについては後でまた議論します。 *)
 
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Equalities *)
-*)
+(* end hide *)
 (** ** 等式 *)
 
-(*
+(* begin hide *)
 (** Coq's proof-search feature is not good at exploiting equalities.
     It can do very basic operations, like exploiting reflexivity
     and symmetry, but that's about it. Here is a simple example
     that [auto] can solve, by first calling [symmetry] and then
     applying the hypothesis. *)
-*)
+(* end hide *)
 (** Coq の証明探索機能は等式を扱うのが不得意です。
     反射律、対称律といった基本的操作は行うことができますが、それぐらいです。
     以下は[auto]が解くことができる簡単な例です。
@@ -511,28 +511,28 @@ Lemma equality_by_auto : forall (f g : nat->Prop),
   (forall x, f x = g x) -> g 2 = f 2.
 Proof. auto. Qed.
 
-(*
+(* begin hide *)
 (** To automate more advanced reasoning on equalities, one should
     rather try to use the tactic [congruence], which is presented at
     the end of this chapter in the "Decision Procedures" section. *)
-*)
+(* end hide *)
 (** 等式についてのより高度な推論を自動化するためには、むしろタクティック[congruence]を使うべきです。
     これについてはこの章の終わりの「決定手続き」節で説明します。*)
 
 
 (* ################################################################# *)
-(*
+(* begin hide *)
 (** * How Proof Search Works *)
-*)
+(* end hide *)
 (** * 証明探索はどのようにはたらくか *)
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Search Depth *)
-*)
+(* end hide *)
 (** ** 探索の深さ *)
 
-(*
+(* begin hide *)
 (** The tactic [auto] works as follows.  It first tries to call
     [reflexivity] and [assumption]. If one of these calls solves the
     goal, the job is done. Otherwise [auto] tries to apply the most
@@ -550,7 +550,7 @@ Proof. auto. Qed.
     process involved in the execution of the [auto] tactic; otherwise
     its behavior can be quite puzzling. For example, [auto] is not
     able to solve the following triviality. *)
-*)
+(* end hide *)
 (** タクティック[auto]は次のようにはたらきます。
     最初に[reflexivity]と[assumption]を試してみます。
     もしどちらかがゴールを解いたならば仕事は完了です。
@@ -571,7 +571,7 @@ Proof.
   auto.
 Abort.
 
-(*
+(* begin hide *)
 (** The reason [auto] fails to solve the goal is because there are
     too many conjunctions. If there had been only five of them, [auto]
     would have successfully solved the proof, but six is too many.
@@ -600,7 +600,7 @@ Abort.
     any lemma. Overall, this means that when the maximal number of
     steps allowed has been exceeded, the [auto] tactic stops searching
     and backtracks to try and investigate other paths. *)
-*)
+(* end hide *)
 (** このゴールに[auto]が失敗する理由は、連言の数が多すぎることです。 
     もしこれが5個だったら、[auto]は証明に成功したでしょう。しかし6個は多過ぎなのです。
     タクティック[auto]は補題と仮定の数を制限することで、証明探索がいつかは停止することを保証しています。
@@ -621,11 +621,11 @@ Abort.
     タクティック [auto 0] が適用を試みるのは[reflexivity]と[assumption]だけで、補題を適用しようとすることはありません。
     これは全体として、指定されたステップ数の上限値に逹したときには、[auto]タクティックは探索を中止し、バックトラックして別のパスを調べることを意味します。*)
 
-(*
+(* begin hide *)
 (** The following lemma admits a unique proof that involves exactly
     three steps. So, [auto n] proves this goal iff [n] is greater than
     three. *)
-*)
+(* end hide *)
 (** 次の補題には1つだけ証明があり、それは3ステップです。
     このため、[auto n] は、[n]が3以上の時これを証明し、3未満のときは証明できません。*)
 (*  訳注: 原文では "iff [n] is greater than three" と記述されていますが、文脈から「以上」に修正しました。) *)
@@ -643,13 +643,13 @@ Proof.
           (* more generally, [auto n] solves the goal if [n >= 3] *)
 Qed.
 
-(*
+(* begin hide *)
 (** We can generalize the example by introducing an assumption
     asserting that [P k] is derivable from [P (k-1)] for all [k],
     and keep the assumption [P 0]. The tactic [auto], which is the
     same as [auto 5], is able to derive [P k] for all values of [k]
     less than 5. For example, it can prove [P 4]. *)
-*)
+(* end hide *)
 (** この例を次のように一般化することができます。
     すべての[k]について、[P k] が [P (k-1)] から導出されると仮定します。
     また、[P 0] が成立するとします。
@@ -662,9 +662,9 @@ Lemma search_depth_3 : forall (P : nat->Prop),
   (* Goal:          *) (P 4).
 Proof. auto. Qed.
 
-(*
+(* begin hide *)
 (** However, to prove [P 5], one needs to call at least [auto 6]. *)
-*)
+(* end hide *)
 (** しかし、[P 5] を証明するためには、少なくとも [auto 6] を呼ぶ必要があります。 *)
 
 Lemma search_depth_4 : forall (P : nat->Prop),
@@ -673,7 +673,7 @@ Lemma search_depth_4 : forall (P : nat->Prop),
   (* Goal:          *) (P 5).
 Proof. auto. auto 6. Qed.
 
-(*
+(* begin hide *)
 (** Because [auto] looks for proofs at a limited depth, there are
     cases where [auto] can prove a goal [F] and can prove a goal
     [F'] but cannot prove [F /\ F']. In the following example,
@@ -681,7 +681,7 @@ Proof. auto. auto 6. Qed.
     because the splitting of the conjunction consumes one proof step.
     To prove the conjunction, one needs to increase the search depth,
     using at least [auto 6]. *)
-*)
+(* end hide *)
 (** [auto]が限られた深さで証明を探すことから、[auto]がゴール[F]も[F']も証明できるのに[F /\ F']を証明できない、という場合があります。
     次の例では、[auto]は [P 4] を証明できますが、 [P 4 /\ P 4] を証明できません。
     なぜなら連言を分解するには1ステップ必要だからです。
@@ -695,12 +695,12 @@ Proof. auto. auto 6. Qed.
 
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Backtracking *)
-*)
+(* end hide *)
 (** ** バックトラック *)
 
-(*
+(* begin hide *)
 (** In the previous section, we have considered proofs where
     at each step there was a unique assumption that [auto]
     could apply. In general, [auto] can have several choices
@@ -717,7 +717,7 @@ Proof. auto. auto 6. Qed.
     trace, one should write [debug eauto]. (For some reason, the
     command [debug auto] does not exist, so we have to use the
     command [debug eauto] instead.) *)
-*)
+(* end hide *)
 (** 前の節で、各ステップで[auto]が適用できる仮定が唯一である証明を考えてきました。
     一般には、[auto]の各ステップでいくつかの選択肢がある場合があります。
     [auto]の戦略は、すべての可能性を（深さ優先探索によって）試してみる、というものです。
@@ -737,7 +737,7 @@ Lemma working_of_auto_1 : forall (P : nat->Prop),
 (* Uncomment "debug" in the following line to see the debug trace: *)
 Proof. intros P H1 H2 H3. (* debug *) eauto. Qed.
 
-(*
+(* begin hide *)
 (** The output message produced by [debug eauto] is as follows.
 
     depth=5
@@ -756,7 +756,7 @@ Proof. intros P H1 H2 H3. (* debug *) eauto. Qed.
     tried to use the hypothesis [H3] at any time. The reason is that
     [auto] always tried to use the [H2] first. So, let's permute
     the hypotheses [H2] and [H3] and see what happens. *)
-*)
+(* end hide *)
 (** [debug eauto] の出力メッセージは次の通りです。
 <<
     depth=5 
@@ -782,7 +782,7 @@ Lemma working_of_auto_2 : forall (P : nat->Prop),
   (* Goal:          *) (P 2).
 Proof. intros P H1 H3 H2. (* debug *) eauto. Qed.
 
-(*
+(* begin hide *)
 (** This time, the output message suggests that the proof search
     investigates many possibilities. If we print the proof term:
 
@@ -843,7 +843,7 @@ Proof. intros P H1 H3 H2. (* debug *) eauto. Qed.
     to apply [H3] three times in a row, going through [P 2] and [P 1]
     and [P 0]. This search tree explains why [eauto] came up with a
     proof term starting with an application of [H3]. *)
-*)
+(* end hide *)
 (** このとき、出力メッセージは証明探索がたくさんの可能性を調べることを示唆しています。
     証明項を出力してみましょう。
 [[
@@ -901,12 +901,12 @@ Proof. intros P H1 H3 H2. (* debug *) eauto. Qed.
 
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Adding Hints *)
-*)
+(* end hide *)
 (** ** ヒントを追加する *)
 
-(*
+(* begin hide *)
 (** By default, [auto] (and [eauto]) only tries to apply the
     hypotheses that appear in the proof context. There are two
     possibilities for telling [auto] to exploit a lemma that have
@@ -925,7 +925,7 @@ Proof. intros P H1 H3 H2. (* debug *) eauto. Qed.
     any number is less than or equal to itself, [forall x, x <= x],
     called [Le.le_refl] in the Coq standard library, can be added as a
     hint as follows. *)
-*)
+(* end hide *)
 (** デフォルトでは、[auto] （および[eauto]）は証明コンテキストに現れる仮定だけを適用しようとします。
     それより前に証明した補題を使うことを[auto]に教えてやる方法は2つあります。
     1つは[auto]を呼ぶ直前に補題を仮定として加えてやることです。
@@ -942,7 +942,7 @@ Proof. intros P H1 H3 H2. (* debug *) eauto. Qed.
 
 Hint Resolve Le.le_refl.
 
-(*
+(* begin hide *)
 (** A convenient shorthand for adding all the constructors of an
     inductive datatype as hints is the command [Hint Constructors
     mydatatype].
@@ -952,7 +952,7 @@ Hint Resolve Le.le_refl.
     performance of proof search. The description of this problem
     and the presentation of a general work-around for transitivity
     lemmas appear further on. *)
-*)
+(* end hide *)
 (** 帰納的データ型のすべてのコンストラクタをヒントとして追加する便利な略記法がコマンド [Hint Constructors mydatatype] です。
  
     警告: いくつかの補題、例えば推移律のようなものは、ヒントとして追加するべきではありません。
@@ -961,12 +961,12 @@ Hint Resolve Le.le_refl.
 
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Integration of Automation in Tactics *)
-*)
+(* end hide *)
 (** ** タクティックへの自動証明の統合 *)
 
-(*
+(* begin hide *)
 (** The library "LibTactics" introduces a convenient feature for
     invoking automation after calling a tactic. In short, it suffices
     to add the symbol star ([*]) to the name of a tactic. For example,
@@ -981,7 +981,7 @@ Hint Resolve Le.le_refl.
     Observe the use of [::=] instead of [:=], which indicates that the
     tactic is being rebound to a new definition. So, the default
     definition is as follows. *)
-*)
+(* end hide *)
 (** ライブラリ "LibTactics" はタクティックを呼んだ後で自動証明を呼ぶ便利な機能を提供します。
     要するに、タクティック名に星印（[*]）をつければ良いのです。
     例えば、[apply* H] は [apply H; auto_star] と等価です。
@@ -1003,7 +1003,7 @@ Hint Resolve Le.le_refl.
 
 Ltac auto_star ::= try solve [ jauto ].
 
-(*
+(* begin hide *)
 (** Nearly all standard Coq tactics and all the tactics from
     "LibTactics" can be called with a star symbol. For example, one
     can invoke [subst*], [destruct* H], [inverts* H], [lets* I: H x],
@@ -1013,7 +1013,7 @@ Ltac auto_star ::= try solve [ jauto ].
     more powerful [applys H] if needed), and then calls [auto_star].
     Note that there is no [eapply* H] tactic, use [apply* H]
     instead. *)
-*)
+(* end hide *)
 (** 標準のCoqタクティックのほとんどすべてと、"LibTactics"のタクティックのすべては、星印を付けて呼ぶことができます。
     例えば、[subst*]、[destruct* H]、[inverts* H]、[lets* I: H x]、[specializes* H x]、等々が可能です。
     注記すべき例外が2つあります。
@@ -1021,7 +1021,7 @@ Ltac auto_star ::= try solve [ jauto ].
     また、タクティック [apply* H] は [eapply H] （または、もし必要ならばより強力な [applys H]）を呼び、その後[auto_star]を呼びます。
     [eapply* H] タクティックは存在しないので、代わりに [apply* H] を呼ぶように注意してください。*)
 
-(*
+(* begin hide *)
 (** In large developments, it can be convenient to use two degrees of
     automation. Typically, one would use a fast tactic, like [auto],
     and a slower but more powerful tactic, like [jauto]. To allow for
@@ -1030,7 +1030,7 @@ Ltac auto_star ::= try solve [ jauto ].
     [destruct~ H], [subst~], [auto~] and so on. The meaning of the
     tilde symbol is described by the [auto_tilde] tactic, whose
     default implementation is [auto]. *)
-*)
+(* end hide *)
 (** 大きな開発では、2つの段階の自動化を使うのが便利でしょう。
     典型的には、1つは[auto]のような速いタクティック、もう1つは[jauto]のように遅いけれどもより強力なタクティックです。
     2種類の自動化をスムーズに共存させるために、[LibTactics.v]はタクティックにチルダ（[~]）を付けるバージョンも定義しています。
@@ -1041,9 +1041,9 @@ Ltac auto_star ::= try solve [ jauto ].
 
 Ltac auto_tilde ::= auto.
 
-(*
+(* begin hide *)
 (** In the examples that follow, only [auto_star] is needed. *)
-*)
+(* end hide *)
 (** 以降の例では、[auto_star]だけが必要です。*)
 
 (** An alternative, possibly more efficient version of auto_star is the
@@ -1062,33 +1062,33 @@ Ltac auto_tilde ::= auto.
 *)
 
 (* ################################################################# *)
-(*
+(* begin hide *)
 (** * Examples of Use of Automation *)
-*)
+(* end hide *)
 (** * 自動化の使用例 *)
 
-(*
+(* begin hide *)
 (** Let's see how to use proof search in practice on the main theorems
     of the "Software Foundations" course, proving in particular
     results such as determinism, preservation and progress. *)
-*)
+(* end hide *)
 (** 「ソフトウェアの基礎」("Software Foundations")コースの主要定理に証明探索を実際にどのように使うかを見てみましょう。
     決定性、保存、進行などの特定の結果を証明します。 *)
 
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Determinism *)
-*)
+(* end hide *)
 (** ** 決定性 *)
 
 Module DeterministicImp.
   Import Imp.
 
-(*
+(* begin hide *)
 (** Recall the original proof of the determinism lemma for the IMP
     language, shown below. *)
-*)
+(* end hide *)
 (** Imp言語の決定性補題のオリジナルの証明を振り返ってみましょう。
     以下の通りです。*)
 
@@ -1132,10 +1132,10 @@ Proof.
     apply IHE1_2. assumption.
 Qed.
 
-(*
+(* begin hide *)
 (** Exercise: rewrite this proof using [auto] whenever possible.
     (The solution uses [auto] 9 times.) *)
-*)
+(* end hide *)
 (** 練習問題: この証明を可能な限り [auto] を使って書き直しなさい。
     （答えでは [auto] を9回使用します。） *)
 
@@ -1147,7 +1147,7 @@ Proof.
   (* FILL IN HERE *) admit.
 Admitted.
 
-(*
+(* begin hide *)
 (** In fact, using automation is not just a matter of calling [auto]
     in place of one or two other tactics. Using automation is about
     rethinking the organization of sequences of tactics so as to
@@ -1162,7 +1162,7 @@ Admitted.
         the cases where [beval st b1 = true] and [beval st b1 = false]
         both appear in the context,
       - stop using [ceval_cases] to label subcases. *)
-*)
+(* end hide *)
 (** 実際、自動化の利用は、ただ1つや2つの別のタクティックの代わりに[auto]を使うというようなことではないのです。 
     自動化の利用は、証明を記述しメンテナンスする作業を最小化するために、タクティック列の構成を再考することなのです。
     このプロセスは[LibTactics.v]のタクティックを使うことで楽になります。
@@ -1190,7 +1190,7 @@ Proof.
   - assert (st' = st'0). auto. subst. auto.
 Qed.
 
-(*
+(* begin hide *)
 (** To obtain a nice clean proof script, we have to remove the calls
     [assert (st' = st'0)]. Such a tactic invokation is not nice
     because it refers to some variables whose name has been
@@ -1203,7 +1203,7 @@ Qed.
     [forwards], described in [LibTactics.v] precisely helps with
     instantiating a fact. So, let's see how it works out on our
     example. *)
-*)
+(* end hide *)
 (** きれいな証明記述を得るためには、[assert (st' = st'0)] の呼び出しを消去しなければなりません。
     このようなタクティックの呼び出しは、きれいではありません。
     なぜなら、自動命名された変数を参照しているからです。
@@ -1244,11 +1244,11 @@ Proof.
 
 Abort.
 
-(*
+(* begin hide *)
 (** To polish the proof script, it remains to factorize the calls
     to [auto], using the star symbol. The proof of determinism can then
     be rewritten in only four lines, including no more than 10 tactics. *)
-*)
+(* end hide *)
 (** 証明記述を洗練するために、星印を使って呼び出しを[auto]に分解することが残っています。
     そうすると、決定性の証明はたった4行の、10個を越えないタクティックに書き直されます。*)
 
@@ -1267,9 +1267,9 @@ End DeterministicImp.
 
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Preservation for STLC *)
-*)
+(* end hide *)
 (** ** STLC の保存 *)
 
 Set Warnings "-notation-overridden,-parsing".
@@ -1278,11 +1278,11 @@ Module PreservationProgressStlc.
 Import STLC.
 Import STLCProp.
 
-(*
+(* begin hide *)
 (** Consider the proof of perservation of STLC, shown below.
     This proof already uses [eauto] through the triple-dot
     mechanism. *)
-*)
+(* end hide *)
 (** STLC の保存の証明を考えましょう。
     以下の通りです。
     この証明では既にドット3つ（[...]）のメカニズムを通じて[eauto]を使っています。*)
@@ -1314,13 +1314,13 @@ Proof with eauto.
     inversion HE; subst...
 Qed.
 
-(*
+(* begin hide *)
 (** Exercise: rewrite this proof using tactics from [LibTactics]
     and calling automation using the star symbol rather than the
     triple-dot notation. More precisely, make use of the tactics
     [inverts*] and [applys*] to call [auto*] after a call to
     [inverts] or to [applys]. The solution is three lines long.*)
-*)
+(* end hide *)
 (** 練習問題: この証明を [LibTactics] のタクティックを使って書き直しなさい。
     そして、[...]の代わりに星印を使って自動証明を呼びなさい。
     より詳しくは、[inverts]あるいは[applys]の後で[auto*]を呼ぶために[inverts*]と[applys*]を使いなさい。
@@ -1336,14 +1336,14 @@ Admitted.
 
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Progress for STLC *)
-*)
+(* end hide *)
 (** ** STLC の前進 *)
 
-(*
+(* begin hide *)
 (** Consider the proof of the progress theorem. *)
-*)
+(* end hide *)
 (** 前進定理の証明を考えましょう。*)
 
 Theorem progress : forall t T,
@@ -1372,11 +1372,11 @@ Proof with eauto.
     inversion H. exists (tif x0 t2 t3)...
 Qed.
 
-(*
+(* begin hide *)
 (** Exercise: optimize the above proof.
     Hint: make use of [destruct*] and [inverts*].
     The solution consists of 10 short lines. *)
-*)
+(* end hide *)
 (** 練習問題: 上の証明を最適化しなさい。
     ヒント: [destruct*] と [inverts*] を使いなさい。
     解は10行の各行短い証明です。*)
@@ -1392,19 +1392,19 @@ End PreservationProgressStlc.
 
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** BigStep and SmallStep *)
-*)
+(* end hide *)
 (** ** ビッグステップとスモールステップ *)
 
 Require Import Smallstep.
 Require Import Program.
 Module Semantics.
 
-(*
+(* begin hide *)
 (** Consider the proof relating a small-step reduction judgment
     to a big-step reduction judgment. *)
-*)
+(* end hide *)
 (** スモールステップ簡約ジャッジメントとビッグステップ簡約ジャッジメントを関係づける証明を考えましょう。*)
 
 Theorem multistep__eval : forall t v,
@@ -1428,11 +1428,11 @@ Qed.
     that consists of the judgment over which the induction
     is being performed. *)
 
-(*
+(* begin hide *)
 (** Exercise: prove the following result, using tactics
     [introv], [induction] and [subst], and [apply*].
     The solution is 3 lines long. *)
-*)
+(* end hide *)
 (** 練習問題: 以下の定理を、[introv]、[induction]と[subst]、[applys*]を使って最適化しなさい。
     解は3行の証明です。 *)
 
@@ -1478,9 +1478,9 @@ End Semantics.
 
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Preservation for STLCRef *)
-*)
+(* end hide *)
 (** ** STLCRef の保存 *)
 
 Require Import Coq.omega.Omega.
@@ -1490,13 +1490,13 @@ Require Import Program.
 Module PreservationProgressReferences.
 Hint Resolve store_weakening extends_refl.
 
-(*
+(* begin hide *)
 (** The proof of preservation for [STLCRef] can be found in chapter
     [References].  The optimized proof script is more than twice
     shorter.  The following material explains how to build the
     optimized proof script.  The resulting optimized proof script for
     the preservation theorem appears afterwards. *)
-*)
+(* end hide *)
 (** [STLCRef]の保存の証明は[References]の章にあります。
     最適化された証明は2分の1以下の短かさになります。
     以下の資料は最適化された証明記述をどのように構築するかを説明します。
@@ -1646,7 +1646,7 @@ Proof.
   - forwards*: IHHt2.
 Qed.
 
-(*
+(* begin hide *)
 (** Let's come back to the proof case that was hard to optimize.
     The difficulty comes from the statement of [nth_eq_last], which
     takes the form [nth (length l) (l ++ x::nil) d = x]. This lemma is
@@ -1658,7 +1658,7 @@ Qed.
     making [nth_eq_last] easy to apply: introduce the intermediate
     variable [n] explicitly, so that the goal becomes
     [nth n (snoc l x) d = x], with a premise asserting [n = length l]. *)
-*)
+(* end hide *)
 (** 証明の最適化が難しい場合に戻りましょう。
     困難さの原因は [nth_eq_last] です。
     これは、[nth (length l) (l ++ x::nil) d = x] をとります。
@@ -1675,11 +1675,11 @@ Lemma nth_eq_last' : forall (A : Type) (l : list A) (x d : A) (n : nat),
   n = length l -> nth n (l ++ x::nil) d = x.
 Proof. intros. subst. apply nth_eq_last. Qed.
 
-(*
+(* begin hide *)
 (** The proof case for [ref] from the preservation theorem then
     becomes much easier to prove, because [rewrite nth_eq_last']
     now succeeds. *)
-*)
+(* end hide *)
 (** 保存定理の証明の[ref]の場合は、はるかに簡単に証明できるようになります。
     [rewrite nth_eq_last'] が成功するからです。*)
 
@@ -1696,9 +1696,9 @@ Proof.
   fequal. symmetry. apply* nth_eq_last'.
 Qed.
 
-(*
+(* begin hide *)
 (** The optimized proof of preservation is summarized next. *)
-*)
+(* end hide *)
 (** 保存の最適化された証明は次のようにまとめられます。 *)
 
 Theorem preservation' : forall ST t t' T st st',
@@ -1737,16 +1737,16 @@ Qed.
 
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Progress for STLCRef *)
-*)
+(* end hide *)
 (** ** STLCRef の前進 *)
 
-(*
+(* begin hide *)
 (** The proof of progress for [STLCRef] can be found in chapter
     [References]. The optimized proof script is, here again, about
     half the length. *)
-*)
+(* end hide *)
 (** [STLCRef]の前進の証明はファイル[References] の章にあります。
     最適化された証明記述は、また、元の2分の1になります。*)
 
@@ -1784,19 +1784,19 @@ End PreservationProgressReferences.
 
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Subtyping *)
-*)
+(* end hide *)
 (** ** サブタイプ *)
 
 Require Sub.
 Module SubtypingInversion.
 Import Sub.
 
-(*
+(* begin hide *)
 (** Consider the inversion lemma for typing judgment
     of abstractions in a type system with subtyping. *)
-*)
+(* end hide *)
 (** サブタイプを持つ型システムの抽象化の型ジャッジメントに関する反転補題を考えましょう。*)
 
 Lemma abs_arrow : forall x S1 s2 T1 T2,
@@ -1812,13 +1812,13 @@ Proof with eauto.
   inversion Heq; subst...
 Qed.
 
-(*
+(* begin hide *)
 (** Exercise: optimize the proof script, using
     [introv], [lets] and [inverts*]. In particular,
     you will find it useful to replace the pattern
     [apply K in H. destruct H as I] with [lets I: K H].
     The solution is 4 lines. *)
-*)
+(* end hide *)
 (** 練習問題: [introv]、[lets]、[inverts*]を使って証明記述を最適化しなさい。
     特に [apply K in H. destruct H as I] を [lets I: K H] に置き換えることは有効です。
     解は4行です。*)
@@ -1831,13 +1831,13 @@ Proof.
   (* FILL IN HERE *) admit.
 Admitted.
 
-(*
+(* begin hide *)
 (** The lemma [substitution_preserves_typing] has already been used to
     illustrate the working of [lets] and [applys] in chapter
     [UseTactics]. Optimize further this proof using automation (with
     the star symbol), and using the tactic [cases_if']. The solution
     is 33 lines). *)
-*)
+(* end hide *)
 (** 補題[substitution_preserves_typing]はファイル[UseTactics]で[lets]と[applys]のはたらきを示すために既に使われています。
     この証明のさらなる最適化を、（星印付きの）自動処理とタクティック[cases_if']を使って行いなさい。
     解は33行です。*)
@@ -1854,18 +1854,18 @@ End SubtypingInversion.
 
 
 (* ################################################################# *)
-(*
+(* begin hide *)
 (** * Advanced Topics in Proof Search *)
-*)
+(* end hide *)
 (** * 証明探索の進んだ話題 *)
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Stating Lemmas in the Right Way *)
-*)
+(* end hide *)
 (** ** 補題を正しい方法で記述する *)
 
-(*
+(* begin hide *)
 (** Due to its depth-first strategy, [eauto] can get exponentially
     slower as the depth search increases, even when a short proof
     exists. In general, to make proof search run reasonably fast, one
@@ -1883,7 +1883,7 @@ End SubtypingInversion.
     When the hypothesis about [P] is stated in the form
     [forall n m, P m -> m <> 0 -> P n], then [eauto] works. However, with
     [forall n m, m <> 0 -> P m -> P n], the tactic [eauto] fails. *)
-*)
+(* end hide *)
 (** 深さ優先探索のため、[eauto]は探索の深さが増えるにつれ指数的に遅くなります。
     短かい証明が存在する場合でもそうです。
     一般に、証明探索を合理的な速さにするため、証明の深さを5から6を越える深さの探索は避けるべきです。
@@ -1922,7 +1922,7 @@ Proof.
      started from. So, [eauto] gets stuck at this point. *)
 Abort.
 
-(*
+(* begin hide *)
 (** It is very important to understand that the hypothesis [forall n
     m, P m -> m <> 0 -> P n] is eauto-friendly, whereas [forall n m, m
     <> 0 -> P m -> P n] really isn't.  Guessing a value of [m] for
@@ -1932,7 +1932,7 @@ Abort.
     hand, guessing a value of [m] for which [m <> 0] and then checking
     that [P m] holds does not work well, because there are many values
     of [m] that satisfy [m <> 0] but not [P m]. *)
-*)
+(* end hide *)
 (** 理解の上で重要な点は、仮定 [forall n m, P m -> m <> 0 -> P n] はeautoに優しく、一方 [forall n m, m <> 0 -> P m -> P n] は実際はそうではない、ということです。
     [P m] が成立する[m]の値を推測し、それから [m <> 0] が成立することをチェックするのがうまくいくのは、[P m] が成立する[m]がほとんどないからです。
     これから、[eauto]が正しい[m]を見つける可能性は高いのです。
@@ -1941,12 +1941,12 @@ Abort.
 
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Unfolding of Definitions During Proof-Search *)
-*)
+(* end hide *)
 (** ** 証明検索中で定義を展開する *)
 
-(*
+(* begin hide *)
 (** The use of intermediate definitions is generally encouraged in a
     formal development as it usually leads to more concise and more
     readable statements. Yet, definitions can make it a little harder
@@ -1957,30 +1957,30 @@ Abort.
     large proofs, so we avoid it. This section introduces a few
     techniques for avoiding to manually unfold definitions before
     calling proof search. *)
-*)
+(* end hide *)
 (** 中間的定義を使うことは通常、主張をより簡潔に、より読みやすくすることから、形式的開発では一般に奨励されます。
     しかし定義は、証明を自動化することを少し難しくします。
     問題は、証明探索メカニズムにとって、定義を展開しなければならないのがいつかが明らかではないことです。
     ここで、証明探索を呼ぶ前にすべての定義を展開しておくという素朴な戦略は、大きな証明ではスケールしない（拡大適用できない）ため、それは避ける、ということに注意します。
     この節では、証明探索前に手動で定義を展開することを避けるためのいくつかのテクニックを紹介します。 *)
 
-(*
+(* begin hide *)
 (** To illustrate the treatment of definitions, let [P] be an abstract
     property on natural numbers, and let [myFact] be a definition
     denoting the proposition [P x] holds for any [x] less than or
     equal to 3. *)
-*)
+(* end hide *)
 (** 定義の扱い方を示すために、[P]を自然数についての抽象的な性質で、[myFact]を、命題3以下の任意の[x]について命題 [P x] が成立することの定義であるとします。*)
 
 Axiom P : nat -> Prop.
 
 Definition myFact := forall x, x <= 3 -> P x.
 
-(*
+(* begin hide *)
 (** Proving that [myFact] under the assumption that [P x] holds for
     any [x] should be trivial. Yet, [auto] fails to prove it unless we
     unfold the definition of [myFact] explicitly. *)
-*)
+(* end hide *)
 (** 任意の[x]について [P x] が成立するという仮定のもとで [myFact] を証明することは、雑作もないことのはずです。
     しかし、[myFact]の定義を明示的に展開しない限り、[auto]は証明に失敗します。*)
 
@@ -1991,34 +1991,34 @@ Proof.
   unfold myFact. auto. (* unless we unfold the definition. *)
 Qed.
 
-(*
+(* begin hide *)
 (** To automate the unfolding of definitions that appear as proof
     obligation, one can use the command [Hint Unfold myFact] to tell
     Coq that it should always try to unfold [myFact] when [myFact]
     appears in the goal. *)
-*)
+(* end hide *)
 (** 証明課題に現れる定義の展開を自動化するために、コマンド [Hint Unfold myFact] を使うことができます。
     こうすると、[myFact]がゴールに現れたときに常に[myFact]を展開してみるべきであるということを、Coqに伝えることができます。*)
 
 Hint Unfold myFact.
 
-(*
+(* begin hide *)
 (** This time, automation is able to see through the definition
     of [myFact]. *)
-*)
+(* end hide *)
 (** これでやっと、自動証明は、[myFact]の定義の中を見ることができるようになります。*)
 
 Lemma demo_hint_unfold_goal_2 :
   (forall x, P x) -> myFact.
 Proof. auto. Qed.
 
-(*
+(* begin hide *)
 (** However, the [Hint Unfold] mechanism only works for unfolding
     definitions that appear in the goal. In general, proof search does
     not unfold definitions from the context. For example, assume we
     want to prove that [P 3] holds under the assumption that [True ->
     myFact]. *)
-*)
+(* end hide *)
 (** しかしながら、[Hint Unfold] メカニズムがはたらくのは、ゴールに現れる定義の展開だけです。
     一般に証明探索は、コンテキストの定義を展開しません。
     例えば、[True -> myFact] の仮定のもとで、[P 3]が成立することを証明したいとします。*)
@@ -2031,12 +2031,12 @@ Proof.
   unfold myFact in *. auto.  (* succeeds *)
 Qed.
 
-(*
+(* begin hide *)
 (** There is actually one exception to the previous rule: a constant
     occuring in an hypothesis is automatically unfolded if the
     hypothesis can be directly applied to the current goal. For example,
     [auto] can prove [myFact -> P 3], as illustrated below. *)
-*)
+(* end hide *)
 (** 前の規則に1つ例外があります: 
     コンテキストの定数はゴールに直接適用できるときに自動的に展開されます。
     例えば仮定が [myFact -> P 3] であるとき、 [auto] は証明に成功します。 *)
@@ -2047,68 +2047,68 @@ Proof. auto. Qed.
 
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Automation for Proving Absurd Goals *)
-*)
+(* end hide *)
 (** ** 不合理なゴールの証明の自動化 *)
 
-(*
+(* begin hide *)
 (** In this section, we'll see that lemmas concluding on a negation
     are generally not useful as hints, and that lemmas whose
     conclusion is [False] can be useful hints but having too many of
     them makes proof search inefficient. We'll also see a practical
     work-around to the efficiency issue. *)
-*)
+(* end hide *)
 (** この節では、否定を結論部とする補題は一般にはヒントには適さないこと、そして[False]を結論部とする補題は有用なヒントになりますが、それが多過ぎると証明探索が非効率になるということを示します。
     また、効率問題の現実的な回避策も見ます。*)
 
-(*
+(* begin hide *)
 (** Consider the following lemma, which asserts that a number
     less than or equal to 3 is not greater than 3. *)
-*)
+(* end hide *)
 (** 次の補題を考えましょう。この補題は、3以下の数は3を越えていないと主張しています。*)
 
 Parameter le_not_gt : forall x,
   (x <= 3) -> ~ (x > 3).
 
-(*
+(* begin hide *)
 (** Equivalently, one could state that a number greater than three is
     not less than or equal to 3. *)
-*)
+(* end hide *)
 (** 等価的に、3を越える数は3以下ではないと主張することもできるでしょう。*)
 
 Parameter gt_not_le : forall x,
   (x > 3) -> ~ (x <= 3).
 
-(*
+(* begin hide *)
 (** In fact, both statements are equivalent to a third one stating
     that [x <= 3] and [x > 3] are contradictory, in the sense that
     they imply [False]. *)
-*)
+(* end hide *)
 (** 実際、両主張は3つ目の主張：[x <= 3] かつ [x > 3] は矛盾する、と、[False]を含意するという意味で同値です。*)
 
 Parameter le_gt_false : forall x,
   (x <= 3) -> (x > 3) -> False.
 
-(*
+(* begin hide *)
 (** The following investigation aim at figuring out which of the three
     statments is the most convenient with respect to proof
     automation. The following material is enclosed inside a [Section],
     so as to restrict the scope of the hints that we are adding. In
     other words, after the end of the section, the hints added within
     the section will no longer be active.*)
-*)
+(* end hide *)
 (** 以下でやることの狙いは、証明自動化に関しては3つの主張のうちどれが便利かを調べることです。
     以下の素材は[Section]内に入れられています。これは、追加するヒントのスコープを限定するためです。
     言い換えると、セクションが終わった後では、セクション内で追加されたヒントはアクティブではなくなります。*)
 
 Section DemoAbsurd1.
 
-(*
+(* begin hide *)
 (** Let's try to add the first lemma, [le_not_gt], as hint,
     and see whether we can prove that the proposition
     [exists x, x <= 3 /\ x > 3] is absurd. *)
-*)
+(* end hide *)
 (** 最初の補題 [le_not_gt] をヒントとして追加して、
     命題 [exists x, x <= 3 /\ x > 3] が不合理であることを証明できるか試してみましょう。*)
 
@@ -2122,12 +2122,12 @@ Proof.
   eapply le_not_gt. eauto. eauto.
 Qed.
 
-(*
+(* begin hide *)
 (** The lemma [gt_not_le] is symmetric to [le_not_gt], so it will not
     be any better. The third lemma, [le_gt_false], is a more useful
     hint, because it concludes on [False], so proof search will try to
     apply it when the current goal is [False]. *)
-*)
+(* end hide *)
 (** 補題[gt_not_le]は[le_not_gt]と対称性があるため、同じことです。
     3つ目の補題[le_gt_false]はより有効なヒントです。
     なぜなら、[False]が結論部になっているため、現在のゴールが[False]であるときに、証明探索が適用してみようとするからです。*)    
@@ -2146,27 +2146,27 @@ Proof.
   jauto.
 Qed.
 
-(*
+(* begin hide *)
 (** In summary, a lemma of the form [H1 -> H2 -> False] is a much more
     effective hint than [H1 -> ~ H2], even though the two statments
     are equivalent up to the definition of the negation symbol [~]. *)
-*)
+(* end hide *)
 (** まとめると、[H1 -> H2 -> False] という形の補題は [H1 -> ~ H2] よりはるかに有効なヒントです。
     両者は否定記号[~]の定義のもとで同値であるにもかかわらずそうなのです。*)    
 
-(*
+(* begin hide *)
 (** That said, one should be careful with adding lemmas whose
     conclusion is [False] as hint. The reason is that whenever
     reaching the goal [False], the proof search mechanism will
     potentially try to apply all the hints whose conclusion is [False]
     before applying the appropriate one.  *)
-*)
+(* end hide *)
 (** しかし、[False]を結論部とする補題をヒントに追加するのは慎重に行うべきです。
     理由は、ゴール[False]に到達するときはいつでも、証明探索メカニズムは、適切なヒントを適用する前に、結論部が[False]であるヒントをすべて適用してみる可能性があるからです。*)
 
 End DemoAbsurd1.
 
-(*
+(* begin hide *)
 (** Adding lemmas whose conclusion is [False] as hint can be, locally,
     a very effective solution. However, this approach does not scale
     up for global hints.  For most practical applications, it is
@@ -2176,7 +2176,7 @@ End DemoAbsurd1.
     with [False] and calls [eapply H]. Its behavior is described next.
     Observe that any of the three statements [le_not_gt], [gt_not_le]
     or [le_gt_false] can be used. *)
-*)
+(* end hide *)
 (** 結論部が[False]である補題をヒントに追加することは、ローカルにはとても効率的な解です。
     しかし、このアプローチはグローバルなヒントにはスケールアップ（拡大適用）できません。
     一番現実的な適用のためには、矛盾を導くのに使う補題に名前を付けるのが合理的です。
@@ -2209,7 +2209,7 @@ Proof.
   - false le_not_gt. eauto. eauto.
 Qed.
 
-(*
+(* begin hide *)
 (** In the above example, [false le_gt_false; eauto] proves the goal,
     but [false le_gt_false; auto] does not, because [auto] does not
     correctly instantiate the existential variable. Note that [false*
@@ -2217,7 +2217,7 @@ Qed.
     to call [auto] first. So, there are two possibilities for
     completing the proof: either call [false le_gt_false; eauto], or
     call [false* (le_gt_false 3)]. *)
-*)
+(* end hide *)
 (** 上の例で、[false le_gt_false; eauto] はゴールを証明します。
     しかし [false le_gt_false; auto] はゴールを証明できません。
     なぜなら[auto]は存在変数を正しく具体化しないからです。
@@ -2228,12 +2228,12 @@ Qed.
 
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Automation for Transitivity Lemmas *)
-*)
+(* end hide *)
 (** ** 推移性補題についての自動化 *)
 
-(*
+(* begin hide *)
 (** Some lemmas should never be added as hints, because they would
     very badly slow down proof search. The typical example is that of
     transitivity results. This section describes the problem and
@@ -2243,7 +2243,7 @@ Qed.
     two object [S] and [T] of type [typ]. Assume that this relation
     has been proved reflexive and transitive. The corresponding lemmas
     are named [subtype_refl] and [subtype_trans]. *)
-*)
+(* end hide *)
 (** いくつかの補題はヒントに追加するべきではありません。それは、証明探索を非常に遅くするからです。
     典型的な例は推移的な結果についてのものです。
     この節では、その問題を説明し、一般的な回避策を示します。
@@ -2262,22 +2262,22 @@ Parameter subtype_refl : forall T,
 Parameter subtype_trans : forall S T U,
   subtype S T -> subtype T U -> subtype S U.
 
-(*
+(* begin hide *)
 (** Adding reflexivity as hint is generally a good idea,
     so let's add reflexivity of subtyping as hint. *)
-*)
+(* end hide *)
 (** 反射性をヒントに加えるのは一般に良い考えです。
     サブタイプ関係の反射性をヒントに加えましょう。*)
 
 Hint Resolve subtype_refl.
 
-(*
+(* begin hide *)
 (** Adding transitivity as hint is generally a bad idea.  To
     understand why, let's add it as hint and see what happens.
     Because we cannot remove hints once we've added them, we are going
     to open a "Section," so as to restrict the scope of the
     transitivity hint to that section. *)
-*)
+(* end hide *)
 (** 推移性をヒントに加えることは一般には良い考えではありません。
     それが何故かを理解するために、ヒントに加えてみて何が起こるか見てみましょう。
     一度ヒントに追加するとそれを除去することはできないので、セクション("Section")を設けて、推移性ヒントのスコープをそのセクションに限定するようにします。*)
@@ -2286,10 +2286,10 @@ Section HintsTransitivity.
 
 Hint Resolve subtype_trans.
 
-(*
+(* begin hide *)
 (** Now, consider the goal [forall S T, subtype S T], which clearly has
     no hope of being solved. Let's call [eauto] on this goal. *)
-*)
+(* end hide *)
 (** このとき、ゴール [forall S T, subtype S T] を考えます。
     これは明らかに解ける見込みがありません。このゴールに[eauto]を呼んでみましょう。*)
 
@@ -2299,15 +2299,15 @@ Proof.
   intros. (* debug *) eauto. (* Investigates 106 applications... *)
 Abort.
 
-(*
+(* begin hide *)
 (** Note that after closing the section, the hint [subtype_trans]
     is no longer active. *)
-*)
+(* end hide *)
 (** セクションを閉じた後では、ヒント[subtype_trans]はもうアクティブではなくなることに注意します。*)
 
 End HintsTransitivity.
 
-(*
+(* begin hide *)
 (** In the previous example, the proof search has spent a lot of time
     trying to apply transitivity and reflexivity in every possible
     way.  Its process can be summarized as follows. The first goal is
@@ -2323,7 +2323,7 @@ End HintsTransitivity.
     [eauto] keeps trying to apply it even though it most often doesn't
     help to solve the goal. So, one should never add a transitivity
     lemma as a hint for proof search. *)
-*)
+(* end hide *)
 (** 上の例では、証明探索は多くの時間を費して、
     推移性と反射性を可能なすべての方法で適用しようと試みています。
     この過程は以下のようにまとめられます。
@@ -2341,7 +2341,7 @@ End HintsTransitivity.
     この補題を適用しようとし続けます。
     これから、証明探索のヒントに推移性を加えることはやめるべきです。*)
 
-(*
+(* begin hide *)
 (** There is a general workaround for having automation to exploit
     transitivity lemmas without giving up on efficiency. This workaround
     relies on a powerful mechanism called "external hint." This
@@ -2356,7 +2356,7 @@ End HintsTransitivity.
     lemma when there is some evidence that this application might
     help.  To set up this "external hint," one has to write the
     following. *)
-*)
+(* end hide *)
 (** 効率を無視せずに推移性補題を自動証明で使うための一般的回避策があります。
     この回避策は "external hint" という強力なメカニズムを使います。
     このメカニズムを使うと、特定の補題を証明探索中でどういう条件の場合に試してみるべきかを手で書くことができます。
@@ -2371,7 +2371,7 @@ Hint Extern 1 (subtype ?S ?U) =>
   | H: subtype ?T U |- _ => apply (@subtype_trans S T U)
   end.
 
-(*
+(* begin hide *)
 (** This hint declaration can be understood as follows.
     - "Hint Extern" introduces the hint.
     - The number "1" corresponds to a priority for proof search.
@@ -2401,7 +2401,7 @@ Hint Extern 1 (subtype ?S ?U) =>
 
     Note: the same external hint can be reused for any other transitive
     relation, simply by renaming [subtype] into the name of that relation. *)
-*)
+(* end hide *)
 (** このヒント宣言は次のように理解できます。
     - "Hint Extern" はヒントを導入します。
     - 数 "1" は証明探索の優先度に対応します。
@@ -2421,9 +2421,9 @@ Hint Extern 1 (subtype ?S ?U) =>
     注意: 任意の別の推移的関係について同じ external hint を再利用することができます。
     その場合、[subtype]をその関係の名前に置き換えるだけです。*)
 
-(*
+(* begin hide *)
 (** Let us see an example illustrating how the hint works. *)
-*)
+(* end hide *)
 (** このヒントがどのようにはたらくか例を見てみましょう。*)
 
 Lemma transitivity_workaround_1 : forall T1 T2 T3 T4,
@@ -2432,10 +2432,10 @@ Proof.
   intros. (* debug *) eauto. (* The trace shows the external hint being used *)
 Qed.
 
-(*
+(* begin hide *)
 (** We may also check that the new external hint does not suffer from the
     complexity blow up. *)
-*)
+(* end hide *)
 (** 新しい external hint が複雑さの爆発を起こさないことをチェックすることもできるでしょう。*)
 
 Lemma transitivity_workaround_2 : forall S T,
@@ -2446,12 +2446,12 @@ Abort.
 
 
 (* ################################################################# *)
-(*
+(* begin hide *)
 (** * Decision Procedures *)
-*)
+(* end hide *)
 (** * 決定手続き *)
 
-(*
+(* begin hide *)
 (** A decision procedure is able to solve proof obligations whose
     statement admits a particular form. This section describes three
     useful decision procedures. The tactic [omega] handles goals
@@ -2461,7 +2461,7 @@ Abort.
     inequalities. The tactic [congruence] is able to prove equalities
     and inequalities by exploiting equalities available in the proof
     context. *)
-*)
+(* end hide *)
 (** 決定手続きは主張が特定の形である証明課題を解くことができます。
     この節では、3つの有用な決定手続きについて説明します。
     タクティック[omega]は算術と不等式を含むゴールを扱うことができますが、一般の積算は扱えません。
@@ -2472,13 +2472,13 @@ Abort.
 (* ================================================================= *)
 (** ** Omega *)
 
-(*
+(* begin hide *)
 (** The tactic [omega] supports natural numbers (type [nat]) as well as
     integers (type [Z], available by including the module [ZArith]).
     It supports addition, substraction, equalities and inequalities.
     Before using [omega], one needs to import the module [Omega],
     as follows. *)
-*)
+(* end hide *)
 (** タクティック[omega]は自然数（型[nat]）と整数（型[Z]、これは[ZArith]モジュールを読み込むことで利用可）を対象とします。
     加算、減算、等式、不等式を対象とします。
     [omega]を使う前にモジュール[Omega]を import する必要があります。
@@ -2486,12 +2486,12 @@ Abort.
 
 Require Import Omega.
 
-(*
+(* begin hide *)
 (** Here is an example. Let [x] and [y] be two natural numbers
     (they cannot be negative). Assume [y] is less than 4, assume
     [x+x+1] is less than [y], and assume [x] is not zero. Then,
     it must be the case that [x] is equal to one. *)
-*)
+(* end hide *)
 (** 例を示します: [x]と[y]を2つの自然数（負にはならない）とする。
     [y]は4以下と仮定し、[x+x+1]は[y]以下と仮定し、そして[x]はゼロではないと仮定する。
     すると、[x]は1でなければならない。*)
@@ -2501,23 +2501,23 @@ Lemma omega_demo_1 : forall (x y : nat),
   (y <= 4) -> (x + x + 1 <= y) -> (x <> 0) -> (x = 1).
 Proof. intros. omega. Qed.
 
-(*
+(* begin hide *)
 (** Another example: if [z] is the mean of [x] and [y], and if the
     difference between [x] and [y] is at most [4], then the difference
     between [x] and [z] is at most 2. *)
-*)
+(* end hide *)
 (** 別の例: もし[z]が[x]と[y]の間で、[x]と[y]の差が高々[4]である場合、[x]と[z]の間は高々2である。*)
 
 Lemma omega_demo_2 : forall (x y z : nat),
   (x + y = z + z) -> (x - y <= 4) -> (x - z <= 2).
 Proof. intros. omega. Qed.
 
-(*
+(* begin hide *)
 (** One can proof [False] using [omega] if the mathematical facts
     from the context are contradictory. In the following example,
     the constraints on the values [x] and [y] cannot be all
     satisfied in the same time. *)
-*)
+(* end hide *)
 (** コンテキストの数学的事実が矛盾している場合、[omega]を使って[False]を証明することができます。
     次の例では、[x]と[y]の制約をすべて同時に満たすことはできません。*)
 
@@ -2525,12 +2525,12 @@ Lemma omega_demo_3 : forall (x y : nat),
   (x + 5 <= y) -> (y - x < 3) -> False.
 Proof. intros. omega. Qed.
 
-(*
+(* begin hide *)
 (** Note: [omega] can prove a goal by contradiction only if its
     conclusion reduces to [False]. The tactic [omega] always fails
     when the conclusion is an arbitrary proposition [P], even though
     [False] implies any proposition [P] (by [ex_falso_quodlibet]). *)
-*)
+(* end hide *)
 (** 注意: [omega]が矛盾によってゴールを証明できるのは、ゴールの結論部が[False]に簡約されるときだけです。
     [False]から（[ex_falso_quodlibet]によって）任意の命題[P]が導出されますが、タクティック[omega]は、ゴールの結論部が任意の命題[P]であるときは常に失敗します。*)
 
@@ -2548,13 +2548,13 @@ Qed.
 (* ================================================================= *)
 (** ** Ring *)
 
-(*
+(* begin hide *)
 (** Compared with [omega], the tactic [ring] adds support for
     multiplications, however it gives up the ability to reason on
     inequations. Moreover, it supports only integers (type [Z]) and
     not natural numbers (type [nat]). Here is an example showing how
     to use [ring]. *)
-*)
+(* end hide *)
 (** [omega]と比較して、タクティック[ring]は積算を対象としていますが、不等式についての推論は放棄しています。
     さらに、対象とするのは整数（型[Z]）だけで、自然数（型[nat]）は対象外です。
     以下は[ring]の使い方の例です。*)
@@ -2575,14 +2575,14 @@ End RingDemo.
 (* ================================================================= *)
 (** ** Congruence *)
 
-(*
+(* begin hide *)
 (** The tactic [congruence] is able to exploit equalities from the
     proof context in order to automatically perform the rewriting
     operations necessary to establish a goal. It is slightly more
     powerful than the tactic [subst], which can only handle equalities
     of the form [x = e] where [x] is a variable and [e] an
     expression. *)
-*)
+(* end hide *)
 (** タクティック [congruence] は、証明コンテキストの等式を使って、ゴールに至るための書き換えを自動実行することができます。
     タクティック [subst] が扱える等式は変数 [x] と式 [e] について [x = e] という形のものだけですが、 [congruence] は [subst] より若干強力です。 *)
 
@@ -2594,10 +2594,10 @@ Lemma congruence_demo_1 :
    f 2 (h z) = z.
 Proof. intros. congruence. Qed.
 
-(*
+(* begin hide *)
 (** Moreover, [congruence] is able to exploit universally quantified
     equalities, for example [forall a, g a = h a]. *)
-*)
+(* end hide *)
 (** さらに[congruence]は、例えば [forall a, g a = h a] のように全称限量された等式を扱えます。*)
 
 Lemma congruence_demo_2 :
@@ -2608,9 +2608,9 @@ Lemma congruence_demo_2 :
    f 2 (h y) = z.
 Proof. congruence. Qed.
 
-(*
+(* begin hide *)
 (** Next is an example where [congruence] is very useful. *)
-*)
+(* end hide *)
 (** 次は[congruence]がとても有効な例です。*)
 
 Lemma congruence_demo_4 : forall (f g : nat->nat),
@@ -2618,11 +2618,11 @@ Lemma congruence_demo_4 : forall (f g : nat->nat),
   f (g (g 2)) = g (f (f 2)).
 Proof. congruence. Qed.
 
-(*
+(* begin hide *)
 (** The tactic [congruence] is able to prove a contradiction if the
     goal entails an equality that contradicts an inequality available
     in the proof context. *)
-*)
+(* end hide *)
 (** タクティック[congruence]は、証明コンテキストで等しくない関係にある両辺についての等式をゴールが前提とするとき、矛盾を証明できます。*)
 
 Lemma congruence_demo_3 :
@@ -2633,21 +2633,21 @@ Lemma congruence_demo_3 :
    False.
 Proof. congruence. Qed.
 
-(*
+(* begin hide *)
 (** One of the strengths of [congruence] is that it is a very fast
     tactic. So, one should not hesitate to invoke it wherever it might
     help. *)
-*)
+(* end hide *)
 (** [congruence]の強みの1つはとても速いタクティックだということです。
     このため、役立つかもしれないときに試すことをためらう必要はありません。*)
 
 (* ################################################################# *)
-(*
+(* begin hide *)
 (** * Summary *)
-*)
+(* end hide *)
 (** * まとめ *)
 
-(*
+(* begin hide *)
 (** Let us summarize the main automation tactics available.
 
     - [auto] automatically applies [reflexivity], [assumption], and [apply].
@@ -2694,7 +2694,7 @@ Proof. congruence. Qed.
     Becoming a master in the black art of automation certainly requires
     some investment, however this investment will pay off very quickly.
 *)
- *)
+(* end hide *)
 (** 主に使用する自動化タクティックをまとめます。
  
     - [auto] は [reflexivity]、[assumption]、[apply] を自動で適用します。
