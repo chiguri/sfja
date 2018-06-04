@@ -192,7 +192,7 @@ checkproofs:
 gallina: $(GFILES)
 
 html: $(GLOBFILES) $(VFILES) _CoqProject footer.html header.html README LICENSE
-	$(COQDOC) --interpolate --html --with-header header.html --with-footer footer.html --no-lib-name --lib-subtitles -toc --toc-depth 2 --index coqindex -d html $(PLFFILES)
+	$(COQDOC) --interpolate --html --with-header header.html --with-footer footer.html --no-lib-name --lib-subtitles -toc --toc-depth 2 --index coqindex -d html -parse-comments $(PLFFILES)
 	rm -f html/coqdoc.css
 	tar zcvf html/plf.tgz $(VFILES) _CoqProject footer.html header.html Makefile README LICENSE $(PLFFILES:%.v=html/%.html) html/deps.gif html/deps.html html/deps.map html/index.html html/coqindex.html html/toc.html html/common
 
