@@ -1,7 +1,7 @@
 (** * Sub :サブタイプ *)
-(*
+(* begin hide *)
 (** * Sub: Subtyping *)
-*)
+(* end hide *)
 
 Set Warnings "-notation-overridden,-parsing".
 Require Import Maps.
@@ -9,32 +9,32 @@ Require Import Types.
 Require Import Smallstep.
 
 (* ################################################################# *)
-(*
+(* begin hide *)
 (** * Concepts *)
-*)
+(* end hide *)
 (** * 概念 *)
 
-(*
+(* begin hide *)
 (** We now turn to the study of _subtyping_, a key feature
     needed to support the object-oriented programming style. *)
-*)
+(* end hide *)
 (** さて、サブタイプ(_subtyping_)の学習に入ります。
     サブタイプはオブジェクト指向プログラミングをサポートするのに重要な機能の一つです。 *)
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** A Motivating Example *)
-*)
+(* end hide *)
 (** ** 動機付け *)
 
-(*
+(* begin hide *)
 (** Suppose we are writing a program involving two record types
     defined as follows:
 
       Person  = {name:String, age:Nat}
       Student = {name:String, age:Nat, gpa:Nat}
 *)
- *)
+(* end hide *)
 (** 以下に定義する二つのレコード型が出現するプログラムを書いているとしましょう。
 <<
       Person  = {name:String, age:Nat} 
@@ -42,7 +42,7 @@ Require Import Smallstep.
 >>
 *)
 
-(*
+(* begin hide *)
 (** In the simply typed lamdba-calculus with records, the term
 
       (\r:Person. (r.age)+1) {name="Pat",age=21,gpa=1}
@@ -74,7 +74,7 @@ Require Import Smallstep.
    expected.  The idea of subtyping applies not only to records, but
    to all of the type constructors in the language -- functions,
    pairs, etc. *)
-*)
+(* end hide *)
 (** レコードを持つ単純型付きラムダ計算では、項
 <<
       (\r:Person. (r.age)+1) {name="Pat",age=21,gpa=1} 
@@ -98,12 +98,12 @@ Require Import Smallstep.
    サブタイプの概念はレコードだけではなく、関数、対、など言語のすべての型コンストラクタに適用されます。 *)
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Subtyping and Object-Oriented Languages *)
-*)
+(* end hide *)
 (** ** サブタイプとオブジェクト指向言語 *)
 
-(*
+(* begin hide *)
 (** Subtyping plays a fundamental role in many programming
     languages -- in particular, it is closely related to the notion of
     _subclassing_ in object-oriented languages.
@@ -148,7 +148,7 @@ Require Import Smallstep.
     you are interested.)  Instead, we'll study the core concepts
     behind the subclass / subinterface relation in the simplified
     setting of the STLC. *)
-*)
+(* end hide *)
 (** サブタイプは多くのプログラミング言語で重要な役割を演じます。
     特に、オブジェクト指向言語のサブクラス(_subclassing_)の概念と近い関係にあります。
  
@@ -180,12 +180,12 @@ Require Import Smallstep.
     その代わり、STLCの単純化された設定のもとで、サブクラス/サブインターフェース関係の背後にある核となる概念について学習します。 *)
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** The Subsumption Rule *)
-*)
+(* end hide *)
 (** ** 包摂規則 *)
 
-(*
+(* begin hide *)
 (** Our goal for this chapter is to add subtyping to the simply typed
     lambda-calculus (with some of the basic extensions from [MoreStlc]).
     This involves two steps:
@@ -203,7 +203,7 @@ Require Import Smallstep.
 
     This rule says, intuitively, that it is OK to "forget" some of
     what we know about a term. *)
-*)
+(* end hide *)
 (** この章のゴールは（[MoreStlc]の拡張機能を持つ）単純型付きラムダ計算にサブタイプを追加することです。
     これは2つのステップから成ります：
  
@@ -220,36 +220,36 @@ Require Import Smallstep.
 >>
     この規則は、直観的には、項について知っている情報のいくらかを「忘れる」ようにしてよいと言っています。 *)
 
-(*
+(* begin hide *)
 (** For example, we may know that [t] is a record with two
     fields (e.g., [S = {x:A->A, y:B->B}]), but choose to forget about
     one of the fields ([T = {y:B->B}]) so that we can pass [t] to a
     function that requires just a single-field record. *)
-*)
+(* end hide *)
 (** 例えば、[t]が2つのフィールドを持つレコード（例えば、[S = {x:A->A, y:B->B}]）で、フィールドの1つを忘れることにした（[T = {y:B->B}]）とします。
     すると[t]を、1フィールドのレコードを引数としてとる関数に渡すことができるようになります。 *)
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** The Subtype Relation *)
-*)
+(* end hide *)
 (** ** サブタイプ関係 *)
 
-(*
+(* begin hide *)
 (** The first step -- the definition of the relation [S <: T] -- is
     where all the action is.  Let's look at each of the clauses of its
     definition.  *)
-*)
+(* end hide *)
 (** 最初のステップ、関係 [S <: T] の定義はすべてのアクションに関して存在します。
     それぞれの定義を見てみましょう。 *)
 
 (* ----------------------------------------------------------------- *)
-(*
+(* begin hide *)
 (** *** Structural Rules *)
-*)
+(* end hide *)
 (** *** 構造規則 *)
 
-(*
+(* begin hide *)
 (** To start off, we impose two "structural rules" that are
     independent of any particular type constructor: a rule of
     _transitivity_, which says intuitively that, if [S] is 
@@ -266,7 +266,7 @@ Require Import Smallstep.
                                    ------                              (S_Refl)
                                    T <: T
 *)
-*)
+(* end hide *)
 (** まず最初に、2つの「構造規則」("structural rules")を追加します。
     これらは特定の型コンストラクタからは独立したものです。
     推移(_transitivity_)規則は、直観的には、[S]が[U]よりも（安全、豊かさの面で）良く、[U]が[T]よりも良ければ、[S]は[T]よりも良いというものです。
@@ -283,12 +283,12 @@ Require Import Smallstep.
 *)
 
 (* ----------------------------------------------------------------- *)
-(*
+(* begin hide *)
 (** *** Products *)
-*)
+(* end hide *)
 (** *** 直積型 *)
 
-(*
+(* begin hide *)
 (** Now we consider the individual type constructors, one by one,
     beginning with product types.  We consider one pair to be a subtype 
     of another if each of its components is.
@@ -297,7 +297,7 @@ Require Import Smallstep.
                             --------------------                        (S_Prod)
                              S1 * S2 <: T1 * T2
 *)
- *)
+(* end hide *)
 (** 次に、直積型です。
     ある一つの対が他の対のサブタイプであるとは、それぞれの成分が対応するもののサブタイプであることです。
 <<
@@ -308,12 +308,12 @@ Require Import Smallstep.
  *)
 
 (* ----------------------------------------------------------------- *)
-(*
+(* begin hide *)
 (** *** Arrows *)
-*)
+(* end hide *)
 (** *** 関数型 *)
 
-(*
+(* begin hide *)
 (** The subtyping rule for arrows is a little less intuitive.  
     Suppose we have functions [f] and [g] with these types:
 
@@ -373,7 +373,7 @@ Require Import Smallstep.
     also view these results belonging to any supertype [T2] of
     [S2]. That is, any function [f] of type [S1->S2] can also be
     viewed as having type [T1->T2]. *)
-*)
+(* end hide *)
 (** 関数型のサブタイプ関係はやや直観から外れます。
     次の型を持つ2つの関数[f]と[g]があるとします：
 [[
@@ -423,17 +423,17 @@ Require Import Smallstep.
     つまり、型[S1->S2]の任意の関数[f]は、型[T1->T2]を持つと見ることもできるということです。 *)
 
 (* ----------------------------------------------------------------- *)
-(*
+(* begin hide *)
 (** *** Records *)
-*)
+(* end hide *)
 (** *** レコード *)
 
-(*
+(* begin hide *)
 (** What about subtyping for record types? *)
-*)
+(* end hide *)
 (** レコード型のサブタイプは何でしょうか？ *)
 
-(*
+(* begin hide *)
 (** The basic intuition is that it is always safe to use a "bigger"
     record in place of a "smaller" one.  That is, given a record type,
     adding extra fields will always result in a subtype.  If some code
@@ -446,7 +446,7 @@ Require Import Smallstep.
     {name:String} <: {}
 
     This is known as "width subtyping" for records. *)
-*)
+(* end hide *)
 (** 基本的直観は、「より小さな」レコードの場所で「より大きな」レコードを使うことは常に安全だということです。
     つまり、レコード型があるとき、さらにフィールドを追加したものは常にサブタイプになるということです。
     もしあるコードがフィールド[x]と[y]を持つレコードを期待していたとき、レコード[x]、[y]、[z]を持つレコードを受けとることは完璧に安全です。
@@ -459,7 +459,7 @@ Require Import Smallstep.
 ]]
    これはレコードの「幅サブタイプ(width subtyping)」として知られます。 *)
 
-(*
+(* begin hide *)
 (** We can also create a subtype of a record type by replacing the type
     of one of its fields with a subtype.  If some code is expecting a
     record with a field [x] of type [T], it will be happy with a record
@@ -469,7 +469,7 @@ Require Import Smallstep.
     {x:Student} <: {x:Person}
 
     This is known as "depth subtyping". *)
-*)
+(* end hide *)
 (** レコードの1つのフィールドの型をそのサブタイプで置き換えることでも、レコードのサブタイプを作ることができます。
     もしあるコードが型[T]のフィールド[x]を持つレコードを期待するとき、型[S]が型[T]のサブタイプである限り、型[S]のフィールド[x]を持つレコードが来ても何の問題も起こりません。
     例えば次の通りです。
@@ -478,14 +478,14 @@ Require Import Smallstep.
 ]]
     これは「深さサブタイプ(depth subtyping)」として知られています。 *)
 
-(*
+(* begin hide *)
 (** Finally, although the fields of a record type are written in a
     particular order, the order does not really matter. For example,
 
     {name:String,age:Nat} <: {age:Nat,name:String}
 
     This is known as "permutation subtyping". *)
-*)
+(* end hide *)
 (** 最後に、レコードのフィールドは特定の順番で記述されますが、その順番は実際には問題ではありません。
     例えば次の通りです。
 [[
@@ -493,7 +493,7 @@ Require Import Smallstep.
 ]]
     これは「順列サブタイプ(permutation subtyping)」として知られています。 *)
 
-(*
+(* begin hide *)
 (** We _could_ formalize these requirements in a single subtyping rule
     for records as follows:
 
@@ -510,7 +510,7 @@ Require Import Smallstep.
     However, this rule is rather heavy and hard to read, so it is often 
     decomposed into three simpler rules, which can be combined using 
     [S_Trans] to achieve all the same effects. *)
-*)
+(* end hide *)
 (** これらをレコードについての単一のサブタイプ規則に形式化することもできはします。
     次の通りです:
 <<
@@ -525,7 +525,7 @@ Require Import Smallstep.
     しかしながら、この規則はかなり重くて読むのが大変なので、3つの簡単な規則に分解されます。
     この3つを[S_Trans]を使って結合することで、同じように作用させることができます。 *)
 
-(*
+(* begin hide *)
 (** First, adding fields to the end of a record type gives a subtype:
 
                                n > m
@@ -535,7 +535,7 @@ Require Import Smallstep.
     We can use [S_RcdWidth] to drop later fields of a multi-field
     record while keeping earlier fields, showing for example that
     [{age:Nat,name:String} <: {name:String}]. *)
-*)
+(* end hide *)
 (** 最初に、レコード型の最後にフィールドを追加したものはサブタイプになります。
 <<
                                n > m 
@@ -546,7 +546,7 @@ Require Import Smallstep.
     前方のフィールドを残したまま後方のフィールドを取り除くことができます。
     この規則で例えば [{age:Nat,name:String} <: {name:String}] を示せます。 *)
 
-(*
+(* begin hide *)
 (** Second, subtyping can be applied inside the components of a compound
     record type:
 
@@ -556,7 +556,7 @@ Require Import Smallstep.
 
     For example, we can use [S_RcdDepth] and [S_RcdWidth] together to
     show that [{y:Student, x:Nat} <: {y:Person}]. *)
-*)
+(* end hide *)
 (** 二つ目では、レコード型の構成要素の内部にサブタイプ規則を適用できます。
 <<
                        S1 <: T1  ...  Sn <: Tn 
@@ -565,7 +565,7 @@ Require Import Smallstep.
 >>
     例えば [S_RcdDepth]と[S_RcdWidth]を両方使って [{y:Student, x:Nat} <: {y:Person}]を示すことができます。 *)
 
-(*
+(* begin hide *)
 (** Third, subtyping can reorder fields.  For example, we
     want [{name:String, gpa:Nat, age:Nat} <: Person].  (We
     haven't quite achieved this yet: using just [S_RcdDepth] and
@@ -576,7 +576,7 @@ Require Import Smallstep.
          ---------------------------------------------------        (S_RcdPerm)
                   {i1:S1...in:Sn} <: {j1:T1...jn:Tn}
 *)
- *)
+(* end hide *)
 (** 三つ目に、サブタイプとしてフィールドの並べ替えを可能にします。
     例えば [{name:String, gpa:Nat, age:Nat} <: Person] であってほしいのです。
     （これはまだ達成されていません。
@@ -589,7 +589,7 @@ Require Import Smallstep.
 >>
  *)
 
-(*
+(* begin hide *)
 (** It is worth noting that full-blown language designs may choose not
     to adopt all of these subtyping rules. For example, in Java:
 
@@ -604,7 +604,7 @@ Require Import Smallstep.
     - A class may implement multiple interfaces -- so-called "multiple
       inheritance" of interfaces (i.e., permutation is allowed for
       interfaces). *)
-*)
+(* end hide *)
 (** なお、本格的な言語ではこれらのサブタイプ規則のすべてを採用しているとは限らないことは注記しておくべきでしょう。
     例えばJavaでは
  
@@ -619,11 +619,11 @@ Require Import Smallstep.
       これはインターフェースの「多重継承(multiple inheritance)」と呼ばれます
       （つまり、インターフェースには並び換えがあります）。 *)
 
-(*
+(* begin hide *)
 (** **** Exercise: 2 stars, recommended (arrow_sub_wrong)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★★, recommended (arrow_sub_wrong)  *)
-(*
+(* begin hide *)
 (** Suppose we had incorrectly defined subtyping as covariant on both
     the right and the left of arrow types:
 
@@ -643,7 +643,7 @@ Require Import Smallstep.
 
 
     [] *)
-*)
+(* end hide *)
 (** 関数型のサブタイプについて、誤って矢印の左右両方とも共変として定義してしまったとする。
 <<
                             S1 <: T1    S2 <: T2 
@@ -665,7 +665,7 @@ Require Import Smallstep.
 (* ----------------------------------------------------------------- *)
 (** *** Top *)
 
-(*
+(* begin hide *)
 (** Finally, it is convenient to give the subtype relation a maximum
     element -- a type that lies above every other type and is
     inhabited by all (well-typed) values.  We do this by adding to the
@@ -677,7 +677,7 @@ Require Import Smallstep.
                                    S <: Top
 
     The [Top] type is an analog of the [Object] type in Java and C[#]. *)
-*)
+(* end hide *)
 (** 最後に、サブタイプ関係の最大要素を定めます。
     他のすべての型のスーパータイプであり、すべての(型付けできる)値が属する型です。
     このために言語に新しい一つの型定数[Top]を追加し、[Top]をサブタイプ関係の他のすべての型のスーパータイプとするサブタイプ規則を定めます:
@@ -957,36 +957,36 @@ of the five types above. It may be unrelated to some of them.
     [] *)
 
 (* ################################################################# *)
-(*
+(* begin hide *)
 (** * Formal Definitions *)
-*)
+(* end hide *)
 (** * 形式的定義 *)
 
-(*
+(* begin hide *)
 (** Most of the definitions needed to formalize what we've discussed
     above -- in particular, the syntax and operational semantics of
     the language -- are identical to what we saw in the last chapter.
     We just need to extend the typing relation with the subsumption
     rule and add a new [Inductive] definition for the subtyping
     relation.  Let's first do the identical bits. *)
-*)
+(* end hide *)
 (** 上記の議論で使った、形式化する定義のほとんど -- 特に言語の構文と操作的意味 -- は前の章で見たものと同じです。
     ここで必要となるものは型付け規則の包括規則による拡張と、サブタイプ関係を表す帰納的定義の追加です。
     最初に同じ部分をやってみましょう。 *)
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Core Definitions *)
-*)
+(* end hide *)
 (** * 中核部の定義 *)
 
 (* ----------------------------------------------------------------- *)
-(*
+(* begin hide *)
 (** *** Syntax *)
-*)
+(* end hide *)
 (** *** 構文 *)
 
-(*
+(* begin hide *)
 (** In the rest of the chapter, we formalize just base types,
     booleans, arrow types, [Unit], and [Top], omitting record types
     and leaving product types as an exercise.  For the sake of more
@@ -994,7 +994,7 @@ of the five types above. It may be unrelated to some of them.
     like [String], [Float], etc.  (Since they are just for examples,
     we won't bother adding any operations over these base types, but
     we could easily do so.) *)
-*)
+(* end hide *)
 (** この章の残りでは、レコード型は省略して、基底型、ブール型、関数型、[Unit]と[Top]のみ形式化し、直積型は練習問題にします。
     例をおもしろくするために、[String]、[Float]のような、任意の基底型を許しています。
     （これはあくまで例で用いるためだけなので、わざわざこれらへの操作を追加したりはしませんが、そうすることは簡単です。） *)
@@ -1018,15 +1018,15 @@ Inductive tm : Type :=
 .
 
 (* ----------------------------------------------------------------- *)
-(*
+(* begin hide *)
 (** *** Substitution *)
-*)
+(* end hide *)
 (** *** 置換 *)
 
-(*
+(* begin hide *)
 (** The definition of substitution remains exactly the same as for the
     pure STLC. *)
-*)
+(* end hide *)
 (** 置換の定義はSTLCと全く同じです。 *)
 
 Fixpoint subst (x:string) (s:tm)  (t:tm) : tm :=
@@ -1050,15 +1050,15 @@ Fixpoint subst (x:string) (s:tm)  (t:tm) : tm :=
 Notation "'[' x ':=' s ']' t" := (subst x s t) (at level 20).
 
 (* ----------------------------------------------------------------- *)
-(*
+(* begin hide *)
 (** *** Reduction *)
-*)
+(* end hide *)
 (** *** 簡約 *)
 
-(*
+(* begin hide *)
 (** Likewise the definitions of the [value] property and the [step]
     relation. *)
-*)
+(* end hide *)
 (** [value](値)の定義や[step]関係の定義と同様です。 *)
 
 Inductive value : tm -> Prop :=
@@ -1099,23 +1099,23 @@ where "t1 '==>' t2" := (step t1 t2).
 Hint Constructors step.
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Subtyping *)
-*)
+(* end hide *)
 (** ** サブタイプ *)
 
-(*
+(* begin hide *)
 (** Now we come to the interesting part.  We begin by defining
     the subtyping relation and developing some of its important
     technical properties. *)
-*)
+(* end hide *)
 (** ようやくおもしろい所にやって来ました。
     サブタイプ関係の定義から始め、その重要な技術的性質を調べます。 *)
 
-(*
+(* begin hide *)
 (** The definition of subtyping is just what we sketched in the
     motivating discussion. *)
-*)
+(* end hide *)
 (** サブタイプの定義は、動機付けの議論のところで概観した通りです。 *)
 
 Reserved Notation "T '<:' U" (at level 40).
@@ -1135,11 +1135,11 @@ Inductive subtype : ty -> ty -> Prop :=
       (TArrow S1 S2) <: (TArrow T1 T2)
 where "T '<:' U" := (subtype T U).
 
-(*
+(* begin hide *)
 (** Note that we don't need any special rules for base types ([TBool]
     and [TBase]): they are automatically subtypes of themselves (by
     [S_Refl]) and [Top] (by [S_Top]), and that's all we want. *)
-*)
+(* end hide *)
 (** なお、基底型（[TBool]と[TBase]）について、特別な規則は何ら必要ありません。
     基底型は自動的に([S_Refl]より)自分自身のサブタイプであり、（[S_Top]より）[Top]のサブタイプでもあります。
     そしてこれが必要な全てです。 *)
@@ -1166,11 +1166,11 @@ Example subtyping_example_0 :
   (* C->Bool <: C->Top *)
 Proof. auto. Qed.
 
-(*
+(* begin hide *)
 (** **** Exercise: 2 stars, optional (subtyping_judgements)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★★, optional (subtyping_judgements)  *)
-(*
+(* begin hide *)
 (** (Wait to do this exercise until after you have added product types to 
     the language -- see exercise [products] -- at least up to this point 
     in the file).
@@ -1186,7 +1186,7 @@ Proof. auto. Qed.
     Employee := { name : String ;
                   ssn  : Integer }
 *)
- *)
+(* end hide *)
 (** （この練習問題は、練習問題[products]を通じて、少なくともファイルのここまでに直積型を言語に追加するまで待ってください。）
  
     [MoreStlc]の章では、「レコードのエンコード」という節で、レコードを対によって表現しました。
@@ -1206,9 +1206,9 @@ Definition Student : ty
 Definition Employee : ty 
   (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
 
-(*
+(* begin hide *)
 (** Now use the definition of the subtype relation to prove the following: *)
-*)
+(* end hide *)
 (** それらの型を用いて、以下のサブタイプ関係を示しなさい。 *)
 
 Example sub_student_person :
@@ -1222,17 +1222,17 @@ Proof.
 (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(*
+(* begin hide *)
 (** The following facts are mostly easy to prove in Coq.  To get
     full benefit from the exercises, make sure you also
     understand how to prove them on paper! *)
-*)
+(* end hide *)
 (** 以下の事実のほとんどは、Coqで証明するのは簡単です。
     練習問題の効果を十分に得るために、どうやって証明するか自分が理解していることを紙に証明を書いて確認しなさい。 *)
 
-(*
+(* begin hide *)
 (** **** Exercise: 1 star, optional (subtyping_example_1)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★, optional (subtyping_example_1)  *)
 Example subtyping_example_1 :
   (TArrow TTop Student) <: (TArrow (TArrow C C) Person).
@@ -1241,9 +1241,9 @@ Proof with eauto.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(*
+(* begin hide *)
 (** **** Exercise: 1 star, optional (subtyping_example_2)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★, optional (subtyping_example_2)  *)
 Example subtyping_example_2 :
   (TArrow TTop Person) <: (TArrow Person TTop).
@@ -1255,15 +1255,15 @@ Proof with eauto.
 End Examples.
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Typing *)
-*)
+(* end hide *)
 (** ** 型付け *)
 
-(*
+(* begin hide *)
 (** The only change to the typing relation is the addition of the rule
     of subsumption, [T_Sub]. *)
-*)
+(* end hide *)
 (** 型付け関係の変更は、包摂規則 [T_Sub] の追加だけです。 *)
 
 Definition context := partial_map ty.
@@ -1313,17 +1313,17 @@ Hint Extern 2 (_ = _) => compute; reflexivity.
 Module Examples2.
 Import Examples.
 
-(*
+(* begin hide *)
 (** Do the following exercises after you have added product types to
     the language.  For each informal typing judgement, write it as a
     formal statement in Coq and prove it. *)
-*)
+(* end hide *)
 (** 以下の練習問題は言語に直積を追加した後に行いなさい。
     それぞれの非形式的な型付けジャッジメントについて、Coqで形式的主張を記述し、それを証明しなさい。 *)
 
-(*
+(* begin hide *)
 (** **** Exercise: 1 star, optional (typing_example_0)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★, optional (typing_example_0)  *)
 (* empty |- ((\z:A.z), (\z:B.z))
           : (A->A * B->B) *)
@@ -1335,9 +1335,9 @@ Import Examples.
 (* FILL IN HERE *)
 (** [] *)
 
-(*
+(* begin hide *)
 (** **** Exercise: 2 stars, optional (typing_example_1)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★★, optional (typing_example_1)  *)
 (* empty |- (\x:(Top * B->B). x.snd) ((\z:A.z), (\z:B.z))
           : B->B *)
@@ -1349,9 +1349,9 @@ Import Examples.
 (* FILL IN HERE *)
 (** [] *)
 
-(*
+(* begin hide *)
 (** **** Exercise: 2 stars, optional (typing_example_2)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★★, optional (typing_example_2)  *)
 (* empty |- (\z:(C->C)->(Top * B->B). (z (\x:C.x)).snd)
               (\z:C->C. ((\z:A.z), (\z:B.z)))
@@ -1368,41 +1368,41 @@ Import Examples.
 End Examples2.
 
 (* ################################################################# *)
-(*
+(* begin hide *)
 (** * Properties *)
-*)
+(* end hide *)
 (** * 性質 *)
 
-(*
+(* begin hide *)
 (** The fundamental properties of the system that we want to
     check are the same as always: progress and preservation.  Unlike
     the extension of the STLC with references (chapter [References]),
     we don't need to change the _statements_ of these properties to
     take subtyping into account.  However, their proofs do become a
     little bit more involved. *)
-*)
+(* end hide *)
 (** チェックしたいシステムの根本的性質はいつもと同じく、進行と保存です。
     STLCに参照を拡張したもの（[References]章）とは違い、サブタイプを考慮しても、これらの主張を変化させる必要はありません。
     ただし、それらの証明はもうちょっと複雑になります。 *)
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Inversion Lemmas for Subtyping *)
-*)
+(* end hide *)
 (** ** サブタイプの反転補題(Inversion Lemma) *)
 
-(*
+(* begin hide *)
 (** Before we look at the properties of the typing relation, we need
     to establish a couple of critical structural properties of the
     subtype relation:
        - [Bool] is the only subtype of [Bool], and
        - every subtype of an arrow type is itself an arrow type. *)
-*)
+(* end hide *)
 (** 型付け関係の性質を見る前に、サブタイプ関係の2つの重要な構造的性質を記しておかなければなりません:
        - [Bool]は[Bool]の唯一のサブタイプです。
        - 関数型のすべてのサブタイプはやはり関数型です。 *)
 
-(*
+(* begin hide *)
 (** These are called _inversion lemmas_ because they play a
     similar role in proofs as the built-in [inversion] tactic: given a
     hypothesis that there exists a derivation of some subtyping
@@ -1410,14 +1410,14 @@ End Examples2.
     [T], each inversion lemma reasons about what this derivation must
     look like to tell us something further about the shapes of [S] and
     [T] and the existence of subtype relations between their parts. *)
-*)
+(* end hide *)
 (** これらは反転補題(_inversion lemma_)と呼ばれます。
     これは、証明で組込みの[inversion]タクティックに似た役目をするためです。
     つまり、サブタイプ関係の主張 [S <: T] の導出が存在するという仮定と、[S]や[T]の形についてのいくつかの制約が与えられたとき、それぞれの反転補題は、[S <: T] の導出がどのような形をしていなければならないか、を提示することで、[S] や [T] のより詳細な情報、および [S <: T] が（矛盾なく）存在することを述べます。 *)
 
-(*
+(* begin hide *)
 (** **** Exercise: 2 stars, optional (sub_inversion_Bool)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★★, optional (sub_inversion_Bool)  *)
 Lemma sub_inversion_Bool : forall U,
      U <: TBool ->
@@ -1428,9 +1428,9 @@ Proof with auto.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(*
+(* begin hide *)
 (** **** Exercise: 3 stars (sub_inversion_arrow)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★★★ (sub_inversion_arrow)  *)
 Lemma sub_inversion_arrow : forall U V1 V2,
      U <: TArrow V1 V2 ->
@@ -1444,12 +1444,12 @@ Proof with eauto.
 (** [] *)
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Canonical Forms *)
-*)
+(* end hide *)
 (** ** 正準形(Canonical Forms) *)
 
-(*
+(* begin hide *)
 (** The proof of the progress theorem -- that a well-typed
     non-value can always take a step -- doesn't need to change too
     much: we just need one small refinement.  When we're considering
@@ -1473,7 +1473,7 @@ Proof with eauto.
     This bit of reasoning is packaged up in the following lemma, which
     tells us the possible "canonical forms" (i.e., values) of function
     type. *)
-*)
+(* end hide *)
 (** 進行定理（値でない型付け可能な項の計算は進められる）の証明はそれほど大きく変える必要はありません。
     1つだけ小さなリファインメントが必要です。
     問題となる項が関数適用 [t1 t2] で[t1]と[t2]が両方とも値の場合を考えるとき、[t1]がラムダ抽象の形をしており、そのため[ST_AppAbs]簡約規則が適用できることを確認する必要があります。
@@ -1489,9 +1489,9 @@ Proof with eauto.
     推論のこの部分は次の補題にまとめられています。
     この補題は、関数型の可能な「正準形(canonical forms、つまり値)」を示します。 *)
 
-(*
+(* begin hide *)
 (** **** Exercise: 3 stars, optional (canonical_forms_of_arrow_types)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★★★, optional (canonical_forms_of_arrow_types)  *)
 Lemma canonical_forms_of_arrow_types : forall Gamma s T1 T2,
   Gamma |- s \in TArrow T1 T2 ->
@@ -1502,10 +1502,10 @@ Proof with eauto.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(*
+(* begin hide *)
 (** Similarly, the canonical forms of type [Bool] are the constants
     [true] and [false]. *)
-*)
+(* end hide *)
 (** 同様に、型[Bool]の正準形は定数[true]と[false]です。 *)
 
 Lemma canonical_forms_of_Bool : forall Gamma s,
@@ -1521,20 +1521,20 @@ Proof with eauto.
 Qed.
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Progress *)
-*)
+(* end hide *)
 (** ** 進行 *)
 
-(*
+(* begin hide *)
 (** The proof of progress now proceeds just like the one for the
     pure STLC, except that in several places we invoke canonical forms
     lemmas... *)
-*)
+(* end hide *)
 (** 進行性の証明は純粋なSTLCとほぼ同様に進みます。
     ただ何箇所かで正準形補題を使うことを除けば... *)
 
-(*
+(* begin hide *)
 (** _Theorem_ (Progress): For any term [t] and type [T], if [empty |-
     t : T] then [t] is a value or [t ==> t'] for some term [t'].
 
@@ -1585,7 +1585,7 @@ Qed.
       subderivation. 
    
     Formally: *)
-*)
+(* end hide *)
 (** 「定理」（進行）: 任意の項[t]と型[T]について、もし [empty |- t : T] ならば[t]は値であるか、ある項[t']について [t ==> t'] である。
  
     「証明」:[t]と[T]が与えられ、[empty |- t : T] とする。
@@ -1659,12 +1659,12 @@ Proof with eauto.
 Qed.
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Inversion Lemmas for Typing *)
-*)
+(* end hide *)
 (** ** 型付けの反転補題 *)
 
-(*
+(* begin hide *)
 (** The proof of the preservation theorem also becomes a little more
     complex with the addition of subtyping.  The reason is that, as
     with the "inversion lemmas for subtyping" above, there are a
@@ -1678,14 +1678,14 @@ Qed.
     derivation of some typing statement [Gamma |- \x:S1.t2 : T] whose
     subject is an abstraction, then there must be some subderivation
     giving a type to the body [t2]. *)
-*)
+(* end hide *)
 (** 保存定理の証明はサブタイプを追加したことでやはり少し複雑になります。
     その理由は、上述の「サブタイプの反転補題」と同様に、純粋なSTLCでは定義から明らかであった（形式的には、[inversion]タクティックからすぐに得られた）性質が、サブタイプの存在で本当の証明を必要とするようになったためです。
     サブタイプがある場合、同じ[has_type]の主張を導出するのに複数の方法があるのです。
  
     以下の反転補題は、もし関数抽象の型付け主張 [Gamma |- \x:S1.t2 : T] の導出があるならば、その導出の中に本体[t2]の型を与える部分が含まれている、ということを言うものです。 *)
 
-(*
+(* begin hide *)
 (** _Lemma_: If [Gamma |- \x:S1.t2 : T], then there is a type [S2]
     such that [Gamma & {{x-->S1}} |- t2 : S2] and [S1 -> S2 <: T].
 
@@ -1710,7 +1710,7 @@ Qed.
        <: T] then follows by [S_Trans]. 
 
     Formally: *)
-*)
+(* end hide *)
 (** 「補題」: もし [Gamma |- \x:S1.t2 : T] ならば、型[S2]が存在して [Gamma & {{x-->S1}} |- t2 : S2] かつ [S1 -> S2 <: T] となる。
  
     （この補題は「[T]はそれ自身が関数型である」とは言っていないことに注意します。
@@ -1746,9 +1746,9 @@ Proof with eauto.
     destruct IHhas_type as [S2 [Hsub Hty]]...
   Qed.
 
-(*
+(* begin hide *)
 (** Similarly... *)
-*)
+(* end hide *)
 (** 同様に... *)
 
 Lemma typing_inversion_var : forall Gamma x T,
@@ -1824,11 +1824,11 @@ Proof with eauto.
     inversion Heqtu; subst; intros...
 Qed.
 
-(*
+(* begin hide *)
 (** The inversion lemmas for typing and for subtyping between arrow
     types can be packaged up as a useful "combination lemma" telling
     us exactly what we'll actually require below. *)
-*)
+(* end hide *)
 (** 型付けについての反転補題と関数型の間のサブタイプの反転補題は「結合補題(combination lemma)」としてまとめることができます。
     この補題は以下で実際に必要になるものを示します。 *)
 
@@ -1845,15 +1845,15 @@ Proof with eauto.
   inversion Heq; subst...  Qed.
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Context Invariance *)
-*)
+(* end hide *)
 (** ** コンテキスト不変性 *)
 
-(*
+(* begin hide *)
 (** The context invariance lemma follows the same pattern as in the
     pure STLC. *)
-*)
+(* end hide *)
 (** コンテキスト不変性補題は、純粋なSTLCと同じパターンをとります。 *)
 
 Inductive appears_free_in : string -> tm -> Prop :=
@@ -1912,19 +1912,19 @@ Proof with eauto.
     rewrite H2 in Hctx... Qed.
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Substitution *)
-*)
+(* end hide *)
 (** ** 置換 *)
 
-(*
+(* begin hide *)
 (** The _substitution lemma_ is proved along the same lines as
     for the pure STLC.  The only significant change is that there are
     several places where, instead of the built-in [inversion] tactic,
     we need to use the inversion lemmas that we proved above to
     extract structural information from assumptions about the
     well-typedness of subterms. *)
-*)
+(* end hide *)
 (** 置換補題(_substitution lemma_)は純粋なSTLCと同じ流れで証明されます。
     唯一の大きな変更点は、いくつかの場所で、
     部分項が型を持つことについての仮定から構造的情報を抽出するために、
@@ -1992,21 +1992,21 @@ Proof with eauto.
 Qed.
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Preservation *)
-*)
+(* end hide *)
 (** ** 保存 *)
 
-(*
+(* begin hide *)
 (** The proof of preservation now proceeds pretty much as in earlier
     chapters, using the substitution lemma at the appropriate point
     and again using inversion lemmas from above to extract structural
     information from typing assumptions. *)
-*)
+(* end hide *)
 (** （型の）保存の証明は以前の章とほとんど同じです。
     適切な場所で置換補題を使い、型付け仮定から構造的情報を抽出するために上述の反転補題をまた使います。 *)
 
-(*
+(* begin hide *)
 (** _Theorem_ (Preservation): If [t], [t'] are terms and [T] is a type
     such that [empty |- t : T] and [t ==> t'], then [empty |- t' :
     T].
@@ -2057,7 +2057,7 @@ Qed.
        is a type [S] such that [S <: T] and [empty |- t : S].  The
        result is immediate by the induction hypothesis for the typing
        subderivation and an application of [T_Sub].  [] *)
-*)
+(* end hide *)
 (** 「定理」（保存）： [t]、[t']が項で[T]が型であり、[empty |- t : T] かつ [t ==> t'] ならば、[empty |- t' : T] である。
  
     「証明」：[t] と [T] が [empty |- t : T] であるとする。
@@ -2134,16 +2134,16 @@ Qed.
     validated by the encoding. *)
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Exercises *)
-*)
+(* end hide *)
 (** ** 練習問題 *)
 
-(*
+(* begin hide *)
 (** **** Exercise: 2 stars (variations)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★★ (variations)  *)
-(*
+(* begin hide *)
 (** Each part of this problem suggests a different way of changing the
     definition of the STLC with Unit and subtyping.  (These changes
     are not cumulative: each part starts from the original language.)
@@ -2200,7 +2200,7 @@ Qed.
 
  
 *)
- *)
+(* end hide *)
 (** この問題の各部分は、Unitとサブタイプを持つSTLCの定義を変更する別々の方法を導きます。
     （これらの変更は累積的ではありません。各部分はいずれも元々の言語から始まります。）
     各部分について、（進行、保存の）性質のうち偽になるものをリストアップしなさい。
@@ -2257,16 +2257,16 @@ Qed.
 (** [] *)
 
 (* ################################################################# *)
-(*
+(* begin hide *)
 (** * Exercise: Adding Products *)
-*)
+(* end hide *)
 (** * 練習問題: 直積の追加 *)
 
-(*
+(* begin hide *)
 (** **** Exercise: 4 stars (products)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★★★★ (products)  *)
-(*
+(* begin hide *)
 (** Adding pairs, projections, and product types to the system we have
     defined is a relatively straightforward matter.  Carry out this
     extension:
@@ -2294,7 +2294,7 @@ Qed.
     - Extend the proofs of progress, preservation, and all their
       supporting lemmas to deal with the new constructs.  (You'll also
       need to add a couple of completely new lemmas.) *)
-*)
+(* end hide *)
 (** 定義したシステムに対、射影、直積型を追加することは比較的簡単な問題です。
     次の拡張を行いなさい:
  

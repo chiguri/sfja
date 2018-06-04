@@ -1,9 +1,9 @@
 (** * Typechecking: STLCの型チェッカ *)
-(*
+(* begin hide *)
 (** * Typechecking: A Typechecker for STLC *)
-*)
+(* end hide *)
 
-(*
+(* begin hide *)
 (** The [has_type] relation of the STLC defines what it means for a
     term to belong to a type (in some context).  But it doesn't, by
     itself, give us an algorithm for _checking_ whether or not a term
@@ -16,7 +16,7 @@
     into clauses of a typechecking _function_ that takes a term and a
     context and either returns the term's type or else signals that
     the term is not typable.  *)
-*)
+(* end hide *)
 (** STLCの[has_type]関係は（あるコンテキストのもとで）項が型に属するという意味を定義します。
     しかし、それ自体は、項に型付けができるかどうかの「チェック方法」にはなりません。
  
@@ -39,14 +39,14 @@ Module STLCTypes.
 Export STLC.
 
 (* ################################################################# *)
-(*
+(* begin hide *)
 (** * Comparing Types *)
-*)
+(* end hide *)
 (** * 型を比較する *)
 
-(*
+(* begin hide *)
 (** First, we need a function to compare two types for equality... *)
-*)
+(* end hide *)
 (** 最初に、2つの型の等しさを比較する関数が必要です... *)
 
 Fixpoint beq_ty (T1 T2:ty) : bool :=
@@ -59,11 +59,11 @@ Fixpoint beq_ty (T1 T2:ty) : bool :=
       false
   end.
 
-(*
+(* begin hide *)
 (** ... and we need to establish the usual two-way connection between
     the boolean result returned by [beq_ty] and the logical
     proposition that its inputs are equal. *)
-*)
+(* end hide *)
 (** ... そして、[beq_ty]が返すブール値の結果と2つの入力が等しいという論理命題との間の、通常の双方向結合を確立します。*)
 
 Lemma beq_ty_refl : forall T1,
@@ -85,12 +85,12 @@ Proof with auto.
 End STLCTypes.
 
 (* ################################################################# *)
-(*
+(* begin hide *)
 (** * The Typechecker *)
-*)
+(* end hide *)
 (** * 型チェッカ *)
 
-(*
+(* begin hide *)
 (** The typechecker works by walking over the structure of the given
     term, returning either [Some T] or [None].  Each time we make a
     recursive call to find out the types of the subterms, we need to
@@ -99,7 +99,7 @@ End STLCTypes.
     extract the left- and right-hand sides of the function's arrow
     type (and fail if the type of the function is not [TArrow T11 T12]
     for some [T11] and [T12]). *)
-*)
+(* end hide *)
 (** 型チェッカは、与えられた項の構造をたどって調べ、[Some T] または [None] を返します。
     部分項の型を調べるために再帰呼び出しをするたびに、結果についてパターンマッチをして、 [None] でないことを確認します。
     [tapp]の場合はさらに、パターンマッチングで関数型の矢印の右側と左側を抽出します（そして関数の型が [Tarrow T11 T12] という形ではないときは失敗します）。 *)
@@ -205,17 +205,17 @@ Fixpoint type_check (Gamma:context) (t:tm) : option ty :=
   end.
 
 (* ################################################################# *)
-(*
+(* begin hide *)
 (** * Properties *)
-*)
+(* end hide *)
 (** * 性質 *)
 
-(*
+(* begin hide *)
 (** To verify that th typechecking algorithm is correct, we show that
     it is _sound_ and _complete_ for the original [has_type]
     relation -- that is, [type_check] and [has_type] define the same
     partial function. *)
-*)
+(* end hide *)
 (** この型チェックアルゴリズムが正しいことを検証するため、この関数がオリジナルの[has_type]関係について「健全(_sound_)」かつ「完全(_complete_)」であることを示します。
     つまり、[type_check]と[has_type]が同じ部分関数を定義することです。*)
 (* 訳注：th typechecking algorithmはthe typechecking algorithm?(改訂前はthis) *)
