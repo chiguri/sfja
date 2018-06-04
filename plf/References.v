@@ -1,10 +1,10 @@
 (** * References: 変更可能な参照の型付け *)
-(*
+(* begin hide *)
 (** * References: Typing Mutable References *)
-*)
+(* end hide *)
 
  
-(*
+(* begin hide *)
 (** Up to this point, we have considered a variety of _pure_
     language features, including functional abstraction, basic types
     such as numbers and booleans, and structured types such as records
@@ -33,7 +33,7 @@
     is fairly straightforward to define; the most interesting part is
     the refinement we need to make to the statement of the type
     preservation theorem. *)
-*)
+(* end hide *)
 (** ここまでは、いろいろな「純粋な」(_pure_)言語機能を考えてきました。
     関数抽象、数値やブール値などの基本型、レコードやバリアントのような構造型などです。
     これらの機能はほとんどのプログラミング言語のバックボーンを構成しています。
@@ -58,12 +58,12 @@ Require Import Coq.Lists.List.
 Import ListNotations.
 
 (* ################################################################# *)
-(*
+(* begin hide *)
 (** * Definitions *)
-*)
+(* end hide *)
 (** * 定義 *)
 
-(*
+(* begin hide *)
 (** Pretty much every programming language provides some form of
     assignment operation that changes the contents of a previously
     allocated piece of storage.  (Coq's internal language Gallina is a
@@ -93,7 +93,7 @@ Import ListNotations.
     languages is a straightforward matter of collapsing some
     distinctions and rendering some operations such as dereferencing
     implicit instead of explicit. *)
-*)
+(* end hide *)
 (** ほとんどすべてのプログラミング言語が、記憶に以前に置かれた内容を変更する何らかの代入操作を持っています。
     （Coqの内部言語Gallinaは稀な例外です!）
  
@@ -114,20 +114,20 @@ Import ListNotations.
     ここでやったことをCのような言語に適用するのは、分離していたものを一緒にすることと、逆参照のような操作を明示的なものから暗黙のものにするという単純な問題です。 *)
 
 (* ################################################################# *)
-(*
+(* begin hide *)
 (** * Syntax *)
-*)
+(* end hide *)
 (** * 構文 *)
 
-(*
+(* begin hide *)
 (** In this chapter, we study adding mutable references to the
     simply-typed lambda calculus with natural numbers. *)
-*)
+(* end hide *)
 (** この章では、自然数を持つ単純型付きラムダ計算に変更可能な参照を追加すること学習します。 *)
 
 Module STLCRef.
 
-(*
+(* begin hide *)
 (** The basic operations on references are _allocation_,
     _dereferencing_, and _assignment_.
 
@@ -143,7 +143,7 @@ Module STLCRef.
        - To change the value stored in a cell, we use the assignment
          operator.  If [r] is a reference, [r := 7] will store the
          value [7] in the cell referenced by [r]. *)
-*)
+(* end hide *)
 (** 参照についての基本操作はアロケート(_allocation_)、逆参照(_dereferencing_)、代入(_assignment_)です。
  
        - 参照をアロケートするには、[ref]演算子を使います。
@@ -157,25 +157,25 @@ Module STLCRef.
          [r]が参照ならば、[r := 7] は [r] によって参照されるセルに値[7]を格納します。 *)
 
 (* ----------------------------------------------------------------- *)
-(*
+(* begin hide *)
 (** *** Types *)
-*)
+(* end hide *)
 (** *** 型 *)
 
-(*
+(* begin hide *)
 (** We start with the simply typed lambda calculus over the
     natural numbers. Besides the base natural number type and arrow
     types, we need to add two more types to deal with
     references. First, we need the _unit type_, which we will use as
     the result type of an assignment operation.  We then add
     _reference types_. *)
-*)
+(* end hide *)
 (** 自然数の上の単純型付きラムダ計算から始めます。
     基本の自然数型と関数型に加えて、参照を扱うために2つの型を追加する必要があります。
     第一に「Unit型」です。これは代入演算子の結果の型として使います。
     それから参照型(_reference types_)を追加します。 *)
 
-(*
+(* begin hide *)
 (** If [T] is a type, then [Ref T] is the type of references to
     cells holding values of type [T].
 
@@ -184,7 +184,7 @@ Module STLCRef.
           | T -> T
           | Ref T
 *)
- *)
+(* end hide *)
 (** [T]が型のとき、[Ref T] は型[T]の値を持つセルを指す参照の型です。
 <<
       T ::= Nat 
@@ -201,12 +201,12 @@ Inductive ty : Type :=
   | TRef   : ty -> ty.
 
 (* ----------------------------------------------------------------- *)
-(*
+(* begin hide *)
 (** *** Terms *)
-*)
+(* end hide *)
 (** *** 項 *)
 
-(*
+(* begin hide *)
 (** Besides variables, abstractions, applications,
     natural-number-related terms, and [unit], we need four more sorts
     of terms in order to handle mutable references:
@@ -217,7 +217,7 @@ Inductive ty : Type :=
           | t := t             assignment
           | l                  location
 *)
- *)
+(* end hide *)
 (** 変数、関数抽象、関数適用、自然数に関する項、[unit]の他に、変更可能な参照を扱うために4種類の項を追加する必要があります:
 <<
       t ::= ...              Terms 
@@ -245,7 +245,7 @@ Inductive tm  : Type :=
   | tassign : tm -> tm -> tm
   | tloc    : nat -> tm.
 
-(*
+(* begin hide *)
 (** Intuitively:
     - [ref t] (formally, [tref t]) allocates a new reference cell
       with the value [t] and reduces to the location of the newly
@@ -259,7 +259,7 @@ Inductive tm  : Type :=
 
     - [l] (formally, [tloc l]) is a reference to the cell at
       location [l].  We'll discuss locations later. *)
-*)
+(* end hide *)
 (** 直観的には...
     - [ref t] （形式的には [tref t]）は値[t]が格納された新しい参照セルをアロケートし、新しくアロケートされたセルの場所(location)に簡約されます。
  
@@ -269,25 +269,25 @@ Inductive tm  : Type :=
  
     - [l] （形式的には [tm_loc l]）は場所[l]のセルの参照です。場所については後で議論します。 *)
 
-(*
+(* begin hide *)
 (** In informal examples, we'll also freely use the extensions
     of the STLC developed in the [MoreStlc] chapter; however, to keep
     the proofs small, we won't bother formalizing them again here.  (It
     would be easy to do so, since there are no very interesting
     interactions between those features and references.) *)
-*)
+(* end hide *)
 (** 非形式的な例では、[MoreStlc]章で行ったSTLCの拡張も自由に使います。
     しかし、証明を小さく保つため、ここでそれらを再度形式化することに煩わされることはしません。
     （それ自体はやろうと思えば簡単です。
     なぜなら、それらの拡張と参照とには興味深い相互作用はないからです。） *)
 
 (* ----------------------------------------------------------------- *)
-(*
+(* begin hide *)
 (** *** Typing (Preview) *)
-*)
+(* end hide *)
 (** *** 型付け （プレビュー） *)
 
-(*
+(* begin hide *)
 (** Informally, the typing rules for allocation, dereferencing, and
     assignment will look like this:
 
@@ -307,7 +307,7 @@ Inductive tm  : Type :=
     The rule for locations will require a bit more machinery, and this
     will motivate some changes to the other rules; we'll come back to
     this later. *)
-*)
+(* end hide *)
 (** 非形式的には、アロケーション、逆参照、代入の型付け規則は以下のようになります:
 <<
                            Gamma |- t1 : T1 
@@ -327,15 +327,15 @@ Inductive tm  : Type :=
     これについては後にまた戻ってきます。 *)
 
 (* ----------------------------------------------------------------- *)
-(*
+(* begin hide *)
 (** *** Values and Substitution *)
-*)
+(* end hide *)
 (** *** 値と置換 *)
 
-(*
+(* begin hide *)
 (** Besides abstractions and numbers, we have two new types of values:
     the unit value, and locations.  *)
-*)
+(* end hide *)
 (** 関数抽象と数値に加えて、新たに2種類の値を持ちます:
     unit値と場所です。 *)
 
@@ -351,10 +351,10 @@ Inductive value : tm -> Prop :=
 
 Hint Constructors value.
 
-(*
+(* begin hide *)
 (** Extending substitution to handle the new syntax of terms is
     straightforward.  *)
-*)
+(* end hide *)
 (** 新しい項の構文を扱うための置換の拡張は直接的です。 *)
 
 Fixpoint subst (x:string) (s:tm) (t:tm) : tm :=
@@ -390,18 +390,18 @@ Fixpoint subst (x:string) (s:tm) (t:tm) : tm :=
 Notation "'[' x ':=' s ']' t" := (subst x s t) (at level 20).
 
 (* ################################################################# *)
-(*
+(* begin hide *)
 (** * Pragmatics *)
-*)
+(* end hide *)
 (** * プラグマティクス（語用論） *)
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Side Effects and Sequencing *)
-*)
+(* end hide *)
 (** ** 副作用と順次処理 *)
 
-(*
+(* begin hide *)
 (** The fact that we've chosen the result of an assignment
     expression to be the trivial value [unit] allows a nice
     abbreviation for _sequencing_.  For example, we can write
@@ -425,7 +425,7 @@ Notation "'[' x ':=' s ']' t" := (subst x s t) (at level 20).
 
        r:=succ(!r); r:=succ(!r); r:=succ(!r); r:=succ(!r); !r
 *)
- *)
+(* end hide *)
 (** 代入式の結果としてつまらない値[unit]を選んだことから、順次処理(_sequencing_)のうまい略記が使えます。
     例えば、
 <<
@@ -445,10 +445,10 @@ Notation "'[' x ':=' s ']' t" := (subst x s t) (at level 20).
        r:=succ(!r); r:=succ(!r); r:=succ(!r); r:=succ(!r); !r 
 >>
  *)
-(*
+(* begin hide *)
 (** Formally, we introduce sequencing as a _derived form_
     [tseq] that expands into an abstraction and an application. *)
-*)
+(* end hide *)
 (** 形式的には、順次処理 [tseq] を「派生形(_derived form_)」として導入します。
     この派生形は、関数抽象と関数適用に展開されます。 *)
 
@@ -456,12 +456,12 @@ Definition tseq t1 t2 :=
   tapp (tabs "x" TUnit t2) t1.
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** References and Aliasing *)
-*)
+(* end hide *)
 (** ** 参照と別名付け *)
 
-(*
+(* begin hide *)
 (** It is important to bear in mind the difference between the
     _reference_ that is bound to some variable [r] and the _cell_ 
     in the store that is pointed to by this reference.
@@ -494,7 +494,7 @@ Definition tseq t1 t2 :=
 
     _unless_ we happen to do it in a context where [r] and [s] are
     aliases for the same cell! *)
-*)
+(* end hide *)
 (** [r]などの変数に束縛される参照(_reference_)と、この参照によって指されているセル(_cell_)の違いを心に留めておく必要があります。
  
     例えば[r]を別の変数[s]に束縛することで[r]のコピーを作るとすると、コピーされるのは参照だけで、セルの中身自身ではありません。
@@ -523,12 +523,12 @@ Definition tseq t1 t2 :=
     ただし、「[r]と[s]がたまたま同じセルの別名であるという状況でない限り」です! *)
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Shared State *)
-*)
+(* end hide *)
 (** ** 共有状態 *)
 
-(*
+(* begin hide *)
 (** Of course, aliasing is also a large part of what makes references
     useful.  In particular, it allows us to set up "implicit
     communication channels" -- shared state -- between different parts
@@ -540,7 +540,7 @@ Definition tseq t1 t2 :=
       let decc = \_:Unit. (c := pred (!c); !c) in
       ...
 *)
- *)
+(* end hide *)
 (** もちろん、別名も、参照を便利なものにする大きな部分です。
     特に参照は、プログラムの異なる部分の間の暗黙の通信チャンネル("implicit communication channels")、つまり共有状態(shared state)としてはたらきます。
     例えば、参照セルと、その内容を扱う2つの関数を定義するとします:
@@ -552,7 +552,7 @@ Definition tseq t1 t2 :=
 >>
  *)
 
-(*
+(* begin hide *)
 (** Note that, since their argument types are [Unit], the
     arguments to the abstractions in the definitions of [incc] and
     [decc] are not providing any useful information to the bodies of
@@ -570,7 +570,7 @@ Definition tseq t1 t2 :=
     changes to [c] that can be observed by calling [decc].  For
     example, if we replace the [...] with [(incc unit; incc unit; decc
     unit)], the result of the whole program will be [1]. *)
-*)
+(* end hide *)
 (** ここで、それぞれ引数の型は[Unit]なので、[incc]と[decc]の定義において関数抽象を適用する引数は関数本体にとって何も意味がないことに注意します（束縛変数名にワイルドカード[_]を使っているのは、このことを意図したものです）。
     そうではなく、関数抽象の目的は関数本体の実行を「遅く」するためです。
     関数抽象は値であることから、2つの[let]は単に2つの関数を名前[incc]と[decc]に束縛するだけで、実際に[c]を増やしたり減らしたりはしません。
@@ -581,12 +581,12 @@ Definition tseq t1 t2 :=
     例えば [...] を [(incc unit; incc unit; decc unit)] に換えると、プログラム全体の結果は[1]になります。 *)
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Objects *)
-*)
+(* end hide *)
 (** ** オブジェクト *)
 
-(*
+(* begin hide *)
 (** We can go a step further and write a _function_ that creates [c],
     [incc], and [decc], packages [incc] and [decc] together into a
     record, and returns this record:
@@ -598,7 +598,7 @@ Definition tseq t1 t2 :=
              let decc = \_:Unit. (c := pred (!c); !c) in
              {i=incc, d=decc}
 *)
- *)
+(* end hide *)
 (** もう一歩進んで、[c]、[incc]、[decc]を生成し、[incc]と[decc]をレコードにパッケージ化し、このレコードを返す「関数」を記述することもできます:
 <<
       newcounter = 
@@ -610,7 +610,7 @@ Definition tseq t1 t2 :=
 >>
  *)
 
-(*
+(* begin hide *)
 (** Now, each time we call [newcounter], we get a new record of
     functions that share access to the same storage cell [c].  The
     caller of [newcounter] can't get at this storage cell directly,
@@ -624,7 +624,7 @@ Definition tseq t1 t2 :=
       let r2 = c2.i unit in
       r2  // yields 1, not 2!
 *)
- *)
+(* end hide *)
 (** このとき、[newcounter]を呼ぶたびに、
     同じ記憶セル[c]のアクセスを共有する2つの関数の新たなレコードが得られます。
     [newcounter]を呼び出す側はこの記憶セルには直接手が届きませんが、2つの関数を呼ぶことで間接的に影響を及ぼすことができます。
@@ -639,27 +639,27 @@ Definition tseq t1 t2 :=
 >>
  *)
 
-(*
+(* begin hide *)
 (** **** Exercise: 1 star, optional (store_draw)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★, optional (store_draw)  *)
-(*
+(* begin hide *)
 (** Draw (on paper) the contents of the store at the point in
     execution where the first two [let]s have finished and the third
     one is about to begin. *)
-*)
+(* end hide *)
 (** 最初の2つの[let]が完了し3つ目が始まろうとする時点の記憶の中身を（紙の上に）描きなさい。 *)
 
 (* FILL IN HERE *)
 (** [] *)
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** References to Compound Types *)
-*)
+(* end hide *)
 (** ** 参照と合成型 *)
 
-(*
+(* begin hide *)
 (** A reference cell need not contain just a number: the primitives
     we've defined above allow us to create references to values of any
     type, including functions.  For example, we can use references to
@@ -701,7 +701,7 @@ Definition tseq t1 t2 :=
     References to values containing other references can also be very
     useful, allowing us to define data structures such as mutable
     lists and trees. *)
-*)
+(* end hide *)
 (** 参照セルの中身は数値でなければならないわけではありません。
     上で定義したプリミティブによって、任意の型の値への参照を作ることができます。
     その任意の型の中には関数型も含まれます。
@@ -739,18 +739,18 @@ Definition tseq t1 t2 :=
     別の参照を含む値への参照もまたとても有用です。
     これにより、変更可能なリストや木などのデータ構造が定義できるようになります。 *)
 
-(*
+(* begin hide *)
 (** **** Exercise: 2 stars, recommended (compact_update)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★★, recommended (compact_update)  *)
-(*
+(* begin hide *)
 (** If we defined [update] more compactly like this
 
       update = \a:NatArray. \m:Nat. \v:Nat.
                   a := (\n:Nat. if equal m n then v else (!a) n)
 
 would it behave the same? *)
-*)
+(* end hide *)
 (** もし[update]を次のようによりコンパクトに定義したとします。
 <<
       update = \a:NatArray. \m:Nat. \v:Nat. 
@@ -762,12 +762,12 @@ would it behave the same? *)
 (** [] *)
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Null References *)
-*)
+(* end hide *)
 (** ** null参照 *)
 
-(*
+(* begin hide *)
 (** There is one final significant difference between our
     references and C-style mutable variables: in C-like languages,
     variables holding pointers into the heap may sometimes have the
@@ -790,7 +790,7 @@ would it behave the same? *)
 
     Then a "nullable reference to a [T]" is simply an element of the
     type [Option (Ref T)].  *)
-*)
+(* end hide *)
 (** ここで定義した参照と、C言語スタイルの変更可能な変数には最後にもう一つ大きな違いがあります。
     Cのような言語では、ヒープへのポインタを持つ変数は値[NULL]を持つことがあります。
     そのような「nullポインタ」の逆参照はエラーで、結果として例外を発生したり（JavaとC[#]）、偶然任せの場合によっては安全でないような挙動をしたり（CやC++など）します。
@@ -807,12 +807,12 @@ would it behave the same? *)
     すると、「nullになり得る[T]への参照」は単に型 [Option (Ref T)] の要素となります。 *)
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Garbage Collection *)
-*)
+(* end hide *)
 (** ** ガベージコレクション *)
 
-(*
+(* begin hide *)
 (** A last issue that we should mention before we move on with
     formalizing references is storage _de_-allocation.  We have not
     provided any primitives for freeing reference cells when they are
@@ -830,7 +830,7 @@ would it behave the same? *)
     boolean, possibly reusing the same storage.  Now we can have two
     names for the same storage cell -- one with type [Ref Nat] and the
     other with type [Ref Bool]. *)
-*)
+(* end hide *)
 (** 参照の形式化に移る前に述べておくべき最後の問題が、記憶のデアロケーション(_de_-allocation)です。
     参照セルが必要なくなったときにそれを解放する何らかのプリミティブを提供していません。
     その代わり、多くの近代的な言語（MLとJavaを含む）のように、実行時システムがガベージコレクション(_garbage collection_)を行うことに頼っています。
@@ -844,31 +844,31 @@ would it behave the same? *)
     すると、同じ記憶セルに2つの名前があることになります。
     1つは [Ref Nat] 型で、もう1つは [Ref Bool] 型です。 *)
 
-(*
+(* begin hide *)
 (** **** Exercise: 2 stars (type_safety_violation)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★★ (type_safety_violation)  *)
-(*
+(* begin hide *)
 (** Show how this can lead to a violation of type safety. *)
-*)
+(* end hide *)
 (** このことがどのように型安全性の破壊につながるのか示しなさい。 *)
 
 (* FILL IN HERE *)
 (** [] *)
 
 (* ################################################################# *)
-(*
+(* begin hide *)
 (** * Operational Semantics *)
-*)
+(* end hide *)
 (** * 操作的意味 *)
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Locations *)
-*)
+(* end hide *)
 (** ** 場所(Locations) *)
 
-(*
+(* begin hide *)
 (** The most subtle aspect of the treatment of references
     appears when we consider how to formalize their operational
     behavior.  One way to see why is to ask, "What should be the
@@ -908,7 +908,7 @@ would it behave the same? *)
     in the store contains a [float] doesn't tell us anything useful
     about the type of location [n+4].  In C, pointer arithmetic is a
     notorious source of type-safety violations. *)
-*)
+(* end hide *)
 (** 参照の扱いについての一番巧妙な面は、操作的振る舞いをどのように形式化するかを考えるときに現れます。
     それが何故かを見る1つの方法は、「何が型 [Ref T] の値であるべきか？」と問うことです。
     考慮すべき重要な点は、[ref]演算子の評価は何かを（つまり記憶のアロケートを）「行わ」なければならず、操作の結果はこの記憶への参照とならなければならないということです。
@@ -937,12 +937,12 @@ would it behave the same? *)
     Cにおいては、ポインタ算術は型安全性破壊の悪名高き温床です。 *)
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Stores *)
-*)
+(* end hide *)
 (** ** 記憶(Stores) *)
 
-(*
+(* begin hide *)
 (** Recall that, in the small-step operational semantics for
     IMP, the step relation needed to carry along an auxiliary state in
     addition to the program being executed.  In the same way, once we
@@ -962,7 +962,7 @@ would it behave the same? *)
     created reference cell. When reducing such an expression, we can
     just add a new reference cell to the end of the list representing
     the store.) *)
-*)
+(* end hide *)
 (** IMPのスモールステップ操作的意味論では、ステップ関係は、実行されるプログラムに加えて補助的な状態を持ちまわる必要があったことを思い出して下さい。
     同様に、STLCに参照セルを追加すると、参照セルの内容を追跡するために記憶を持ち回る必要が出てきます。
  
@@ -975,13 +975,13 @@ would it behave the same? *)
 
 Definition store := list tm.
 
-(*
+(* begin hide *)
 (** We use [store_lookup n st] to retrieve the value of the reference
     cell at location [n] in the store [st].  Note that we must give a
     default value to [nth] in case we try looking up an index which is
     too large. (In fact, we will never actually do this, but proving
     that we don't will require a bit of work.) *)
-*)
+(* end hide *)
 (** 記憶[st]の場所[n]のセルの値をとりだすために、
     [store_lookup n st] を使います。
     インデックスが大きすぎるときには[nth]にデフォルト値を与えなければならないことに注意します。
@@ -991,10 +991,10 @@ Definition store := list tm.
 Definition store_lookup (n:nat) (st:store) :=
   nth n st tunit.
 
-(*
+(* begin hide *)
 (** To update the store, we use the [replace] function, which replaces
     the contents of a cell at a particular index. *)
-*)
+(* end hide *)
 (** 記憶を更新するために、[replace]関数を使います。
     この関数は特定のインデックスのセルの中身を置き換えます。 *)
 
@@ -1008,10 +1008,10 @@ Fixpoint replace {A:Type} (n:nat) (x:A) (l:list A) : list A :=
     end
   end.
 
-(*
+(* begin hide *)
 (** As might be expected, we will also need some technical
     lemmas about [replace]; they are straightforward to prove. *)
-*)
+(* end hide *)
 (** 想像しているとは思いますが、[replace]についてもいくつか補題が必要です。
     証明はそのままです。 *)
 
@@ -1065,12 +1065,12 @@ Proof with auto.
 Qed.
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Reduction *)
-*)
+(* end hide *)
 (** ** 簡約 *)
 
-(*
+(* begin hide *)
 (** Next, we need to extend the operational semantics to take
     stores into account.  Since the result of reducing an expression
     will in general depend on the contents of the store in which it is
@@ -1193,7 +1193,7 @@ Qed.
     contents have become garbage.
 
     Here are the rules again, formally: *)
-*)
+(* end hide *)
 (** 次に、操作的意味を記憶を考慮した形に拡張します。
     式を簡約した結果は一般には簡約したときの記憶の中身に依存するので、簡約規則は項だけでなく記憶も引数としてとらなければなりません。
     さらに、項の評価は記憶に副作用を起こし、それが後の別の項の評価に影響を及ぼすので、簡約規則は新しい記憶を返す必要があります。
@@ -1369,27 +1369,27 @@ Notation "t1 '/' st '==>*' t2 '/' st'" :=
                (at level 40, st at level 39, t2 at level 39).
 
 (* ################################################################# *)
-(*
+(* begin hide *)
 (** * Typing *)
-*)
+(* end hide *)
 (** * 型付け *)
 
-(*
+(* begin hide *)
 (** The contexts assigning types to free variables are exactly the
     same as for the STLC: partial maps from identifiers to types. *)
-*)
+(* end hide *)
 (** 自由変数に型を割り当てるコンテキストはSTLCのものと完全に同じで、識別子から型への部分関数です。 *)
 
 Definition context := partial_map ty.
 
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Store typings *)
-*)
+(* end hide *)
 (** ** 記憶の型付け *)
 
-(*
+(* begin hide *)
 (** Having extended our syntax and reduction rules to accommodate
     references, our last job is to write down typing rules for the new
     constructs (and, of course, to check that these rules are sound!).
@@ -1457,7 +1457,7 @@ Definition context := partial_map ty.
 
    [\x:Nat. (!(loc 1)) x, \x:Nat. (!(loc 0)) x]
 *)
- *)
+(* end hide *)
 (** 参照に対応するように構文と簡約規則を拡張したので、最後の仕事は新しい言語要素に対する型付け規則を書き下すこと（そして、もちろん、それが健全であることをチェックすることも！）です。
     自然と、キーとなる問題は「場所の型は何か？」になります。
  
@@ -1507,18 +1507,18 @@ Definition context := partial_map ty.
     について、場所[0]の有限な型導出は存在しません。
  *)
 
-(*
+(* begin hide *)
 (** **** Exercise: 2 stars (cyclic_store)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★★ (cyclic_store)  *)
-(*
+(* begin hide *)
 (** Can you find a term whose reduction will create this particular
     cyclic store? *)
-*)
+(* end hide *)
 (** 簡約によってこの循環記憶を生成する項を見つけられますか？ *)
 (** [] *)
 
-(*
+(* begin hide *)
 (** These problems arise from the fact that our proposed
     typing rule for locations requires us to recalculate the type of a
     location every time we mention it in a term.  But this,
@@ -1542,7 +1542,7 @@ Definition context := partial_map ty.
     Just as we did for stores, we will represent a store type simply
     as a list of types: the type at index [i] records the type of the
     values that we expect to be stored in cell [i]. *)
-*)
+(* end hide *)
 (** これらの問題はどちらも、上記の場所についての型付け規則が、項の中に記述があるたびに場所の型を再計算することが必要であるという事実から生じます。
     しかしこれは、直観的に、必要であるべきではありません。
     とにかく、場所が最初に生成されたとき、そこに格納された初期値の型はわかっています。
@@ -1559,16 +1559,16 @@ Definition context := partial_map ty.
 
 Definition store_ty := list ty.
 
-(*
+(* begin hide *)
 (** The [store_Tlookup] function retrieves the type at a particular
     index. *)
-*)
+(* end hide *)
 (** [store_Tlookup] 関数は、特定のインデックスの型をとりだします。 *)
 
 Definition store_Tlookup (n:nat) (ST:store_ty) :=
   nth n ST TUnit.
 
-(*
+(* begin hide *)
 (** Suppose we are given a store typing [ST] describing the store
     [st] in which some term [t] will be reduced.  Then we can use
     [ST] to calculate the type of the result of [t] without ever
@@ -1587,7 +1587,7 @@ Definition store_Tlookup (n:nat) (ST:store_ty) :=
     four-place relation, but it is parameterized on a store _typing_ 
     rather than a concrete store.  The rest of the typing rules are 
     analogously augmented with store typings. *)
-*)
+(* end hide *)
 (** 記憶[st]を記述する記憶型付け[ST]が与えられ、そこである項[t]が簡約されると仮定します。
     すると、[t]の結果の型を[st]を直接見ることなく計算するのに[ST]を使うことができます。
     例えば、もし[ST]が [[Unit, Unit->Unit]] ならば、 [!(loc 1)] が型 [Unit->Unit] を持つとすぐに推論できます。
@@ -1603,20 +1603,20 @@ Definition store_Tlookup (n:nat) (ST:store_ty) :=
     型付け規則の残りも、同様に記憶型付けを引数とします。 *)
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** The Typing Relation *)
-*)
+(* end hide *)
 (** ** 型付け関係 *)
 
-(*
+(* begin hide *)
 (** We can now formalize the typing relation for the STLC with
     references.  Here, again, are the rules we're adding to the base
     STLC (with numbers and [Unit]): *)
-*)
+(* end hide *)
 (** ついに参照を持つSTLCについての型付け関係を形式化できます。
     また、基本の（数値と[Unit]を持つ）STLCに追加する規則を与えます。 *)
 
-(*
+(* begin hide *)
 (**
 
                                l < |ST|
@@ -1636,7 +1636,7 @@ Definition store_Tlookup (n:nat) (ST:store_ty) :=
                     -----------------------------                    (T_Assign)
                     Gamma; ST |- t1 := t2 : Unit
 *)
- *)
+(* end hide *)
 (** 
 <<
                                l < |ST| 
@@ -1708,7 +1708,7 @@ where "Gamma ';' ST '|-' t '\in' T" := (has_type Gamma ST t T).
 
 Hint Constructors has_type.
 
-(*
+(* begin hide *)
 (** Of course, these typing rules will accurately predict the results
     of reduction only if the concrete store used during reduction
     actually conforms to the store typing that we assume for purposes
@@ -1732,7 +1732,7 @@ Hint Constructors has_type.
     looking at the type of the initial values being placed in newly
     allocated cells; this intuition is formalized in the statement of
     the type preservation theorem below.  *)
-*)
+(* end hide *)
 (** もちろん、これらの型付け規則が簡約結果を正確に予言できるのは、
     簡約の間使われる具体的な記憶が、型チェックの目的で仮定する記憶型付けに整合しているときだけです。
     このただし書きは、通常のSTLCにおける自由変数と丁度同じ状況です。
@@ -1748,12 +1748,12 @@ Hint Constructors has_type.
     この直観は以下で型保存定理の主張として形式化されます。 *)
 
 (* ################################################################# *)
-(*
+(* begin hide *)
 (** * Properties *)
-*)
+(* end hide *)
 (** * 性質 *)
 
-(*
+(* begin hide *)
 (** Our final task is to check that standard type safety
     properties continue to hold for the STLC with references.  The
     progress theorem ("well-typed terms are not stuck") can be stated
@@ -1761,26 +1761,26 @@ Hint Constructors has_type.
     straightforward cases to the proof to deal with the new
     constructs.  The preservation theorem is a bit more interesting,
     so let's look at it first.  *)
-*)
+(* end hide *)
 (** 最後の仕事は、標準的な型安全性が参照を追加したSTLCでも成立することをチェックすることです。
     進行定理（「型付けできる項は行き詰まらない」）が主張でき、ほとんどSTLCと同じように証明できます。
     証明に、新しい言語要素を扱ういくつかの場合を単に追加すれば良いのです。
     保存定理はもうちょっとやりがいがあります。それでは早速、見てみましょう。 *)
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Well-Typed Stores *)
-*)
+(* end hide *)
 (** ** 型付けできる記憶 *)
 
-(*
+(* begin hide *)
 (** Since we have extended both the reduction relation (with
     initial and final stores) and the typing relation (with a store
     typing), we need to change the statement of preservation to
     include these parameters.  But clearly we cannot just add stores
     and store typings without saying anything about how they are
     related -- i.e., this is wrong: *)
-*)
+(* end hide *)
 (** 簡約関係と型付け関係の両者を拡張した（評価関係については初期記憶と最終記憶、型付け関係については記憶型付け）ことから、保存定理の主張は、これらのパラメータを含むように変えなければなりません。
     しかしながら明らかに、記憶と記憶型付けを、その両者の関係について何も言わずにただ追加することはできません。
     以下の主張は間違っています。 *)
@@ -1791,7 +1791,7 @@ Theorem preservation_wrong1 : forall ST T t st t' st',
   empty; ST |- t' \in T.
 Abort.
 
-(*
+(* begin hide *)
 (** If we typecheck with respect to some set of assumptions about the
     types of the values in the store and then reduce with respect to
     a store that violates these assumptions, the result will be
@@ -1801,7 +1801,7 @@ Abort.
     stored in locations (why?), it suffices to type them in the empty
     context. The following definition of [store_well_typed] formalizes
     this.  *)
-*)
+(* end hide *)
 (** もし記憶内の値の型についてのいくつかの仮定の上で型チェックを行い、その後、その仮定をやぶる記憶のもとで簡約をしたならば、結果は悲惨なものになるでしょう。
     記憶[st]が記憶型付け[ST]のもとで「型付けできる」(_well typed_)とは、[st]のそれぞれの場所[l]の項が[ST]の場所[l]の型を持つことです。
     閉じた項だけが場所に格納されていることから（なぜでしょう？）、それらは空コンテキストで型付けすれば十分です。
@@ -1812,41 +1812,41 @@ Definition store_well_typed (ST:store_ty) (st:store) :=
   (forall l, l < length st ->
      empty; ST |- (store_lookup l st) \in (store_Tlookup l ST)).
 
-(*
+(* begin hide *)
 (** Informally, we will write [ST |- st] for [store_well_typed ST st]. *)
-*)
+(* end hide *)
 (** 非形式的には、[store_well_typed ST st] を [ST |- st] と書きます。 *)
 
-(*
+(* begin hide *)
 (** Intuitively, a store [st] is consistent with a store typing
     [ST] if every value in the store has the type predicted by the
     store typing.  The only subtle point is the fact that, when
     typing the values in the store, we supply the very same store
     typing to the typing relation.  This allows us to type circular
     stores like the one we saw above. *)
-*)
+(* end hide *)
 (** 直観的に、記憶[st]が記憶型付け[ST]と整合的であるのは、記憶内のすべての値が記憶型付けに定められた型を持っていることです。
     唯一の巧妙な点は、記憶内の値を型付けするとき、ほとんど同じ記憶型付けを型付け関係に提供することです。
     これにより、上で見たような循環を持つ記憶に型付けできるようになります。 *)
 
-(*
+(* begin hide *)
 (** **** Exercise: 2 stars (store_not_unique)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★★ (store_not_unique)  *)
-(*
+(* begin hide *)
 (** Can you find a store [st], and two
     different store typings [ST1] and [ST2] such that both
     [ST1 |- st] and [ST2 |- st]? *)
-*)
+(* end hide *)
 (** [ST1 |- st] と [ST2 |- st] の両者を成立させる記憶[st]および相異なる記憶型付け[ST1]と[ST2]を見つけられますか？ *)
 
 (* FILL IN HERE *)
 (** [] *)
 
-(*
+(* begin hide *)
 (** We can now state something closer to the desired preservation
     property: *)
-*)
+(* end hide *)
 (** ここまで来ると求められる保存性に近いものを主張することができます： *)
 
 Theorem preservation_wrong2 : forall ST T t st t' st',
@@ -1856,7 +1856,7 @@ Theorem preservation_wrong2 : forall ST T t st t' st',
   empty; ST |- t' \in T.
 Abort.
 
-(*
+(* begin hide *)
 (** This statement is fine for all of the reduction rules except
     the allocation rule [ST_RefValue].  The problem is that this rule
     yields a store with a larger domain than the initial store, which
@@ -1864,24 +1864,24 @@ Abort.
     a binding for a fresh location [l], then [l] cannot be in the
     domain of [ST], and it will not be the case that [t'] (which
     definitely mentions [l]) is typable under [ST]. *)
-*)
+(* end hide *)
 (** この主張は、アロケーション規則[ST_RefValue]を除くすべての評価規則について成立します。
     問題は、この規則は初期記憶より大きな領域の記憶を必要とすることから、上記主張の結論が成立しなくなることです。
     もし[st']が新しい場所[l]についての束縛を含むなら、[l]は[ST]の領域に含まれないことから、（間違いなく[l]に言及している）[t']は[ST]のもとで型付けできなくなります。 *)
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Extending Store Typings *)
-*)
+(* end hide *)
 (** ** 記憶型付けを拡張する *)
 
-(*
+(* begin hide *)
 (** Evidently, since the store can increase in size during reduction,
     we need to allow the store typing to grow as well.  This motivates
     the following definition.  We say that the store type [ST']
     _extends_ [ST] if [ST'] is just [ST] with some new types added to
     the end. *)
-*)
+(* end hide *)
 (** 明らかに、記憶は簡約が進むにつれてサイズを増大させる可能性があることから、
     記憶型付けも同様にサイズを増大できるようにする必要があります。
     これから以下の定義が導かれます。
@@ -1897,12 +1897,12 @@ Inductive extends : store_ty -> store_ty -> Prop :=
 
 Hint Constructors extends.
 
-(*
+(* begin hide *)
 (** We'll need a few technical lemmas about extended contexts.
 
     First, looking up a type in an extended store typing yields the
     same result as in the original: *)
-*)
+(* end hide *)
 (** 拡張されたコンテキストについてのいくつかの技術的補題が必要です。
  
     最初に、拡張された記憶型付けから型を探索すると、オリジナルと同じ結果を返します: *)
@@ -1927,10 +1927,10 @@ Proof with auto.
         simpl in Hlen; omega.
 Qed.
 
-(*
+(* begin hide *)
 (** Next, if [ST'] extends [ST], the length of [ST'] is at least that
     of [ST]. *)
-*)
+(* end hide *)
 (** 次に、[ST']が[ST]を拡張するなら、[ST']の長さは[ST]以上です。 *)
 
 Lemma length_extends : forall l ST ST',
@@ -1945,9 +1945,9 @@ Proof with eauto.
       apply lt_n_S. apply IHextends. omega.
 Qed.
 
-(*
+(* begin hide *)
 (** Finally, [ST ++ T] extends [ST], and [extends] is reflexive. *)
-*)
+(* end hide *)
 (** 最後に、[ST ++ T] は[ST]を拡張し、また拡張関係([extends])は反射的です。 *)
 
 Lemma extends_app : forall ST T,
@@ -1964,15 +1964,15 @@ Proof.
 Qed.
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Preservation, Finally *)
-*)
+(* end hide *)
 (** ** 保存、最終的に *)
 
-(*
+(* begin hide *)
 (** We can now give the final, correct statement of the type
     preservation property: *)
-*)
+(* end hide *)
 (** ついに、型保存性の最後の正しい主張ができます: *)
 
 Definition preservation_theorem := forall ST t t' T st st',
@@ -1984,7 +1984,7 @@ Definition preservation_theorem := forall ST t t' T st st',
      empty; ST' |- t' \in T /\
      store_well_typed ST' st').
 
-(*
+(* begin hide *)
 (** Note that the preservation theorem merely asserts that there is
     _some_ store typing [ST'] extending [ST] (i.e., agreeing with [ST]
     on the values of all the old locations) such that the new term
@@ -2002,7 +2002,7 @@ Definition preservation_theorem := forall ST t t' T st st',
     wrong."
 
     In order to prove this, we'll need a few lemmas, as usual. *)
-*)
+(* end hide *)
 (** 保存定理は、新しい項[t']の型付けができる、[ST]を拡張する（つまり、すべての古い場所の値について[ST]と一致する）「何らかの」記憶型付け[ST']が存在することを主張するだけであることに注意します。
     この定理は具体的に[ST']が何であるかは示しません。
     もちろん直観的には[ST']は、[ST]であるか、そうでなければ拡張された記憶 [st ++ v1::nil] の値[v1]の型[T1]についての [ST ++ T1::nil] であることは明らかです。
@@ -2013,16 +2013,16 @@ Definition preservation_theorem := forall ST t t' T st st',
     これを証明するために、いつもの通りいくつかの補題が必要になります。 *)
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Substitution Lemma *)
-*)
+(* end hide *)
 (** ** 置換補題 *)
 
-(*
+(* begin hide *)
 (** First, we need an easy extension of the standard substitution
     lemma, along with the same machinery about context invariance that
     we used in the proof of the substitution lemma for the STLC. *)
-*)
+(* end hide *)
 (** 最初に、標準的な置換補題の簡単な拡張が必要です。
     これはSTLCの置換補題の証明で使ったコンテキスト不変条件と同じ機構にさらに追加するものです。 *)
 
@@ -2157,17 +2157,17 @@ Proof with eauto.
 Qed.
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Assignment Preserves Store Typing *)
-*)
+(* end hide *)
 (** ** 代入は記憶型付けを保存する *)
 
-(*
+(* begin hide *)
 (** Next, we must show that replacing the contents of a cell in the
     store with a new value of appropriate type does not change the
     overall type of the store.  (This is needed for the [ST_Assign]
     rule.) *)
-*)
+(* end hide *)
 (** 次に、記憶中のセルの中身を適切な型を持つ新しい値で置き換えたときに、記憶の全体的な型を変えないことを示す必要があります。
     （これは、[ST_Assign]規則に必要になります。） *)
 
@@ -2193,12 +2193,12 @@ Proof with auto.
 Qed.
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Weakening for Stores *)
-*)
+(* end hide *)
 (** ** 記憶についての弱化 *)
 
-(*
+(* begin hide *)
 (** Finally, we need a lemma on store typings, stating that, if a
     store typing is extended with a new location, the extended one
     still allows us to assign the same types to the same terms as the
@@ -2208,7 +2208,7 @@ Qed.
     "weakening" lemmas found in proof theory, which show that adding a
     new assumption to some logical theory does not decrease the set of
     provable theorems.) *)
-*)
+(* end hide *)
 (** 最後に、記憶型付けについての補題が必要です。
     その補題とは、記憶型付けが新しい場所について拡張されたときに、拡張された記憶型付けがオリジナルと同じ項に同じ型をつけることを主張するものです。
  
@@ -2228,12 +2228,12 @@ Proof with eauto.
     eapply length_extends...
 Qed.
 
-(*
+(* begin hide *)
 (** We can use the [store_weakening] lemma to prove that if a store is
     well typed with respect to a store typing, then the store extended
     with a new term [t] will still be well typed with respect to the
     store typing extended with [t]'s type. *)
-*)
+(* end hide *)
 (** 記憶がある記憶型付けのもとで型付けできるとき、新しい項[t]を拡張した記憶も、記憶型付けを項[t]の型について拡張したもののもとで型付けできることを、[store_weakening]補題を使って示すことができます。 *)
 
 Lemma store_well_typed_app : forall ST st t1 T1,
@@ -2269,15 +2269,15 @@ Proof with auto.
 Qed.
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Preservation! *)
-*)
+(* end hide *)
 (** ** 保存! *)
 
-(*
+(* begin hide *)
 (** Now that we've got everything set up right, the proof of
     preservation is actually quite straightforward.  *)
-*)
+(* end hide *)
 (** さて、準備が整いました。
     保存の証明は実際本当に簡単です。*)
 
@@ -2386,18 +2386,18 @@ Proof with eauto using store_weakening, extends_refl.
     exists ST'...
 Qed.
 
-(*
+(* begin hide *)
 (** **** Exercise: 3 stars (preservation_informal)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★★★ (preservation_informal)  *)
-(*
+(* begin hide *)
 (** Write a careful informal proof of the preservation theorem,
     concentrating on the [T_App], [T_Deref], [T_Assign], and [T_Ref]
     cases.
 
 (* FILL IN HERE *)
  *)
-*)
+(* end hide *)
 (** 保存補題の非形式的証明を注意深く記述しなさい。
     [T_App]、[T_Deref]、[T_Assign]、[T_Ref]の場合に特に集中しなさい。
  
@@ -2406,16 +2406,16 @@ Qed.
 (** [] *)
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Progress *)
-*)
+(* end hide *)
 (** ** 進行 *)
 
-(*
+(* begin hide *)
 (** As we've said, progress for this system is pretty easy to prove;
     the proof is very similar to the proof of progress for the STLC,
     with a few new cases for the new syntactic constructs. *)
-*)
+(* end hide *)
 (** 前に言ったとおり、このシステムの進行はかなり簡単に証明できます。
     証明は、STLCの進行の証明とほとんど同じです。
     いくつかの新しい構文要素について新しい場合を追加するだけです。 *)
@@ -2513,12 +2513,12 @@ Proof with eauto.
 Qed.
 
 (* ################################################################# *)
-(*
+(* begin hide *)
 (** * References and Nontermination *)
-*)
+(* end hide *)
 (** * 参照と非停止性 *)
 
-(*
+(* begin hide *)
 (** An important fact about the STLC (proved in chapter [Norm]) is
     that it is is _normalizing_ -- that is, every well-typed term can
     be reduced to a value in a finite number of steps.
@@ -2547,7 +2547,7 @@ Qed.
    evaluating [(!r) unit]. 
 
    Here is the divergent term in Coq: *)
-*)
+(* end hide *)
 (** STLCは（[Norm]章で示したとおり）正規化性を持つのでした。
     つまり、型付けされるすべての項は有限回のステップで値に簡約されるということです。
  
@@ -2597,9 +2597,9 @@ Definition loop :=
               (tapp (tderef (tvar r)) tunit)))
     (tref (tabs x TUnit tunit)).
 
-(*
+(* begin hide *)
 (** This term is well typed: *)
-*)
+(* end hide *)
 (** この項は型付けされます: *)
 
 Lemma loop_typeable : exists T, empty; nil |- loop \in T.
@@ -2617,14 +2617,14 @@ Proof with eauto.
       eapply T_Deref. eapply T_Var. reflexivity.
 Qed.
 
-(*
+(* begin hide *)
 (** To show formally that the term diverges, we first define the
     [step_closure] of the single-step reduction relation, written
     [==>+].  This is just like the reflexive step closure of
     single-step reduction (which we're been writing [==>*]), except
     that it is not reflexive: [t ==>+ t'] means that [t] can reach
     [t'] by _one or more_ steps of reduction. *)
-*)
+(* end hide *)
 (** 項が発散することを形式的に示すために、最初に1ステップ簡約関係の[step_closure]（ステップ閉包）[==>+]を定義します。
     これは1ステップ簡約のステップ閉包（[==>*]と書いてきたもの）とほとんど同じですが、反射的ではないという点が違います。
     つまり、[t ==>+ t'] は[t]から[t']へ1以上のステップの簡約で到達できることを意味します。 *)
@@ -2642,21 +2642,21 @@ Notation "t1 '/' st '==>+' t2 '/' st'" :=
         (multistep1 (t1,st) (t2,st'))
         (at level 40, st at level 39, t2 at level 39).
 
-(*
+(* begin hide *)
 (** Now, we can show that the expression [loop] reduces to the
     expression [!(loc 0) unit] and the size-one store 
     [[r:=(loc 0)]loop_fun]. *)
-*)
+(* end hide *)
 (** さて、式[loop]が式[!(loc 0) unit]とサイズ1の記憶 [[r:=(loc 0)]loop_fun] に簡約されることを示すことができます。 *)
 
-(*
+(* begin hide *)
 (** As a convenience, we introduce a slight variant of the [normalize]
     tactic, called [reduce], which tries solving the goal with
     [multi_refl] at each step, instead of waiting until the goal can't
     be reduced any more. Of course, the whole point is that [loop]
     doesn't normalize, so the old [normalize] tactic would just go
     into an infinite loop reducing it forever! *)
-*)
+(* end hide *)
 (** 便宜上、[normalize]タクティックの若干の変種である[reduce]を導入します。
     これは、ゴールがそれ以上簡約できなくなるまで待つのではなく、各ステップでゴールを[multi_refl]を使って解こうとします。
     もちろん、全体としてのポイントは[loop]が正規化されないことです。
@@ -2679,10 +2679,10 @@ Proof.
   reduce.
 Qed.
 
-(*
+(* begin hide *)
 (** Finally, we show that the latter expression reduces in
     two steps to itself! *)
-*)
+(* end hide *)
 (** 最後に、後者の式は2ステップで自分自身に簡約されることを示します! *)
 
 Lemma loop_fun_step_self :
@@ -2694,17 +2694,17 @@ Proof with eauto.
   eapply sc_one. compute. apply ST_AppAbs...
 Qed.
 
-(*
+(* begin hide *)
 (** **** Exercise: 4 stars (factorial_ref)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★★★★ (factorial_ref)  *)
-(*
+(* begin hide *)
 (** Use the above ideas to implement a factorial function in STLC with
     references.  (There is no need to prove formally that it really
     behaves like the factorial.  Just uncomment the example below to make
     sure it gives the correct result when applied to the argument
     [4].) *)
-*)
+(* end hide *)
 (** 上述のアイデアを使って、参照を持つSTLCで階乗関数を実装しなさい。
     （それが階乗として振る舞うことを形式的に証明する必要はありません。
     ただ、以下の例のコメントを外して、実装したものを引数[4]に適用したときに正しい結果を返すことを確認しなさい。） *)
@@ -2716,15 +2716,14 @@ Lemma factorial_type : empty; nil |- factorial \in (TArrow TNat TNat).
 Proof with eauto.
   (* FILL IN HERE *) Admitted.
 
-(*
+(* begin hide *)
 (** If your definition is correct, you should be able to just
     uncomment the example below; the proof should be fully
     automatic using the [reduce] tactic. *)
-*)
+(* end hide *)
 (** もし定義が正しいのならば、以下の例のコメントを外してみなさい。
     証明は[reduce]タクティックを使って完全自動で行われるはずです。 *)
 
-(**
 (* 
 Lemma factorial_4 : exists st,
   tapp factorial (tnat 4) / nil ==>* tnat 24 / st.
@@ -2732,24 +2731,23 @@ Proof.
   eexists. unfold factorial. reduce.
 Qed.
 *)
- *)
 (** [] *)
 
 (* ################################################################# *)
-(*
+(* begin hide *)
 (** * Additional Exercises *)
-*)
+(* end hide *)
 (** * さらなる練習問題 *)
 
-(*
+(* begin hide *)
 (** **** Exercise: 5 stars, optional (garabage_collector)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★★★★★, optional (garabage_collector)  *)
-(*
+(* begin hide *)
 (** Challenge problem: modify our formalization to include an account
     of garbage collection, and prove that it satisfies whatever nice
     properties you can think to prove about it. *)
-*)
+(* end hide *)
 (** チャレンジ問題: 上述の形式化を修正して、ガベージコレクションを考慮したものにしなさい。
     そして、それについて、自分が証明すべきと思う何らかの良い性質を持つことを証明しなさい。 *)
 
