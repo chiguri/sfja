@@ -1,11 +1,11 @@
 (** * PE: 部分評価 *)
-(*
+(* begin hide *)
 (** * PE: Partial Evaluation *)
-*)
+(* end hide *)
 
 (* Chapter written and maintained by Chung-chieh Shan *)
 
-(*
+(* begin hide *)
 (** The [Equiv] chapter introduced constant folding as an example of a
     program transformation and proved that it preserves the meaning of
     programs.  Constant folding operates on manifest constants such as
@@ -37,7 +37,7 @@
       X ::= 3;; Y ::= 4 - Y
 
     without knowing the initial value of [Y]. *)
-*)
+(* end hide *)
 (** [Equiv] の章ではプログラム変換の例として定数畳み込みを紹介し、それがプログラムの意味を保存することを証明しました。
     定数畳み込みは[ANum]式のような明らかな定数を処理します。
     例えば、コマンド [Y ::= 3 + 1] をコマンド [Y ::= 4] に単純化します。
@@ -79,28 +79,28 @@ Require Import Imp.
 Require Import Smallstep.
 
 (* ################################################################# *)
-(*
+(* begin hide *)
 (** * Generalizing Constant Folding *)
-*)
+(* end hide *)
 (** * 定数畳み込みを一般化する *)
 
-(*
+(* begin hide *)
 (** The starting point of partial evaluation is to represent our
     partial knowledge about the state.  For example, between the two
     assignments above, the partial evaluator may know only that [X] is
     [3] and nothing about any other variable. *)
-*)
+(* end hide *)
 (** 部分評価について最初にやることは、状態についての部分知識を表現することです。
     例えば上述の2つの代入において、部分評価器は[X]が[3]であることだけを知っており、
     他の変数については何も知らないでしょう。 *)
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Partial States *)
-*)
+(* end hide *)
 (** ** 部分状態 *)
 
-(*
+(* begin hide *)
 (** Conceptually speaking, we can think of such partial states as the
     type [string -> option nat] (as opposed to the type [string -> nat] of
     concrete, full states).  However, in addition to looking up and
@@ -110,7 +110,7 @@ Require Import Smallstep.
     to compare two arbitrary functions in this way, so we represent
     partial states in a more concrete format: as a list of [string * nat]
     pairs. *)
-*)
+(* end hide *)
 (** 概念的には、（完全な具体的状態の型が [string -> nat] であるのに対して）部分状態は型 [string -> option nat] と考えることができます。
     しかしながら、部分状態の個別の変数の状態を参照/更新するだけでなく、
     条件分岐の制御フローを扱うために、2つの部分状態を比較して、同じかどうか、あるいは違いはどこかを知りたいことがあるでしょう。
@@ -119,14 +119,14 @@ Require Import Smallstep.
 
 Definition pe_state := list (string * nat).
 
-(*
+(* begin hide *)
 (** The idea is that a variable (of type [string]) appears in the list if and only
     if we know its current [nat] value.  The [pe_lookup] function thus
     interprets this concrete representation.  (If the same variable
     appears multiple times in the list, the first occurrence
     wins, but we will define our partial evaluator to never construct
     such a [pe_state].) *)
-*)
+(* end hide *)
 (** これは、（[string]型の）変数がこのリストに現れることが、その変数の現在の[nat]値を知っていることとするというアイデアです。
     そして[pe_lookup]関数はこの具体的表現を解釈します。
     （もし同じ変数がこのリストに複数回現れるならば、最初の出現が有効です。
@@ -139,16 +139,16 @@ Fixpoint pe_lookup (pe_st : pe_state) (V:string) : option nat :=
                       else pe_lookup pe_st V
   end.
 
-(*
+(* begin hide *)
 (** For example, [empty_pe_state] represents complete ignorance about
     every variable -- the function that maps every identifier to [None]. *)
-*)
+(* end hide *)
 (** 例えば、[empty_pe_state]はすべての変数を完全に無視することを表します。
     すべての識別子を[None]に写像する関数です。 *)
 
 Definition empty_pe_state : pe_state := [].
 
-(*
+(* begin hide *)
 (** More generally, if the [list] representing a [pe_state] does not
     contain some identifier, then that [pe_state] must map that identifier to
     [None].  Before we prove this fact, we first define a useful
@@ -159,7 +159,7 @@ Definition empty_pe_state : pe_state := [].
     means to reason by cases over [beq_string V V'].
     In the case where [V = V'], the tactic
     substitutes [V] for [V'] throughout. *)
-*)
+(* end hide *)
 (** より一般に、もし[pe_state]を表現する[list]がある識別子を含まないならば、[pe_state]は識別子を[None]に写像しなければなりません。
     この事実を証明する前に、まず[string]の等価関係の推論に関する便利なタクティックを定義します。
     タクティック
@@ -227,17 +227,17 @@ Proof.
 Qed.
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Arithmetic Expressions *)
-*)
+(* end hide *)
 (** ** 算術式 *)
 
-(*
+(* begin hide *)
 (** Partial evaluation of [aexp] is straightforward -- it is basically
     the same as constant folding, [fold_constants_aexp], except that
     sometimes the partial state tells us the current value of a
     variable and we can replace it by a constant expression. *)
-*)
+(* end hide *)
 (** [aexp]の部分評価は簡単です。基本的には定数畳み込み[fold_constants_aexp]と同じです。
     違うのは、部分状態が変数の現在の値を教えてくれる場合があるので、
     その時に変数を定数式に置換できるということです。 *)
@@ -266,10 +266,10 @@ Fixpoint pe_aexp (pe_st : pe_state) (a : aexp) : aexp :=
       end
   end.
 
-(*
+(* begin hide *)
 (** This partial evaluator folds constants but does not apply the
     associativity of addition. *)
-*)
+(* end hide *)
 (** この部分評価器は定数を畳み込みしますが、可算の結合性の処理はしません。 *)
 
 Open Scope aexp_scope.
@@ -285,7 +285,7 @@ Example text_pe_aexp2:
   = (X + 1 + 3).
 Proof. reflexivity. Qed.
 
-(*
+(* begin hide *)
 (** Now, in what sense is [pe_aexp] correct?  It is reasonable to
     define the correctness of [pe_aexp] as follows: whenever a full
     state [st:state] is _consistent_ with a partial state
@@ -293,7 +293,7 @@ Proof. reflexivity. Qed.
     assigns a value is assigned the same value by [st]), evaluating
     [a] and evaluating [pe_aexp pe_st a] in [st] yields the same
     result.  This statement is indeed true. *)
-*)
+(* end hide *)
 (** さて、[pe_aexp]はどういう意味で正しいのでしょうか？
     [pe_aexp]の正しさを次のように定義するのが合理的です。
     完全状態[st:state]が部分状態[pe_st:pe_state]と整合的(_consistent_)であるならば
@@ -320,7 +320,7 @@ Proof. unfold pe_consistent. intros st pe_st H a.
     + (* None *) reflexivity.
 Qed.
 
-(*
+(* begin hide *)
 (** However, we will soon want our partial evaluator to remove
     assignments.  For example, it will simplify
 
@@ -359,7 +359,7 @@ Qed.
     function [pe_override], which updates [st] with the contents of
     [pe_st].  In other words, [pe_override] carries out the
     assignments listed in [pe_st] on top of [st]. *)
-*)
+(* end hide *)
 (** しかしながらすぐに、部分評価器で代入を削除することも行いたくなるでしょう。
     例えば、
 [[
@@ -403,11 +403,11 @@ Example test_pe_update:
   = { Y --> 1 ; Z --> 2 ; X --> 3 }.
 Proof. reflexivity. Qed.
 
-(*
+(* begin hide *)
 (** Although [pe_update] operates on a concrete [list] representing
     a [pe_state], its behavior is defined entirely by the [pe_lookup]
     interpretation of the [pe_state]. *)
-*)
+(* end hide *)
 (** [pe_update]が[pe_state]を表現する具体的[list]を操作するにもかかわらず、そのふるまいは[pe_state]の[pe_lookup]解釈によって完全に定義されます。 *)
 
 Theorem pe_update_correct: forall st pe_st V0,
@@ -420,13 +420,13 @@ Proof. intros. induction pe_st as [| [V n] pe_st]. reflexivity.
   simpl in *. unfold t_update.
   compare V0 V; auto. rewrite <- beq_string_refl; auto. rewrite false_beq_string; auto. Qed.
 
-(*
+(* begin hide *)
 (** We can relate [pe_consistent] to [pe_update] in two ways.
     First, overriding a state with a partial state always gives a
     state that is consistent with the partial state.  Second, if a
     state is already consistent with a partial state, then overriding
     the state with the partial state gives the same state. *)
-*)
+(* end hide *)
 (** [pe_consistent]と[pe_update]とは2つの方法で関係付けることができます。
     1つ目は、状態を部分状態でオーバーライド(上書き)したものは、常にその部分状態と整合的な状態となるということです。
     2つ目は、状態がもし部分状態と整合的ならば、その状態をその部分状態でオーバーライドしたものは、もとの状態と同じということです。 *)
@@ -441,7 +441,7 @@ Theorem pe_consistent_update: forall st pe_st,
 Proof. intros st pe_st H V. rewrite pe_update_correct.
   remember (pe_lookup pe_st V) as l. destruct l; auto. Qed.
 
-(*
+(* begin hide *)
 (** Now we can state and prove that [pe_aexp] is correct in the
     stronger sense that will help us define the rest of the partial
     evaluator.
@@ -455,7 +455,7 @@ Proof. intros st pe_st H V. rewrite pe_update_correct.
     that are unknown in the static (partial) state.  Thus, the
     residual program should be equivalent to _prepending_ the
     assignments listed in the partial state to the original program. *)
-*)
+(* end hide *)
 (** いよいよ、[pe_aexp]がより強い意味で正しいことを主張し証明します。
     このことはこれから部分評価器の残りを定義する助けになります。
  
@@ -481,16 +481,16 @@ Proof.
 Qed.
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Boolean Expressions *)
-*)
+(* end hide *)
 (** ** ブール式 *)
 
-(*
+(* begin hide *)
 (** The partial evaluation of boolean expressions is similar.  In
     fact, it is entirely analogous to the constant folding of boolean
     expressions, because our language has no boolean variables. *)
-*)
+(* end hide *)
 (** ブール式の部分評価は同様です。実のところ、ブール式の定数畳み込みと完全に対応します。
     なぜなら、この言語にはブール値の変数がないからです。 *)
 
@@ -534,10 +534,10 @@ Example test_pe_bexp2: forall b:bexp,
   pe_bexp [] b = b.
 Proof. intros b H. rewrite -> H. reflexivity. Qed.
 
-(*
+(* begin hide *)
 (** The correctness of [pe_bexp] is analogous to the correctness of
     [pe_aexp] above. *)
-*)
+(* end hide *)
 (** [pe_bexp]の正しさは上述の[pe_aexp]の正しさと同様です。 *)
 
 Theorem pe_bexp_correct: forall (pe_st:pe_state) (b:bexp) (st:state),
@@ -561,12 +561,12 @@ Proof.
 Qed.
 
 (* ################################################################# *)
-(*
+(* begin hide *)
 (** * Partial Evaluation of Commands, Without Loops *)
-*)
+(* end hide *)
 (** * ループ以外のコマンドの部分評価 *)
 
-(*
+(* begin hide *)
 (** What about the partial evaluation of commands?  The analogy
     between partial evaluation and full evaluation continues: Just as
     full evaluation of a command turns an initial state into a final
@@ -608,7 +608,7 @@ Qed.
 
     to hold.  The assignment to [X] appears in the final partial state,
     not the residual command. *)
-*)
+(* end hide *)
 (** コマンドの部分評価はどうなるでしょうか？
     部分評価と完全評価の対応関係は続きます。
     コマンドの完全評価が初期状態を終了状態に変換するのと同じように、コマンドの部分評価は初期部分状態を終了部分状態に変換します。
@@ -640,12 +640,12 @@ Qed.
     [X]への代入は残留コマンドではなく、最終部分状態に現れます。 *)
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Assignment *)
-*)
+(* end hide *)
 (** ** 代入 *)
 
-(*
+(* begin hide *)
 (** Let's start by considering how to partially evaluate an
     assignment.  The two assignments in the source program above needs
     to be treated differently.  The first assignment [X ::= 3],
@@ -661,7 +661,7 @@ Qed.
     a concrete [list] representing a [pe_state], but the theorems
     [pe_add_correct] and [pe_remove_correct] specify their behavior by
     the [pe_lookup] interpretation of the [pe_state]. *)
-*)
+(* end hide *)
 (** 代入がどのように部分評価されるかを考えることから始めましょう。
     上述のソースプログラムにおける2つの代入は、違った形で扱う必要があります。
     最初の代入 [X ::= 3] は「静的」です。
@@ -711,11 +711,11 @@ Proof. intros pe_st V n V0. unfold pe_add. simpl.
     repeat rewrite false_beq_string; auto.
 Qed.
 
-(*
+(* begin hide *)
 (** We will use the two theorems below to show that our partial
     evaluator correctly deals with dynamic assignments and static
     assignments, respectively. *)
-*)
+(* end hide *)
 (** 以下の2つ定理は、
     定義する部分評価器が動的代入と静的代入をそれぞれ正しく扱うことを示すのに使われます。 *)
 
@@ -735,12 +735,12 @@ Proof. intros st pe_st V n. apply functional_extensionality. intros V0.
   destruct (beq_string V V0); reflexivity. Qed.
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Conditional *)
-*)
+(* end hide *)
 (** ** 条件分岐 *)
 
-(*
+(* begin hide *)
 (** Trickier than assignments to partially evaluate is the
     conditional, [IFB b1 THEN c1 ELSE c2 FI].  If [b1] simplifies to
     [BTrue] or [BFalse] then it's easy: we know which branch will be
@@ -787,7 +787,7 @@ Proof. intros st pe_st V n. apply functional_extensionality. intros V0.
     at a given variable.  In the theorem [pe_disagree_domain], we
     prove that two [pe_state]s can only disagree at variables that
     appear in at least one of them. *)
-*)
+(* end hide *)
 (** 部分評価について代入よりトリッキーなのは条件分岐 [IFB b1 THEN c1 ELSE c2 FI] です。
     もし[b1]が[BTrue]または[BFalse]に単純化されるならば、簡単です。
     どちらの選択肢が選ばれるか分かっているのですから、その選択肢を残すだけです。
@@ -846,14 +846,14 @@ Proof. unfold pe_disagree_at. intros pe_st1 pe_st2 V H.
   destruct lookup2 as [n2|]. right. apply pe_domain with n2. auto.
   inversion H. Qed.
 
-(*
+(* begin hide *)
 (** We define the [pe_compare] function to list the variables where
     two given [pe_state]s disagree.  This list is exact, according to
     the theorem [pe_compare_correct]: a variable appears on the list
     if and only if the two given [pe_state]s disagree at that
     variable.  Furthermore, we use the [pe_unique] function to
     eliminate duplicates from the list. *)
-*)
+(* end hide *)
 (** 2つの与えられた[pe_state]の不一致の変数をリストアップする関数[pe_compare]を定義します。
     このリストはまさに、定理[pe_compare_correct]に従うならば、このリストにある変数が現れることと、与えられた2つの[pe_state]がその変数で不一致であることが同値である、というものです。
     さらに、リストから重複を除去するために[pe_unique]関数を使います。 *)
@@ -912,7 +912,7 @@ Proof. intros pe_st1 pe_st2 V.
     rewrite negb_false_iff in Hagree.
     apply beq_nat_true in Hagree. subst. reflexivity. Qed.
 
-(*
+(* begin hide *)
 (** The intersection of two partial states is the result of removing
     from one of them all the variables where the two disagree.  We
     define the function [pe_removes], in terms of [pe_remove] above,
@@ -926,7 +926,7 @@ Proof. intros pe_st1 pe_st2 V.
     does not care which of the two partial states we remove the
     variables from; that theorem [pe_compare_update] is used in the
     correctness proof shortly. *)
-*)
+(* end hide *)
 (** 2つの部分状態の共通部分は、どちらか一方から、不一致の変数のすべてを除去したものです。
     このような変数のリスト全体の除去を一度に行う関数[pe_removes]を、
     上述の[pe_remove]を使って定義します。
@@ -970,12 +970,12 @@ Proof. intros. apply functional_extensionality. intros V.
   rewrite !pe_update_correct. rewrite pe_compare_removes. reflexivity.
 Qed.
 
-(*
+(* begin hide *)
 (** Finally, we define an [assign] function to turn the difference
     between two partial states into a sequence of assignment commands.
     More precisely, [assign pe_st ids] generates an assignment command
     for each variable listed in [ids]. *)
-*)
+(* end hide *)
 (** 最後に、2つの部分状態の違いを代入コマンドの列に変換する[assign]関数を定義します。
     より詳しくは、[assign pe_st ids] は、
     [ids]にリストアップされたそれぞれの変数に対して代入コマンドを生成します。 *)
@@ -989,14 +989,14 @@ Fixpoint assign (pe_st : pe_state) (ids : list string) : com :=
               end
   end.
 
-(*
+(* begin hide *)
 (** The command generated by [assign] always terminates, because it is
     just a sequence of assignments.  The (total) function [assigned]
     below computes the effect of the command on the (dynamic state).
     The theorem [assign_removes] then confirms that the generated
     assignments perfectly compensate for removing the variables from
     the partial state. *)
-*)
+(* end hide *)
 (** [assign]により生成されたコマンドは常に停止します。なぜなら、
     単に代入の列だからです。
     下記の(全)関数[assigned]はコマンドの(動的状態での)効果を計算します。
@@ -1044,18 +1044,18 @@ Proof. intros pe_st ids st. induction ids as [| V ids]; simpl.
 Qed.
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** The Partial Evaluation Relation *)
-*)
+(* end hide *)
 (** ** 部分評価関係 *)
 
-(*
+(* begin hide *)
 (** At long last, we can define a partial evaluator for commands
     without loops, as an inductive relation!  The inequality
     conditions in [PE_AssDynamic] and [PE_If] are just to keep the
     partial evaluator deterministic; they are not required for
     correctness. *)
-*)
+(* end hide *)
 (** 遂に、ループ以外のコマンドに対する部分評価器を、帰納的関係として定義することができます!
     [PE_AssDynamic]と[PE_If]における非等号（[<>]）条件は、
     部分評価器に決定性を持たせるためのものです。
@@ -1103,17 +1103,17 @@ Hint Constructors pe_com.
 Hint Constructors ceval.
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Examples *)
-*)
+(* end hide *)
 (** ** 例 *)
 
-(*
+(* begin hide *)
 (** Below are some examples of using the partial evaluator.  To make
     the [pe_com] relation actually usable for automatic partial
     evaluation, we would need to define more automation tactics in
     Coq.  That is not hard to do, but it is not needed here. *)
-*)
+(* end hide *)
 (** 以下は部分評価器を利用する例のいくつかです。
     [pe_com]関係を自動部分評価に実際に利用可能にするためには、
     Coqにより多くの自動化タクティックを定義する必要があるでしょう。
@@ -1151,14 +1151,14 @@ Proof. erewrite f_equal2 with (f := fun c st => _ / _ \\ c / st).
   reflexivity. reflexivity. Qed.
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Correctness of Partial Evaluation *)
-*)
+(* end hide *)
 (** ** 部分評価の正しさ *)
 
-(*
+(* begin hide *)
 (** Finally let's prove that this partial evaluator is correct! *)
-*)
+(* end hide *)
 (** 最後に、定義した部分評価器が正しいことを証明しましょう! *)
 
 Reserved Notation "c' '/' pe_st' '/' st '\\' st''"
@@ -1237,9 +1237,9 @@ Proof. intros c pe_st pe_st' c' Hpe.
       rewrite <- assign_removes. eauto.
 Qed.
 
-(*
+(* begin hide *)
 (** The main theorem. Thanks to David Menendez for this formulation! *)
-*)
+(* end hide *)
 (** メインの定理です。この言明化について David Menendez に感謝します! *)
 
 Corollary pe_com_correct:
@@ -1253,12 +1253,12 @@ Proof. intros c pe_st pe_st' c' H st st''. split.
 Qed.
 
 (* ################################################################# *)
-(*
+(* begin hide *)
 (** * Partial Evaluation of Loops *)
-*)
+(* end hide *)
 (** * ループの部分評価 *)
 
-(*
+(* begin hide *)
 (** It may seem straightforward at first glance to extend the partial
     evaluation relation [pe_com] above to loops.  Indeed, many loops
     are easy to deal with.  Considered this repeated-squaring loop,
@@ -1316,7 +1316,7 @@ Qed.
     evaluation on Imp commands.  We add one more command argument
     [c''] to the [pe_com] relation, which keeps track of a loop to
     roll up. *)
-*)
+(* end hide *)
 (** 一見すると、部分評価関係[pe_com]をループに拡張することは簡単に見えます。
     実際、多くのループは扱うのは簡単です。
     例えば次の、二乗を繰り返すループを考えます:
@@ -1458,9 +1458,9 @@ Inductive pe_com : com -> pe_state -> com -> pe_state -> com -> Prop :=
 Hint Constructors pe_com.
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Examples *)
-*)
+(* end hide *)
 (** ** 例 *)
 
 Ltac step i :=
@@ -1542,18 +1542,18 @@ Proof. erewrite f_equal2 with (f := fun c st => _ / _ \\ c / st / SKIP).
   inversion H. reflexivity. reflexivity. reflexivity. Qed.
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Correctness *)
-*)
+(* end hide *)
 (** ** 正当性 *)
 
-(*
+(* begin hide *)
 (** Because this partial evaluator can unroll a loop n-fold where n is
     a (finite) integer greater than one, in order to show it correct
     we need to perform induction not structurally on dynamic
     evaluation but on the number of times dynamic evaluation enters a
     loop body. *)
-*)
+(* end hide *)
 (** この部分評価器は1より大きい(有限)整数 n について、ループをn回展開することができます。
     このため、正しさを示すためには、動的評価の構造についての帰納法ではなく、
     動的評価がループの本体に入る回数についての帰納法が必要です。 *)
@@ -1815,12 +1815,12 @@ Qed.
 End Loop.
 
 (* ################################################################# *)
-(*
+(* begin hide *)
 (** * Partial Evaluation of Flowchart Programs *)
-*)
+(* end hide *)
 (** * フローチャートプログラムの部分評価 *)
 
-(*
+(* begin hide *)
 (** Instead of partially evaluating [WHILE] loops directly, the
     standard approach to partially evaluating imperative programs is
     to convert them into _flowcharts_.  In other words, it turns out
@@ -1829,7 +1829,7 @@ End Loop.
     flowchart is a residual flowchart.  If we are lucky, the jumps in
     the residual flowchart can be converted back to [WHILE] loops, but
     that is not possible in general; we do not pursue it here. *)
-*)
+(* end hide *)
 (** 命令型プログラムを部分評価する標準的アプローチは、
     [WHILE]ループを直接部分評価する代わりに、それをフローチャート(_flowcharts_)
     に変換することです。
@@ -1841,12 +1841,12 @@ End Loop.
     ここではこのことは追求しません。 *)
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Basic blocks *)
-*)
+(* end hide *)
 (** ** 基本ブロック *)
 
-(*
+(* begin hide *)
 (** A flowchart is made of _basic blocks_, which we represent with the
     inductive type [block].  A basic block is a sequence of
     assignments (the constructor [Assign]), concluding with a
@@ -1854,7 +1854,7 @@ End Loop.
     (the constructor [Goto]).  The destinations of the jumps are
     specified by _labels_, which can be of any type.  Therefore, we
     parameterize the [block] type by the type of labels. *)
-*)
+(* end hide *)
 (** フローチャートは基本ブロック(_basic blocks_)から成ります。
     これをここでは、帰納型[block]で表します。
     基本ブロックは、代入(コンストラクタ[Assign])の列の最後に条件ジャンプ
@@ -1871,11 +1871,11 @@ Arguments Goto {Label} _.
 Arguments If   {Label} _ _ _.
 Arguments Assign {Label} _ _ _.
 
-(*
+(* begin hide *)
 (** We use the "even or odd" program, expressed above in Imp, as our
     running example.  Converting this program into a flowchart turns
     out to require 4 labels, so we define the following type. *)
-*)
+(* end hide *)
 (** 以下では、上述のImpによる「奇数/偶数」プログラムを、全体を通した例として使います。
     このプログラムをフローチャートに変換するには、4つのラベルが必要です。
     それを以下のように定義します。 *)
@@ -1886,10 +1886,10 @@ Inductive parity_label : Type :=
   | body  : parity_label
   | done  : parity_label.
 
-(*
+(* begin hide *)
 (** The following [block] is the basic block found at the [body] label
     of the example program. *)
-*)
+(* end hide *)
 (** 以下の[block]は例プログラムの[body]ラベルに対する基本ブロックです。 *)
 
 Definition parity_body : block parity_label :=
@@ -1897,13 +1897,13 @@ Definition parity_body : block parity_label :=
    (Assign X (1 - X)
      (Goto loop)).
 
-(*
+(* begin hide *)
 (** To evaluate a basic block, given an initial state, is to compute
     the final state and the label to jump to next.  Because basic
     blocks do not _contain_ loops or other control structures,
     evaluation of basic blocks is a total function -- we don't need to
     worry about non-termination. *)
-*)
+(* end hide *)
 (** 与えられた初期状態で基本ブロックを評価することは、
     最終状態と次にジャンプするためのラベルを計算することです。
     基本ブロックはループや他の制御構造を含まないことから、
@@ -1923,18 +1923,18 @@ Example keval_example:
 Proof. reflexivity. Qed.
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Flowchart programs *)
-*)
+(* end hide *)
 (** ** フローチャートプログラム *)
 
-(*
+(* begin hide *)
 (** A flowchart program is simply a lookup function that maps labels
     to basic blocks.  Actually, some labels are _halting states_ and
     do not map to any basic block.  So, more precisely, a flowchart
     [program] whose labels are of type [L] is a function from [L] to
     [option (block L)]. *)
-*)
+(* end hide *)
 (** フローチャートプログラムは単にラベルを基本ブロックに写像する検索関数です。
     実際には、いくつかのラベルは停止状態(_halting states_)で、
     基本ブロックには写像されません。これから、より正確には、
@@ -1951,11 +1951,11 @@ Definition parity : program parity_label := fun l =>
   | done => None (* halt *)
   end.
 
-(*
+(* begin hide *)
 (** Unlike a basic block, a program may not terminate, so we model the
     evaluation of programs by an inductive relation [peval] rather
     than a recursive function. *)
-*)
+(* end hide *)
 (** 基本ブロックとは異なり、プログラムは停止しないこともあります。
     これからプログラムの評価は再帰関数ではなく帰納的関係[peval]でモデル化します。 *)
 
@@ -1979,12 +1979,12 @@ Proof. erewrite f_equal with (f := fun st => peval _ _ _ st _).
 Qed.
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Partial Evaluation of Basic Blocks and Flowchart Programs *)
-*)
+(* end hide *)
 (** ** 基本ブロックとフローチャートプログラムの部分評価 *)
 
-(*
+(* begin hide *)
 (** Partial evaluation changes the label type in a systematic way: if
     the label type used to be [L], it becomes [pe_state * L].  So the
     same label in the original program may be unfolded, or blown up,
@@ -1993,7 +1993,7 @@ Qed.
     will become two labels: [([(X,0)], loop)] and [([(X,1)], loop)].
     This change of label type is reflected in the types of [pe_block]
     and [pe_program] defined presently. *)
-*)
+(* end hide *)
 (** 部分評価はラベルの型を体系的に変更します。
     もとのラベルの型が[L]ならば、[pe_state * L] になります。
     そして、オリジナルプログラムと同じラベルが、異なる部分状態と対にされることで、複数のラベルに拡大されます。

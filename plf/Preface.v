@@ -1,15 +1,15 @@
 (** * Preface: 前書き *)
-(*
+(* begin hide *)
 (** * Preface *)
-*)
+(* end hide *)
 
 (* ################################################################# *)
-(*
+(* begin hide *)
 (** * Welcome *)
-*)
+(* end hide *)
 (** * ようこそ *)
 
-(*
+(* begin hide *)
 (** This electronic book is a survey of basic concepts in the
     mathematical study of programs and programming languages.  Topics
     include advanced use of the Coq proof assistant, operational
@@ -39,7 +39,7 @@
     familiar with some or all of the material in _Logical
     Foundations_, there is plenty of additional material to fill most
     of a semester from this book alone. *)
-*)
+(* end hide *)
 (** この本はプログラムとプログラミング言語に対する数学的基礎の基本的コンセプトをまとめたものです。
     主な内容は、Coqの高度な利用方法、操作的意味論、ホーア論理、静的型システムです。
     解説は、学部生から博士課程の学生や研究者に至るまで、広範囲の読者を想定しています。
@@ -61,12 +61,12 @@
 
 
 (* ################################################################# *)
-(*
+(* begin hide *)
 (** * Overview *)
-*)
+(* end hide *)
 (** * 概要 *)
 
-(*
+(* begin hide *)
 (** The book develops two main conceptual threads:
 
     (1) formal techniques for _reasoning about the properties of
@@ -86,7 +86,7 @@
     them more deeply.  Some suggestions for further reading can be
     found in the [Postscript] chapter.  Bibliographic information
     for all cited works can be found in the file [Bib]. *)
-*)
+(* end hide *)
 (** この本は二つの主題があります。
  
     (1) 「特定のプログラムの仕様の推論」に関する形式手法
@@ -101,12 +101,12 @@
     これらの本の参照情報は[Bib]ファイルにあります。 *)
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Program Verification *)
-*)
+(* end hide *)
 (** ** プログラム検証 *)
 
-(*
+(* begin hide *)
 (** In the first part of the book, we introduce two broad topics of
     critical importance in building reliable software (and hardware):
     techniques for proving specific properties of particular
@@ -154,7 +154,7 @@
     This part of the course is intended to give readers a taste of the
     key ideas and mathematical tools used in a wide variety of
     real-world software and hardware verification tasks. *)
-*)
+(* end hide *)
 (** この本の前半ではまず、高信頼ソフトウェア（またはハードウェア）を構築するのに非常に重要な二つの内容に関して述べます。
     一方は「プログラム」における特定の性質の証明、そしてもう一方は「プログラミング言語」における一般的性質の証明です。
  
@@ -185,12 +185,12 @@
     この部分では、実世界のソフトウェアやハードウェアの検証に広く利用されるアイディアと数学の道具を経験してもらいます。 *)
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Type Systems *)
-*)
+(* end hide *)
 (** ** 型システム *)
 
-(*
+(* begin hide *)
 (** Our other major topic, covering approximately the second half of
     the book, is _type systems_ -- powerful tools for establishing
     properties of _all_ programs in a given language.
@@ -210,7 +210,7 @@
     typed lambda-calculus_, is essentially a simplified model of the
     core of Coq itself!
 *)
- *)
+(* end hide *)
 (** この本の後半で述べるもう一方の主題は「型システム(_type system_)」です。
     これは、導入した言語の全てのプログラムに対する性質を保証する強力な道具です。
  
@@ -224,31 +224,31 @@
  *)
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Further Reading *)
-*)
+(* end hide *)
 (** ** 参考文献 *)
 
-(*
+(* begin hide *)
 (** This text is intended to be self contained, but readers looking
     for a deeper treatment of particular topics will find some
     suggestions for further reading in the [Postscript]
     chapter. *)
-*)
+(* end hide *)
 (** この本は単体で読めるようにしてありますが、それぞれの内容でより進んだ話を見たければ、[Postscript]章に挙げた参考文献を見ると良いでしょう。 *)
 
 (* ################################################################# *)
-(*
+(* begin hide *)
 (** * Note for Instructors *)
-*)
+(* end hide *)
 (** * 教育関係者へ *)
 
-(*
+(* begin hide *)
 (** If you plan to use these materials in your own course, you will
     undoubtedly find things you'd like to change, improve, or add.
     Your contributions are welcome!  Please see the [Preface]
     to _Logical Foundations_ for instructions. *)
-*)
+(* end hide *)
 (** この資料を自分のコースで使おうと思った場合、ほぼまちがいなく書き直しや追加したいところが出てくるでしょう。
     そういった貢献は大歓迎です。
     「論理の基礎(_Logical Foundations_)」の[Preface]章にある案内を見てください。 *)

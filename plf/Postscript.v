@@ -1,17 +1,17 @@
 (** * Postscript: あとがき *)
-(*
+(* begin hide *)
 (** * Postscript *)
-*)
+(* end hide *)
 
 (** Congratulations: We've made it to the end! *)
 
 (* ################################################################# *)
-(*
+(* begin hide *)
 (** * Looking Back *)
-*)
+(* end hide *)
 (** * ふりかえり *)
 
-(*
+(* begin hide *)
 (** We've covered a lot of ground.  Here's a quick review of the whole
     trajectory we've followed, starting at the beginning of _Logical
     Foundations_...
@@ -22,7 +22,7 @@
             or pointer structures)
           - higher-order functions
           - polymorphism *)
-*)
+(* end hide *)
 (** ここまで様々なことを学んできました。
     「論理の基礎」から始まった軌跡を振り返ってみましょう。
  
@@ -31,7 +31,7 @@
           - 高階関数
           - 多相性 *)
 
-(*
+(* begin hide *)
 (**
      - _Logic_, the mathematical basis for software engineering:
 
@@ -43,7 +43,7 @@
           - inductively defined sets and relations
           - inductive proofs
           - proof objects *)
-*)
+(* end hide *)
 (** 
      - 論理、ソフトウェア工学の数学的基盤:
 <<
@@ -56,14 +56,14 @@
           - 帰納的証明
           - 証明オブジェクト *)
 
-(*
+(* begin hide *)
 (**
      - _Coq_, an industrial-strength proof assistant
           - functional core language
           - core tactics
           - automation
 *)
- *)
+(* end hide *)
 (** 
      - _Coq_、産業用途に耐え得る証明支援器
           - 関数型のコア言語
@@ -71,7 +71,7 @@
           - 自動化
  *)
 
-(*
+(* begin hide *)
 (**
      - _Foundations of programming languages_
 
@@ -92,7 +92,7 @@
 
            - theory of subtyping
 *)
- *)
+(* end hide *)
 (** 
      - プログラミング言語の基礎
  
@@ -296,12 +296,12 @@
 *)
 
 (* ################################################################# *)
-(*
+(* begin hide *)
 (** * Looking Forward *)
-*)
+(* end hide *)
 (** * これからの指針 *)
 
-(*
+(* begin hide *)
 (** Some good places to learn more...
 
        - This book includes several optional chapters covering topics
@@ -345,7 +345,7 @@
             - Principles in Practice workshop (PiP)
             - CoqPL workshop 
 *)
- *)
+(* end hide *)
 (** 先に進む資料としてよいものをいくつか...
  
        - この本のオプションの章。

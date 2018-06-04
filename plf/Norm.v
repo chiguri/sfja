@@ -1,11 +1,11 @@
 (** * Norm: STLCの正規化 *)
-(*
+(* begin hide *)
 (** * Norm: Normalization of STLC *)
-*)
+(* end hide *)
 
 (* Chapter written and maintained by Andrew Tolmach *)
 
-(*
+(* begin hide *)
 (** This optional chapter is based on chapter 12 of _Types and
     Programming Languages_ (Pierce).  It may be useful to look at the
     two together, as that chapter includes explanations and informal
@@ -44,7 +44,7 @@
     to the reader.  Even for the base calculus, normalization is not
     entirely trivial to prove, since each reduction of a term can
     duplicate redexes in subterms. *)
-*)
+(* end hide *)
 (** このオプションの章は、Pierceによる _Types and Programming Languages_ （和訳：型システム入門）の12章に基づいています。
     ここでは説明しない非形式的な証明がその章には載っているので、同時に読むと良いでしょう。
  
@@ -65,14 +65,14 @@
     この基礎部分でさえ、正規化性は証明が完全に自明ということはありません。
     なぜなら、項の各簡約は部分項のリデックスを複製することがあるからです。 *)
 
-(*
+(* begin hide *)
 (** **** Exercise: 2 stars (norm_fail)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★★ (norm_fail)  *)
-(*
+(* begin hide *)
 (** Where do we fail if we attempt to prove normalization by a
     straightforward induction on the size of a well-typed term? *)
-*)
+(* end hide *)
 (** 型付けされた項のサイズについての素直な帰納法で正規化性を証明しようとしたとき、どこで失敗するでしょうか？ *)
 
 (* FILL IN HERE *)
@@ -87,18 +87,18 @@
 (** [] *)
 
 (* ################################################################# *)
-(*
+(* begin hide *)
 (** * Language *)
-*)
+(* end hide *)
 (** * 言語 *)
 
-(*
+(* begin hide *)
 (** We begin by repeating the relevant language definition, which is
     similar to those in the [MoreStlc] chapter, plus supporting
     results including type preservation and step determinism.  (We
     won't need progress.)  You may just wish to skip down to the
     Normalization section... *)
-*)
+(* end hide *)
 (** 関係する言語の定義から始めます。
     [MoreStlc]章のものと同様です。
     そして、型の保存とステップの決定性を含む結果も成立します。
@@ -106,9 +106,9 @@
     正規化の節まで飛ばしても構いません... *)
 
 (* ----------------------------------------------------------------- *)
-(*
+(* begin hide *)
 (** *** Syntax and Operational Semantics *)
-*)
+(* end hide *)
 (** *** 構文と操作的意味 *)
 
 Set Warnings "-notation-overridden,-parsing".
@@ -140,9 +140,9 @@ Inductive tm : Type :=
           (* i.e., [if t0 then t1 else t2] *)
 
 (* ----------------------------------------------------------------- *)
-(*
+(* begin hide *)
 (** *** Substitution *)
-*)
+(* end hide *)
 (** *** 置換 *)
 
 Fixpoint subst (x:string) (s:tm) (t:tm) : tm :=
@@ -163,9 +163,9 @@ Fixpoint subst (x:string) (s:tm) (t:tm) : tm :=
 Notation "'[' x ':=' s ']' t" := (subst x s t) (at level 20).
 
 (* ----------------------------------------------------------------- *)
-(*
+(* begin hide *)
 (** *** Reduction *)
-*)
+(* end hide *)
 (** *** 簡約 *)
 
 Inductive value : tm -> Prop :=
@@ -240,9 +240,9 @@ Proof with eauto.
 Qed.
 
 (* ----------------------------------------------------------------- *)
-(*
+(* begin hide *)
 (** *** Typing *)
-*)
+(* end hide *)
 (** *** 型付け *)
 
 Definition context := partial_map ty.
@@ -288,9 +288,9 @@ Hint Extern 2 (has_type _ (tapp _ _) _) => eapply T_App; auto.
 Hint Extern 2 (_ = _) => compute; reflexivity.
 
 (* ----------------------------------------------------------------- *)
-(*
+(* begin hide *)
 (** *** Context Invariance *)
-*)
+(* end hide *)
 (** *** コンテキスト不変性 *)
 
 Inductive appears_free_in : string -> tm -> Prop :=
@@ -375,9 +375,9 @@ Proof.
   inversion C.  Qed.
 
 (* ----------------------------------------------------------------- *)
-(*
+(* begin hide *)
 (** *** Preservation *)
-*)
+(* end hide *)
 (** *** 保存 *)
 
 Lemma substitution_preserves_typing : forall Gamma x U v t S,
@@ -500,9 +500,9 @@ Proof with eauto.
 Qed.
 
 (* ----------------------------------------------------------------- *)
-(*
+(* begin hide *)
 (** *** Determinism *)
-*)
+(* end hide *)
 (** *** 決定性 *)
 
 Lemma step_deterministic :
@@ -562,12 +562,12 @@ Proof with eauto.
 Qed.
 
 (* ################################################################# *)
-(*
+(* begin hide *)
 (** * Normalization *)
-*)
+(* end hide *)
 (** * 正規化 *)
 
-(*
+(* begin hide *)
 (** Now for the actual normalization proof.
 
     Our goal is to prove that every well-typed term reduces to a
@@ -578,7 +578,7 @@ Qed.
     and we didn't bother re-proving it above.
 
     Here's the key definition: *)
-*)
+(* end hide *)
 (** ここからが本当の正規化の証明です。
  
     ゴールはすべての型付けされた項が正規形に簡約されることの証明です。
@@ -592,9 +592,9 @@ Qed.
 
 Definition halts  (t:tm) : Prop :=  exists t', t ==>* t' /\  value t'.
 
-(*
+(* begin hide *)
 (** A trivial fact: *)
-*)
+(* end hide *)
 (** あたりまえの事実: *)
 
 Lemma value_halts : forall v, value v -> halts v.
@@ -605,7 +605,7 @@ Proof.
   assumption.
 Qed.
 
-(*
+(* begin hide *)
 (** The key issue in the normalization proof (as in many proofs by
     induction) is finding a strong enough induction hypothesis.  To
     this end, we begin by defining, for each type [T], a set [R_T] of
@@ -622,7 +622,7 @@ Qed.
     - [R (T1 -> T2) t] iff [t] is a closed term of type [T1 -> T2] and
       [t] halts in a value _and_ for any term [s] such that [R T1 s],
       we have [R T2 (t s)]. *)
-*)
+(* end hide *)
 (** 正規化の証明のキーとなる問題は、（多くの帰納法による証明と同様に）十分な強さの帰納法の仮定を見つけることです。
     このために、それぞれの型[T]に対して型[T]の閉じた項の集合[R_T]を定義することから始めます。
     これらの集合を関係[R]を使って定め、[t]が[R_T]の要素であることを [R T t] と書きます。
@@ -635,7 +635,7 @@ Qed.
     - [R (T1 -> T2) t] とは、[t]が型 [T1 -> T2] の閉じた項で、[t]が値になり、かつ、
       [R T1 s] となる任意の項[s]について、[R T2 (t s)] となることである。 *)
 
-(*
+(* begin hide *)
 (** This definition gives us the strengthened induction hypothesis that we
     need.  Our primary goal is to show that all _programs_ ---i.e., all
     closed terms of base type---halt.  But closed terms of base type can
@@ -690,7 +690,7 @@ Qed.
 
     Fortunately, it turns out that we _can_ define [R] using a
     [Fixpoint]: *)
-*)
+(* end hide *)
 (** この定義は必要な強化された帰納法の仮定を与えます。
     最初のゴールはすべてのプログラム(つまり、基本型のすべての閉じた項)が停止することを示すことです。
     しかし、基本型の閉じた項は関数型の部分項を含むこともできるので、これらについても性質を知ることが必要です。
@@ -739,11 +739,11 @@ Fixpoint R (T:ty) (t:tm) {struct T} : Prop :=
    | TProd T1 T2 => False 
    end).
 
-(*
+(* begin hide *)
 (** As immediate consequences of this definition, we have that every
     element of every set [R_T] halts in a value and is closed with type
     [t] :*)
-*)
+(* end hide *)
 (** この定義からすぐに導かれることとして、すべての集合[R_T]について、そのすべての要素は停止して値となり、また型[T]について閉じていることが言えます: *)
 
 Lemma R_halts : forall {T} {t}, R T t -> halts t.
@@ -757,24 +757,24 @@ Proof.
   intros. destruct T; unfold R in H; inversion H; inversion H1; assumption.
 Qed.
 
-(*
+(* begin hide *)
 (** Now we proceed to show the main result, which is that every
     well-typed term of type [T] is an element of [R_T].  Together with
     [R_halts], that will show that every well-typed term halts in a
     value.  *)
-*)
+(* end hide *)
 (** さて、メインの結果に進みます。
 すべての型[T]の項が[R_T]の要素であることを示すことです。
 [R_halts]と組み合わせると、すべての型付けされる項は停止して値になることが示されます。 *)
 
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** **  Membership in [R_T] Is Invariant Under Reduction *)
-*)
+(* end hide *)
 (** **  [R_T] の要素であるか否かは簡約によって変化しない *)
 
-(*
+(* begin hide *)
 (** We start with a preliminary lemma that shows a kind of strong
     preservation property, namely that membership in [R_T] is _invariant_
     under reduction. We will need this property in both directions,
@@ -786,7 +786,7 @@ Qed.
     direction the proof depends on the fact that our language is
     determinstic. This lemma might still be true for nondeterministic
     languages, but the proof would be harder! *)
-*)
+(* end hide *)
 (** 一種の強保存性を示す予備的補題から始めます。
     [R_T]の要素であるか否かは簡約によって「不変」(_invariant_)であるという補題です。
     この性質は両方向が必要です。
@@ -810,7 +810,7 @@ Proof.
   exists t'0. split; eauto.
 Qed.
 
-(*
+(* begin hide *)
 (** Now the main lemma, which comes in two parts, one for each
     direction.  Each proceeds by induction on the structure of the type
     [T]. In fact, this is where we make fundamental use of the
@@ -818,7 +818,7 @@ Qed.
 
     One requirement for staying in [R_T] is to stay in type [T]. In the
     forward direction, we get this from ordinary type Preservation. *)
-*)
+(* end hide *)
 (** さてメインの補題ですが、2つの方向に対応する2つの部分から成ります。
     それぞれは型[T]の構造についての帰納法で進みます。
     事実、ここでは型の有限性を本質的な部分で使っています。
@@ -843,9 +843,9 @@ Proof.
   apply RRt; auto.
   (* FILL IN HERE *) Admitted.
 
-(*
+(* begin hide *)
 (** The generalization to multiple steps is trivial: *)
-*)
+(* end hide *)
 (** 複数ステップへの一般化については自明です: *)
 
 Lemma multistep_preserves_R : forall T t t',
@@ -856,10 +856,10 @@ Proof.
   apply IHSTM. eapply step_preserves_R. apply H. assumption.
 Qed.
 
-(*
+(* begin hide *)
 (** In the reverse direction, we must add the fact that [t] has type
    [T] before stepping as an additional hypothesis. *)
-*)
+(* end hide *)
 (** 逆向き方向については、
    [t]がステップ前に型[T]を持つという事実を追加の仮定として加える必要があります。 *)
 
@@ -880,12 +880,12 @@ Proof.
 Qed.
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Closed Instances of Terms of Type [t] Belong to [R_T] *)
-*)
+(* end hide *)
 (** ** 型[T]の項の閉じたインスタンスが[R_T]に含まれる *)
 
-(*
+(* begin hide *)
 (** Now we proceed to show that every term of type [T] belongs to
     [R_T].  Here, the induction will be on typing derivations (it would be
     surprising to see a proof about well-typed terms that did not
@@ -910,7 +910,7 @@ Qed.
     The proof will proceed by induction on the typing derivation
     [x1:T1,..xn:Tn |- t : T]; the most interesting case will be the one
     for abstraction. *)
-*)
+(* end hide *)
 (** これから、型[T]のすべての項が[R_T]に含まれることを示すことに取りかかります。
     ここで使う帰納法は型付け導出についてのものです（もし、型付け導出の帰納法と全く関係がない型付けされた項についての証明があったら驚くでしょう!）。
     ここで技術的に難しいのは、関数抽象の場合だけです。
@@ -928,12 +928,12 @@ Qed.
     一番興味深いのは、関数抽象の場合です。 *)
 
 (* ----------------------------------------------------------------- *)
-(*
+(* begin hide *)
 (** *** Multisubstitutions, Multi-Extensions, and Instantiations *)
-*)
+(* end hide *)
 (** *** 多重置換、多重拡張、インスタンス化 *)
 
-(*
+(* begin hide *)
 (** However, before we can proceed to formalize the statement and
     proof of the lemma, we'll need to build some (rather tedious)
     machinery to deal with the fact that we are performing _multiple_
@@ -963,7 +963,7 @@ Qed.
 
     A _multisubstitution_ is the result of applying a list of
     substitutions, which we call an _environment_. *)
-*)
+(* end hide *)
 (** しかしながら、主張と補題の証明の形式化に進む前に、項[t]の多重置換(_multiple_ substitutions)と型付けコンテキストの多重拡張(_multiple_ extensions)についての事実を扱う、ある(かなり退屈な)機構を構築する必要があります。
     特に、置換が現れる順序とそれらの相互関係を正確にする必要があります。
     これらの詳細は非形式的な紙の証明では単に省略されるのが通常です。
@@ -991,11 +991,11 @@ match ss with
 | ((x,s)::ss') => msubst ss' ([x:=s]t)
 end.
 
-(*
+(* begin hide *)
 (** We need similar machinery to talk about repeated extension of a
     typing context using a list of (identifier, type) pairs, which we
     call a _type assignment_. *)
-*)
+(* end hide *)
 (** (識別子、型)の対のリストを使った型付けコンテキストの継続的拡張についても同様の機構が必要です。
     この型付けコンテキストを「型割当て」(_type assignment_)と呼びます。 *)
 
@@ -1007,10 +1007,10 @@ Fixpoint mupdate (Gamma : context) (xts : tass) :=
   | ((x,v)::xts') => update (mupdate Gamma xts') x v
   end.
 
-(*
+(* begin hide *)
 (** We will need some simple operations that work uniformly on
     environments and type assigments *)
-*)
+(* end hide *)
 (** 環境と型割当てに同様にはたらくいくつかの簡単な操作が必要です。 *)
 
 Fixpoint lookup {X:Set} (k : string) (l : list (string * X)) {struct l}
@@ -1030,11 +1030,11 @@ Fixpoint drop {X:Set} (n:string) (nxs:list (string * X)) {struct nxs}
         else (n',x)::(drop n nxs')
   end.
 
-(*
+(* begin hide *)
 (** An _instantiation_ combines a type assignment and a value
     environment with the same domains, where corresponding elements are
     in R. *)
-*)
+(* end hide *)
 (** インスタンス化(_instantiation_)は型割当てと値環境を同じ定義域で結合します。
    この定義域の要素はRに含まれます。 *)
 
@@ -1046,20 +1046,20 @@ Inductive instantiation :  tass -> env -> Prop :=
     instantiation c e ->
     instantiation ((x,T)::c) ((x,v)::e).
 
-(*
+(* begin hide *)
 (** We now proceed to prove various properties of these definitions. *)
-*)
+(* end hide *)
 (** これから、これらの定義についてのいろいろな性質を証明します。 *)
 
 (* ----------------------------------------------------------------- *)
-(*
+(* begin hide *)
 (** *** More Substitution Facts *)
-*)
+(* end hide *)
 (** *** 置換についてのさらなる事実 *)
 
-(*
+(* begin hide *)
 (** First we need some additional lemmas on (ordinary) substitution. *)
-*)
+(* end hide *)
 (** 最初に（もともとの）置換について、ある追加の補題が必要です。 *)
 
 Lemma vacuous_substitution : forall  t x,
@@ -1125,9 +1125,9 @@ Proof with eauto.
   (* FILL IN HERE *) Admitted.
 
 (* ----------------------------------------------------------------- *)
-(*
+(* begin hide *)
 (** *** Properties of Multi-Substitutions *)
-*)
+(* end hide *)
 (** *** 多重置換の性質 *)
 
 Lemma msubst_closed: forall t, closed t -> forall ss, msubst ss t = t.
@@ -1137,9 +1137,9 @@ Proof.
     destruct a. simpl. rewrite subst_closed; assumption.
 Qed.
 
-(*
+(* begin hide *)
 (** Closed environments are those that contain only closed terms. *)
-*)
+(* end hide *)
 (** 閉じた環境とは、閉じた項のみを含む環境です。 *)
 
 Fixpoint closed_env (env:env) {struct env} :=
@@ -1148,10 +1148,10 @@ Fixpoint closed_env (env:env) {struct env} :=
   | (x,t)::env' => closed t /\ closed_env env'
   end.
 
-(*
+(* begin hide *)
 (** Next come a series of lemmas charcterizing how [msubst] of closed terms
     distributes over [subst] and over each term form *)
-*)
+(* end hide *)
 (** 次は、閉じた項についての[msubst]がどのように[subst]
     や各項の形に分配されるかを特徴づける一連の補題です。 *)
 
@@ -1198,24 +1198,24 @@ Proof.
     simpl. rewrite <- IHss. auto.
 Qed.
 
-(*
+(* begin hide *)
 (** You'll need similar functions for the other term constructors. *)
-*)
+(* end hide *)
 (** 他の項コンストラクタに対しても同様の関数が必要になるでしょう。 *)
 
 (* FILL IN HERE *)
 (** ここを埋めなさい *)
 
 (* ----------------------------------------------------------------- *)
-(*
+(* begin hide *)
 (** *** Properties of Multi-Extensions *)
-*)
+(* end hide *)
 (** *** 多重拡張の性質 *)
 
-(*
+(* begin hide *)
 (** We need to connect the behavior of type assignments with that of
     their corresponding contexts. *)
-*)
+(* end hide *)
 (** 型割当てのふるまいを、対応するコンテキストのふるまいと結合する必要があります。 *)
 
 Lemma mupdate_lookup : forall (c : tass) (x:string),
@@ -1241,14 +1241,14 @@ Proof.
 Qed.
 
 (* ----------------------------------------------------------------- *)
-(*
+(* begin hide *)
 (** *** Properties of Instantiations *)
-*)
+(* end hide *)
 (** *** インスタンス化の性質 *)
 
-(*
+(* begin hide *)
 (** These are strightforward. *)
-*)
+(* end hide *)
 (** 以下は簡単です。 *)
 
 Lemma instantiation_domains_match: forall {c} {e},
@@ -1296,14 +1296,14 @@ Qed.
 
 
 (* ----------------------------------------------------------------- *)
-(*
+(* begin hide *)
 (** *** Congruence Lemmas on Multistep *)
-*)
+(* end hide *)
 (** *** multistep([==>*])についての合同補題 *)
 
-(*
+(* begin hide *)
 (** We'll need just a few of these; add them as the demand arises. *)
-*)
+(* end hide *)
 (** これらのいくつかだけが必要になります。必要が生じた時点で追加しなさい。 *)
 
 Lemma multistep_App2 : forall v t t',
@@ -1319,17 +1319,17 @@ Qed.
 (** ここを埋めなさい *)
 
 (* ----------------------------------------------------------------- *)
-(*
+(* begin hide *)
 (** *** The R Lemma. *)
-*)
+(* end hide *)
 (** *** R補題 *)
 
-(*
+(* begin hide *)
 (** We can finally put everything together.
 
     The key lemma about preservation of typing under substitution can
     be lifted to multi-substitutions: *)
-*)
+(* end hide *)
 (** 最後にすべてをまとめます。
  
     置換についての型付けの保存についてのキーとなる補題は、
@@ -1348,9 +1348,9 @@ Proof.
     apply (R_typable_empty H0).
 Qed.
 
-(*
+(* begin hide *)
 (** And at long last, the main lemma. *)
-*)
+(* end hide *)
 (** そして一番最後に、メインの補題です。 *)
 
 Lemma msubst_R : forall c env t T,
@@ -1419,14 +1419,14 @@ Proof.
   (* FILL IN HERE *) Admitted.
 
 (* ----------------------------------------------------------------- *)
-(*
+(* begin hide *)
 (** *** Normalization Theorem *)
-*)
+(* end hide *)
 (** *** 正規化定理 *)
 
-(*
+(* begin hide *)
 (** And the final theorem: *)
-*)
+(* end hide *)
 (** そして最後の定理です。 *)
 
 Theorem normalization : forall t T, has_type empty t T -> halts t.

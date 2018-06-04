@@ -1,7 +1,7 @@
 (** * Records: STLCにレコードを追加する *)
-(*
+(* begin hide *)
 (** * Records: Adding Records to STLC *)
-*)
+(* end hide *)
 
 Set Warnings "-notation-overridden,-parsing".
 Require Import Maps.
@@ -10,12 +10,12 @@ Require Import Smallstep.
 Require Import Stlc.
 
 (* ################################################################# *)
-(*
+(* begin hide *)
 (** * Adding Records *)
-*)
+(* end hide *)
 (** * レコードを追加する *)
 
-(*
+(* begin hide *)
 (** We saw in chapter [MoreStlc] how records can be treated as just
     syntactic sugar for nested uses of products.  This is OK for
     simple examples, but the encoding is informal (in reality, if we
@@ -26,7 +26,7 @@ Require Import Stlc.
     shows how.
 
     Recall the informal definitions we gave before: *)
-*)
+(* end hide *)
 (** [MoreStlc]章で、レコードを、直積のネストの構文糖衣として扱う方法を見ました。
     これは簡単な例にはいいのですが、しかし変換は非形式的です。
     （現実的に、もしこの方法でレコードを本当に扱うならパーサ内で実行されることになりますが、パーサはここでは省いています。）
@@ -36,7 +36,7 @@ Require Import Stlc.
  
     前の非形式的定義を思い出してみましょう: *)
 
-(*
+(* begin hide *)
 (**
     Syntax:
 
@@ -76,7 +76,7 @@ Require Import Stlc.
                        -----------------------------                   (T_Proj)
                              Gamma |- t.i : Ti
 *)
- *)
+(* end hide *)
 (** 
     構文:
 <<
@@ -119,23 +119,23 @@ Require Import Stlc.
  *)
 
 (* ################################################################# *)
-(*
+(* begin hide *)
 (** * Formalizing Records *)
-*)
+(* end hide *)
 (** * レコードを形式化する *)
 
 Module STLCExtendedRecords.
 
 (* ----------------------------------------------------------------- *)
-(*
+(* begin hide *)
 (** *** Syntax and Operational Semantics *)
-*)
+(* end hide *)
 (** *** 構文と操作的意味 *)
 
-(*
+(* begin hide *)
 (** The most obvious way to formalize the syntax of record types would
     be this: *)
-*)
+(* end hide *)
 (** レコード型の構文を形式化する最も明らかな方法はこうです: *)
 
 Module FirstTry.
@@ -147,13 +147,13 @@ Inductive ty : Type :=
   | TArrow    : ty -> ty -> ty
   | TRcd      : (alist ty) -> ty.
 
-(*
+(* begin hide *)
 (** Unfortunately, we encounter here a limitation in Coq: this type
     does not automatically give us the induction principle we expect:
     the induction hypothesis in the [TRcd] case doesn't give us
     any information about the [ty] elements of the list, making it
     useless for the proofs we want to do.  *)
-*)
+(* end hide *)
 (** 残念ながら、ここで Coq の限界につきあたりました。
     この型は期待する帰納原理を自動的には提供してくれないのです。
     [TRcd]の場合の帰納法の仮定はリストの[ty]要素について何の情報も提供してくれないのです。
@@ -184,7 +184,7 @@ Inductive ty : Type :=
 
 End FirstTry.
 
-(*
+(* begin hide *)
 (** It is possible to get a better induction principle out of Coq, but
     the details of how this is done are not very pretty, and the
     principle we obtain is not as intuitive to use as the ones Coq
@@ -194,7 +194,7 @@ End FirstTry.
     is, in some ways, even simpler and more natural: instead of using
     the standard Coq [list] type, we can essentially incorporate its
     constructors ("nil" and "cons") in the syntax of our types. *)
-*)
+(* end hide *)
 (** より良い帰納法の原理をCoqから取り出すこともできます。
     しかしそれをやるための詳細はあまりきれいではありません。
     またCoqが単純な[Inductive]定義に対して自動生成したものほど直観的でもありません。
@@ -208,11 +208,11 @@ Inductive ty : Type :=
   | TRNil : ty
   | TRCons : string -> ty -> ty -> ty.
 
-(*
+(* begin hide *)
 (** Similarly, at the level of terms, we have constructors [trnil],
     for the empty record, and [trcons], which adds a single field to
     the front of a list of fields. *)
-*)
+(* end hide *)
 (** 同様に、項のレベルで、空レコードに対応するコンストラクタ[trnil]と、フィールドのリストの前に1つのフィールドを追加するコンストラクタ[trcons]を用意します。 *)
 
 Inductive tm : Type :=
@@ -227,9 +227,9 @@ Inductive tm : Type :=
   | trnil :  tm
   | trcons : string -> tm -> tm -> tm.
 
-(*
+(* begin hide *)
 (** Some examples... *)
-*)
+(* end hide *)
 (** いくつかの例です... *)
 Open Scope string_scope.
 
@@ -260,40 +260,40 @@ Notation i2 := "i2".
 >> *)
 
 (* ----------------------------------------------------------------- *)
-(*
+(* begin hide *)
 (** *** Well-Formedness *)
-*)
+(* end hide *)
 (** *** Well-Formedness(正しい形をしていること、整式性) *)
 
-(*
+(* begin hide *)
 (** One issue with generalizing the abstract syntax for records from
     lists to the nil/cons presentation is that it introduces the
     possibility of writing strange types like this... *)
-*)
+(* end hide *)
 (** レコードの抽象構文をリストから nil/cons 構成に一般化したことで、次のような奇妙な型を書くことがができるという問題が発生します。 *)
 
 Definition weird_type := TRCons X A B.
 
-(*
+(* begin hide *)
 (** where the "tail" of a record type is not actually a record type! *)
-*)
+(* end hide *)
 (** ここでレコード型の「後部」は実際にはレコード型ではありません! *)
 
-(*
+(* begin hide *)
 (** We'll structure our typing judgement so that no ill-formed types
     like [weird_type] are ever assigned to terms.  To support this, we
     define predicates [record_ty] and [record_tm], which identify
     record types and terms, and [well_formed_ty] which rules out the
     ill-formed types. *)
-*)
+(* end hide *)
 (** 以降で型ジャッジメントを、[weird_type]のようなill-formedの（正しくない形の）型が項に割当てられないように構成します。
     これをサポートするために、レコード型と項を識別するための[record_ty]と[record_tm]、
     およびill-formedの型を排除するための[well_formed_ty]を定義します。*)
 
-(*
+(* begin hide *)
 (** First, a type is a record type if it is built with just [TRNil]
     and [TRCons] at the outermost level. *)
-*)
+(* end hide *)
 (** 最初に、型がレコード型なのは、
     それの一番外側のレベルが[TRNil]と[TRCons]だけを使って構築されたもののときです。*)
 
@@ -322,7 +322,7 @@ Inductive well_formed_ty : ty -> Prop :=
 
 Hint Constructors record_ty well_formed_ty.
 
-(*
+(* begin hide *)
 (** Note that [record_ty] is not recursive -- it just checks the
     outermost constructor.  The [well_formed_ty] property, on the
     other hand, verifies that the whole type is well formed in the
@@ -335,7 +335,7 @@ Hint Constructors record_ty well_formed_ty.
     examines the structure of terms.  All we need is an analog of
     [record_ty] saying that a term is a record term if it is built
     with [trnil] and [trcons]. *)
-*)
+(* end hide *)
 (** [record_ty]が再帰的ではないことに注意します。
     これは一番外側のコンストラクタだけをチェックします。
     一方[well_formed_ty]は型全体がwell-formedか(正しい形をしているか)、
@@ -355,9 +355,9 @@ Inductive record_tm : tm -> Prop :=
 Hint Constructors record_tm.
 
 (* ----------------------------------------------------------------- *)
-(*
+(* begin hide *)
 (** *** Substitution *)
-*)
+(* end hide *)
 (** *** 置換 *)
 
 (** Substitution extends easily. *)
@@ -376,14 +376,14 @@ Fixpoint subst (x:string) (s:tm) (t:tm) : tm :=
 Notation "'[' x ':=' s ']' t" := (subst x s t) (at level 20).
 
 (* ----------------------------------------------------------------- *)
-(*
+(* begin hide *)
 (** *** Reduction *)
-*)
+(* end hide *)
 (** *** 簡約 *)
 
-(*
+(* begin hide *)
 (** A record is a value if all of its fields are. *)
-*)
+(* end hide *)
 (** レコードが値であるのは、そのフィールドがすべて値であるときです。*)
 
 Inductive value : tm -> Prop :=
@@ -397,10 +397,10 @@ Inductive value : tm -> Prop :=
 
 Hint Constructors value.
 
-(*
+(* begin hide *)
 (** To define reduction, we'll need a utility function for extracting
     one field from record term: *)
-*)
+(* end hide *)
 (** 簡約を定義するために、レコード項から1つのフィールドを取り出すユーティリティ関数を定義しておきます。 *)
 
 Fixpoint tlookup (i:string) (tr:tm) : option tm :=
@@ -409,10 +409,10 @@ Fixpoint tlookup (i:string) (tr:tm) : option tm :=
   | _ => None
   end.
 
-(*
+(* begin hide *)
 (** The [step] function uses this term-level lookup function in the
     projection rule. *)
-*)
+(* end hide *)
 (** [step]関数は、射影規則において、この項レベルのlookup関数を使います。 *)
 
 Reserved Notation "t1 '==>' t2" (at level 40).
@@ -451,12 +451,12 @@ Notation "t1 '==>*' t2" := (multistep t1 t2) (at level 40).
 Hint Constructors step.
 
 (* ----------------------------------------------------------------- *)
-(*
+(* begin hide *)
 (** *** Typing *)
-*)
+(* end hide *)
 (** *** 型付け *)
 
-(*
+(* begin hide *)
 (** Next we define the typing rules.  These are nearly direct
     transcriptions of the inference rules shown above: the only
     significant difference is the use of [well_formed_ty].  In the
@@ -477,7 +477,7 @@ Hint Constructors step.
     enforce this.  Similarly, in the [T_Abs] case, we require a proof
     of [well_formed_ty T11] because the inductive call to [has_type]
     only guarantees that [T12] is well-formed. *)
-*)
+(* end hide *)
 (** 次に型付け規則を定義します。これは上述の推論規則をほぼそのまま転写したものです。
     大きな違いは[well_formed_ty]の使用だけです。
     非形式的な表記では、well-formedレコード型だけを許す文法を使ったので、別途チェックする必要はありませんでした。
@@ -536,16 +536,16 @@ where "Gamma '|-' t '\in' T" := (has_type Gamma t T).
 Hint Constructors has_type.
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Examples *)
-*)
+(* end hide *)
 (** ** 例 *)
 
-(*
+(* begin hide *)
 (** **** Exercise: 2 stars (examples)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★★ (examples)  *)
-(*
+(* begin hide *)
 (** Finish the proofs below.  Feel free to use Coq's automation
     features in this proof.  However, if you are not confident about
     how the type system works, you may want to carry out the proofs
@@ -553,7 +553,7 @@ Hint Constructors has_type.
     particular) and then perhaps compress it using automation.  Before
     starting to prove anything, make sure you understand what it is
     saying.*)
-*)
+(* end hide *)
 (** 証明を完成させなさい。
     証明の中ではCoq の自動化機能を自由に使って構いません。
     しかし、もし型システムがどのように動作するか確信できていないなら、最初に基本機能（特に[eapply]ではなく[apply]）を使った証明を行い、次に自動化を使ってその証明を圧縮するのがよいかもしれません。
@@ -594,16 +594,16 @@ Proof.
   (* FILL IN HERE *) Admitted.
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Properties of Typing *)
-*)
+(* end hide *)
 (** ** 型付けの性質 *)
 
-(*
+(* begin hide *)
 (** The proofs of progress and preservation for this system are
     essentially the same as for the pure simply typed lambda-calculus,
     but we need to add some technical lemmas involving records. *)
-*)
+(* end hide *)
 (** このシステムの進行と保存の証明は、純粋な単純型付きラムダ計算のものと本質的に同じです。
     しかし、レコードについての技術的補題を追加する必要があります。 *)
 
@@ -643,12 +643,12 @@ Proof with eauto.
 Qed.
 
 (* ----------------------------------------------------------------- *)
-(*
+(* begin hide *)
 (** *** Field Lookup *)
-*)
+(* end hide *)
 (** *** フィールドのルックアップ *)
 
-(*
+(* begin hide *)
 (** Lemma: If [empty |- v : T] and [Tlookup i T] returns [Some Ti],
      then [tlookup i v] returns [Some ti] for some term [ti] such
      that [empty |- ti \in Ti].
@@ -681,7 +681,7 @@ Qed.
 
     Here is the formal statement:
 *)
- *)
+(* end hide *)
 (** 補題: もし [empty |- v : T] で、かつ [ty_lookup i T] が [Some Ti] を返すならば,
      [tm_lookup i v] はある項 [ti] について [Some ti] を返す。
      ただし、[empty |- ti \in Ti] となる。
@@ -733,9 +733,9 @@ Proof with eauto.
       inversion Hval... Qed.
 
 (* ----------------------------------------------------------------- *)
-(*
+(* begin hide *)
 (** *** Progress *)
-*)
+(* end hide *)
 (** *** 進行 *)
 
 Theorem progress : forall t T,
@@ -870,9 +870,9 @@ Proof with eauto.
       exists (trcons i t' tr)...  Qed.
 
 (* ----------------------------------------------------------------- *)
-(*
+(* begin hide *)
 (** *** Context Invariance *)
-*)
+(* end hide *)
 (** *** コンテキスト不変性 *)
 
 Inductive appears_free_in : string -> tm -> Prop :=
@@ -930,9 +930,9 @@ Proof with eauto.
 Qed.
 
 (* ----------------------------------------------------------------- *)
-(*
+(* begin hide *)
 (** *** Preservation *)
-*)
+(* end hide *)
 (** *** 保存 *)
 
 Lemma substitution_preserves_typing : forall Gamma x U v t S,

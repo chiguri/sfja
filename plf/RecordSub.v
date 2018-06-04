@@ -1,7 +1,7 @@
 (** * RecordSub: レコードのサブタイプ *)
-(*
+(* begin hide *)
 (** * RecordSub: Subtyping with Records *)
-*)
+(* end hide *)
 
 (** In this chapter, we combine two significant extensions of the pure
     STLC -- records (from chapter [Records]) and subtyping (from
@@ -16,15 +16,15 @@ Require Import Smallstep.
 Require Import MoreStlc.
 
 (* ################################################################# *)
-(*
+(* begin hide *)
 (** * Core Definitions *)
-*)
+(* end hide *)
 (** * 中核部の定義 *)
 
 (* ----------------------------------------------------------------- *)
-(*
+(* begin hide *)
 (** *** Syntax *)
-*)
+(* end hide *)
 (** *** 構文 *)
 
 Inductive ty : Type :=
@@ -97,9 +97,9 @@ Inductive well_formed_ty : ty -> Prop :=
 Hint Constructors record_ty record_tm well_formed_ty.
 
 (* ----------------------------------------------------------------- *)
-(*
+(* begin hide *)
 (** *** Substitution *)
-*)
+(* end hide *)
 (** *** 置換 *)
 
 (** Substitution and reduction are as before. *)
@@ -118,9 +118,9 @@ Fixpoint subst (x:string) (s:tm) (t:tm) : tm :=
 Notation "'[' x ':=' s ']' t" := (subst x s t) (at level 20).
 
 (* ----------------------------------------------------------------- *)
-(*
+(* begin hide *)
 (** *** Reduction *)
-*)
+(* end hide *)
 (** *** 簡約 *)
 
 Inductive value : tm -> Prop :=
@@ -181,34 +181,34 @@ where "t1 '==>' t2" := (step t1 t2).
 Hint Constructors step.
 
 (* ################################################################# *)
-(*
+(* begin hide *)
 (** * Subtyping *)
-*)
+(* end hide *)
 (** * サブタイプ *)
 
-(*
+(* begin hide *)
 (** Now we come to the interesting part, where the features we've
     added start to interact.  We begin by defining the subtyping
     relation and developing some of its important technical
     properties. *)
-*)
+(* end hide *)
 (** 追加した要素が関係してくる、おもしろい部分に来ました。
     サブタイプ関係を定義し、その重要な技術的性質のいくつかを調べることから始めます。 *)
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Definition *)
-*)
+(* end hide *)
 (** ** 定義 *)
 
-(*
+(* begin hide *)
 (** The definition of subtyping is essentially just what we sketched
     in the discussion of record subtyping in chapter [Sub], but we
     need to add well-formedness side conditions to some of the rules.
     Also, we replace the "n-ary" width, depth, and permutation
     subtyping rules by binary rules that deal with just the first
     field. *)
-*)
+(* end hide *)
 (** サブタイプの定義は、本質的には、[Sub]章で議論したレコードのサブタイプの通りです。
     ただ、いくつかの規則に付加条件として well-formedness を追加する必要があります。
     また、「n引数」の幅、深さ、順列などの規則を一つ目のフィールドを対象にした2引数のものに置き換えます。 *)
@@ -252,9 +252,9 @@ where "T '<:' U" := (subtype T U).
 Hint Constructors subtype.
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Examples *)
-*)
+(* end hide *)
 (** ** 例 *)
 
 Module Examples.
@@ -285,17 +285,17 @@ Proof.
     unfold TRcd_kj, TRcd_j. apply S_RcdWidth; auto.
 Qed.
 
-(*
+(* begin hide *)
 (** The following facts are mostly easy to prove in Coq.  To get full
     benefit, make sure you also understand how to prove them on
     paper! *)
-*)
+(* end hide *)
 (** 以下の事実のほとんどはCoqで証明することは簡単です。
     最大限理解するために、どのように証明するかを理解していることを紙の上でも確認しなさい！ *)
 
-(*
+(* begin hide *)
 (** **** Exercise: 2 stars (subtyping_example_1)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★★ (subtyping_example_1)  *)
 Example subtyping_example_1 :
   subtype TRcd_kj TRcd_j.
@@ -304,9 +304,9 @@ Proof with eauto.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(*
+(* begin hide *)
 (** **** Exercise: 1 star (subtyping_example_2)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★ (subtyping_example_2)  *)
 Example subtyping_example_2 :
   subtype (TArrow TTop TRcd_kj)
@@ -316,9 +316,9 @@ Proof with eauto.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(*
+(* begin hide *)
 (** **** Exercise: 1 star (subtyping_example_3)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★ (subtyping_example_3)  *)
 Example subtyping_example_3 :
   subtype (TArrow TRNil (TRCons j A TRNil))
@@ -328,9 +328,9 @@ Proof with eauto.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(*
+(* begin hide *)
 (** **** Exercise: 2 stars (subtyping_example_4)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★★ (subtyping_example_4)  *)
 Example subtyping_example_4 :
   subtype (TRCons x A (TRCons y B (TRCons z C TRNil)))
@@ -343,9 +343,9 @@ Proof with eauto.
 End Examples.
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Properties of Subtyping *)
-*)
+(* end hide *)
 (** ** サブタイプの性質 *)
 
 (* ----------------------------------------------------------------- *)
@@ -379,19 +379,19 @@ Proof with eauto.
     destruct (beq_string i s)...  inversion H0; subst...  Qed.
 
 (* ----------------------------------------------------------------- *)
-(*
+(* begin hide *)
 (** *** Field Lookup *)
-*)
+(* end hide *)
 (** *** フィールド参照 *)
 
-(*
+(* begin hide *)
 (** The record matching lemmas get a little more complicated in the
     presence of subtyping, for two reasons.  First, record types no
     longer necessarily describe the exact structure of the
     corresponding terms.  And second, reasoning by induction on typing
     derivations becomes harder in general, because typing is no longer
     syntax directed. *)
-*)
+(* end hide *)
 (** サブタイプがあることで、レコードマッチング補題はいくらか複雑になります。
     それには2つの理由があります。
     1つはレコード型が対応する項の正確な構造を記述する必要がなくなることです。
@@ -431,28 +431,28 @@ Proof with (eauto using wf_rcd_lookup).
     + (* subtype *)
       inversion H. subst. inversion H5. subst...  Qed.
 
-(*
+(* begin hide *)
 (** **** Exercise: 3 stars (rcd_types_match_informal)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★★★ (rcd_types_match_informal)  *)
-(*
+(* begin hide *)
 (** Write a careful informal proof of the [rcd_types_match]
     lemma. *)
-*)
+(* end hide *)
 (** [rcd_types_match]補題の非形式的証明を注意深く記述しなさい。 *)
 
 (* FILL IN HERE *)
 (** [] *)
 
 (* ----------------------------------------------------------------- *)
-(*
+(* begin hide *)
 (** *** Inversion Lemmas *)
-*)
+(* end hide *)
 (** *** 反転補題 *)
 
-(*
+(* begin hide *)
 (** **** Exercise: 3 stars, optional (sub_inversion_arrow)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★★★, optional (sub_inversion_arrow)  *)
 Lemma sub_inversion_arrow : forall U V1 V2,
      subtype U (TArrow V1 V2) ->
@@ -466,9 +466,9 @@ Proof with eauto.
 (** [] *)
 
 (* ################################################################# *)
-(*
+(* begin hide *)
 (** * Typing *)
-*)
+(* end hide *)
 (** * 型付け *)
 
 Definition context := partial_map ty.
@@ -512,17 +512,17 @@ where "Gamma '|-' t '\in' T" := (has_type Gamma t T).
 Hint Constructors has_type.
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Typing Examples *)
-*)
+(* end hide *)
 (** ** 型付けの例 *)
 
 Module Examples2.
 Import Examples.
 
-(*
+(* begin hide *)
 (** **** Exercise: 1 star (typing_example_0)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★ (typing_example_0)  *)
 Definition trcd_kj :=
   (trcons k (tabs z A (tvar z))
@@ -540,9 +540,9 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(*
+(* begin hide *)
 (** **** Exercise: 2 stars (typing_example_1)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★★ (typing_example_1)  *)
 Example typing_example_1 :
   has_type empty
@@ -556,9 +556,9 @@ Proof with eauto.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(*
+(* begin hide *)
 (** **** Exercise: 2 stars, optional (typing_example_2)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★★, optional (typing_example_2)  *)
 Example typing_example_2 :
   has_type empty
@@ -578,9 +578,9 @@ Proof with eauto.
 End Examples2.
 
 (* ================================================================= *)
-(*
+(* begin hide *)
 (** ** Properties of Typing *)
-*)
+(* end hide *)
 (** ** 型付けの性質 *)
 
 (* ----------------------------------------------------------------- *)
@@ -610,9 +610,9 @@ Proof.
 Qed.
 
 (* ----------------------------------------------------------------- *)
-(*
+(* begin hide *)
 (** *** Field Lookup *)
-*)
+(* end hide *)
 (** *** フィールド参照 *)
 
 Lemma lookup_field_in_value : forall v T i Ti,
@@ -638,14 +638,14 @@ Proof with eauto.
       inversion Hval...  Qed.
 
 (* ----------------------------------------------------------------- *)
-(*
+(* begin hide *)
 (** *** Progress *)
-*)
+(* end hide *)
 (** *** 進行 *)
 
-(*
+(* begin hide *)
 (** **** Exercise: 3 stars (canonical_forms_of_arrow_types)  *)
-*)
+(* end hide *)
 (** **** 練習問題: ★★★ (canonical_forms_of_arrow_types)  *)
 Lemma canonical_forms_of_arrow_types : forall Gamma s T1 T2,
      has_type Gamma s (TArrow T1 T2) ->
@@ -698,7 +698,7 @@ Proof with eauto.
       right. destruct H1 as [t' Hstp].
       exists (trcons i t' tr)...  Qed.
 
-(*
+(* begin hide *)
 (** _Theorem_ : For any term [t] and type [T], if [empty |- t : T]
     then [t] is a value or [t ==> t'] for some term [t'].
 
@@ -770,7 +770,7 @@ Proof with eauto.
 
           - Otherwise, [tr] is also a value.  So, [{i=t1, tr}] is a
             value by [v_rcons]. *)
-*)
+(* end hide *)
 (** 定理： 任意の項[t]と型[T]について、[empty |- t : T]ならば、[t]は値であるか、ある項[t']について [t ==> t'] である。
  
     証明 : [t]と[T]が [empty |- t : T] を満たすとする。
@@ -835,9 +835,9 @@ Proof with eauto.
           - そうではないとき、[tr]も値である。すると、[v_rcons]から [{i=t1, tr}] は値である。 *)
 
 (* ----------------------------------------------------------------- *)
-(*
+(* begin hide *)
 (** *** Inversion Lemmas *)
-*)
+(* end hide *)
 (** *** 反転補題 *)
 
 Lemma typing_inversion_var : forall Gamma x T,
@@ -940,9 +940,9 @@ Proof with eauto.
   inversion Heq; subst...  Qed.
 
 (* ----------------------------------------------------------------- *)
-(*
+(* begin hide *)
 (** *** Context Invariance *)
-*)
+(* end hide *)
 (** *** コンテキスト不変性 *)
 
 Inductive appears_free_in : string -> tm -> Prop :=
@@ -999,9 +999,9 @@ Proof with eauto.
     rewrite false_beq_string in Hctx...  Qed.
 
 (* ----------------------------------------------------------------- *)
-(*
+(* begin hide *)
 (** *** Preservation *)
-*)
+(* end hide *)
 (** *** 保存 *)
 
 Lemma substitution_preserves_typing : forall Gamma x U v t S,
@@ -1086,7 +1086,7 @@ Proof with eauto.
   - (* T_RCons *)
     eauto using step_preserves_record_tm.  Qed.
 
-(*
+(* begin hide *)
 (** _Theorem_: If [t], [t'] are terms and [T] is a type such that
      [empty |- t : T] and [t ==> t'], then [empty |- t' : T].
 
@@ -1144,7 +1144,7 @@ Proof with eauto.
        [T_RCons].  In the second case, the result follows by the IH
        for [tr]'s typing derivation, [T_RCons], and a use of the
        [step_preserves_record_tm] lemma. *)
-*)
+(* end hide *)
 (** 定理: [t]、[t']が項で[T]が型であり [empty |- t : T] かつ [t ==> t'] ならば、
      [empty |- t' : T] である。
  
