@@ -33,9 +33,13 @@ Inductive natprod : Type :=
 
 Check (pair 3 5).
 
+(* begin hide *)
 (** Here are two simple functions for extracting the first and
     second components of a pair.  The definitions also illustrate how
     to do pattern matching on two-argument constructors. *)
+(* end hide *)
+(** ペアの第一要素と第二要素を取り出す関数を定義します。
+    この定義では、2引数の構築子に対するパターンマッチを使っています。 *)
 
 Definition fst (p : natprod) : nat :=
   match p with
@@ -786,7 +790,10 @@ Proof.
     だからこそ、人間向けの自然言語での証明には証明の筋道がわかるように証明の指針を書いておく必要があるのです。
     特に、読者が流れを見失わないよう、ふたつめの場合分けで使う帰納法の仮定が何だったのかわかるようにしておくのは有益なはずです。 *)
 
+(* begin hide *)
 (** For comparison, here is an informal proof of the same theorem. *)
+(* end hide *)
+(** 比較するために、この定理の非形式的証明を以下に載せます。 *)
 
 (* begin hide *)
 (** _Theorem_: For all lists [l1], [l2], and [l3],
@@ -841,11 +848,18 @@ Proof.
      これは帰納法の仮定から直接導かれる。  [] *)
 
 (* ----------------------------------------------------------------- *)
+(* begin hide *)
 (** *** Reversing a List *)
+(* end hide *)
+(** *** リストの反転 *)
 
+(* begin hide *)
 (** For a slightly more involved example of inductive proof over
     lists, suppose we use [app] to define a list-reversing function
     [rev]: *)
+(* end hide *)
+(** より入り組んだリストに関する帰納法による証明の例として、リストを反転させる関数[rev]を使います。
+    [rev]の定義には[app]を使うことにします。 *)
 
 Fixpoint rev (l:natlist) : natlist :=
   match l with
@@ -859,7 +873,10 @@ Example test_rev2:            rev nil = nil.
 Proof. reflexivity.  Qed.
 
 (* ----------------------------------------------------------------- *)
+(* begin hide *)
 (** *** Properties of [rev] *)
+(* end hide *)
+(** *** [rev] の性質 *)
 
 (* begin hide *)
 (** Now let's prove some theorems about our newly defined [rev].
@@ -912,12 +929,17 @@ Proof.
   - (* l1 = cons *)
     simpl. rewrite -> IHl1'. reflexivity.  Qed.
 
+(* begin hide *)
 (** Note that, to make the lemma as general as possible, we
     quantify over _all_ [natlist]s, not just those that result from an
     application of [rev].  This should seem natural, because the truth
     of the goal clearly doesn't depend on the list having been
     reversed.  Moreover, it is easier to prove the more general
     property. *)
+(* end hide *)
+(** 補題をできる限り一般的なものにするため、[rev]の定義で出てくるような結果に対してではなく、「全ての」[natlist]に対するものとして形式化しました。
+    目的としたゴールは明らかにリストの反転という状態に全く依存していないという点で、この一般化は自然なものでしょう。
+    さらに、この一般的な性質の方がより簡単に証明できます。 *)
 
 (* begin hide *)
 (** Now we can complete the original proof. *)
@@ -1179,10 +1201,18 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
+(* begin hide *)
 (** **** Exercise: 2 stars (beq_natlist)  *)
+(* end hide *)
+(** **** 練習問題: ★★ (beq_natlist) *)
+(* begin hide *)
 (** Fill in the definition of [beq_natlist], which compares
     lists of numbers for equality.  Prove that [beq_natlist l l]
     yields [true] for every list [l]. *)
+(* end hide *)
+(** 次の[beq_natlist]は数のリストの等しさを計算するものです。
+    定義を埋めなさい。
+    また、どんなリスト[l]に対しても[beq_natlist l l]が[true]を返すことを示しなさい。 *)
 
 Fixpoint beq_natlist (l1 l2 : natlist) : bool
   (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
@@ -1294,10 +1324,14 @@ Proof.
 (* end hide *)
 (** * オプション *)
 
+(* begin hide *)
 (** Suppose we want to write a function that returns the [n]th
     element of some list.  If we give it type [nat -> natlist -> nat],
     then we'll have to choose some number to return when the list is
     too short... *)
+(* end hide *)
+(** リストから[n]番目を取り出す関数を定義するとします。
+    もし関数の型を[nat -> natlist -> nat]にすると、リストが短すぎる（つまり[nil]だけの場合）何かの数値を選ばなければなりません。 *)
 
 Fixpoint nth_bad (l:natlist) (n:nat) : nat :=
   match l with
@@ -1308,11 +1342,17 @@ Fixpoint nth_bad (l:natlist) (n:nat) : nat :=
                end
   end.
 
+(* begin hide *)
 (** This solution is not so good: If [nth_bad] returns [42], we
     can't tell whether that value actually appears on the input
     without further processing. A better alternative is to change the
     return type of [nth_bad] to include an error value as a possible
     outcome. We call this type [natoption]. *)
+(* end hide *)
+(** この方法はあまり良くありません。
+    もし[nth_bad]が[42]を返したとしても、別の処理なしにはそれが実際にリストにあった値なのかを判断できません。
+    より良い方法としては、[nth_bad]の返し値の型を変更して、エラー値を扱えるようにするというものです。
+    この型を[natoption]と呼ぶことにします。 *)
 
 Inductive natoption : Type :=
   | Some : nat -> natoption
