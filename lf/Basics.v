@@ -553,8 +553,11 @@ Inductive color : Type :=
     - もし[p]が[rgb]に属する式ならば、[primary p]（("[p]に適用されたコンストラクタ[primary]"と読みます）は[color]の集合に属します。
     - これらによって作られる式「だけ」が[rgb]や[color]の集合に含まれます。 *)
 
+(* begin hide *)
 (** We can define functions on colors using pattern matching just as
     we have done for [day] and [bool]. *)
+(* end hide *)
+(** [day]や[bool]に対するものと同じように、色に関するパターンマッチを用いた関数が定義できます。 *)
 
 Definition monochrome (c : color) : bool :=
   match c with
@@ -563,9 +566,12 @@ Definition monochrome (c : color) : bool :=
   | primary p => false
   end.
 
+(* begin hide *)
 (** Since the [primary] constructor takes an argument, a pattern
     matching [primary] should include either a variable (as above) or
     a constant of appropriate type (as below). *)
+(* end hide *)
+(** 構築子の一つである[primary]は引数を取るので、[primary]に関するパターンマッチは(上記のように）変数か、または適切な型の定数でなければなりません。 *)
 
 Definition isred (c : color) : bool :=
   match c with
@@ -575,10 +581,14 @@ Definition isred (c : color) : bool :=
   | primary _ => false
   end.
 
+(* begin hide *)
 (** The pattern [primary _] here is shorthand for "[primary] applied
     to any [rgb] constructor except [red]."  (The wildcard pattern [_]
     has the same effect as the dummy pattern variable [p] in the
     definition of [monochrome].) *)
+(* end hide *)
+(** 最後のパターン[primary _]は「[primary]を[rgb]型の[red]以外の構築子に適用していた場合」の略記です。
+    （ワイルドカードパターン [_] は [monochrome] の定義にあるような使わない変数 [p] を書くことと同じです。） *)
 
 (* ================================================================= *)
 (* begin hide *)
@@ -987,7 +997,7 @@ Check ((0 + 1) + 1).
     to display [plus x y] as [x + y]. *)
 (* end hide *)
 (** （[level]、[associativity]、[nat_scope]という記述は、Coqのパーザーにこれらの表記法をどう扱うかを指示するものです。
-    詳細は重要ではないのですが、もし興味があれば本章の末尾にある「表記法をより詳しく」の項を読んでください。
+    詳細は重要ではないのですが、もし興味があれば本章の末尾にある「表記法をより詳しく」の項を読んでください。）
  
     これらは、これまで我々が定義してきたものを何ら変えるわけではありません。
     NotationはCoqのパーサに対して[x + y]を[plus x y]と解釈させたり、逆に[plus x y]を[x + y]と表記させたりするためのものです。 *)
@@ -1003,7 +1013,7 @@ Check ((0 + 1) + 1).
 (** 最初の方で、Coqにはほとんど何も用意されていない、という話をしましたが、実際に、数値を比較する関数すら自分で作れる演算なのです！
     では自然数([nat]ural number)を比較して等しい([eq]uality)かを[b]ool値で返す[beq_nat]関数を定義します。
     入れ子になった[match]に気をつけて、以下のソースを読んでください。
-    （[minus]同様に、二つの変数を一度に[match]させる方法でも書けます。 *)
+    （[minus]同様に、二つの変数を一度に[match]させる方法でも書けます。） *)
 
 Fixpoint beq_nat (n m : nat) : bool :=
   match n with
@@ -1116,7 +1126,7 @@ Proof.
     before finishing the proof.  Here is a shorter proof of the
     theorem: *)
 (* end hide *)
-(** （訳注：原文ではここでHTMLと[.v]ファイルの見え方の違いが説明されているのですが、日本語訳ではHTML側の表記の変更を行わないようにしています。
+(** （訳注：原文ではここでHTMLと[.v]ファイルの見え方の違いが説明されているのですが、日本語訳ではHTML側での大きな表記の変更を行わないようにしています。
     翻訳版の特徴として、HTMLには表示されませんが、[.v]ファイルには、（begin hide/end hideというコメントで挟まれた）英語の原文と訳文が交互に記述されています。
     もし訳文を読みづらい、内容が怪しいと感じた場合には、直前にある原文も参照してみてください。）
  
