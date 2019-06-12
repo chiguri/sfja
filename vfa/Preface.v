@@ -69,7 +69,7 @@
 
 (** Coq runs on Windows, Linux, and OS X.  The Preface of Volume 1
     describes the Coq installation you will need.  This edition was
-    built with Coq 8.7.1.
+    built with Coq 8.8.0.
 
     In addition, two of the chapters ask you to compile and run an
     OCaml program; having OCaml installed on your computer is helpful,
@@ -115,7 +115,7 @@
 
 (** A tar file containing the full sources for the "release version"
     of this book (as a collection of Coq scripts and HTML files) is
-    available at http://www.cis.upenn.edu/~bcpierce/sf.
+    available at http://softwarefoundations.cis.upenn.edu.
 
     (If you are using the book as part of a class, your professor may
     give you access to a locally modified version of the files, which

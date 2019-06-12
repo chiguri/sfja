@@ -11,10 +11,10 @@
     Coq!). *)
 
 Set Warnings "-notation-overridden,-parsing".
-Require Import Coq.Arith.Arith.
-Require Import Maps.
-Require Import Imp.
-Require Import Smallstep.
+From Coq Require Import Arith.Arith.
+From PLF Require Import Maps.
+From PLF Require Import Imp.
+From PLF Require Import Smallstep.
 
 Hint Constructors multi.
 
@@ -37,36 +37,36 @@ Hint Constructors multi.
 
 (** Here is the syntax, informally:
 
-    t ::= true
-        | false
-        | if t then t else t
-        | 0
-        | succ t
-        | pred t
-        | iszero t
+    t ::= tru
+        | fls
+        | test t then t else t
+        | zro
+        | scc t
+        | prd t
+        | iszro t
 
     And here it is formally: *)
 
 Inductive tm : Type :=
-  | ttrue : tm
-  | tfalse : tm
-  | tif : tm -> tm -> tm -> tm
-  | tzero : tm
-  | tsucc : tm -> tm
-  | tpred : tm -> tm
-  | tiszero : tm -> tm.
+  | tru : tm
+  | fls : tm
+  | test : tm -> tm -> tm -> tm
+  | zro : tm
+  | scc : tm -> tm
+  | prd : tm -> tm
+  | iszro : tm -> tm.
 
-(** _Values_ are [true], [false], and numeric values... *)
+(** _Values_ are [tru], [fls], and numeric values... *)
 
 Inductive bvalue : tm -> Prop :=
-  | bv_true : bvalue ttrue
-  | bv_false : bvalue tfalse.
+  | bv_tru : bvalue tru
+  | bv_fls : bvalue fls.
 
 Inductive nvalue : tm -> Prop :=
-  | nv_zero : nvalue tzero
-  | nv_succ : forall t, nvalue t -> nvalue (tsucc t).
+  | nv_zro : nvalue zro
+  | nv_scc : forall t, nvalue t -> nvalue (scc t).
 
-Definition value (t:tm) := bvalue t \/ nvalue t.
+Definition value (t : tm) := bvalue t \/ nvalue t.
 
 Hint Constructors bvalue nvalue.
 Hint Unfold value.
@@ -75,90 +75,88 @@ Hint Unfold update.
 (* ================================================================= *)
 (** ** Operational Semantics *)
 
-(** Here is the single-step relation, first informally... *)
-(**
+(** Here is the single-step relation, first informally... 
 
-                    ------------------------------                  (ST_IfTrue)
-                    if true then t1 else t2 ==> t1
+                   -------------------------------                  (ST_TestTru)
+                   test tru then t1 else t2 --> t1
 
-                   -------------------------------                 (ST_IfFalse)
-                   if false then t1 else t2 ==> t2
+                   -------------------------------                  (ST_TestFls)
+                   test fls then t1 else t2 --> t2
 
-                              t1 ==> t1'
-            ------------------------------------------------            (ST_If)
-            if t1 then t2 else t3 ==> if t1' then t2 else t3
+                               t1 --> t1'
+            ----------------------------------------------------       (ST_Test)
+            test t1 then t2 else t3 --> test t1' then t2 else t3
 
-                              t1 ==> t1'
-                         --------------------                         (ST_Succ)
-                         succ t1 ==> succ t1'
+                             t1 --> t1'
+                         ------------------                             (ST_Scc)
+                         scc t1 --> scc t1'
 
-                             ------------                         (ST_PredZero)
-                             pred 0 ==> 0
+                           ---------------                           (ST_PrdZro)
+                           prd zro --> zro
 
-                           numeric value v1
-                        ---------------------                     (ST_PredSucc)
-                        pred (succ v1) ==> v1
+                         numeric value v1
+                        -------------------                          (ST_PrdScc)
+                        prd (scc v1) --> v1
 
-                              t1 ==> t1'
-                         --------------------                         (ST_Pred)
-                         pred t1 ==> pred t1'
+                              t1 --> t1'
+                         ------------------                             (ST_Prd)
+                         prd t1 --> prd t1'
 
-                          -----------------                     (ST_IszeroZero)
-                          iszero 0 ==> true
+                          -----------------                        (ST_IszroZro)
+                          iszro zro --> tru
 
-                           numeric value v1
-                      --------------------------                (ST_IszeroSucc)
-                      iszero (succ v1) ==> false
+                         numeric value v1
+                      ----------------------                       (ST_IszroScc)
+                      iszro (scc v1) --> fls
 
-                              t1 ==> t1'
-                       ------------------------                     (ST_Iszero)
-                       iszero t1 ==> iszero t1'
+                            t1 --> t1'
+                       ----------------------                         (ST_Iszro)
+                       iszro t1 --> iszro t1'
 *)
 
 (** ... and then formally: *)
 
-Reserved Notation "t1 '==>' t2" (at level 40).
+Reserved Notation "t1 '-->' t2" (at level 40).
 
 Inductive step : tm -> tm -> Prop :=
-  | ST_IfTrue : forall t1 t2,
-      (tif ttrue t1 t2) ==> t1
-  | ST_IfFalse : forall t1 t2,
-      (tif tfalse t1 t2) ==> t2
-  | ST_If : forall t1 t1' t2 t3,
-      t1 ==> t1' ->
-      (tif t1 t2 t3) ==> (tif t1' t2 t3)
-  | ST_Succ : forall t1 t1',
-      t1 ==> t1' ->
-      (tsucc t1) ==> (tsucc t1')
-  | ST_PredZero :
-      (tpred tzero) ==> tzero
-  | ST_PredSucc : forall t1,
+  | ST_TestTru : forall t1 t2,
+      (test tru t1 t2) --> t1
+  | ST_TestFls : forall t1 t2,
+      (test fls t1 t2) --> t2
+  | ST_Test : forall t1 t1' t2 t3,
+      t1 --> t1' ->
+      (test t1 t2 t3) --> (test t1' t2 t3)
+  | ST_Scc : forall t1 t1',
+      t1 --> t1' ->
+      (scc t1) --> (scc t1')
+  | ST_PrdZro :
+      (prd zro) --> zro
+  | ST_PrdScc : forall t1,
       nvalue t1 ->
-      (tpred (tsucc t1)) ==> t1
-  | ST_Pred : forall t1 t1',
-      t1 ==> t1' ->
-      (tpred t1) ==> (tpred t1')
-  | ST_IszeroZero :
-      (tiszero tzero) ==> ttrue
-  | ST_IszeroSucc : forall t1,
+      (prd (scc t1)) --> t1
+  | ST_Prd : forall t1 t1',
+      t1 --> t1' ->
+      (prd t1) --> (prd t1')
+  | ST_IszroZro :
+      (iszro zro) --> tru
+  | ST_IszroScc : forall t1,
        nvalue t1 ->
-      (tiszero (tsucc t1)) ==> tfalse
-  | ST_Iszero : forall t1 t1',
-      t1 ==> t1' ->
-      (tiszero t1) ==> (tiszero t1')
+      (iszro (scc t1)) --> fls
+  | ST_Iszro : forall t1 t1',
+      t1 --> t1' ->
+      (iszro t1) --> (iszro t1')
 
-where "t1 '==>' t2" := (step t1 t2).
+where "t1 '-->' t2" := (step t1 t2).
 
 Hint Constructors step.
 
-(** Notice that the [step] relation doesn't care about whether
-    expressions make global sense -- it just checks that the operation
-    in the _next_ reduction step is being applied to the right kinds
-    of operands.  For example, the term [succ true] (i.e., 
-    [tsucc ttrue] in the formal syntax) cannot take a step, but the
-    almost as obviously nonsensical term
+(** Notice that the [step] relation doesn't care about whether the
+    expression being stepped makes global sense -- it just checks that
+    the operation in the _next_ reduction step is being applied to the
+    right kinds of operands.  For example, the term [scc tru] cannot
+    take a step, but the almost as obviously nonsensical term
 
-       succ (if true then true else true)
+       scc (test tru then tru else tru)
 
     can take a step (once, before becoming stuck). *)
 
@@ -174,24 +172,24 @@ Hint Constructors step.
 
 Notation step_normal_form := (normal_form step).
 
-Definition stuck (t:tm) : Prop :=
+Definition stuck (t : tm) : Prop :=
   step_normal_form t /\ ~ value t.
 
 Hint Unfold stuck.
 
-(** **** Exercise: 2 stars (some_term_is_stuck)  *)
+(** **** Exercise: 2 stars, standard (some_term_is_stuck)  *)
 Example some_term_is_stuck :
   exists t, stuck t.
 Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** However, although values and normal forms are _not_ the same in this
-    language, the set of values is included in the set of normal
+(** However, although values and normal forms are _not_ the same in
+    this language, the set of values is a subset of the set of normal
     forms.  This is important because it shows we did not accidentally
     define things so that some value could still take a step. *)
 
-(** **** Exercise: 3 stars (value_is_nf)  *)
+(** **** Exercise: 3 stars, standard (value_is_nf)  *)
 Lemma value_is_nf : forall t,
   value t -> step_normal_form t.
 Proof.
@@ -203,11 +201,13 @@ Proof.
     term itself or over the evidence that it is a numeric value.  The
     proof goes through in either case, but you will find that one way
     is quite a bit shorter than the other.  For the sake of the
-    exercise, try to complete the proof both ways.) *)
-(** [] *)
+    exercise, try to complete the proof both ways.) 
 
-(** **** Exercise: 3 stars, optional (step_deterministic)  *)
-(** Use [value_is_nf] to show that the [step] relation is also
+    [] *)
+
+(** **** Exercise: 3 stars, standard, optional (step_deterministic)  
+
+    Use [value_is_nf] to show that the [step] relation is also
     deterministic. *)
 
 Theorem step_deterministic:
@@ -227,78 +227,79 @@ Proof with eauto.
     or boolean) of their final results.  *)
 
 Inductive ty : Type :=
-  | TBool : ty
-  | TNat : ty.
+  | Bool : ty
+  | Nat : ty.
 
 (** In informal notation, the typing relation is often written
     [|- t \in T] and pronounced "[t] has type [T]."  The [|-] symbol
     is called a "turnstile."  Below, we're going to see richer typing
     relations where one or more additional "context" arguments are
     written to the left of the turnstile.  For the moment, the context
-    is always empty. *)
-(** 
-                           ----------------                            (T_True)
-                           |- true \in Bool
+    is always empty. 
 
-                          -----------------                           (T_False)
-                          |- false \in Bool
+    
+                           ---------------                     (T_Tru)
+                           |- tru \in Bool
+
+                          ---------------                      (T_Fls)
+                          |- fls \in Bool
 
              |- t1 \in Bool    |- t2 \in T    |- t3 \in T
-             --------------------------------------------                (T_If)
-                    |- if t1 then t2 else t3 \in T
+             --------------------------------------------     (T_Test)
+                    |- test t1 then t2 else t3 \in T
 
-                             ------------                              (T_Zero)
-                             |- 0 \in Nat
-
-                            |- t1 \in Nat
-                          ------------------                           (T_Succ)
-                          |- succ t1 \in Nat
+                             --------------                    (T_Zro)
+                             |- zro \in Nat
 
                             |- t1 \in Nat
-                          ------------------                           (T_Pred)
-                          |- pred t1 \in Nat
+                          -----------------                    (T_Scc)
+                          |- scc t1 \in Nat
 
                             |- t1 \in Nat
-                        ---------------------                        (T_IsZero)
-                        |- iszero t1 \in Bool
+                          -----------------                    (T_Prd)
+                          |- prd t1 \in Nat
+
+                            |- t1 \in Nat
+                        --------------------                 (T_IsZro)
+                        |- iszro t1 \in Bool
 *)
 
 Reserved Notation "'|-' t '\in' T" (at level 40).
 
 Inductive has_type : tm -> ty -> Prop :=
-  | T_True :
-       |- ttrue \in TBool
-  | T_False :
-       |- tfalse \in TBool
-  | T_If : forall t1 t2 t3 T,
-       |- t1 \in TBool ->
+  | T_Tru :
+       |- tru \in Bool
+  | T_Fls :
+       |- fls \in Bool
+  | T_Test : forall t1 t2 t3 T,
+       |- t1 \in Bool ->
        |- t2 \in T ->
        |- t3 \in T ->
-       |- tif t1 t2 t3 \in T
-  | T_Zero :
-       |- tzero \in TNat
-  | T_Succ : forall t1,
-       |- t1 \in TNat ->
-       |- tsucc t1 \in TNat
-  | T_Pred : forall t1,
-       |- t1 \in TNat ->
-       |- tpred t1 \in TNat
-  | T_Iszero : forall t1,
-       |- t1 \in TNat ->
-       |- tiszero t1 \in TBool
+       |- test t1 t2 t3 \in T
+  | T_Zro :
+       |- zro \in Nat
+  | T_Scc : forall t1,
+       |- t1 \in Nat ->
+       |- scc t1 \in Nat
+  | T_Prd : forall t1,
+       |- t1 \in Nat ->
+       |- prd t1 \in Nat
+  | T_Iszro : forall t1,
+       |- t1 \in Nat ->
+       |- iszro t1 \in Bool
 
 where "'|-' t '\in' T" := (has_type t T).
 
 Hint Constructors has_type.
 
 Example has_type_1 :
-  |- tif tfalse tzero (tsucc tzero) \in TNat.
+  |- test fls zro (scc zro) \in Nat.
 Proof.
-  apply T_If.
-    - apply T_False.
-    - apply T_Zero.
-    - apply T_Succ.
-       + apply T_Zero.
+  apply T_Test.
+    - apply T_Fls.
+    - apply T_Zro.
+    - apply T_Scc.
+       + apply T_Zro.
 Qed.
 
 (** (Since we've included all the constructors of the typing relation
@@ -311,14 +312,14 @@ Qed.
     not calculate the type of its normal form. *)
 
 Example has_type_not :
-  ~ (|- tif tfalse tzero ttrue \in TBool).
+  ~ ( |- test fls zro tru \in Bool ).
 Proof.
   intros Contra. solve_by_inverts 2.  Qed.
 
-(** **** Exercise: 1 star, optional (succ_hastype_nat__hastype_nat)  *)
-Example succ_hastype_nat__hastype_nat : forall t,
-  |- tsucc t \in TNat ->
-  |- t \in TNat.
+(** **** Exercise: 1 star, standard, optional (scc_hastype_nat__hastype_nat)  *)
+Example scc_hastype_nat__hastype_nat : forall t,
+  |- scc t \in Nat ->
+  |- t \in Nat.
 Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
@@ -331,20 +332,19 @@ Proof.
     relation. *)
 
 Lemma bool_canonical : forall t,
-  |- t \in TBool -> value t -> bvalue t.
+  |- t \in Bool -> value t -> bvalue t.
 Proof.
-  intros t HT HV.
-  inversion HV; auto.
-  induction H; inversion HT; auto.
+  intros t HT [Hb | Hn].
+  - assumption.
+  - induction Hn; inversion HT; auto.
 Qed.
 
 Lemma nat_canonical : forall t,
-  |- t \in TNat -> value t -> nvalue t.
+  |- t \in Nat -> value t -> nvalue t.
 Proof.
-  intros t HT HV.
-  inversion HV.
-  inversion H; subst; inversion HT.
-  auto.
+  intros t HT [Hb | Hn].
+  - inversion Hb; subst; inversion HT.
+  - assumption.
 Qed.
 
 (* ================================================================= *)
@@ -355,10 +355,10 @@ Qed.
     term is well typed, then either it is a value or it can take at
     least one step.  We call this _progress_. *)
 
-(** **** Exercise: 3 stars (finish_progress)  *)
+(** **** Exercise: 3 stars, standard (finish_progress)  *)
 Theorem progress : forall t T,
   |- t \in T ->
-  value t \/ exists t', t ==> t'.
+  value t \/ exists t', t --> t'.
 
 (** Complete the formal proof of the [progress] property.  (Make sure
     you understand the parts we've given of the informal proof in the
@@ -367,9 +367,9 @@ Theorem progress : forall t T,
 Proof with auto.
   intros t T HT.
   induction HT...
-  (* The cases that were obviously values, like T_True and
-     T_False, were eliminated immediately by auto *)
-  - (* T_If *)
+  (* The cases that were obviously values, like T_Tru and
+     T_Fls, were eliminated immediately by auto *)
+  - (* T_Test *)
     right. inversion IHHT1; clear IHHT1.
     + (* t1 is a value *)
     apply (bool_canonical t1 HT1) in H.
@@ -378,36 +378,39 @@ Proof with auto.
       exists t3...
     + (* t1 can take a step *)
       inversion H as [t1' H1].
-      exists (tif t1' t2 t3)...
+      exists (test t1' t2 t3)...
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** **** Exercise: 3 stars, advanced (finish_progress_informal)  *)
-(** Complete the corresponding informal proof: *)
+(** **** Exercise: 3 stars, advanced (finish_progress_informal)  
+
+    Complete the corresponding informal proof: *)
 
 (** _Theorem_: If [|- t \in T], then either [t] is a value or else
-    [t ==> t'] for some [t']. *)
+    [t --> t'] for some [t']. *)
 
 (** _Proof_: By induction on a derivation of [|- t \in T].
 
-      - If the last rule in the derivation is [T_If], then [t = if t1
-        then t2 else t3], with [|- t1 \in Bool], [|- t2 \in T] and [|- t3
-        \in T].  By the IH, either [t1] is a value or else [t1] can step
-        to some [t1'].
+    - If the last rule in the derivation is [T_Test], then [t = test t1
+      then t2 else t3], with [|- t1 \in Bool], [|- t2 \in T] and [|- t3
+      \in T].  By the IH, either [t1] is a value or else [t1] can step
+      to some [t1'].
 
-            - If [t1] is a value, then by the canonical forms lemmas
-              and the fact that [|- t1 \in Bool] we have that [t1]
-              is a [bvalue] -- i.e., it is either [true] or [false].
-              If [t1 = true], then [t] steps to [t2] by [ST_IfTrue],
-              while if [t1 = false], then [t] steps to [t3] by
-              [ST_IfFalse].  Either way, [t] can step, which is what
-              we wanted to show.
+      - If [t1] is a value, then by the canonical forms lemmas
+        and the fact that [|- t1 \in Bool] we have that [t1]
+        is a [bvalue] -- i.e., it is either [tru] or [fls].
+        If [t1 = tru], then [t] steps to [t2] by [ST_TestTru],
+        while if [t1 = fls], then [t] steps to [t3] by
+        [ST_TestFls].  Either way, [t] can step, which is what
+        we wanted to show.
 
-            - If [t1] itself can take a step, then, by [ST_If], so can
-              [t].
+      - If [t1] itself can take a step, then, by [ST_Test], so can
+        [t].
 
-      - (* FILL IN HERE *)
+    - (* FILL IN HERE *)
  *)
+(* Do not modify the following line: *)
+Definition manual_grade_for_finish_progress_informal : option (nat*string) := None.
 (** [] *)
 
 (** This theorem is more interesting than the strong progress theorem
@@ -421,10 +424,10 @@ Proof with auto.
 (** The second critical property of typing is that, when a well-typed
     term takes a step, the result is also a well-typed term. *)
 
-(** **** Exercise: 2 stars (finish_preservation)  *)
+(** **** Exercise: 2 stars, standard (finish_preservation)  *)
 Theorem preservation : forall t t' T,
   |- t \in T ->
-  t ==> t' ->
+  t --> t' ->
   |- t' \in T.
 
 (** Complete the formal proof of the [preservation] property.  (Again,
@@ -440,47 +443,51 @@ Proof with auto.
          (* and we can deal with several impossible
             cases all at once *)
          try solve_by_invert.
-    - (* T_If *) inversion HE; subst; clear HE.
-      + (* ST_IFTrue *) assumption.
-      + (* ST_IfFalse *) assumption.
-      + (* ST_If *) apply T_If; try assumption.
+    - (* T_Test *) inversion HE; subst; clear HE.
+      + (* ST_TESTTru *) assumption.
+      + (* ST_TestFls *) assumption.
+      + (* ST_Test *) apply T_Test; try assumption.
         apply IHHT1; assumption.
     (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** **** Exercise: 3 stars, advanced (finish_preservation_informal)  *)
-(** Complete the following informal proof: *)
+(** **** Exercise: 3 stars, advanced (finish_preservation_informal)  
 
-(** _Theorem_: If [|- t \in T] and [t ==> t'], then [|- t' \in T]. *)
+    Complete the following informal proof: *)
+
+(** _Theorem_: If [|- t \in T] and [t --> t'], then [|- t' \in T]. *)
 
 (** _Proof_: By induction on a derivation of [|- t \in T].
 
-      - If the last rule in the derivation is [T_If], then [t = if t1
-        then t2 else t3], with [|- t1 \in Bool], [|- t2 \in T] and [|- t3
-        \in T].
+    - If the last rule in the derivation is [T_Test], then [t = test t1
+      then t2 else t3], with [|- t1 \in Bool], [|- t2 \in T] and [|- t3
+      \in T].
 
-        Inspecting the rules for the small-step reduction relation and
-        remembering that [t] has the form [if ...], we see that the
-        only ones that could have been used to prove [t ==> t'] are
-        [ST_IfTrue], [ST_IfFalse], or [ST_If].
+      Inspecting the rules for the small-step reduction relation and
+      remembering that [t] has the form [test ...], we see that the
+      only ones that could have been used to prove [t --> t'] are
+      [ST_TestTru], [ST_TestFls], or [ST_Test].
 
-           - If the last rule was [ST_IfTrue], then [t' = t2].  But we
-             know that [|- t2 \in T], so we are done.
+      - If the last rule was [ST_TestTru], then [t' = t2].  But we
+        know that [|- t2 \in T], so we are done.
 
-           - If the last rule was [ST_IfFalse], then [t' = t3].  But we
-             know that [|- t3 \in T], so we are done.
+      - If the last rule was [ST_TestFls], then [t' = t3].  But we
+        know that [|- t3 \in T], so we are done.
 
-           - If the last rule was [ST_If], then [t' = if t1' then t2
-             else t3], where [t1 ==> t1'].  We know [|- t1 \in Bool] so,
-             by the IH, [|- t1' \in Bool].  The [T_If] rule then gives us
-             [|- if t1' then t2 else t3 \in T], as required.
+      - If the last rule was [ST_Test], then [t' = test t1' then t2
+        else t3], where [t1 --> t1'].  We know [|- t1 \in Bool] so,
+        by the IH, [|- t1' \in Bool].  The [T_Test] rule then gives us
+        [|- test t1' then t2 else t3 \in T], as required.
 
-      - (* FILL IN HERE *)
+    - (* FILL IN HERE *)
 *)
+(* Do not modify the following line: *)
+Definition manual_grade_for_finish_preservation_informal : option (nat*string) := None.
 (** [] *)
 
-(** **** Exercise: 3 stars (preservation_alternate_proof)  *)
-(** Now prove the same property again by induction on the
+(** **** Exercise: 3 stars, standard (preservation_alternate_proof)  
+
+    Now prove the same property again by induction on the
     _evaluation_ derivation instead of on the typing derivation.
     Begin by carefully reading and thinking about the first few
     lines of the above proofs to make sure you understand what
@@ -489,7 +496,7 @@ Proof with auto.
 
 Theorem preservation' : forall t t' T,
   |- t \in T ->
-  t ==> t' ->
+  t --> t' ->
   |- t' \in T.
 Proof with eauto.
   (* FILL IN HERE *) Admitted.
@@ -508,11 +515,11 @@ Proof with eauto.
     well-typed term can never reach a stuck state.  *)
 
 Definition multistep := (multi step).
-Notation "t1 '==>*' t2" := (multistep t1 t2) (at level 40).
+Notation "t1 '-->*' t2" := (multistep t1 t2) (at level 40).
 
 Corollary soundness : forall t t' T,
   |- t \in T ->
-  t ==>* t' ->
+  t -->* t' ->
   ~(stuck t').
 Proof.
   intros t t' T HT P. induction P; intros [R S].
@@ -520,244 +527,156 @@ Proof.
   apply IHP.  apply (preservation x y T HT H).
   unfold stuck. split; auto.   Qed.
 
-(* ################################################################# *)
-(** * Aside: the [normalize] Tactic *)
-
-(** When experimenting with definitions of programming languages
-    in Coq, we often want to see what a particular concrete term steps
-    to -- i.e., we want to find proofs for goals of the form [t ==>*
-    t'], where [t] is a completely concrete term and [t'] is unknown.
-    These proofs are quite tedious to do by hand.  Consider, for
-    example, reducing an arithmetic expression using the small-step
-    relation [astep]. *)
-
-Module NormalizePlayground.
-Import Smallstep.
-
-Example step_example1 :
-  (P (C 3) (P (C 3) (C 4))) 
-  ==>* (C 10).
-Proof.
-  apply multi_step with (P (C 3) (C 7)).
-    apply ST_Plus2.
-      apply v_const.
-      apply ST_PlusConstConst.
-  apply multi_step with (C 10).
-    apply ST_PlusConstConst.
-  apply multi_refl.
-Qed.
-
-(** The proof repeatedly applies [multi_step] until the term reaches a
-    normal form.  Fortunately The sub-proofs for the intermediate
-    steps are simple enough that [auto], with appropriate hints, can
-    solve them. *)
-
-Hint Constructors step value.
-Example step_example1' :
-  (P (C 3) (P (C 3) (C 4)))
-  ==>* (C 10).
-Proof.
-  eapply multi_step. auto. simpl.
-  eapply multi_step. auto. simpl.
-  apply multi_refl.
-Qed.
-
-(** The following custom [Tactic Notation] definition captures this
-    pattern.  In addition, before each step, we print out the current
-    goal, so that we can follow how the term is being reduced. *)
-
-Tactic Notation "print_goal" :=
-  match goal with |- ?x => idtac x end.
-
-Tactic Notation "normalize" :=
-  repeat (print_goal; eapply multi_step ;
-            [ (eauto 10; fail) | (instantiate; simpl)]);
-  apply multi_refl.
-
-Example step_example1'' :
-  (P (C 3) (P (C 3) (C 4))) 
-  ==>* (C 10).
-Proof.
-  normalize.
-  (* The [print_goal] in the [normalize] tactic shows
-     a trace of how the expression reduced...
-         (P (C 3) (P (C 3) (C 4)) ==>* C 10)
-         (P (C 3) (C 7) ==>* C 10)
-         (C 10 ==>* C 10)                      
-  *)
-Qed.
-
-(** The [normalize] tactic also provides a simple way to calculate the
-    normal form of a term, by starting with a goal with an existentially
-    bound variable. *)
-
-Example step_example1''' : exists e',
-  (P (C 3) (P (C 3) (C 4)))
-  ==>* e'.
-Proof.
-  eapply ex_intro. normalize.
-(* This time, the trace is:
-       (P (C 3) (P (C 3) (C 4)) ==>* ?e')
-       (P (C 3) (C 7) ==>* ?e')
-       (C 10 ==>* ?e')
-   where ?e' is the variable ``guessed'' by eapply. *)
-Qed.
-
-
-(** **** Exercise: 1 star (normalize_ex)  *)
-Theorem normalize_ex : exists e',
-  (P (C 3) (P (C 2) (C 1))) 
-  ==>* e'.
-Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
-
-(** **** Exercise: 1 star, optional (normalize_ex')  *)
-(** For comparison, prove it using [apply] instead of [eapply]. *)
-
-Theorem normalize_ex' : exists e',
-  (P (C 3) (P (C 2) (C 1))) 
-  ==>* e'.
-Proof.
-  (* FILL IN HERE *) Admitted.
-(** [] *)
-
-End NormalizePlayground.
-
-Tactic Notation "print_goal" :=
-  match goal with |- ?x => idtac x end.
-Tactic Notation "normalize" :=
-  repeat (print_goal; eapply multi_step ;
-            [ (eauto 10; fail) | (instantiate; simpl)]);
-  apply multi_refl.
-
 (* ================================================================= *)
 (** ** Additional Exercises *)
 
-(** **** Exercise: 2 stars, recommended (subject_expansion)  *)
-(** Having seen the subject reduction property, one might
+(** **** Exercise: 2 stars, standard, recommended (subject_expansion)  
+
+    Having seen the subject reduction property, one might
     wonder whether the opposity property -- subject _expansion_ --
-    also holds.  That is, is it always the case that, if [t ==> t']
+    also holds.  That is, is it always the case that, if [t --> t']
     and [|- t' \in T], then [|- t \in T]?  If so, prove it.  If
     not, give a counter-example.  (You do not need to prove your
     counter-example in Coq, but feel free to do so.)
 
     (* FILL IN HERE *)
 *)
+(* Do not modify the following line: *)
+Definition manual_grade_for_subject_expansion : option (nat*string) := None.
 (** [] *)
 
-(** **** Exercise: 2 stars (variation1)  *)
-(** Suppose, that we add this new rule to the typing relation:
+(** **** Exercise: 2 stars, standard (variation1)  
 
-      | T_SuccBool : forall t,
-           |- t \in TBool ->
-           |- tsucc t \in TBool
+    Suppose that we add this new rule to the typing relation:
+
+      | T_SccBool : forall t,
+           |- t \in Bool ->
+           |- scc t \in Bool
 
    Which of the following properties remain true in the presence of
    this rule?  For each one, write either "remains true" or
    else "becomes false." If a property becomes false, give a
    counterexample.
       - Determinism of [step]
-
+            (* FILL IN HERE *)
       - Progress
-
+            (* FILL IN HERE *)
       - Preservation
+            (* FILL IN HERE *)
+*)
+(* Do not modify the following line: *)
+Definition manual_grade_for_variation1 : option (nat*string) := None.
+(** [] *)
 
+(** **** Exercise: 2 stars, standard (variation2)  
 
-    [] *)
-
-(** **** Exercise: 2 stars (variation2)  *)
-(** Suppose, instead, that we add this new rule to the [step] relation:
+    Suppose, instead, that we add this new rule to the [step] relation:
 
       | ST_Funny1 : forall t2 t3,
-           (tif ttrue t2 t3) ==> t3
+           (test tru t2 t3) --> t3
 
    Which of the above properties become false in the presence of
    this rule?  For each one that does, give a counter-example.
+            (* FILL IN HERE *)
+*)
+(* Do not modify the following line: *)
+Definition manual_grade_for_variation2 : option (nat*string) := None.
+(** [] *)
 
+(** **** Exercise: 2 stars, standard, optional (variation3)  
 
-    [] *)
-
-(** **** Exercise: 2 stars, optional (variation3)  *)
-(** Suppose instead that we add this rule:
+    Suppose instead that we add this rule:
 
       | ST_Funny2 : forall t1 t2 t2' t3,
-           t2 ==> t2' ->
-           (tif t1 t2 t3) ==> (tif t1 t2' t3)
+           t2 --> t2' ->
+           (test t1 t2 t3) --> (test t1 t2' t3)
 
    Which of the above properties become false in the presence of
    this rule?  For each one that does, give a counter-example.
-
+            (* FILL IN HERE *)
 
     [] *)
 
-(** **** Exercise: 2 stars, optional (variation4)  *)
-(** Suppose instead that we add this rule:
+(** **** Exercise: 2 stars, standard, optional (variation4)  
+
+    Suppose instead that we add this rule:
 
       | ST_Funny3 :
-          (tpred tfalse) ==> (tpred (tpred tfalse))
+          (prd fls) --> (prd (prd fls))
 
    Which of the above properties become false in the presence of
    this rule?  For each one that does, give a counter-example.
-
+(* FILL IN HERE *)
 
     [] *)
 
-(** **** Exercise: 2 stars, optional (variation5)  *)
-(** Suppose instead that we add this rule:
+(** **** Exercise: 2 stars, standard, optional (variation5)  
+
+    Suppose instead that we add this rule:
 
       | T_Funny4 :
-            |- tzero \in TBool
+            |- zro \in Bool
 
    Which of the above properties become false in the presence of
    this rule?  For each one that does, give a counter-example.
-
+(* FILL IN HERE *)
 
     [] *)
 
-(** **** Exercise: 2 stars, optional (variation6)  *)
-(** Suppose instead that we add this rule:
+(** **** Exercise: 2 stars, standard, optional (variation6)  
+
+    Suppose instead that we add this rule:
 
       | T_Funny5 :
-            |- tpred tzero \in TBool
+            |- prd zro \in Bool
 
    Which of the above properties become false in the presence of
    this rule?  For each one that does, give a counter-example.
-
+(* FILL IN HERE *)
 
     [] *)
 
-(** **** Exercise: 3 stars, optional (more_variations)  *)
-(** Make up some exercises of your own along the same lines as
+(** **** Exercise: 3 stars, standard, optional (more_variations)  
+
+    Make up some exercises of your own along the same lines as
     the ones above.  Try to find ways of selectively breaking
     properties -- i.e., ways of changing the definitions that
     break just one of the properties and leave the others alone.
 *)
-(** [] *)
+(* FILL IN HERE 
 
-(** **** Exercise: 1 star (remove_predzero)  *)
-(** The reduction rule [ST_PredZero] is a bit counter-intuitive: we
-    might feel that it makes more sense for the predecessor of zero to
-    be undefined, rather than being defined to be zero.  Can we
+    [] *)
+
+(** **** Exercise: 1 star, standard (remove_prdzro)  
+
+    The reduction rule [ST_PrdZro] is a bit counter-intuitive: we
+    might feel that it makes more sense for the predecessor of [zro] to
+    be undefined, rather than being defined to be [zro].  Can we
     achieve this simply by removing the rule from the definition of
     [step]?  Would doing so create any problems elsewhere?
 
 (* FILL IN HERE *)
 *)
+(* Do not modify the following line: *)
+Definition manual_grade_for_remove_predzro : option (nat*string) := None.
 (** [] *)
 
-(** **** Exercise: 4 stars, advanced (prog_pres_bigstep)  *)
-(** Suppose our evaluation relation is defined in the big-step style.
+(** **** Exercise: 4 stars, advanced (prog_pres_bigstep)  
+
+    Suppose our evaluation relation is defined in the big-step style.
     State appropriate analogs of the progress and preservation
     properties. (You do not need to prove them.)
 
-    Can you see any limitations of either of your properties?
-    Do they allow for nonterminating commands?
-    Why might we prefer the small-step semantics for stating
-    preservation and progress?
+    Can you see any limitations of either of your properties?  Do they
+    allow for nonterminating commands?  Why might we prefer the
+    small-step semantics for stating preservation and progress?
 
 (* FILL IN HERE *)
 *)
+(* Do not modify the following line: *)
+Definition manual_grade_for_prog_pres_bigstep : option (nat*string) := None.
 (** [] *)
 
-(** $Date$ *)
+
+
+(* Thu Feb 7 20:09:24 EST 2019 *)

@@ -32,7 +32,6 @@
     introducing the reader to the basic ideas of functional
     programming, constructive logic, and the Coq proof assistant. *)
 
-
 (* ################################################################# *)
 (** * Overview *)
 
@@ -83,7 +82,7 @@
     Effectiveness of Logic in Computer Science_ catalogs scores of
     ways in which logic offers critical tools and insights.  Indeed,
     they observe that, "As a matter of fact, logic has turned out to
-    be significiantly more effective in computer science than it has
+    be significantly more effective in computer science than it has
     been in mathematics.  This is quite remarkable, especially since
     much of the impetus for the development of logic during the past
     one hundred years came from mathematics."
@@ -243,7 +242,6 @@
     we find that these two sides of Coq are actually aspects of the
     very same underlying machinery -- i.e., _proofs are programs_.  *)
 
-
 (* ================================================================= *)
 (** ** Further Reading *)
 
@@ -266,26 +264,31 @@
 
 (** Coq runs on Windows, Linux, and macOS.  You will need:
 
-       - A current installation of Coq, available from the Coq home
-         page.  These files have been tested with Coq 8.7.1.
+    - A current installation of Coq, available from the Coq home page.
+      These files have been tested with Coq 8.8.1.
 
-       - An IDE for interacting with Coq.  Currently, there are two
-         choices:
+    - An IDE for interacting with Coq.  Currently, there are two
+      choices:
 
-           - Proof General is an Emacs-based IDE.  It tends to be
-             preferred by users who are already comfortable with
-             Emacs.  It requires a separate installation (google
-             "Proof General").
+        - Proof General is an Emacs-based IDE.  It tends to be
+          preferred by users who are already comfortable with Emacs.
+          It requires a separate installation (google "Proof
+          General").
 
-             Adventurous users of Coq within Emacs may also want to
-             check out extensions such as [company-coq] and
-             [control-lock].
+          Adventurous users of Coq within Emacs may also want to check
+          out extensions such as [company-coq] and [control-lock].
 
-           - CoqIDE is a simpler stand-alone IDE.  It is distributed
-             with Coq, so it should be available once you have Coq
-             installed.  It can also be compiled from scratch, but on
-             some platforms this may involve installing additional
-             packages for GUI libraries and such. *)
+        - CoqIDE is a simpler stand-alone IDE.  It is distributed with
+          Coq, so it should be available once you have Coq installed.
+          It can also be compiled from scratch, but on some platforms
+          this may involve installing additional packages for GUI
+          libraries and such.
+
+          Users who like CoqIDE should consider running it with the
+          "asynchronous" and "error resilience" modes disabled:
+
+  coqide -async-proofs off -async-proofs-command-error-resilience off Foo.v &
+*)
 
 (* ================================================================= *)
 (** ** Exercises *)
@@ -326,19 +329,34 @@
 
 (** A tar file containing the full sources for the "release version"
     of this book (as a collection of Coq scripts and HTML files) is
-    available at http://www.cis.upenn.edu/~bcpierce/sf.
+    available at http://softwarefoundations.cis.upenn.edu.
 
-    (If you are using the book as part of a class, your professor may
-    give you access to a locally modified version of the files, which
-    you should use instead of the release version.) *)
+    If you are using the book as part of a class, your professor may
+    give you access to a locally modified version of the files; you
+    should use this one instead of the public release version, so that
+    you get any local updates during the semester. *)
+
+(* ################################################################# *)
+(** * Resources *)
+
+(* ================================================================= *)
+(** ** Sample Exams *)
+
+(** A large compendium of exams from many offerings of
+    CIS500 ("Software Foundations") at the University of Pennsylvania
+    can be found at
+    https://www.seas.upenn.edu/~cis500/current/exams/index.html.
+    There has been some drift of notations over the years, but most of
+    the problems are still relevant to the current text. *)
 
 (* ================================================================= *)
 (** ** Lecture Videos *)
 
-(** Lectures for an intensive summer course based on _Logical
-    Foundations_ (part of the DeepSpec summer school in 2017) can be
-    found at https://deepspec.org/event/dsss17/coq_intensive.html.
-    The video quality is poor at the beginning but gets better in the
+(** Lectures for two intensive summer courses based on _Logical
+    Foundations_ (part of the DeepSpec summer school series) can be
+    found at https://deepspec.org/event/dsss17 and
+    https://deepspec.org/event/dsss18/.  The video quality in the
+    2017 lectures is poor at the beginning but gets better in the
     later lectures. *)
 
 (* ################################################################# *)
@@ -348,12 +366,12 @@
     undoubtedly find things you'd like to change, improve, or add.
     Your contributions are welcome!
 
-    In order to keep the legalities simple and to have a single
-    point of responsibility in case the need should ever arise to
-    adjust the license terms, sublicense, etc., we ask all
-    contributors (i.e., everyone with access to the developers'
-    repository) to assign copyright in their contributions to the
-    appropriate "author of record," as follows:
+    In order to keep the legalities simple and to have a single point
+    of responsibility in case the need should ever arise to adjust the
+    license terms, sublicense, etc., we ask all contributors (i.e.,
+    everyone with access to the developers' repository) to assign
+    copyright in their contributions to the appropriate "author of
+    record," as follows:
 
       - I hereby assign copyright in my past and future contributions
         to the Software Foundations project to the Author of Record of
@@ -362,22 +380,22 @@
         present, the Authors of Record are as follows: For Volumes 1
         and 2, known until 2016 as "Software Foundations" and from
         2016 as (respectively) "Logical Foundations" and "Programming
-        Foundations," the Author of Record is Benjamin Pierce.  For
-        Volume 3, "Verified Functional Algorithms", the Author of
+        Foundations," and for Volume 4, "QuickChick: Property-Based
+        Testing in Coq," the Author of Record is Benjamin C. Pierce.
+        For Volume 3, "Verified Functional Algorithms", the Author of
         Record is Andrew W. Appel. For components outside of
-        designated Volumes (e.g., typesetting and grading tools and
+        designated volumes (e.g., typesetting and grading tools and
         other software infrastructure), the Author of Record is
         Benjamin Pierce.
 
-    To get started, please send an email to Benjamin Pierce, describing
-    yourself and how you plan to use the materials and including
-       (1) the above copyright transfer text and
-       (2) the result of doing "htpasswd -s -n NAME"
-    where NAME is your preferred user name.
+    To get started, please send an email to Benjamin Pierce,
+    describing yourself and how you plan to use the materials and
+    including (1) the above copyright transfer text and (2) your
+    github username.
 
-    We'll set you up with access to the subversion repository and
-    developers' mailing lists.  In the repository you'll find a
-    file [INSTRUCTORS] with further instructions. *)
+    We'll set you up with access to the git repository and developers'
+    mailing lists.  In the repository you'll find a file [INSTRUCTORS]
+    with further instructions. *)
 
 (* ################################################################# *)
 (** * Translations *)
@@ -395,3 +413,4 @@
     NSF Expeditions grant 1521523, _The Science of Deep
     Specification_. *)
 
+(* Wed Jan 9 12:02:43 EST 2019 *)

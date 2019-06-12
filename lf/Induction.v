@@ -3,53 +3,92 @@
 (** Before getting started, we need to import all of our
     definitions from the previous chapter: *)
 
-Require Export Basics.
+From LF Require Export Basics.
 
-(** For the [Require Export] to work, you first need to use
-    [coqc] to compile [Basics.v] into [Basics.vo].  This is like
-    making a [.class] file from a [.java] file, or a [.o] file from a
-    [.c] file.  There are two ways to do it:
+(** For the [Require Export] to work, Coq needs to be able to
+    find a compiled version of [Basics.v], called [Basics.vo], in a directory
+    associated with the prefix [LF].  This file is analogous to the [.class]
+    files compiled from [.java] source files and the [.o] files compiled from
+    [.c] files.
 
-     - In CoqIDE:
+    First create a file named [_CoqProject] containing the following line
+    (if you obtained the whole volume "Logical Foundations" as a single
+    archive, a [_CoqProject] should already exist and you can skip this step):
 
-         Open [Basics.v].  In the "Compile" menu, click on "Compile
-         Buffer".
+      [-Q . LF]
 
-     - From the command line: Either
+    This maps the current directory ("[.]", which contains [Basics.v],
+    [Induction.v], etc.) to the prefix (or "logical directory") "[LF]".
+    PG and CoqIDE read [_CoqProject] automatically, so they know to where to
+    look for the file [Basics.vo] corresponding to the library [LF.Basics].
+
+    Once [_CoqProject] is thus created, there are various ways to build
+    [Basics.vo]:
+
+     - In Proof General: The compilation can be made to happen automatically
+       when you submit the [Require] line above to PG, by setting the emacs
+       variable [coq-compile-before-require] to [t].
+
+     - In CoqIDE: Open [Basics.v]; then, in the "Compile" menu, click
+       on "Compile Buffer".
+
+     - From the command line: Generate a [Makefile] using the [coq_makefile]
+       utility, that comes installed with Coq (if you obtained the whole
+       volume as a single archive, a [Makefile] should already exist
+       and you can skip this step):
+
+         [coq_makefile -f _CoqProject *.v -o Makefile]
+
+       Note: You should rerun that command whenever you add or remove Coq files
+       to the directory.
+
+       Then you can compile [Basics.v] by running [make] with the corresponding
+       [.vo] file as a target:
 
          [make Basics.vo]
 
-       (assuming you've downloaded the whole LF directory and have a
-       working [make] command) or
+       All files in the directory can be compiled by giving no arguments:
 
-         [coqc Basics.v]
+         [make]
 
-       (which should work from any terminal window).
+       Under the hood, [make] uses the Coq compiler, [coqc].  You can also
+       run [coqc] directly:
+
+         [coqc -Q . LF Basics.v]
+
+       But [make] also calculates dependencies between source files to compile
+       them in the right order, so [make] should generally be prefered over
+       explicit [coqc].
 
     If you have trouble (e.g., if you get complaints about missing
     identifiers later in the file), it may be because the "load path"
-    for Coq is not set up correctly.  The [Print LoadPath.] command may
-    be helpful in sorting out such issues.
+    for Coq is not set up correctly.  The [Print LoadPath.] command
+    may be helpful in sorting out such issues.
 
     In particular, if you see a message like
 
         [Compiled library Foo makes inconsistent assumptions over
-        library Coq.Init.Bar]
+        library Bar]
 
-    you should check whether you have multiple installations of Coq on
-    your machine.  If so, it may be that commands (like [coqc]) that
-    you execute in a terminal window are getting a different version of
-    Coq than commands executed by Proof General or CoqIDE.
+    check whether you have multiple installations of Coq on your machine.
+    It may be that commands (like [coqc]) that you execute in a terminal
+    window are getting a different version of Coq than commands executed by
+    Proof General or CoqIDE.
+
+    - Another common reason is that the library [Bar] was modified and
+      recompiled without also recompiling [Foo] which depends on it.  Recompile
+      [Foo], or everything if too many files are affected.  (Using the third
+      solution above: [make clean; make].)
 
     One more tip for CoqIDE users: If you see messages like [Error:
     Unable to locate library Basics], a likely reason is
     inconsistencies between compiling things _within CoqIDE_ vs _using
-    coqc_ from the command line.  This typically happens when there are
-    two incompatible versions of [coqc] installed on your system (one
-    associated with CoqIDE, and one associated with [coqc] from the
-    terminal).  The workaround for this situation is compiling using
-    CoqIDE only (i.e. choosing "make" from the menu), and avoiding
-    using [coqc] directly at all. *)
+    [coqc] from the command line_.  This typically happens when there
+    are two incompatible versions of [coqc] installed on your
+    system (one associated with CoqIDE, and one associated with [coqc]
+    from the terminal).  The workaround for this situation is
+    compiling using CoqIDE only (i.e. choosing "make" from the menu),
+    and avoiding using [coqc] directly at all. *)
 
 (* ################################################################# *)
 (** * Proof by Induction *)
@@ -80,7 +119,7 @@ Abort.
 Theorem plus_n_O_secondtry : forall n:nat,
   n = n + 0.
 Proof.
-  intros n. destruct n as [| n'].
+  intros n. destruct n as [| n'] eqn:E.
   - (* n = 0 *)
     reflexivity. (* so far so good... *)
   - (* n = S n' *)
@@ -135,7 +174,6 @@ Proof.
     in this case becomes [S n' = (S n') + 0], which simplifies to
     [S n' = S (n' + 0)], which in turn follows from [IHn']. *)
 
-
 Theorem minus_diag : forall n,
   minus n n = 0.
 Proof.
@@ -151,38 +189,35 @@ Proof.
     variables, the [induction] tactic will automatically move them
     into the context as needed.) *)
 
-(** **** Exercise: 2 stars, recommended (basic_induction)  *)
-(** Prove the following using induction. You might need previously
+(** **** Exercise: 2 stars, standard, recommended (basic_induction)  
+
+    Prove the following using induction. You might need previously
     proven results. *)
 
 Theorem mult_0_r : forall n:nat,
   n * 0 = 0.
 Proof.
   (* FILL IN HERE *) Admitted.
-(* GRADE_THEOREM 0.5: mult_0_r *)
 
 Theorem plus_n_Sm : forall n m : nat,
   S (n + m) = n + (S m).
 Proof.
   (* FILL IN HERE *) Admitted.
-(* GRADE_THEOREM 0.5: plus_n_Sm *)
-
 
 Theorem plus_comm : forall n m : nat,
   n + m = m + n.
 Proof.
   (* FILL IN HERE *) Admitted.
-(* GRADE_THEOREM 0.5: plus_comm *)
 
 Theorem plus_assoc : forall n m p : nat,
   n + (m + p) = (n + m) + p.
 Proof.
   (* FILL IN HERE *) Admitted.
-(* GRADE_THEOREM 0.5: plus_assoc *)
 (** [] *)
 
-(** **** Exercise: 2 stars (double_plus)  *)
-(** Consider the following function, which doubles its argument: *)
+(** **** Exercise: 2 stars, standard (double_plus)  
+
+    Consider the following function, which doubles its argument: *)
 
 Fixpoint double (n:nat) :=
   match n with
@@ -197,8 +232,9 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** **** Exercise: 2 stars, optional (evenb_S)  *)
-(** One inconvenient aspect of our definition of [evenb n] is the
+(** **** Exercise: 2 stars, standard, optional (evenb_S)  
+
+    One inconvenient aspect of our definition of [evenb n] is the
     recursive call on [n - 2]. This makes proofs about [evenb n]
     harder when done by induction on [n], since we may need an
     induction hypothesis about [n - 2]. The following lemma gives an
@@ -211,12 +247,16 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** **** Exercise: 1 star (destruct_induction)  *)
-(** Briefly explain the difference between the tactics [destruct]
+(** **** Exercise: 1 star, standard (destruct_induction)  
+
+    Briefly explain the difference between the tactics [destruct]
     and [induction].
 
 (* FILL IN HERE *)
 *)
+
+(* Do not modify the following line: *)
+Definition manual_grade_for_destruct_induction : option (nat*string) := None.
 (** [] *)
 
 (* ################################################################# *)
@@ -276,7 +316,7 @@ Proof.
   (* We just need to swap (n + m) for (m + n)... seems
      like plus_comm should do the trick! *)
   rewrite -> plus_comm.
-  (* Doesn't work...Coq rewrote the wrong plus! *)
+  (* Doesn't work...Coq rewrites the wrong plus! *)
 Abort.
 
 (** To use [plus_comm] at the point where we need it, we can introduce
@@ -409,31 +449,37 @@ Proof.
     whereas the informal proof reminds the reader several times where
     things stand). *)
 
-(** **** Exercise: 2 stars, advanced, recommended (plus_comm_informal)  *)
-(** Translate your solution for [plus_comm] into an informal proof:
+(** **** Exercise: 2 stars, advanced, recommended (plus_comm_informal)  
+
+    Translate your solution for [plus_comm] into an informal proof:
 
     Theorem: Addition is commutative.
 
     Proof: (* FILL IN HERE *)
 *)
+
+(* Do not modify the following line: *)
+Definition manual_grade_for_plus_comm_informal : option (nat*string) := None.
 (** [] *)
 
-(** **** Exercise: 2 stars, optional (beq_nat_refl_informal)  *)
-(** Write an informal proof of the following theorem, using the
+(** **** Exercise: 2 stars, standard, optional (eqb_refl_informal)  
+
+    Write an informal proof of the following theorem, using the
     informal proof of [plus_assoc] as a model.  Don't just
     paraphrase the Coq tactics into English!
 
-    Theorem: [true = beq_nat n n] for any [n].
+    Theorem: [true = n =? n] for any [n].
 
     Proof: (* FILL IN HERE *)
-*)
-(** [] *)
+
+    [] *)
 
 (* ################################################################# *)
 (** * More Exercises *)
 
-(** **** Exercise: 3 stars, recommended (mult_comm)  *)
-(** Use [assert] to help prove this theorem.  You shouldn't need to
+(** **** Exercise: 3 stars, standard, recommended (mult_comm)  
+
+    Use [assert] to help prove this theorem.  You shouldn't need to
     use induction on [plus_swap]. *)
 
 Theorem plus_swap : forall n m p : nat,
@@ -452,8 +498,9 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** **** Exercise: 3 stars, optional (more_exercises)  *)
-(** Take a piece of paper.  For each of the following theorems, first
+(** **** Exercise: 3 stars, standard, optional (more_exercises)  
+
+    Take a piece of paper.  For each of the following theorems, first
     _think_ about whether (a) it can be proved using only
     simplification and rewriting, (b) it also requires case
     analysis ([destruct]), or (c) it also requires induction.  Write
@@ -464,12 +511,12 @@ Proof.
 Check leb.
 
 Theorem leb_refl : forall n:nat,
-  true = leb n n.
+  true = (n <=? n).
 Proof.
   (* FILL IN HERE *) Admitted.
 
 Theorem zero_nbeq_S : forall n:nat,
-  beq_nat 0 (S n) = false.
+  0 =? (S n) = false.
 Proof.
   (* FILL IN HERE *) Admitted.
 
@@ -479,12 +526,12 @@ Proof.
   (* FILL IN HERE *) Admitted.
 
 Theorem plus_ble_compat_l : forall n m p : nat,
-  leb n m = true -> leb (p + n) (p + m) = true.
+  n <=? m = true -> (p + n) <=? (p + m) = true.
 Proof.
   (* FILL IN HERE *) Admitted.
 
 Theorem S_nbeq_0 : forall n:nat,
-  beq_nat (S n) 0 = false.
+  (S n) =? 0 = false.
 Proof.
   (* FILL IN HERE *) Admitted.
 
@@ -512,21 +559,23 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** **** Exercise: 2 stars, optional (beq_nat_refl)  *)
-(** Prove the following theorem.  (Putting the [true] on the left-hand
+(** **** Exercise: 2 stars, standard, optional (eqb_refl)  
+
+    Prove the following theorem.  (Putting the [true] on the left-hand
     side of the equality may look odd, but this is how the theorem is
     stated in the Coq standard library, so we follow suit.  Rewriting
     works equally well in either direction, so we will have no problem
     using the theorem no matter which way we state it.) *)
 
-Theorem beq_nat_refl : forall n : nat,
-  true = beq_nat n n.
+Theorem eqb_refl : forall n : nat,
+  true = (n =? n).
 Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** **** Exercise: 2 stars, optional (plus_swap')  *)
-(** The [replace] tactic allows you to specify a particular subterm to
+(** **** Exercise: 2 stars, standard, optional (plus_swap')  
+
+    The [replace] tactic allows you to specify a particular subterm to
    rewrite and what you want it rewritten to: [replace (t) with (u)]
    replaces (all copies of) expression [t] in the goal by expression
    [u], and generates [t = u] as an additional subgoal. This is often
@@ -541,8 +590,9 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** **** Exercise: 3 stars, recommended (binary_commute)  *)
-(** Recall the [incr] and [bin_to_nat] functions that you
+(** **** Exercise: 3 stars, standard, recommended (binary_commute)  
+
+    Recall the [incr] and [bin_to_nat] functions that you
     wrote for the [binary] exercise in the [Basics] chapter.  Prove
     that the following diagram commutes:
 
@@ -567,35 +617,64 @@ Proof.
     do so! *)
 
 (* FILL IN HERE *)
+
+(* Do not modify the following line: *)
+Definition manual_grade_for_binary_commute : option (nat*string) := None.
 (** [] *)
 
-(** **** Exercise: 5 stars, advanced (binary_inverse)  *)
-(** This exercise is a continuation of the previous exercise about
-    binary numbers.  You will need your definitions and theorems from
-    there to complete this one; please copy them to this file to make
-    it self contained for grading.
+(** **** Exercise: 5 stars, advanced (binary_inverse)  
+
+    This is a further continuation of the previous exercises about
+    binary numbers.  You may find you need to go back and change your
+    earlier definitions to get things to work here.
 
     (a) First, write a function to convert natural numbers to binary
-        numbers.  Then prove that starting with any natural number,
-        converting to binary, then converting back yields the same
-        natural number you started with.
+        numbers. *)
 
-    (b) You might naturally think that we should also prove the
-        opposite direction: that starting with a binary number,
-        converting to a natural, and then back to binary yields the
-        same number we started with.  However, this is not true!
-        Explain what the problem is.
+Fixpoint nat_to_bin (n:nat) : bin
+  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
 
-    (c) Define a "direct" normalization function -- i.e., a function
-        [normalize] from binary numbers to binary numbers such that,
-        for any binary number b, converting to a natural and then back
-        to binary yields [(normalize b)].  Prove it.  (Warning: This
-        part is tricky!)
+(** Prove that, if we start with any [nat], convert it to binary, and
+    convert it back, we get the same [nat] we started with.  (Hint: If
+    your definition of [nat_to_bin] involved any extra functions, you
+    may need to prove a subsidiary lemma showing how such functions
+    relate to [nat_to_bin].) *)
 
-    Again, feel free to change your earlier definitions if this helps
-    here. *)
+Theorem nat_bin_nat : forall n, bin_to_nat (nat_to_bin n) = n.
+Proof.
+  (* FILL IN HERE *) Admitted.
+
+(* Do not modify the following line: *)
+Definition manual_grade_for_binary_inverse_a : option (nat*string) := None.
+
+(** (b) One might naturally expect that we should also prove the
+        opposite direction -- that starting with a binary number,
+        converting to a natural, and then back to binary should yield
+        the same number we started with.  However, this is not the
+        case!  Explain (in a comment) what the problem is. *)
 
 (* FILL IN HERE *)
+
+(* Do not modify the following line: *)
+Definition manual_grade_for_binary_inverse_b : option (nat*string) := None.
+
+(** (c) Define a normalization function -- i.e., a function
+        [normalize] going directly from [bin] to [bin] (i.e., _not_ by
+        converting to [nat] and back) such that, for any binary number
+        [b], converting [b] to a natural and then back to binary yields
+        [(normalize b)].  Prove it.  (Warning: This part is a bit
+        tricky -- you may end up defining several auxiliary lemmas.
+        One good way to find out what you need is to start by trying
+        to prove the main statement, see where you get stuck, and see
+        if you can find a lemma -- perhaps requiring its own inductive
+        proof -- that will allow the main proof to make progress.) Don't
+        define thi using nat_to_bin and bin_to_nat! *)
+
+(* FILL IN HERE *)
+
+(* Do not modify the following line: *)
+Definition manual_grade_for_binary_inverse_c : option (nat*string) := None.
 (** [] *)
 
 
+(* Wed Jan 9 12:02:44 EST 2019 *)
