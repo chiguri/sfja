@@ -2314,8 +2314,12 @@ Proof.
 (** [] *)
 
 (* ################################################################# *)
+(* begin hide *)
 (** * Aside: A [normalize] Tactic *)
+(* end hide *)
+(** * 余談: [normalize] タクティック *)
 
+(* begin hide *)
 (** When experimenting with definitions of programming languages
     in Coq, we often want to see what a particular concrete term steps
     to -- i.e., we want to find proofs for goals of the form [t -->*
@@ -2323,6 +2327,11 @@ Proof.
     These proofs are quite tedious to do by hand.  Consider, for
     example, reducing an arithmetic expression using the small-step
     relation [astep]. *)
+(* end hide *)
+(** Coq でプログラミング言語の定義を扱っていると、ある具体的な項がどのように簡約されるか知りたいことがよくあります。
+    [t -->* t'] という形のゴールを、 [t] が具体的な項で [t'] が未知の場合に証明するときです。
+    このような証明は手でやるには退屈すぎます。
+    例えば、スモールステップ簡約の関係 [astep] を使って算術式を簡約することを考えてみましょう。 *)
 
 Example step_example1 : 
   (P (C 3) (P (C 3) (C 4)))
@@ -2337,10 +2346,14 @@ Proof.
   apply multi_refl.
 Qed.
 
+(* begin hide *)
 (** The proof repeatedly applies [multi_step] until the term reaches a
     normal form.  Fortunately The sub-proofs for the intermediate
     steps are simple enough that [auto], with appropriate hints, can
     solve them. *)
+(* end hide *)
+(** 証明では、正規形になるまで [multi_step] を繰り返し適用します。
+    幸い、証明の途中に出てくる部分は、適切なヒントを与えてやれば [auto] で解けそうです。 *)
 
 Hint Constructors step value.
 Example step_example1' :
@@ -2352,9 +2365,14 @@ Proof.
   apply multi_refl.
 Qed.
 
+(* begin hide *)
 (** The following custom [Tactic Notation] definition captures this
     pattern.  In addition, before each step, we print out the current
     goal, so that we can follow how the term is being reduced. *)
+(* end hide *)
+(** 下の [Tactic Notation] 定義はこのパターンを表現したものです。
+    それに加えて、1ステップ毎にそのときのゴールを表示します。
+    これは、項がどのように簡約されるか利用者が追えるようにするためです。 *)
 
 Tactic Notation "print_goal" :=
   match goal with |- ?x => idtac x end.
@@ -2369,31 +2387,55 @@ Example step_example1'' :
   -->* (C 10).
 Proof.
   normalize.
+(* begin hide *)
   (* The [print_goal] in the [normalize] tactic shows
      a trace of how the expression reduced...
          (P (C 3) (P (C 3) (C 4)) -->* C 10)
          (P (C 3) (C 7) -->* C 10)
          (C 10 -->* C 10)
   *)
+(* end hide *)
+  (** [normalize]内の[print_goal]が簡約の様子を表示する。
+<<
+         (P (C 3) (P (C 3) (C 4)) -->* C 10) 
+         (P (C 3) (C 7) -->* C 10) 
+         (C 10 -->* C 10) 
+>>
+   *)
 Qed.
 
+(* begin hide *)
 (** The [normalize] tactic also provides a simple way to calculate the
     normal form of a term, by starting with a goal with an existentially
     bound variable. *)
+(* end hide *)
+(** また、存在量化された変数を入れたゴールから始めることで、[normalize] タクティックは項の正規形を計算できます。 *)
 
 Example step_example1''' : exists e',
   (P (C 3) (P (C 3) (C 4)))
   -->* e'.
 Proof.
   eapply ex_intro. normalize.
+(* begin hide *)
 (* This time, the trace is:
        (P (C 3) (P (C 3) (C 4)) -->* ?e')
        (P (C 3) (C 7) -->* ?e')
        (C 10 -->* ?e')
    where ?e' is the variable ``guessed'' by eapply. *)
+(* end hide *)
+(** ここでのトレースは以下のようになります。
+<<
+       (P (C 3) (P (C 3) (C 4)) -->* ?e') 
+       (P (C 3) (C 7) -->* ?e') 
+       (C 10 -->* ?e') 
+>>
+   ここで [?e'] は [eapply] で作られた変数です。 *)
 Qed.
 
+(* begin hide *)
 (** **** Exercise: 1 star, standard (normalize_ex)  *)
+(* end hide *)
+(** **** 練習問題: ★, standard (normalize_ex)  *)
 Theorem normalize_ex : exists e',
   (P (C 3) (P (C 2) (C 1)))
   -->* e' /\ value e'.
@@ -2401,9 +2443,14 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
+(* begin hide *)
 (** **** Exercise: 1 star, standard, optional (normalize_ex')  
 
     For comparison, prove it using [apply] instead of [eapply]. *)
+(* end hide *)
+(** **** 練習問題: ★, standard, optional (normalize_ex')
+ 
+    比較のため、[eapply] の代わりに [apply] を使って証明しなさい。 *)
 
 Theorem normalize_ex' : exists e',
   (P (C 3) (P (C 2) (C 1)))
