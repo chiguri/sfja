@@ -1,7 +1,7 @@
 (** * Decide: Programming with Decision Procedures *)
 
 Set Warnings "-notation-overridden,-parsing".
-Require Import Perm.
+From VFA Require Import Perm.
 
 (* ################################################################# *)
 (** * Using [reflect] to characterize decision procedures *)

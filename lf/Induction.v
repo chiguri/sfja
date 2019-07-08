@@ -9,80 +9,148 @@
 (* end hide *)
 (** 始める前に、前の章の定義をここに持ってきます。 *)
 
-Require Export Basics.
+From LF Require Export Basics.
 
 (* begin hide *)
-(** For the [Require Export] to work, you first need to use
-    [coqc] to compile [Basics.v] into [Basics.vo].  This is like
-    making a [.class] file from a [.java] file, or a [.o] file from a
-    [.c] file.  There are two ways to do it:
+(** For the [Require Export] to work, Coq needs to be able to
+    find a compiled version of [Basics.v], called [Basics.vo], in a directory
+    associated with the prefix [LF].  This file is analogous to the [.class]
+    files compiled from [.java] source files and the [.o] files compiled from
+    [.c] files.
 
-     - In CoqIDE:
+    First create a file named [_CoqProject] containing the following line
+    (if you obtained the whole volume "Logical Foundations" as a single
+    archive, a [_CoqProject] should already exist and you can skip this step):
 
-         Open [Basics.v].  In the "Compile" menu, click on "Compile
-         Buffer".
+      [-Q . LF]
 
-     - From the command line: Either
+    This maps the current directory ("[.]", which contains [Basics.v],
+    [Induction.v], etc.) to the prefix (or "logical directory") "[LF]".
+    PG and CoqIDE read [_CoqProject] automatically, so they know to where to
+    look for the file [Basics.vo] corresponding to the library [LF.Basics].
+
+    Once [_CoqProject] is thus created, there are various ways to build
+    [Basics.vo]:
+
+     - In Proof General: The compilation can be made to happen automatically
+       when you submit the [Require] line above to PG, by setting the emacs
+       variable [coq-compile-before-require] to [t].
+
+     - In CoqIDE: Open [Basics.v]; then, in the "Compile" menu, click
+       on "Compile Buffer".
+
+     - From the command line: Generate a [Makefile] using the [coq_makefile]
+       utility, that comes installed with Coq (if you obtained the whole
+       volume as a single archive, a [Makefile] should already exist
+       and you can skip this step):
+
+         [coq_makefile -f _CoqProject *.v -o Makefile]
+
+       Note: You should rerun that command whenever you add or remove Coq files
+       to the directory.
+
+       Then you can compile [Basics.v] by running [make] with the corresponding
+       [.vo] file as a target:
 
          [make Basics.vo]
 
-       (assuming you've downloaded the whole LF directory and have a
-       working [make] command) or
+       All files in the directory can be compiled by giving no arguments:
 
-         [coqc Basics.v]
+         [make]
 
-       (which should work from any terminal window).
+       Under the hood, [make] uses the Coq compiler, [coqc].  You can also
+       run [coqc] directly:
+
+         [coqc -Q . LF Basics.v]
+
+       But [make] also calculates dependencies between source files to compile
+       them in the right order, so [make] should generally be prefered over
+       explicit [coqc].
 
     If you have trouble (e.g., if you get complaints about missing
     identifiers later in the file), it may be because the "load path"
-    for Coq is not set up correctly.  The [Print LoadPath.] command may
-    be helpful in sorting out such issues.
+    for Coq is not set up correctly.  The [Print LoadPath.] command
+    may be helpful in sorting out such issues.
 
     In particular, if you see a message like
 
         [Compiled library Foo makes inconsistent assumptions over
-        library Coq.Init.Bar]
+        library Bar]
 
-    you should check whether you have multiple installations of Coq on
-    your machine.  If so, it may be that commands (like [coqc]) that
-    you execute in a terminal window are getting a different version of
-    Coq than commands executed by Proof General or CoqIDE.
+    check whether you have multiple installations of Coq on your machine.
+    It may be that commands (like [coqc]) that you execute in a terminal
+    window are getting a different version of Coq than commands executed by
+    Proof General or CoqIDE.
+
+    - Another common reason is that the library [Bar] was modified and
+      recompiled without also recompiling [Foo] which depends on it.  Recompile
+      [Foo], or everything if too many files are affected.  (Using the third
+      solution above: [make clean; make].)
 
     One more tip for CoqIDE users: If you see messages like [Error:
     Unable to locate library Basics], a likely reason is
     inconsistencies between compiling things _within CoqIDE_ vs _using
-    coqc_ from the command line.  This typically happens when there are
-    two incompatible versions of [coqc] installed on your system (one
-    associated with CoqIDE, and one associated with [coqc] from the
-    terminal).  The workaround for this situation is compiling using
-    CoqIDE only (i.e. choosing "make" from the menu), and avoiding
-    using [coqc] directly at all. *)
+    [coqc] from the command line_.  This typically happens when there
+    are two incompatible versions of [coqc] installed on your
+    system (one associated with CoqIDE, and one associated with [coqc]
+    from the terminal).  The workaround for this situation is
+    compiling using CoqIDE only (i.e. choosing "make" from the menu),
+    and avoiding using [coqc] directly at all. *)
 (* end hide *)
-(** [Require Export]を動かすには、[coqc]で[Basics.v]をコンパイルして[Basics.vo]を作る必要があります。
+(** [Require Export]を動かすには、[Basics.v]をコンパイルしてできる[Basics.vo]を、[LF]という名称と結びついたフォルダに配置する必要があります。
     ちょうど [.java] のファイルから [.class] を作ったり、 [.c] のファイルから [.o] を作ったりするのと同じです。
-    コンパイルする方法を二つ紹介します。
  
-     - CoqIDEを使って：
+    まず、[_CoqProject]という名前のファイルの最初に、次の一行を追加します。
+    （もしこの「論理の基礎」全体を持っているならば、[_CoqProject]は存在するはずですので、この手順は飛ばしてかまいません。）
+<<
+      -Q . LF
+>>
+    この記述で今いるフォルダ（[Basics.v]や[Induction.v]などが入っている"[.]"）を"[LF]"と関連付けます。
+    PG（Proof General）やCoqIDEは[_CoqProject]を自動で読み取るので、[LF.Basics]というライブラリについて[Basics.vo]をどこから探せばよいかがわかるようになります。
  
-         CoqIDEで[Basics.v]を開き、メニューの"Compile"から"Compile Buffer"を選びます。
+    一度[_CoqProject]を作っておけば、様々な方法で[Basics.vo]を作成できます。
  
-     - コマンドラインで：
+    - Proof Generalで：Emacsの変数[coq-compile-before-require]を[t]に設定することで、[Require]をPGに読み込ませたときに自動的に作成されます。
  
-         [make Basics.vo]を実行する（LFの中身全体をダウンロードしていて、かつ[make]が動く環境である場合）か、
-
-         [coqc Basics.v]を実行してください（こちらは[coqc]がパスに存在すればどのターミナルからでも可能です）。
+    - CoqIDEで：[Basics.v]を開き、メニューの"Compile"から"Compile Buffer"を選びます。
  
-   もし識別子が見つからないなどのエラーが出たりしたら、Coqの"load path"が正しく設定されていないせいかもしれません。
-   [Print LoadPath.]というコマンドで正しく設定されているか確認してみてください。
-
-   特に、
-
-        [Compiled library Foo makes inconsistent assumptions over
-        library Coq.Init.Bar]
-
-   というメッセージが表示される場合、Coqが複数インストールされていないか確認してください。
-   入っていた場合、ターミナルからコマンドとして使っているCoq（[coqc]など）とProof GeneralやCoqIDEが使っているCoqが異なる可能性があります。
-
+    - コマンドラインで：まずCoqに付随するツール[coq_makefile]を使って以下のようにして[Makefile]を作ります。
+      （「論理の基礎」全体を持っているならば既に存在するはずですので、この手順は飛ばしてかまいません。）
+      （訳注：翻訳版では[coq_makefile]が作る[Makefile]をカスタマイズしているので、この手順を行うと挙動が変わってしまいます。）
+ 
+        [coq_makefile -f _CoqProject *.v -o Makefile] 
+ 
+      メモ：自分でファイルを追加したり削除したりする場合は上のコマンドを再実行して[Makefile]を更新しなければなりません。
+ 
+      あとは[Basic.vo]を作るために[make]コマンドのターゲットとして指定します。
+ 
+        [make Basics.vo] 
+ 
+      全てのファイルをコンパイルしたければ、何も引数を入れずに[make]コマンドを使います。
+ 
+        [make] 
+ 
+      内部では[make]コマンドはCoqのコンパイラである[coqc]を使います。
+      直接[coqc]を使って、次のようにコンパイルすることもできます。
+ 
+        [coqc -Q . LF Basics.v] 
+ 
+      しかし、[make]はコンパイルする以外にもソースファイルの依存関係を解析して必要なファイルを適切な順序でコンパイルしてくれるので、[coqc]を直接使うより[make]コマンドの方がよいでしょう。
+ 
+    もし識別子が見つからないなどのエラーが出たりしたら、Coqの"load path"が正しく設定されていないせいかもしれません。
+    [Print LoadPath.]というコマンドで正しく設定されているか確認してみてください。
+ 
+    特に、
+ 
+        [Compiled library Foo makes inconsistent assumptions over library Bar]
+ 
+    というメッセージが表示される場合、Coqが複数インストールされていないか確認してください。
+    入っていた場合、ターミナルからコマンドとして使っているCoq（[coqc]など）とProof GeneralやCoqIDEが使っているCoqが異なる可能性があります。
+ 
+    - もう一つ、[Foo]を再コンパイルせずに[Bar]が変更されてコンパイルされた場合などにも発生します。
+      [Foo]を再コンパイルするか、いろんなファイルが影響するようなら全体を再コンパイルしてください。
+      （3つ目の方法である[make]を使って [make clean; make] を実行します。）
+ 
    もう一点CoqIDEユーザへ：
    もし[Error: Unable to locate library Basics] というメッセージが表示される場合、「CoqIDE内」のコンパイルと「ターミナル上の[coqc]」のコンパイルによる不整合が考えられます。
    よくある原因としては、互換性のない二つのバージョンの[coqc]（一方はCoqIDEから使われ、もう一方はターミナルから使用されている）が存在するというものです。
@@ -133,7 +201,7 @@ Abort.
 Theorem plus_n_O_secondtry : forall n:nat,
   n = n + 0.
 Proof.
-  intros n. destruct n as [| n'].
+  intros n. destruct n as [| n'] eqn:E.
   - (* n = 0 *)
     reflexivity. (* so far so good... *)
   - (* n = S n' *)
@@ -221,7 +289,6 @@ Proof.
     ゴールは[S n' = (S n') + 0]となっていますが、簡約すると[S n' = S (n' + 0)]になります。
     これは帰納法の仮定である[IHn']から示せます。 *)
 
-
 Theorem minus_diag : forall n,
   minus n n = 0.
 Proof.
@@ -242,50 +309,45 @@ Proof.
     量化変数を持つゴールに対して[induction]タクティクを適用すると、これらの変数は必要に応じて文脈に移動されます。） *)
 
 (* begin hide *)
-(** **** Exercise: 2 stars, recommended (basic_induction)  *)
-(* end hide *)
-(** **** 練習問題: ★★, recommended (basic_induction)  *)
-(* begin hide *)
-(** Prove the following using induction. You might need previously
+(** **** Exercise: 2 stars, standard, recommended (basic_induction)  
+
+    Prove the following using induction. You might need previously
     proven results. *)
 (* end hide *)
-(** 以下の定理を帰納法で証明しなさい。
+(** **** 練習問題: ★★, standard, recommended (basic_induction)
+ 
+    以下の定理を帰納法で証明しなさい。
     証明には、前に示した内容を使う必要があるかもしれません。 *)
 
 Theorem mult_0_r : forall n:nat,
   n * 0 = 0.
 Proof.
   (* FILL IN HERE *) Admitted.
-(* GRADE_THEOREM 0.5: mult_0_r *)
 
 Theorem plus_n_Sm : forall n m : nat,
   S (n + m) = n + (S m).
 Proof.
   (* FILL IN HERE *) Admitted.
-(* GRADE_THEOREM 0.5: plus_n_Sm *)
-
 
 Theorem plus_comm : forall n m : nat,
   n + m = m + n.
 Proof.
   (* FILL IN HERE *) Admitted.
-(* GRADE_THEOREM 0.5: plus_comm *)
 
 Theorem plus_assoc : forall n m p : nat,
   n + (m + p) = (n + m) + p.
 Proof.
   (* FILL IN HERE *) Admitted.
-(* GRADE_THEOREM 0.5: plus_assoc *)
 (** [] *)
 
 (* begin hide *)
-(** **** Exercise: 2 stars (double_plus)  *)
+(** **** Exercise: 2 stars, standard (double_plus)  
+
+    Consider the following function, which doubles its argument: *)
 (* end hide *)
-(** **** 練習問題: ★★ (double_plus)  *)
-(* begin hide *)
-(** Consider the following function, which doubles its argument: *)
-(* end hide *)
-(** 次のように、引数を二倍にする関数を定義します。 *)
+(** **** 練習問題: ★★, standard (double_plus)
+ 
+    次のように、引数を二倍にする関数を定義します。 *)
 
 Fixpoint double (n:nat) :=
   match n with
@@ -304,18 +366,18 @@ Proof.
 (** [] *)
 
 (* begin hide *)
-(** **** Exercise: 2 stars, optional (evenb_S)  *)
-(* end hide *)
-(** **** 練習問題: ★★, optional (evenb_S)  *)
-(* begin hide *)
-(** One inconvenient aspect of our definition of [evenb n] is the
+(** **** Exercise: 2 stars, standard, optional (evenb_S)  
+
+    One inconvenient aspect of our definition of [evenb n] is the
     recursive call on [n - 2]. This makes proofs about [evenb n]
     harder when done by induction on [n], since we may need an
     induction hypothesis about [n - 2]. The following lemma gives an
     alternative characterization of [evenb (S n)] that works better
     with induction: *)
 (* end hide *)
-(** [evenb n]の定義の不便な点は、再帰呼び出しが[n - 2]に対して行われているというものです。
+(** **** 練習問題: ★★, standard, optional (evenb_S)
+ 
+    [evenb n]の定義の不便な点は、再帰呼び出しが[n - 2]に対して行われているというものです。
     これにより、[evenb n]に関する性質の証明を[n]に基づく帰納法で行う場合に、再帰呼び出しに関する性質を得るには[n - 2]に対する仮定が必要となります。
     このため、そのままでは帰納法で示すことが難しくなっています。
     次の補題は[evenb (S n)]の特徴付けを行っています。
@@ -328,20 +390,23 @@ Proof.
 (** [] *)
 
 (* begin hide *)
-(** **** Exercise: 1 star (destruct_induction)  *)
-(* end hide *)
-(** **** 練習問題: ★ (destruct_induction)  *)
-(* begin hide *)
-(** Briefly explain the difference between the tactics [destruct]
+(** **** Exercise: 1 star, standard (destruct_induction)  
+
+    Briefly explain the difference between the tactics [destruct]
     and [induction].
 
 (* FILL IN HERE *)
 *)
 (* end hide *)
-(** [destruct]と[induction]の違いについて大まかに説明しなさい。
+(** **** 練習問題: ★, standard (destruct_induction)
  
-(* FILL IN HERE *)
+    [destruct]と[induction]の違いについて大まかに説明しなさい。
+ 
+(* FILL IN HERE *) 
  *)
+
+(* Do not modify the following line: *)
+Definition manual_grade_for_destruct_induction : option (nat*string) := None.
 (** [] *)
 
 (* ################################################################# *)
@@ -429,7 +494,7 @@ Proof.
   (* We just need to swap (n + m) for (m + n)... seems
      like plus_comm should do the trick! *)
   rewrite -> plus_comm.
-  (* Doesn't work...Coq rewrote the wrong plus! *)
+  (* Doesn't work...Coq rewrites the wrong plus! *)
 Abort.
 
 (* begin hide *)
@@ -651,47 +716,51 @@ Proof.
     形式的証明ではいくつかの手順がより明示的になっています（例えば[reflexivity]の使用など）が、逆に明示されていない箇所もあります（特に「証明する命題」はCoqの証明上には全く現れませんが、非形式的証明では現状確認のために明示されています）。 *)
 
 (* begin hide *)
-(** **** Exercise: 2 stars, advanced, recommended (plus_comm_informal)  *)
-(* end hide *)
-(** **** 練習問題: ★★, advanced, recommended (plus_comm_informal)  *)
-(* begin hide *)
-(** Translate your solution for [plus_comm] into an informal proof:
+(** **** Exercise: 2 stars, advanced, recommended (plus_comm_informal)  
+
+    Translate your solution for [plus_comm] into an informal proof:
 
     Theorem: Addition is commutative.
 
     Proof: (* FILL IN HERE *)
 *)
 (* end hide *)
-(** [plus_comm]の（課題として解いた）証明を非形式的証明で書きなさい。
+(** **** 練習問題: ★★, advanced, recommended (plus_comm_informal)
+ 
+    [plus_comm]の（課題として解いた）証明を非形式的証明で書きなさい。
  
     定理： 加算は可換律を満たす。
   
     証明： (* FILL IN HERE *)
  *)
+
+(* Do not modify the following line: *)
+Definition manual_grade_for_plus_comm_informal : option (nat*string) := None.
 (** [] *)
 
 (* begin hide *)
-(** **** Exercise: 2 stars, optional (beq_nat_refl_informal)  *)
-(* end hide *)
-(** **** 練習問題: ★★, optional (beq_nat_refl_informal)  *)
-(* begin hide *)
-(** Write an informal proof of the following theorem, using the
+(** **** Exercise: 2 stars, standard, optional (eqb_refl_informal)  
+
+    Write an informal proof of the following theorem, using the
     informal proof of [plus_assoc] as a model.  Don't just
     paraphrase the Coq tactics into English!
 
-    Theorem: [true = beq_nat n n] for any [n].
+    Theorem: [true = n =? n] for any [n].
 
     Proof: (* FILL IN HERE *)
-*)
+
+    [] *)
 (* end hide *)
-(** [plus_assoc]の非形式的証明を参考に、次の定理の非形式的証明を書きなさい。
+(** **** 練習問題: ★★, standard, optional (beq_nat_refl_informal)
+ 
+    [plus_assoc]の非形式的証明を参考に、次の定理の非形式的証明を書きなさい。
     Coqのタクティックを日本語に変換するだけではだめです！
   
-    定理： 任意の[n]について、[true = beq_nat n n]が成立する。
+    定理： 任意の[n]について、[true = n =? n]が成立する。
      
     証明： (* FILL IN HERE *) 
- *)
-(** [] *)
+   
+    []  *)
 
 (* ################################################################# *)
 (* begin hide *)
@@ -700,14 +769,14 @@ Proof.
 (** * 発展課題 *)
 
 (* begin hide *)
-(** **** Exercise: 3 stars, recommended (mult_comm)  *)
-(* end hide *)
-(** **** 練習問題: ★★★, recommended (mult_comm)  *)
-(* begin hide *)
-(** Use [assert] to help prove this theorem.  You shouldn't need to
+(** **** Exercise: 3 stars, standard, recommended (mult_comm)  
+
+    Use [assert] to help prove this theorem.  You shouldn't need to
     use induction on [plus_swap]. *)
 (* end hide *)
-(** [assert]を使い、次の定理を示しなさい。
+(** **** 練習問題: ★★★, standard, recommended (mult_comm)
+ 
+    [assert]を使い、次の定理を示しなさい。
     ここでは[plus_swap]に対して[induction]を使ってはいけません。 *)
 
 Theorem plus_swap : forall n m p : nat,
@@ -732,11 +801,9 @@ Proof.
 (** [] *)
 
 (* begin hide *)
-(** **** Exercise: 3 stars, optional (more_exercises)  *)
-(* end hide *)
-(** **** 練習問題: ★★★, optional (more_exercises)  *)
-(* begin hide *)
-(** Take a piece of paper.  For each of the following theorems, first
+(** **** Exercise: 3 stars, standard, optional (more_exercises)  
+
+    Take a piece of paper.  For each of the following theorems, first
     _think_ about whether (a) it can be proved using only
     simplification and rewriting, (b) it also requires case
     analysis ([destruct]), or (c) it also requires induction.  Write
@@ -744,7 +811,9 @@ Proof.
     to turn in your piece of paper; this is just to encourage you to
     reflect before you hack!) *)
 (* end hide *)
-(** 紙を準備し、以下の定理のそれぞれに対して、
+(** **** 練習問題: ★★★, standard, optional (more_exercises)
+ 
+    紙を準備し、以下の定理のそれぞれに対して、
     (a)簡約と書き換えだけで示せるか、
     (b)場合分け（[destruct]）が必要か、
     (c)帰納法が必要か、
@@ -757,12 +826,12 @@ Proof.
 Check leb.
 
 Theorem leb_refl : forall n:nat,
-  true = leb n n.
+  true = (n <=? n).
 Proof.
   (* FILL IN HERE *) Admitted.
 
 Theorem zero_nbeq_S : forall n:nat,
-  beq_nat 0 (S n) = false.
+  0 =? (S n) = false.
 Proof.
   (* FILL IN HERE *) Admitted.
 
@@ -772,12 +841,12 @@ Proof.
   (* FILL IN HERE *) Admitted.
 
 Theorem plus_ble_compat_l : forall n m p : nat,
-  leb n m = true -> leb (p + n) (p + m) = true.
+  n <=? m = true -> (p + n) <=? (p + m) = true.
 Proof.
   (* FILL IN HERE *) Admitted.
 
 Theorem S_nbeq_0 : forall n:nat,
-  beq_nat (S n) 0 = false.
+  (S n) =? 0 = false.
 Proof.
   (* FILL IN HERE *) Admitted.
 
@@ -806,32 +875,30 @@ Proof.
 (** [] *)
 
 (* begin hide *)
-(** **** Exercise: 2 stars, optional (beq_nat_refl)  *)
-(* end hide *)
-(** **** 練習問題: ★★, optional (beq_nat_refl)  *)
-(* begin hide *)
-(** Prove the following theorem.  (Putting the [true] on the left-hand
+(** **** Exercise: 2 stars, standard, optional (eqb_refl)  
+
+    Prove the following theorem.  (Putting the [true] on the left-hand
     side of the equality may look odd, but this is how the theorem is
     stated in the Coq standard library, so we follow suit.  Rewriting
     works equally well in either direction, so we will have no problem
     using the theorem no matter which way we state it.) *)
 (* end hide *)
-(** 次の定理を示しなさい。
-    （[true]を統合の左辺に置くのは奇妙に見えるかもしれませんが、これは標準ライブラリにある定理に合わせたためです。
+(** **** 練習問題: ★★, standard, optional (eqb_refl)
+ 
+    次の定理を示しなさい。
+    （[true]を等号の左辺に置くのは奇妙に見えるかもしれませんが、これは標準ライブラリにある定理に合わせたためです。
     書き換えは両方向で可能なので、どちらで記述しても問題はありません。） *)
 
-Theorem beq_nat_refl : forall n : nat,
-  true = beq_nat n n.
+Theorem eqb_refl : forall n : nat,
+  true = (n =? n).
 Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
 (* begin hide *)
-(** **** Exercise: 2 stars, optional (plus_swap')  *)
-(* end hide *)
-(** **** 練習問題: ★★, optional (plus_swap')  *)
-(* begin hide *)
-(** The [replace] tactic allows you to specify a particular subterm to
+(** **** Exercise: 2 stars, standard, optional (plus_swap')  
+
+    The [replace] tactic allows you to specify a particular subterm to
    rewrite and what you want it rewritten to: [replace (t) with (u)]
    replaces (all copies of) expression [t] in the goal by expression
    [u], and generates [t = u] as an additional subgoal. This is often
@@ -840,7 +907,9 @@ Proof.
    Use the [replace] tactic to do a proof of [plus_swap'], just like
    [plus_swap] but without needing [assert (n + m = m + n)]. *)
 (* end hide *)
-(** [replace]タクティックは、特定の部分式を指定した別の式に書き換えるのに使います。
+(** **** 練習問題: ★★, standard, optional (plus_swap')
+ 
+    [replace]タクティックは、特定の部分式を指定した別の式に書き換えるのに使います。
    [replace (t) with (u)]の形で、ゴールに存在する[t]を全て[u]に書き換え、サブゴールとして[t = u]を作ります。
    [rewrite]での書き換えが意図通りに行えないときに便利です。
  
@@ -854,11 +923,9 @@ Proof.
 (** [] *)
 
 (* begin hide *)
-(** **** Exercise: 3 stars, recommended (binary_commute)  *)
-(* end hide *)
-(** **** 練習問題: ★★★, recommended (binary_commute)  *)
-(* begin hide *)
-(** Recall the [incr] and [bin_to_nat] functions that you
+(** **** Exercise: 3 stars, standard, recommended (binary_commute)  
+
+    Recall the [incr] and [bin_to_nat] functions that you
     wrote for the [binary] exercise in the [Basics] chapter.  Prove
     that the following diagram commutes:
 
@@ -882,7 +949,9 @@ Proof.
     definitions to make the property easier to prove, feel free to
     do so! *)
 (* end hide *)
-(** [Basics]の章の[binary]という課題で書いた、[increment]と[bin_to_nat]関数に関してです。
+(** **** 練習問題: ★★★, standard, recommended (binary_commute)
+ 
+    [Basics]の章の[binary]という課題で書いた、[increment]と[bin_to_nat]関数に関してです。
     以下の図が可換であることを示しなさい。
 <<
                             incr 
@@ -898,60 +967,95 @@ Proof.
     名前は[bin_to_nat_pres_incr]とします（presは保存(preserve)です）。
  
     始める前に、[binary]に書いた定義から証明しやすい形に変更しても構いません。 *)
-(* 訳注：括弧書きに「このファイル単体で評価できるようにコピーしてください」と書いてあるが無関係なので消去 *)
+(* 訳注：「このファイル単体で評価できるようにコピーしてください」と書いてあるが無関係なので消去 *)
 
 (* FILL IN HERE *)
+
+(* Do not modify the following line: *)
+Definition manual_grade_for_binary_commute : option (nat*string) := None.
 (** [] *)
 
 (* begin hide *)
-(** **** Exercise: 5 stars, advanced (binary_inverse)  *)
-(* end hide *)
-(** **** 練習問題: ★★★★★, advanced (binary_inverse)  *)
-(* begin hide *)
-(** This exercise is a continuation of the previous exercise about
-    binary numbers.  You will need your definitions and theorems from
-    there to complete this one; please copy them to this file to make
-    it self contained for grading.
+(** **** Exercise: 5 stars, advanced (binary_inverse)  
+
+    This is a further continuation of the previous exercises about
+    binary numbers.  You may find you need to go back and change your
+    earlier definitions to get things to work here.
 
     (a) First, write a function to convert natural numbers to binary
-        numbers.  Then prove that starting with any natural number,
-        converting to binary, then converting back yields the same
-        natural number you started with.
-
-    (b) You might naturally think that we should also prove the
-        opposite direction: that starting with a binary number,
-        converting to a natural, and then back to binary yields the
-        same number we started with.  However, this is not true!
-        Explain what the problem is.
-
-    (c) Define a "direct" normalization function -- i.e., a function
-        [normalize] from binary numbers to binary numbers such that,
-        for any binary number b, converting to a natural and then back
-        to binary yields [(normalize b)].  Prove it.  (Warning: This
-        part is tricky!)
-
-    Again, feel free to change your earlier definitions if this helps
-    here. *)
+        numbers. *)
 (* end hide *)
-(** この課題は一つ前の続きになります。
-    したがって、一つ前の課題で使った定義や定理が必要です。
+(** **** 練習問題: ★★★★★, advanced (binary_inverse)
  
-    (a) まず、自然数から2進数へ変換する関数を書きなさい。
-        そして、自然数を2進数に変換し、逆に変換した結果が元の自然数となることを示しなさい。
+    この課題は2進数に関する課題の続きで、場合によっては前の定義を変更しなければいけないかもしれません。
  
-    (b) 逆方向も示した方がいいのでは？と思うでしょう。
+    (a) まず、自然数から2進数へ変換する関数を書きなさい。 *)
+
+Fixpoint nat_to_bin (n:nat) : bin
+  (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
+
+(* begin hide *)
+(** Prove that, if we start with any [nat], convert it to binary, and
+    convert it back, we get the same [nat] we started with.  (Hint: If
+    your definition of [nat_to_bin] involved any extra functions, you
+    may need to prove a subsidiary lemma showing how such functions
+    relate to [nat_to_bin].) *)
+(* end hide *)
+(** そして、[nat]から2進数に変換し、逆に変換した結果が元の[nat]と一致することを示しなさい。
+    （ヒント：もし[nat_to_bin]の定義に別の関数を利用しているならば、その関数がどのように[nat_to_bin]と関係しているかの補題を示すひつようがあるでしょう。） *)
+
+Theorem nat_bin_nat : forall n, bin_to_nat (nat_to_bin n) = n.
+Proof.
+  (* FILL IN HERE *) Admitted.
+
+(* Do not modify the following line: *)
+Definition manual_grade_for_binary_inverse_a : option (nat*string) := None.
+
+(* begin hide *)
+(** (b) One might naturally expect that we should also prove the
+        opposite direction -- that starting with a binary number,
+        converting to a natural, and then back to binary should yield
+        the same number we started with.  However, this is not the
+        case!  Explain (in a comment) what the problem is. *)
+(* end hide *)
+(** (b) 逆方向も示した方がいいのでは？と思うでしょう。
         逆とはつまり、2進数を自然数に変換し、それをまた2進数に戻すと、元の2進数になる、というものです。
         しかし、これは正しくありません。
-        なぜそうなるのかを説明しなさい。
- 
-    (c) 2進数を「直接」正規化する関数を定義しなさい（訳注：ここでいう「直接」とは、自然数に変換などせずに2進数のデータのまま計算を行うことです）。
-        この関数[normalize]は2進数から2進数への関数であり、2進数を自然数に変換してそれを2進数に逆変換すると、[normalize]を適用した結果に一致するという性質があります。
-        これを示しなさい。
-        （注意：証明はトリッキーです。）
- 
-    ここでも、もし定義を変更したければして構いません。 *)
+        なぜそうなるのかを（コメントとして）説明しなさい。 *)
 
 (* FILL IN HERE *)
+
+(* Do not modify the following line: *)
+Definition manual_grade_for_binary_inverse_b : option (nat*string) := None.
+
+(* begin hide *)
+(** (c) Define a normalization function -- i.e., a function
+        [normalize] going directly from [bin] to [bin] (i.e., _not_ by
+        converting to [nat] and back) such that, for any binary number
+        [b], converting [b] to a natural and then back to binary yields
+        [(normalize b)].  Prove it.  (Warning: This part is a bit
+        tricky -- you may end up defining several auxiliary lemmas.
+        One good way to find out what you need is to start by trying
+        to prove the main statement, see where you get stuck, and see
+        if you can find a lemma -- perhaps requiring its own inductive
+        proof -- that will allow the main proof to make progress.) Don't
+        define thi using nat_to_bin and bin_to_nat! *)
+(* end hide *)
+(** (c) 2進数を「直接」正規化する[normalize]関数を定義しなさい。
+        [normalize]関数は[bin]から[bin]への関数であり、自然数に変換せずに2進数のまま計算を行う関数です。
+        2進数[b]を自然数に変換してそれを2進数に逆変換すると、[normalize b]と一致しなければなりません。
+        これを示しなさい。
+        （注意：証明はトリッキーです。
+        いくつかの補題を示す必要があるでしょう。
+        手順としては、求められた性質について直接証明してみて、詰まった状況を確認し、必要そうな補題を定めて証明を進められることを確認していく、という流れがよいでしょう。
+        もちろんその補題を示すには別途帰納法が必要になるでしょう。）
+        [normalize]を定義するのに [nat_to_bin] や [bin_to_nat] を使ってはいけません！ *)
+
+(* FILL IN HERE *)
+
+(* Do not modify the following line: *)
+Definition manual_grade_for_binary_inverse_c : option (nat*string) := None.
 (** [] *)
 
 
+(* Wed Jan 9 12:02:44 EST 2019 *)

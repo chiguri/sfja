@@ -3,7 +3,6 @@
 (** * References: Typing Mutable References *)
 (* end hide *)
 
- 
 (* begin hide *)
 (** Up to this point, we have considered a variety of _pure_
     language features, including functional abstraction, basic types
@@ -50,11 +49,12 @@
     一番興味深い部分は、型保存定理の主張のために必要なリファインメント(refinement)です。 *)
 
 Set Warnings "-notation-overridden,-parsing".
-Require Import Coq.Arith.Arith.
-Require Import Coq.omega.Omega.
-Require Import Maps.
-Require Import Smallstep.
-Require Import Coq.Lists.List.
+From Coq Require Import Strings.String.
+From Coq Require Import Arith.Arith.
+From Coq Require Import omega.Omega.
+From PLF Require Import Maps.
+From PLF Require Import Smallstep.
+From Coq Require Import Lists.List.
 Import ListNotations.
 
 (* ################################################################# *)
@@ -195,10 +195,10 @@ Module STLCRef.
  *)
 
 Inductive ty : Type :=
-  | TNat   : ty
-  | TUnit  : ty
-  | TArrow : ty -> ty -> ty
-  | TRef   : ty -> ty.
+  | Nat   : ty
+  | Unit  : ty
+  | Arrow : ty -> ty -> ty
+  | Ref   : ty -> ty.
 
 (* ----------------------------------------------------------------- *)
 (* begin hide *)
@@ -230,44 +230,44 @@ Inductive ty : Type :=
 
 Inductive tm  : Type :=
   (* STLC with numbers: *)
-  | tvar    : string -> tm
-  | tapp    : tm -> tm -> tm
-  | tabs    : string -> ty -> tm -> tm
-  | tnat    : nat -> tm
-  | tsucc   : tm -> tm
-  | tpred   : tm -> tm
-  | tmult   : tm -> tm -> tm
-  | tif0    : tm -> tm -> tm -> tm
+  | var    : string -> tm
+  | app    : tm -> tm -> tm
+  | abs    : string -> ty -> tm -> tm
+  | const  : nat -> tm
+  | scc    : tm -> tm
+  | prd    : tm -> tm
+  | mlt    : tm -> tm -> tm
+  | test0  : tm -> tm -> tm -> tm
   (* New terms: *)
-  | tunit   : tm
-  | tref    : tm -> tm
-  | tderef  : tm -> tm
-  | tassign : tm -> tm -> tm
-  | tloc    : nat -> tm.
+  | unit   : tm
+  | ref    : tm -> tm
+  | deref  : tm -> tm
+  | assign : tm -> tm -> tm
+  | loc    : nat -> tm.
 
 (* begin hide *)
 (** Intuitively:
-    - [ref t] (formally, [tref t]) allocates a new reference cell
+    - [ref t] (formally, [ref t]) allocates a new reference cell
       with the value [t] and reduces to the location of the newly
       allocated cell;
 
-    - [!t] (formally, [tderef t]) reduces to the contents of the
+    - [!t] (formally, [deref t]) reduces to the contents of the
       cell referenced by [t];
 
-    - [t1 := t2] (formally, [tassign t1 t2]) assigns [t2] to the
+    - [t1 := t2] (formally, [assign t1 t2]) assigns [t2] to the
       cell referenced by [t1]; and
 
-    - [l] (formally, [tloc l]) is a reference to the cell at
+    - [l] (formally, [loc l]) is a reference to the cell at
       location [l].  We'll discuss locations later. *)
 (* end hide *)
 (** 直観的には...
-    - [ref t] （形式的には [tref t]）は値[t]が格納された新しい参照セルをアロケートし、新しくアロケートされたセルの場所(location)に簡約されます。
+    - [ref t] （形式的にも [ref t]）は値[t]が格納された新しい参照セルをアロケートし、新しくアロケートされたセルの場所(location)に簡約されます。
  
-    - [!t] （形式的には [tm_deref t]）は[t]で参照されるセルの内容に簡約されます。
+    - [!t] （形式的には [deref t]）は[t]で参照されるセルの内容に簡約されます。
  
-    - [t1 := t2] （形式的には [tm_assign t1 t2]）は[t1]で参照されるセルに[t2]を代入します。
+    - [t1 := t2] （形式的には [assign t1 t2]）は[t1]で参照されるセルに[t2]を代入します。
  
-    - [l] （形式的には [tm_loc l]）は場所[l]のセルの参照です。場所については後で議論します。 *)
+    - [l] （形式的には [loc l]）は場所[l]のセルの参照です。場所については後で議論します。 *)
 
 (* begin hide *)
 (** In informal examples, we'll also freely use the extensions
@@ -341,13 +341,13 @@ Inductive tm  : Type :=
 
 Inductive value : tm -> Prop :=
   | v_abs  : forall x T t,
-      value (tabs x T t)
+      value (abs x T t)
   | v_nat : forall n,
-      value (tnat n)
+      value (const n)
   | v_unit :
-      value tunit
+      value unit
   | v_loc : forall l,
-      value (tloc l).
+      value (loc l).
 
 Hint Constructors value.
 
@@ -359,31 +359,31 @@ Hint Constructors value.
 
 Fixpoint subst (x:string) (s:tm) (t:tm) : tm :=
   match t with
-  | tvar x'       =>
-      if beq_string x x' then s else t
-  | tapp t1 t2    =>
-      tapp (subst x s t1) (subst x s t2)
-  | tabs x' T t1  =>
-      if beq_string x x' then t else tabs x' T (subst x s t1)
-  | tnat n        =>
+  | var x'       =>
+      if eqb_string x x' then s else t
+  | app t1 t2    =>
+      app (subst x s t1) (subst x s t2)
+  | abs x' T t1  =>
+      if eqb_string x x' then t else abs x' T (subst x s t1)
+  | const n        =>
       t
-  | tsucc t1      =>
-      tsucc (subst x s t1)
-  | tpred t1      =>
-      tpred (subst x s t1)
-  | tmult t1 t2   =>
-      tmult (subst x s t1) (subst x s t2)
-  | tif0 t1 t2 t3 =>
-      tif0 (subst x s t1) (subst x s t2) (subst x s t3)
-  | tunit         =>
+  | scc t1      =>
+      scc (subst x s t1)
+  | prd t1      =>
+      prd (subst x s t1)
+  | mlt t1 t2   =>
+      mlt (subst x s t1) (subst x s t2)
+  | test0 t1 t2 t3 =>
+      test0 (subst x s t1) (subst x s t2) (subst x s t3)
+  | unit         =>
       t
-  | tref t1       =>
-      tref (subst x s t1)
-  | tderef t1     =>
-      tderef (subst x s t1)
-  | tassign t1 t2 =>
-      tassign (subst x s t1) (subst x s t2)
-  | tloc _        =>
+  | ref t1       =>
+      ref (subst x s t1)
+  | deref t1     =>
+      deref (subst x s t1)
+  | assign t1 t2 =>
+      assign (subst x s t1) (subst x s t2)
+  | loc _        =>
       t
   end.
 
@@ -424,7 +424,9 @@ Notation "'[' x ':=' s ']' t" := (subst x s t) (at level 20).
     assignments:
 
        r:=succ(!r); r:=succ(!r); r:=succ(!r); r:=succ(!r); !r
-*)
+
+    Formally, we introduce sequencing as a _derived form_
+    [tseq] that expands into an abstraction and an application. *)
 (* end hide *)
 (** 代入式の結果としてつまらない値[unit]を選んだことから、順次処理(_sequencing_)のうまい略記が使えます。
     例えば、
@@ -444,16 +446,11 @@ Notation "'[' x ':=' s ']' t" := (subst x s t) (at level 20).
 <<
        r:=succ(!r); r:=succ(!r); r:=succ(!r); r:=succ(!r); !r 
 >>
- *)
-(* begin hide *)
-(** Formally, we introduce sequencing as a _derived form_
-    [tseq] that expands into an abstraction and an application. *)
-(* end hide *)
-(** 形式的には、順次処理 [tseq] を「派生形(_derived form_)」として導入します。
+    形式的には、順次処理 [tseq] を「派生形(_derived form_)」として導入します。
     この派生形は、関数抽象と関数適用に展開されます。 *)
 
 Definition tseq t1 t2 :=
-  tapp (tabs "x" TUnit t2) t1.
+  app (abs "x" Unit t2) t1.
 
 (* ================================================================= *)
 (* begin hide *)
@@ -463,7 +460,7 @@ Definition tseq t1 t2 :=
 
 (* begin hide *)
 (** It is important to bear in mind the difference between the
-    _reference_ that is bound to some variable [r] and the _cell_ 
+    _reference_ that is bound to some variable [r] and the _cell_
     in the store that is pointed to by this reference.
 
     If we make a copy of [r], for example by binding its value to
@@ -640,18 +637,19 @@ Definition tseq t1 t2 :=
  *)
 
 (* begin hide *)
-(** **** Exercise: 1 star, optional (store_draw)  *)
-(* end hide *)
-(** **** 練習問題: ★, optional (store_draw)  *)
-(* begin hide *)
-(** Draw (on paper) the contents of the store at the point in
+(** **** Exercise: 1 star, standard, optional (store_draw)  
+
+    Draw (on paper) the contents of the store at the point in
     execution where the first two [let]s have finished and the third
     one is about to begin. *)
 (* end hide *)
-(** 最初の2つの[let]が完了し3つ目が始まろうとする時点の記憶の中身を（紙の上に）描きなさい。 *)
+(** **** 練習問題: ★, standard, optional (store_draw)
+ 
+    最初の2つの[let]が完了し3つ目が始まろうとする時点の記憶の中身を（紙の上に）描きなさい。 *)
 
-(* FILL IN HERE *)
-(** [] *)
+(* FILL IN HERE 
+
+    [] *)
 
 (* ================================================================= *)
 (* begin hide *)
@@ -740,18 +738,18 @@ Definition tseq t1 t2 :=
     これにより、変更可能なリストや木などのデータ構造が定義できるようになります。 *)
 
 (* begin hide *)
-(** **** Exercise: 2 stars, recommended (compact_update)  *)
-(* end hide *)
-(** **** 練習問題: ★★, recommended (compact_update)  *)
-(* begin hide *)
-(** If we defined [update] more compactly like this
+(** **** Exercise: 2 stars, standard, recommended (compact_update)  
+
+    If we defined [update] more compactly like this
 
       update = \a:NatArray. \m:Nat. \v:Nat.
                   a := (\n:Nat. if equal m n then v else (!a) n)
 
 would it behave the same? *)
 (* end hide *)
-(** もし[update]を次のようによりコンパクトに定義したとします。
+(** **** 練習問題: ★★, standard, recommended (compact_update)
+ 
+    もし[update]を次のようによりコンパクトに定義したとします。
 <<
       update = \a:NatArray. \m:Nat. \v:Nat. 
                   a := (\n:Nat. if equal m n then v else (!a) n) 
@@ -759,6 +757,9 @@ would it behave the same? *)
 これは前の定義と同じように振る舞うでしょうか？ *)
 
 (* FILL IN HERE *)
+
+(* Do not modify the following line: *)
+Definition manual_grade_for_compact_update : option (nat*string) := None.
 (** [] *)
 
 (* ================================================================= *)
@@ -845,15 +846,18 @@ would it behave the same? *)
     1つは [Ref Nat] 型で、もう1つは [Ref Bool] 型です。 *)
 
 (* begin hide *)
-(** **** Exercise: 2 stars (type_safety_violation)  *)
+(** **** Exercise: 2 stars, standard (type_safety_violation)  
+
+    Show how this can lead to a violation of type safety. *)
 (* end hide *)
-(** **** 練習問題: ★★ (type_safety_violation)  *)
-(* begin hide *)
-(** Show how this can lead to a violation of type safety. *)
-(* end hide *)
-(** このことがどのように型安全性の破壊につながるのか示しなさい。 *)
+(** **** 練習問題: ★★, standard (type_safety_violation)
+ 
+    このことがどのように型安全性の破壊につながるのか示しなさい。 *)
 
 (* FILL IN HERE *)
+
+(* Do not modify the following line: *)
+Definition manual_grade_for_type_safety_violation : option (nat*string) := None.
 (** [] *)
 
 (* ################################################################# *)
@@ -957,7 +961,7 @@ would it behave the same? *)
     before is that, in IMP, a program could modify any location at any
     time, so states had to be ready to map _any_ variable to a value.
     However, in the STLC with references, the only way to create a
-    reference cell is with [tref t1], which puts the value of [t1]
+    reference cell is with [ref t1], which puts the value of [t1]
     in a new reference cell and reduces to the location of the newly
     created reference cell. When reducing such an expression, we can
     just add a new reference cell to the end of the list representing
@@ -969,9 +973,9 @@ would it behave the same? *)
     IMPの状態で使ったのと同じ関数表現を再利用することもできます。
     しかし、この章での証明をするためには、記憶を単に値の「リスト」として表現した方が実際は便利です。
     （この表現を以前には使わなかった理由は、IMPでは、プログラムはいつでも任意の場所を変更することができるので、状態はいつでも任意の変数を値に写像することができるようになっていないといけなかったからです。
-    しかし、STLCに参照を追加したものでは、参照セルを作る唯一の方法は [tm_ref t1] を使うことです。
-    ここで [tm_ref t1] は[t1]の値を新しい参照セルに置き、簡約結果として新しく生成された参照セルの場所を返します。
-    この式を簡約するときには、記憶を表現するリストの最後に新しい参照セルを追加すればよいのです。） *) 
+    しかし、STLCに参照を追加したものでは、参照セルを作る唯一の方法は [ref t1] を使うことです。
+    ここで [ref t1] は[t1]の値を新しい参照セルに置き、簡約結果として新しく生成された参照セルの場所を返します。
+    この式を簡約するときには、記憶を表現するリストの最後に新しい参照セルを追加すればよいのです。） *)
 
 Definition store := list tm.
 
@@ -989,7 +993,7 @@ Definition store := list tm.
     ただ、絶対にしないということを証明することはそれなりに作業をしなければなりません。） *)
 
 Definition store_lookup (n:nat) (st:store) :=
-  nth n st tunit.
+  nth n st unit.
 
 (* begin hide *)
 (** To update the store, we use the [replace] function, which replaces
@@ -1079,7 +1083,7 @@ Qed.
     term can cause side effects on the store, and these may affect the
     reduction of other terms in the future, the reduction rules need
     to return a new store.  Thus, the shape of the single-step
-    reduction relation needs to change from [t ==> t'] to [t / st ==> t' /
+    reduction relation needs to change from [t --> t'] to [t / st --> t' /
     st'], where [st] and [st'] are the starting and ending states of
     the store.
 
@@ -1087,16 +1091,16 @@ Qed.
     existing reduction rules with stores:
 
                                value v2
-                -------------------------------------- (ST_AppAbs) 
-                (\x:T.t12) v2 / st ==> [x:=v2]t12 / st
+                -------------------------------------- (ST_AppAbs)
+                (\x:T.t12) v2 / st --> [x:=v2]t12 / st
 
-                        t1 / st ==> t1' / st'
-                     --------------------------- (ST_App1) 
-                     t1 t2 / st ==> t1' t2 / st'
+                        t1 / st --> t1' / st'
+                     --------------------------- (ST_App1)
+                     t1 t2 / st --> t1' t2 / st'
 
-                  value v1 t2 / st ==> t2' / st'
-                  ---------------------------------- (ST_App2) 
-                     v1 t2 / st ==> v1 t2' / st'
+                  value v1 t2 / st --> t2' / st'
+                  ---------------------------------- (ST_App2)
+                     v1 t2 / st --> v1 t2' / st'
 
     Note that the first rule here returns the store unchanged, since
     function application, in itself, has no side effects.  The other
@@ -1105,14 +1109,14 @@ Qed.
 
     Now, the result of reducing a [ref] expression will be a fresh
     location; this is why we included locations in the syntax of terms
-    and in the set of values.  It is crucial to note that making this 
-    extension to the syntax of terms does not mean that we intend 
-    _programmers_ to write terms involving explicit, concrete locations: 
-    such terms will arise only as intermediate results during reduction.  
+    and in the set of values.  It is crucial to note that making this
+    extension to the syntax of terms does not mean that we intend
+    _programmers_ to write terms involving explicit, concrete locations:
+    such terms will arise only as intermediate results during reduction.
     This may seem odd, but it follows naturally from our design decision
-    to represent the result of every reduction step by a modified _term_. 
-    If we had chosen a more "machine-like" model, e.g., with an explicit 
-    stack to contain values of bound identifiers, then the idea of adding 
+    to represent the result of every reduction step by a modified _term_.
+    If we had chosen a more "machine-like" model, e.g., with an explicit
+    stack to contain values of bound identifiers, then the idea of adding
     locations to the set of allowed values might seem more obvious.
 
     In terms of this expanded syntax, we can state reduction rules
@@ -1120,9 +1124,9 @@ Qed.
     First, to reduce a dereferencing expression [!t1], we must first
     reduce [t1] until it becomes a value:
 
-                        t1 / st ==> t1' / st'
-                       ----------------------- (ST_Deref) 
-                       !t1 / st ==> !t1' / st'
+                        t1 / st --> t1' / st'
+                       ----------------------- (ST_Deref)
+                       !t1 / st --> !t1' / st'
 
     Once [t1] has finished reducing, we should have an expression of
     the form [!l], where [l] is some location.  (A term that attempts
@@ -1130,33 +1134,32 @@ Qed.
     [unit], is erroneous, as is a term that tries to dereference a
     location that is larger than the size [|st|] of the currently
     allocated store; the reduction rules simply get stuck in this
-    case.  The type-safety properties established below assure us 
+    case.  The type-safety properties established below assure us
     that well-typed terms will never misbehave in this way.)
 
                                l < |st|
                      ---------------------------------- (ST_DerefLoc)
-                     !(loc l) / st ==> lookup l st / st
-
+                     !(loc l) / st --> lookup l st / st
 
     Next, to reduce an assignment expression [t1:=t2], we must first
     reduce [t1] until it becomes a value (a location), and then
     reduce [t2] until it becomes a value (of any sort):
 
-                        t1 / st ==> t1' / st'
-                 ----------------------------------- (ST_Assign1) 
-                 t1 := t2 / st ==> t1' := t2 / st'
+                        t1 / st --> t1' / st'
+                 ----------------------------------- (ST_Assign1)
+                 t1 := t2 / st --> t1' := t2 / st'
 
-                        t2 / st ==> t2' / st'
-                  --------------------------------- (ST_Assign2) 
-                  v1 := t2 / st ==> v1 := t2' / st'
+                        t2 / st --> t2' / st'
+                  --------------------------------- (ST_Assign2)
+                  v1 := t2 / st --> v1 := t2' / st'
 
     Once we have finished with [t1] and [t2], we have an expression of
     the form [l:=v2], which we execute by updating the store to make
     location [l] contain [v2]:
 
                                l < |st|
-                ------------------------------------- (ST_Assign) 
-                loc l := v2 / st ==> unit / [l:=v2]st
+                ------------------------------------- (ST_Assign)
+                loc l := v2 / st --> unit / [l:=v2]st
 
     The notation [[l:=v2]st] means "the store that maps [l] to [v2]
     and maps all other locations to the same thing as [st.]"  Note
@@ -1166,20 +1169,20 @@ Qed.
     Finally, to reduct an expression of the form [ref t1], we first
     reduce [t1] until it becomes a value:
 
-                        t1 / st ==> t1' / st'
-                    ----------------------------- (ST_Ref) 
-                    ref t1 / st ==> ref t1' / st'
+                        t1 / st --> t1' / st'
+                    ----------------------------- (ST_Ref)
+                    ref t1 / st --> ref t1' / st'
 
     Then, to reduce the [ref] itself, we choose a fresh location at
     the end of the current store -- i.e., location [|st|] -- and yield
     a new store that extends [st] with the new value [v1].
 
-                   -------------------------------- (ST_RefValue) 
-                   ref v1 / st ==> loc |st| / st,v1
+                   -------------------------------- (ST_RefValue)
+                   ref v1 / st --> loc |st| / st,v1
 
     The value resulting from this step is the newly allocated location
     itself.  (Formally, [st,v1] means [st ++ v1::nil] -- i.e., to add
-    a new reference cell to the store, we append it to the end.)  
+    a new reference cell to the store, we append it to the end.)
 
     Note that these reduction rules do not perform any kind of
     garbage collection: we simply allow the store to keep growing
@@ -1188,8 +1191,8 @@ Qed.
     definition of "garbage" is precisely parts of the store that are
     no longer reachable and so cannot play any further role in
     reduction), but it means that a naive implementation of our
-    evaluator might run out of memory where a more sophisticated 
-    evaluator would be able to continue by reusing locations whose 
+    evaluator might run out of memory where a more sophisticated
+    evaluator would be able to continue by reusing locations whose
     contents have become garbage.
 
     Here are the rules again, formally: *)
@@ -1197,22 +1200,22 @@ Qed.
 (** 次に、操作的意味を記憶を考慮した形に拡張します。
     式を簡約した結果は一般には簡約したときの記憶の中身に依存するので、簡約規則は項だけでなく記憶も引数としてとらなければなりません。
     さらに、項の評価は記憶に副作用を起こし、それが後の別の項の評価に影響を及ぼすので、簡約規則は新しい記憶を返す必要があります。
-    これから、1ステップ評価関係の形は [t ==> t'] から [t / st ==> t' / st'] に変えなければなりません。
+    これから、1ステップ評価関係の形を [t --> t'] から [t / st --> t' / st'] に変えなければなりません。
     ここで[st]と[st']は記憶の開始状態と終了状態です。
  
     この変更を達成するため、最初に、既存のすべての簡約規則に記憶を追加する必要があります:
 <<
                                value v2 
-                -------------------------------------- (ST_AppAbs)  
-                (\x:T.t12) v2 / st ==> [x:=v2]t12 / st 
+                -------------------------------------- (ST_AppAbs) 
+                (\x:T.t12) v2 / st --> [x:=v2]t12 / st 
  
-                        t1 / st ==> t1' / st' 
-                     --------------------------- (ST_App1)  
-                     t1 t2 / st ==> t1' t2 / st' 
+                        t1 / st --> t1' / st' 
+                     --------------------------- (ST_App1) 
+                     t1 t2 / st --> t1' t2 / st' 
  
-                  value v1 t2 / st ==> t2' / st' 
-                  ---------------------------------- (ST_App2)  
-                     v1 t2 / st ==> v1 t2' / st' 
+                  value v1 t2 / st --> t2' / st' 
+                  ---------------------------------- (ST_App2) 
+                     v1 t2 / st --> v1 t2' / st' 
 >>
     ここで最初の規則は記憶を変えずに返すことに注意します。
     関数適用はそれ自体は副作用を起こさないからです。
@@ -1228,9 +1231,9 @@ Qed.
     この拡張構文に関して、場所と記憶を扱う新しい言語要素についての簡約規則を述べることができます。
     最初に、逆参照式[!t1]の簡約のため、[t1]を値になるまで簡約しなければなりません:
 <<
-                        t1 / st ==> t1' / st' 
-                       ----------------------- (ST_Deref)  
-                       !t1 / st ==> !t1' / st' 
+                        t1 / st --> t1' / st' 
+                       ----------------------- (ST_Deref) 
+                       !t1 / st --> !t1' / st' 
 >>
     [t1]の簡約が終わったならば、[!l]という形の式が得られるはずです。ここで[l]は何らかの場所です。
     （関数や[unit]などの他の種類の値を逆参照しようとする項は、エラーです。
@@ -1240,25 +1243,25 @@ Qed.
 <<
                                l < |st| 
                      ---------------------------------- (ST_DerefLoc) 
-                     !(loc l) / st ==> lookup l st / st 
+                     !(loc l) / st --> lookup l st / st 
 >>
  
     次に、代入式 [t1:=t2] を簡約するため、先に[t1]が値（場所）になるまで簡約し、次に[t2]が（任意の種類の）値になるまで簡約します:
 <<
-                        t1 / st ==> t1' / st' 
-                 ----------------------------------- (ST_Assign1)  
-                 t1 := t2 / st ==> t1' := t2 / st' 
+                        t1 / st --> t1' / st' 
+                 ----------------------------------- (ST_Assign1) 
+                 t1 := t2 / st --> t1' := t2 / st' 
  
-                        t2 / st ==> t2' / st' 
-                  --------------------------------- (ST_Assign2)  
-                  v1 := t2 / st ==> v1 := t2' / st' 
+                        t2 / st --> t2' / st' 
+                  --------------------------------- (ST_Assign2) 
+                  v1 := t2 / st --> v1 := t2' / st' 
 >>
     [t1]と[t2]が終わったならば、[l:=v2] という形の式が得られます。
     この式の実行として、記憶を、場所[l]に[v2]が格納されるように更新します:
 <<
                                l < |st| 
-                ------------------------------------- (ST_Assign)  
-                loc l := v2 / st ==> unit / [l:=v2]st 
+                ------------------------------------- (ST_Assign) 
+                loc l := v2 / st --> unit / [l:=v2]st 
 >>
     記法 [[l:=v2]st] は「[l]を[v2]に写像し、他の場所は[st]と同じものに写像する記憶」を意味します。
     この評価ステップの結果の項は単に[unit]であることに注意します。
@@ -1266,16 +1269,16 @@ Qed.
  
     最後に、[ref t1] という形の式を簡約するために、先に[t1]が値になるまで簡約します:
 <<
-                        t1 / st ==> t1' / st' 
-                    ----------------------------- (ST_Ref)  
-                    ref t1 / st ==> ref t1' / st' 
+                        t1 / st --> t1' / st' 
+                    ----------------------------- (ST_Ref) 
+                    ref t1 / st --> ref t1' / st' 
 >>
     次に[ref]自体を簡約するため、現在の記憶の最後の新しい場所を選びます。
     つまり、場所[|st|]です。
     そして新しい値[v1]について[st]を拡張した新しい記憶を与えます。
 <<
-                   -------------------------------- (ST_RefValue)  
-                   ref v1 / st ==> loc |st| / st,v1 
+                   -------------------------------- (ST_RefValue) 
+                   ref v1 / st --> loc |st| / st,v1 
 >>
     このステップの結果の値は新しくアロケートされた場所自身です。
     （形式的には [st,v1] は [st ++ v1::nil] 、つまり参照セルを末尾に追加するために、記憶の後ろに結合したものを意味します。）
@@ -1287,7 +1290,7 @@ Qed.
  
     形式的な規則は以下の通りです。 *)
 
-Reserved Notation "t1 '/' st1 '==>' t2 '/' st2"
+Reserved Notation "t1 '/' st1 '-->' t2 '/' st2"
   (at level 40, st1 at level 39, t2 at level 39).
 
 Import ListNotations.
@@ -1295,65 +1298,65 @@ Import ListNotations.
 Inductive step : tm * store -> tm * store -> Prop :=
   | ST_AppAbs : forall x T t12 v2 st,
          value v2 ->
-         tapp (tabs x T t12) v2 / st ==> [x:=v2]t12 / st
+         app (abs x T t12) v2 / st --> [x:=v2]t12 / st
   | ST_App1 : forall t1 t1' t2 st st',
-         t1 / st ==> t1' / st' ->
-         tapp t1 t2 / st ==> tapp t1' t2 / st'
+         t1 / st --> t1' / st' ->
+         app t1 t2 / st --> app t1' t2 / st'
   | ST_App2 : forall v1 t2 t2' st st',
          value v1 ->
-         t2 / st ==> t2' / st' ->
-         tapp v1 t2 / st ==> tapp v1 t2'/ st'
+         t2 / st --> t2' / st' ->
+         app v1 t2 / st --> app v1 t2'/ st'
   | ST_SuccNat : forall n st,
-         tsucc (tnat n) / st ==> tnat (S n) / st
+         scc (const n) / st --> const (S n) / st
   | ST_Succ : forall t1 t1' st st',
-         t1 / st ==> t1' / st' ->
-         tsucc t1 / st ==> tsucc t1' / st'
+         t1 / st --> t1' / st' ->
+         scc t1 / st --> scc t1' / st'
   | ST_PredNat : forall n st,
-         tpred (tnat n) / st ==> tnat (pred n) / st
+         prd (const n) / st --> const (pred n) / st
   | ST_Pred : forall t1 t1' st st',
-         t1 / st ==> t1' / st' ->
-         tpred t1 / st ==> tpred t1' / st'
+         t1 / st --> t1' / st' ->
+         prd t1 / st --> prd t1' / st'
   | ST_MultNats : forall n1 n2 st,
-         tmult (tnat n1) (tnat n2) / st ==> tnat (mult n1 n2) / st
+         mlt (const n1) (const n2) / st --> const (mult n1 n2) / st
   | ST_Mult1 : forall t1 t2 t1' st st',
-         t1 / st ==> t1' / st' ->
-         tmult t1 t2 / st ==> tmult t1' t2 / st'
+         t1 / st --> t1' / st' ->
+         mlt t1 t2 / st --> mlt t1' t2 / st'
   | ST_Mult2 : forall v1 t2 t2' st st',
          value v1 ->
-         t2 / st ==> t2' / st' ->
-         tmult v1 t2 / st ==> tmult v1 t2' / st'
+         t2 / st --> t2' / st' ->
+         mlt v1 t2 / st --> mlt v1 t2' / st'
   | ST_If0 : forall t1 t1' t2 t3 st st',
-         t1 / st ==> t1' / st' ->
-         tif0 t1 t2 t3 / st ==> tif0 t1' t2 t3 / st'
+         t1 / st --> t1' / st' ->
+         test0 t1 t2 t3 / st --> test0 t1' t2 t3 / st'
   | ST_If0_Zero : forall t2 t3 st,
-         tif0 (tnat 0) t2 t3 / st ==> t2 / st
+         test0 (const 0) t2 t3 / st --> t2 / st
   | ST_If0_Nonzero : forall n t2 t3 st,
-         tif0 (tnat (S n)) t2 t3 / st ==> t3 / st
+         test0 (const (S n)) t2 t3 / st --> t3 / st
   | ST_RefValue : forall v1 st,
          value v1 ->
-         tref v1 / st ==> tloc (length st) / (st ++ v1::nil)
+         ref v1 / st --> loc (length st) / (st ++ v1::nil)
   | ST_Ref : forall t1 t1' st st',
-         t1 / st ==> t1' / st' ->
-         tref t1 /  st ==> tref t1' /  st'
+         t1 / st --> t1' / st' ->
+         ref t1 /  st --> ref t1' /  st'
   | ST_DerefLoc : forall st l,
          l < length st ->
-         tderef (tloc l) / st ==> store_lookup l st / st
+         deref (loc l) / st --> store_lookup l st / st
   | ST_Deref : forall t1 t1' st st',
-         t1 / st ==> t1' / st' ->
-         tderef t1 / st ==> tderef t1' / st'
+         t1 / st --> t1' / st' ->
+         deref t1 / st --> deref t1' / st'
   | ST_Assign : forall v2 l st,
          value v2 ->
          l < length st ->
-         tassign (tloc l) v2 / st ==> tunit / replace l v2 st
+         assign (loc l) v2 / st --> unit / replace l v2 st
   | ST_Assign1 : forall t1 t1' t2 st st',
-         t1 / st ==> t1' / st' ->
-         tassign t1 t2 / st ==> tassign t1' t2 / st'
+         t1 / st --> t1' / st' ->
+         assign t1 t2 / st --> assign t1' t2 / st'
   | ST_Assign2 : forall v1 t2 t2' st st',
          value v1 ->
-         t2 / st ==> t2' / st' ->
-         tassign v1 t2 / st ==> tassign v1 t2' / st'
+         t2 / st --> t2' / st' ->
+         assign v1 t2 / st --> assign v1 t2' / st'
 
-where "t1 '/' st1 '==>' t2 '/' st2" := (step (t1,st1) (t2,st2)).
+where "t1 '/' st1 '-->' t2 '/' st2" := (step (t1,st1) (t2,st2)).
 
 (** One slightly ugly point should be noted here: In the [ST_RefValue]
     rule, we extend the state by writing [st ++ v1::nil] rather than
@@ -1364,7 +1367,7 @@ where "t1 '/' st1 '==>' t2 '/' st2" := (step (t1,st1) (t2,st2)).
 Hint Constructors step.
 
 Definition multistep := (multi step).
-Notation "t1 '/' st '==>*' t2 '/' st'" :=
+Notation "t1 '/' st '-->*' t2 '/' st'" :=
                (multistep (t1,st) (t2,st'))
                (at level 40, st at level 39, t2 at level 39).
 
@@ -1381,7 +1384,6 @@ Notation "t1 '/' st '==>*' t2 '/' st'" :=
 (** 自由変数に型を割り当てるコンテキストはSTLCのものと完全に同じで、識別子から型への部分関数です。 *)
 
 Definition context := partial_map ty.
-
 
 (* ================================================================= *)
 (* begin hide *)
@@ -1449,8 +1451,8 @@ Definition context := partial_map ty.
     [l] appears many times in a term [t], we will re-calculate the type of
     [v] many times in the course of constructing a typing derivation for
     [t].  Worse, if [v] itself contains locations, then we will have to
-    recalculate _their_ types each time they appear.  Worse yet, the 
-    proposed typing rule for locations may not allow us to derive 
+    recalculate _their_ types each time they appear.  Worse yet, the
+    proposed typing rule for locations may not allow us to derive
     anything at all, if the store contains a _cycle_.  For example,
     there is no finite typing derivation for the location [0] with respect
     to this store:
@@ -1508,14 +1510,17 @@ Definition context := partial_map ty.
  *)
 
 (* begin hide *)
-(** **** Exercise: 2 stars (cyclic_store)  *)
-(* end hide *)
-(** **** 練習問題: ★★ (cyclic_store)  *)
-(* begin hide *)
-(** Can you find a term whose reduction will create this particular
+(** **** Exercise: 2 stars, standard (cyclic_store)  
+
+    Can you find a term whose reduction will create this particular
     cyclic store? *)
 (* end hide *)
-(** 簡約によってこの循環記憶を生成する項を見つけられますか？ *)
+(** **** 練習問題: ★★, standard (cyclic_store)
+ 
+    簡約によってこの循環記憶を生成する項を見つけられますか？ *)
+
+(* Do not modify the following line: *)
+Definition manual_grade_for_cyclic_store : option (nat*string) := None.
 (** [] *)
 
 (* begin hide *)
@@ -1534,10 +1539,10 @@ Definition context := partial_map ty.
     can be collected together as a _store typing_ -- a finite function
     mapping locations to types.
 
-    As with the other type systems we've seen, this conservative typing 
-    restriction on allowed updates means that we will rule out as 
+    As with the other type systems we've seen, this conservative typing
+    restriction on allowed updates means that we will rule out as
     ill-typed some programs that could reduce perfectly well without
-    getting stuck. 
+    getting stuck.
 
     Just as we did for stores, we will represent a store type simply
     as a list of types: the type at index [i] records the type of the
@@ -1566,7 +1571,7 @@ Definition store_ty := list ty.
 (** [store_Tlookup] 関数は、特定のインデックスの型をとりだします。 *)
 
 Definition store_Tlookup (n:nat) (ST:store_ty) :=
-  nth n ST TUnit.
+  nth n ST Unit.
 
 (* begin hide *)
 (** Suppose we are given a store typing [ST] describing the store
@@ -1581,11 +1586,10 @@ Definition store_Tlookup (n:nat) (ST:store_ty) :=
                    -------------------------------------
                    Gamma; ST |- loc l : Ref (lookup l ST)
 
-
-    That is, as long as [l] is a valid location, we can compute the 
-    type of [l] just by looking it up in [ST].  Typing is again a 
-    four-place relation, but it is parameterized on a store _typing_ 
-    rather than a concrete store.  The rest of the typing rules are 
+    That is, as long as [l] is a valid location, we can compute the
+    type of [l] just by looking it up in [ST].  Typing is again a
+    four-place relation, but it is parameterized on a store _typing_
+    rather than a concrete store.  The rest of the typing rules are
     analogously augmented with store typings. *)
 (* end hide *)
 (** 記憶[st]を記述する記憶型付け[ST]が与えられ、そこである項[t]が簡約されると仮定します。
@@ -1597,7 +1601,6 @@ Definition store_Tlookup (n:nat) (ST:store_ty) :=
                    ------------------------------------- 
                    Gamma; ST |- loc l : Ref (lookup l ST) 
 >>
- 
     つまり、[l]が正しい場所である限りは、[l]の型を[ST]から調べるだけで計算できます。
     型付けはやはり4項関係ですが、それは具体的記憶ではなく、 記憶「型付け」がパラメータになります。
     型付け規則の残りも、同様に記憶型付けを引数とします。 *)
@@ -1663,46 +1666,46 @@ Reserved Notation "Gamma ';' ST '|-' t '\in' T" (at level 40).
 Inductive has_type : context -> store_ty -> tm -> ty -> Prop :=
   | T_Var : forall Gamma ST x T,
       Gamma x = Some T ->
-      Gamma; ST |- (tvar x) \in T
+      Gamma; ST |- (var x) \in T
   | T_Abs : forall Gamma ST x T11 T12 t12,
       (update Gamma x T11); ST |- t12 \in T12 ->
-      Gamma; ST |- (tabs x T11 t12) \in (TArrow T11 T12)
+      Gamma; ST |- (abs x T11 t12) \in (Arrow T11 T12)
   | T_App : forall T1 T2 Gamma ST t1 t2,
-      Gamma; ST |- t1 \in (TArrow T1 T2) ->
+      Gamma; ST |- t1 \in (Arrow T1 T2) ->
       Gamma; ST |- t2 \in T1 ->
-      Gamma; ST |- (tapp t1 t2) \in T2
+      Gamma; ST |- (app t1 t2) \in T2
   | T_Nat : forall Gamma ST n,
-      Gamma; ST |- (tnat n) \in TNat
+      Gamma; ST |- (const n) \in Nat
   | T_Succ : forall Gamma ST t1,
-      Gamma; ST |- t1 \in TNat ->
-      Gamma; ST |- (tsucc t1) \in TNat
+      Gamma; ST |- t1 \in Nat ->
+      Gamma; ST |- (scc t1) \in Nat
   | T_Pred : forall Gamma ST t1,
-      Gamma; ST |- t1 \in TNat ->
-      Gamma; ST |- (tpred t1) \in TNat
+      Gamma; ST |- t1 \in Nat ->
+      Gamma; ST |- (prd t1) \in Nat
   | T_Mult : forall Gamma ST t1 t2,
-      Gamma; ST |- t1 \in TNat ->
-      Gamma; ST |- t2 \in TNat ->
-      Gamma; ST |- (tmult t1 t2) \in TNat
+      Gamma; ST |- t1 \in Nat ->
+      Gamma; ST |- t2 \in Nat ->
+      Gamma; ST |- (mlt t1 t2) \in Nat
   | T_If0 : forall Gamma ST t1 t2 t3 T,
-      Gamma; ST |- t1 \in TNat ->
+      Gamma; ST |- t1 \in Nat ->
       Gamma; ST |- t2 \in T ->
       Gamma; ST |- t3 \in T ->
-      Gamma; ST |- (tif0 t1 t2 t3) \in T
+      Gamma; ST |- (test0 t1 t2 t3) \in T
   | T_Unit : forall Gamma ST,
-      Gamma; ST |- tunit \in TUnit
+      Gamma; ST |- unit \in Unit
   | T_Loc : forall Gamma ST l,
       l < length ST ->
-      Gamma; ST |- (tloc l) \in (TRef (store_Tlookup l ST))
+      Gamma; ST |- (loc l) \in (Ref (store_Tlookup l ST))
   | T_Ref : forall Gamma ST t1 T1,
       Gamma; ST |- t1 \in T1 ->
-      Gamma; ST |- (tref t1) \in (TRef T1)
+      Gamma; ST |- (ref t1) \in (Ref T1)
   | T_Deref : forall Gamma ST t1 T11,
-      Gamma; ST |- t1 \in (TRef T11) ->
-      Gamma; ST |- (tderef t1) \in T11
+      Gamma; ST |- t1 \in (Ref T11) ->
+      Gamma; ST |- (deref t1) \in T11
   | T_Assign : forall Gamma ST t1 t2 T11,
-      Gamma; ST |- t1 \in (TRef T11) ->
+      Gamma; ST |- t1 \in (Ref T11) ->
       Gamma; ST |- t2 \in T11 ->
-      Gamma; ST |- (tassign t1 t2) \in TUnit
+      Gamma; ST |- (assign t1 t2) \in Unit
 
 where "Gamma ';' ST '|-' t '\in' T" := (has_type Gamma ST t T).
 
@@ -1787,7 +1790,7 @@ Hint Constructors has_type.
 
 Theorem preservation_wrong1 : forall ST T t st t' st',
   empty; ST |- t \in T ->
-  t / st ==> t' / st' ->
+  t / st --> t' / st' ->
   empty; ST |- t' \in T.
 Abort.
 
@@ -1830,17 +1833,20 @@ Definition store_well_typed (ST:store_ty) (st:store) :=
     これにより、上で見たような循環を持つ記憶に型付けできるようになります。 *)
 
 (* begin hide *)
-(** **** Exercise: 2 stars (store_not_unique)  *)
-(* end hide *)
-(** **** 練習問題: ★★ (store_not_unique)  *)
-(* begin hide *)
-(** Can you find a store [st], and two
+(** **** Exercise: 2 stars, standard (store_not_unique)  
+
+    Can you find a store [st], and two
     different store typings [ST1] and [ST2] such that both
     [ST1 |- st] and [ST2 |- st]? *)
 (* end hide *)
-(** [ST1 |- st] と [ST2 |- st] の両者を成立させる記憶[st]および相異なる記憶型付け[ST1]と[ST2]を見つけられますか？ *)
+(** **** 練習問題: ★★, standard (store_not_unique)
+ 
+    [ST1 |- st] と [ST2 |- st] の両者を成立させる記憶[st]および相異なる記憶型付け[ST1]と[ST2]を見つけられますか？ *)
 
 (* FILL IN HERE *)
+
+(* Do not modify the following line: *)
+Definition manual_grade_for_store_not_unique : option (nat*string) := None.
 (** [] *)
 
 (* begin hide *)
@@ -1851,7 +1857,7 @@ Definition store_well_typed (ST:store_ty) (st:store) :=
 
 Theorem preservation_wrong2 : forall ST T t st t' st',
   empty; ST |- t \in T ->
-  t / st ==> t' / st' ->
+  t / st --> t' / st' ->
   store_well_typed ST st ->
   empty; ST |- t' \in T.
 Abort.
@@ -1978,7 +1984,7 @@ Qed.
 Definition preservation_theorem := forall ST t t' T st st',
   empty; ST |- t \in T ->
   store_well_typed ST st ->
-  t / st ==> t' / st' ->
+  t / st --> t' / st' ->
   exists ST',
     (extends ST' ST /\
      empty; ST' |- t' \in T /\
@@ -2028,44 +2034,44 @@ Definition preservation_theorem := forall ST t t' T st st',
 
 Inductive appears_free_in : string -> tm -> Prop :=
   | afi_var : forall x,
-      appears_free_in x (tvar x)
+      appears_free_in x (var x)
   | afi_app1 : forall x t1 t2,
-      appears_free_in x t1 -> appears_free_in x (tapp t1 t2)
+      appears_free_in x t1 -> appears_free_in x (app t1 t2)
   | afi_app2 : forall x t1 t2,
-      appears_free_in x t2 -> appears_free_in x (tapp t1 t2)
+      appears_free_in x t2 -> appears_free_in x (app t1 t2)
   | afi_abs : forall x y T11 t12,
       y <> x  ->
       appears_free_in x t12 ->
-      appears_free_in x (tabs y T11 t12)
+      appears_free_in x (abs y T11 t12)
   | afi_succ : forall x t1,
       appears_free_in x t1 ->
-      appears_free_in x (tsucc t1)
+      appears_free_in x (scc t1)
   | afi_pred : forall x t1,
       appears_free_in x t1 ->
-      appears_free_in x (tpred t1)
+      appears_free_in x (prd t1)
   | afi_mult1 : forall x t1 t2,
       appears_free_in x t1 ->
-      appears_free_in x (tmult t1 t2)
+      appears_free_in x (mlt t1 t2)
   | afi_mult2 : forall x t1 t2,
       appears_free_in x t2 ->
-      appears_free_in x (tmult t1 t2)
+      appears_free_in x (mlt t1 t2)
   | afi_if0_1 : forall x t1 t2 t3,
       appears_free_in x t1 ->
-      appears_free_in x (tif0 t1 t2 t3)
+      appears_free_in x (test0 t1 t2 t3)
   | afi_if0_2 : forall x t1 t2 t3,
       appears_free_in x t2 ->
-      appears_free_in x (tif0 t1 t2 t3)
+      appears_free_in x (test0 t1 t2 t3)
   | afi_if0_3 : forall x t1 t2 t3,
       appears_free_in x t3 ->
-      appears_free_in x (tif0 t1 t2 t3)
+      appears_free_in x (test0 t1 t2 t3)
   | afi_ref : forall x t1,
-      appears_free_in x t1 -> appears_free_in x (tref t1)
+      appears_free_in x t1 -> appears_free_in x (ref t1)
   | afi_deref : forall x t1,
-      appears_free_in x t1 -> appears_free_in x (tderef t1)
+      appears_free_in x t1 -> appears_free_in x (deref t1)
   | afi_assign1 : forall x t1 t2,
-      appears_free_in x t1 -> appears_free_in x (tassign t1 t2)
+      appears_free_in x t1 -> appears_free_in x (assign t1 t2)
   | afi_assign2 : forall x t1 t2,
-      appears_free_in x t2 -> appears_free_in x (tassign t1 t2).
+      appears_free_in x t2 -> appears_free_in x (assign t1 t2).
 
 Hint Constructors appears_free_in.
 
@@ -2096,7 +2102,7 @@ Proof with eauto.
   - (* T_Abs *)
     apply T_Abs. apply IHhas_type; intros.
     unfold update, t_update.
-    destruct (beq_stringP x x0)...
+    destruct (eqb_stringP x x0)...
   - (* T_App *)
     eapply T_App.
       apply IHhas_type1...
@@ -2125,9 +2131,9 @@ Proof with eauto.
   generalize dependent Gamma. generalize dependent T.
   induction t; intros T Gamma H;
     inversion H; subst; simpl...
-  - (* tvar *)
+  - (* var *)
     rename s0 into y.
-    destruct (beq_stringP x y).
+    destruct (eqb_stringP x y).
     + (* x = y *)
       subst.
       rewrite update_eq in H3.
@@ -2140,9 +2146,9 @@ Proof with eauto.
     + (* x <> y *)
       apply T_Var.
       rewrite update_neq in H3...
-  - (* tabs *) subst.
+  - (* abs *) subst.
     rename s0 into y.
-    destruct (beq_stringP x y).
+    destruct (eqb_stringP x y).
     + (* x = y *)
       subst.
       apply T_Abs. eapply context_invariance...
@@ -2151,9 +2157,9 @@ Proof with eauto.
       apply T_Abs. apply IHt.
       eapply context_invariance...
       intros. unfold update, t_update.
-      destruct (beq_stringP y x0)...
+      destruct (eqb_stringP y x0)...
       subst.
-      rewrite false_beq_string...
+      rewrite false_eqb_string...
 Qed.
 
 (* ================================================================= *)
@@ -2181,12 +2187,12 @@ Proof with auto.
   inversion HST; subst.
   split. rewrite length_replace...
   intros l' Hl'.
-  destruct (beq_nat l' l) eqn: Heqll'.
+  destruct (l' =? l) eqn: Heqll'.
   - (* l' = l *)
-    apply beq_nat_true in Heqll'; subst.
+    apply Nat.eqb_eq in Heqll'; subst.
     rewrite lookup_replace_eq...
   - (* l' <> l *)
-    apply beq_nat_false in Heqll'.
+    apply Nat.eqb_neq in Heqll'.
     rewrite lookup_replace_neq...
     rewrite length_replace in Hl'.
     apply H0...
@@ -2294,7 +2300,7 @@ Qed.
 Theorem preservation : forall ST t t' T st st',
   empty; ST |- t \in T ->
   store_well_typed ST st ->
-  t / st ==> t' / st' ->
+  t / st --> t' / st' ->
   exists ST',
     (extends ST' ST /\
      empty; ST' |- t' \in T /\
@@ -2349,8 +2355,8 @@ Proof with eauto using store_weakening, extends_refl.
     split.
       apply extends_app.
     split.
-      replace (TRef T1)
-        with (TRef (store_Tlookup (length st) (ST ++ T1::nil))).
+      replace (Ref T1)
+        with (Ref (store_Tlookup (length st) (ST ++ T1::nil))).
       apply T_Loc.
       rewrite <- H. rewrite app_length, plus_comm. simpl. omega.
       unfold store_Tlookup. rewrite <- H. rewrite nth_eq_last.
@@ -2387,22 +2393,25 @@ Proof with eauto using store_weakening, extends_refl.
 Qed.
 
 (* begin hide *)
-(** **** Exercise: 3 stars (preservation_informal)  *)
-(* end hide *)
-(** **** 練習問題: ★★★ (preservation_informal)  *)
-(* begin hide *)
-(** Write a careful informal proof of the preservation theorem,
+(** **** Exercise: 3 stars, standard (preservation_informal)  
+
+    Write a careful informal proof of the preservation theorem,
     concentrating on the [T_App], [T_Deref], [T_Assign], and [T_Ref]
     cases.
 
 (* FILL IN HERE *)
  *)
 (* end hide *)
-(** 保存補題の非形式的証明を注意深く記述しなさい。
+(** **** 練習問題: ★★★, standard (preservation_informal)
+ 
+    保存補題の非形式的証明を注意深く記述しなさい。
     [T_App]、[T_Deref]、[T_Assign]、[T_Ref]の場合に特に集中しなさい。
  
 (* ここを埋めなさい。 *)
 *)
+
+(* Do not modify the following line: *)
+Definition manual_grade_for_preservation_informal : option (nat*string) := None.
 (** [] *)
 
 (* ================================================================= *)
@@ -2423,7 +2432,7 @@ Qed.
 Theorem progress : forall ST t T st,
   empty; ST |- t \in T ->
   store_well_typed ST st ->
-  (value t \/ exists t', exists st', t / st ==> t' / st').
+  (value t \/ exists t' st', t / st --> t' / st').
 Proof with eauto.
   intros ST t T st Ht HST. remember (@empty ty) as Gamma.
   induction Ht; subst; try solve_by_invert...
@@ -2434,28 +2443,28 @@ Proof with eauto.
       destruct IHHt2 as [Ht2p | Ht2p]...
       * (* t2 steps *)
         inversion Ht2p as [t2' [st' Hstep]].
-        exists (tapp (tabs x T t) t2'). exists st'...
+        exists (app (abs x T t) t2'), st'...
     + (* t1 steps *)
       inversion Ht1p as [t1' [st' Hstep]].
-      exists (tapp t1' t2). exists st'...
+      exists (app t1' t2), st'...
   - (* T_Succ *)
     right. destruct IHHt as [Ht1p | Ht1p]...
     + (* t1 is a value *)
       inversion Ht1p; subst; try solve [ inversion Ht ].
-      * (* t1 is a tnat *)
-        exists (tnat (S n)). exists st...
+      * (* t1 is a const *)
+        exists (const (S n)), st...
     + (* t1 steps *)
       inversion Ht1p as [t1' [st' Hstep]].
-      exists (tsucc t1'). exists st'...
+      exists (scc t1'), st'...
   - (* T_Pred *)
     right. destruct IHHt as [Ht1p | Ht1p]...
     + (* t1 is a value *)
       inversion Ht1p; subst; try solve [inversion Ht ].
-      * (* t1 is a tnat *)
-        exists (tnat (pred n)). exists st...
+      * (* t1 is a const *)
+        exists (const (pred n)), st...
     + (* t1 steps *)
       inversion Ht1p as [t1' [st' Hstep]].
-      exists (tpred t1'). exists st'...
+      exists (prd t1'), st'...
   - (* T_Mult *)
     right. destruct IHHt1 as [Ht1p | Ht1p]...
     + (* t1 is a value *)
@@ -2463,28 +2472,28 @@ Proof with eauto.
       destruct IHHt2 as [Ht2p | Ht2p]...
       * (* t2 is a value *)
         inversion Ht2p; subst; try solve [inversion Ht2].
-        exists (tnat (mult n n0)). exists st...
+        exists (const (mult n n0)), st...
       * (* t2 steps *)
         inversion Ht2p as [t2' [st' Hstep]].
-        exists (tmult (tnat n) t2'). exists st'...
+        exists (mlt (const n) t2'), st'...
     + (* t1 steps *)
       inversion Ht1p as [t1' [st' Hstep]].
-      exists (tmult t1' t2). exists st'...
+      exists (mlt t1' t2), st'...
   - (* T_If0 *)
     right. destruct IHHt1 as [Ht1p | Ht1p]...
     + (* t1 is a value *)
       inversion Ht1p; subst; try solve [inversion Ht1].
       destruct n.
-      * (* n = 0 *) exists t2. exists st...
-      * (* n = S n' *) exists t3. exists st...
+      * (* n = 0 *) exists t2, st...
+      * (* n = S n' *) exists t3, st...
     + (* t1 steps *)
       inversion Ht1p as [t1' [st' Hstep]].
-      exists (tif0 t1' t2 t3). exists st'...
+      exists (test0 t1' t2 t3), st'...
   - (* T_Ref *)
     right. destruct IHHt as [Ht1p | Ht1p]...
     + (* t1 steps *)
       inversion Ht1p as [t1' [st' Hstep]].
-      exists (tref t1'). exists st'...
+      exists (ref t1'), st'...
   - (* T_Deref *)
     right. destruct IHHt as [Ht1p | Ht1p]...
     + (* t1 is a value *)
@@ -2494,7 +2503,7 @@ Proof with eauto.
       rewrite <- H...
     + (* t1 steps *)
       inversion Ht1p as [t1' [st' Hstep]].
-      exists (tderef t1'). exists st'...
+      exists (deref t1'), st'...
   - (* T_Assign *)
     right. destruct IHHt1 as [Ht1p|Ht1p]...
     + (* t1 is a value *)
@@ -2506,10 +2515,10 @@ Proof with eauto.
         rewrite H in H5...
       * (* t2 steps *)
         inversion Ht2p as [t2' [st' Hstep]].
-        exists (tassign t1 t2'). exists st'...
+        exists (assign t1 t2'), st'...
     + (* t1 steps *)
       inversion Ht1p as [t1' [st' Hstep]].
-      exists (tassign t1' t2). exists st'...
+      exists (assign t1' t2), st'...
 Qed.
 
 (* ################################################################# *)
@@ -2533,8 +2542,8 @@ Qed.
     another function stored in a reference cell; the trick is that we
     then smuggle in a reference to itself!
 
-   (\r:Ref (Unit -> Unit).  
-        r := (\x:Unit.(!r) unit); (!r) unit) 
+   (\r:Ref (Unit -> Unit).
+        r := (\x:Unit.(!r) unit); (!r) unit)
    (ref (\x:Unit.unit))
 
    First, [ref (\x:Unit.unit)] creates a reference to a cell of type
@@ -2542,9 +2551,9 @@ Qed.
    function which binds it to the name [r], and assigns to it the
    function [\x:Unit.(!r) unit] -- that is, the function which ignores
    its argument and calls the function stored in [r] on the argument
-   [unit]; but of course, that function is itself!  To start the 
-   divergent loop, we execute the function stored in the cell by 
-   evaluating [(!r) unit]. 
+   [unit]; but of course, that function is itself!  To start the
+   divergent loop, we execute the function stored in the cell by
+   evaluating [(!r) unit].
 
    Here is the divergent term in Coq: *)
 (* end hide *)
@@ -2576,7 +2585,7 @@ Qed.
 Module ExampleVariables.
 
 Open Scope string_scope.
-  
+
 Definition x := "x".
 Definition y := "y".
 Definition r := "r".
@@ -2588,14 +2597,14 @@ Module RefsAndNontermination.
 Import ExampleVariables.
 
 Definition loop_fun :=
-  tabs x TUnit (tapp (tderef (tvar r)) tunit).
+  abs x Unit (app (deref (var r)) unit).
 
 Definition loop :=
-  tapp
-    (tabs r (TRef (TArrow TUnit TUnit))
-      (tseq (tassign (tvar r) loop_fun)
-              (tapp (tderef (tvar r)) tunit)))
-    (tref (tabs x TUnit tunit)).
+  app
+    (abs r (Ref (Arrow Unit Unit))
+      (tseq (assign (var r) loop_fun)
+              (app (deref (var r)) unit)))
+    (ref (abs x Unit unit)).
 
 (* begin hide *)
 (** This term is well typed: *)
@@ -2620,14 +2629,14 @@ Qed.
 (* begin hide *)
 (** To show formally that the term diverges, we first define the
     [step_closure] of the single-step reduction relation, written
-    [==>+].  This is just like the reflexive step closure of
-    single-step reduction (which we're been writing [==>*]), except
-    that it is not reflexive: [t ==>+ t'] means that [t] can reach
+    [-->+].  This is just like the reflexive step closure of
+    single-step reduction (which we're been writing [-->*]), except
+    that it is not reflexive: [t -->+ t'] means that [t] can reach
     [t'] by _one or more_ steps of reduction. *)
 (* end hide *)
-(** 項が発散することを形式的に示すために、最初に1ステップ簡約関係の[step_closure]（ステップ閉包）[==>+]を定義します。
-    これは1ステップ簡約のステップ閉包（[==>*]と書いてきたもの）とほとんど同じですが、反射的ではないという点が違います。
-    つまり、[t ==>+ t'] は[t]から[t']へ1以上のステップの簡約で到達できることを意味します。 *)
+(** 項が発散することを形式的に示すために、最初に1ステップ簡約関係の[step_closure]（ステップ閉包）[-->+]を定義します。
+    これは1ステップ簡約のステップ閉包（[-->*]と書いてきたもの）とほとんど同じですが、反射的ではないという点が違います。
+    つまり、[t -->+ t'] は[t]から[t']へ1以上のステップの簡約で到達できることを意味します。 *)
 
 Inductive step_closure {X:Type} (R: relation X) : X -> X -> Prop :=
   | sc_one  : forall (x y : X),
@@ -2638,13 +2647,13 @@ Inductive step_closure {X:Type} (R: relation X) : X -> X -> Prop :=
                 step_closure R x z.
 
 Definition multistep1 := (step_closure step).
-Notation "t1 '/' st '==>+' t2 '/' st'" :=
+Notation "t1 '/' st '-->+' t2 '/' st'" :=
         (multistep1 (t1,st) (t2,st'))
         (at level 40, st at level 39, t2 at level 39).
 
 (* begin hide *)
 (** Now, we can show that the expression [loop] reduces to the
-    expression [!(loc 0) unit] and the size-one store 
+    expression [!(loc 0) unit] and the size-one store
     [[r:=(loc 0)]loop_fun]. *)
 (* end hide *)
 (** さて、式[loop]が式[!(loc 0) unit]とサイズ1の記憶 [[r:=(loc 0)]loop_fun] に簡約されることを示すことができます。 *)
@@ -2668,12 +2677,12 @@ Ltac reduce :=
             [ (eauto 10; fail) | (instantiate; compute)];
             try solve [apply multi_refl]).
 
-(** Next, we use [reduce] to show that [loop] steps to 
+(** Next, we use [reduce] to show that [loop] steps to
     [!(loc 0) unit], starting from the empty store. *)
 
 Lemma loop_steps_to_loop_fun :
-  loop / nil ==>*
-  tapp (tderef (tloc 0)) tunit / cons ([r:=tloc 0]loop_fun) nil.
+  loop / nil -->*
+  app (deref (loc 0)) unit / cons ([r:=loc 0]loop_fun) nil.
 Proof.
   unfold loop.
   reduce.
@@ -2686,8 +2695,8 @@ Qed.
 (** 最後に、後者の式は2ステップで自分自身に簡約されることを示します! *)
 
 Lemma loop_fun_step_self :
-  tapp (tderef (tloc 0)) tunit / cons ([r:=tloc 0]loop_fun) nil ==>+
-  tapp (tderef (tloc 0)) tunit / cons ([r:=tloc 0]loop_fun) nil.
+  app (deref (loc 0)) unit / cons ([r:=loc 0]loop_fun) nil -->+
+  app (deref (loc 0)) unit / cons ([r:=loc 0]loop_fun) nil.
 Proof with eauto.
   unfold loop_fun; simpl.
   eapply sc_step. apply ST_App1...
@@ -2695,24 +2704,24 @@ Proof with eauto.
 Qed.
 
 (* begin hide *)
-(** **** Exercise: 4 stars (factorial_ref)  *)
-(* end hide *)
-(** **** 練習問題: ★★★★ (factorial_ref)  *)
-(* begin hide *)
-(** Use the above ideas to implement a factorial function in STLC with
+(** **** Exercise: 4 stars, standard (factorial_ref)  
+
+    Use the above ideas to implement a factorial function in STLC with
     references.  (There is no need to prove formally that it really
     behaves like the factorial.  Just uncomment the example below to make
     sure it gives the correct result when applied to the argument
     [4].) *)
 (* end hide *)
-(** 上述のアイデアを使って、参照を持つSTLCで階乗関数を実装しなさい。
+(** **** 練習問題: ★★★★, standard (factorial_ref)
+ 
+    上述のアイデアを使って、参照を持つSTLCで階乗関数を実装しなさい。
     （それが階乗として振る舞うことを形式的に証明する必要はありません。
     ただ、以下の例のコメントを外して、実装したものを引数[4]に適用したときに正しい結果を返すことを確認しなさい。） *)
 
-Definition factorial : tm 
+Definition factorial : tm
   (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
 
-Lemma factorial_type : empty; nil |- factorial \in (TArrow TNat TNat).
+Lemma factorial_type : empty; nil |- factorial \in (Arrow Nat Nat).
 Proof with eauto.
   (* FILL IN HERE *) Admitted.
 
@@ -2726,12 +2735,12 @@ Proof with eauto.
 
 (* 
 Lemma factorial_4 : exists st,
-  tapp factorial (tnat 4) / nil ==>* tnat 24 / st.
+  app factorial (const 4) / nil -->* const 24 / st.
 Proof.
   eexists. unfold factorial. reduce.
 Qed.
-*)
-(** [] *)
+
+    [] *)
 
 (* ################################################################# *)
 (* begin hide *)
@@ -2740,15 +2749,15 @@ Qed.
 (** * さらなる練習問題 *)
 
 (* begin hide *)
-(** **** Exercise: 5 stars, optional (garabage_collector)  *)
-(* end hide *)
-(** **** 練習問題: ★★★★★, optional (garabage_collector)  *)
-(* begin hide *)
-(** Challenge problem: modify our formalization to include an account
+(** **** Exercise: 5 stars, standard, optional (garabage_collector)  
+
+    Challenge problem: modify our formalization to include an account
     of garbage collection, and prove that it satisfies whatever nice
     properties you can think to prove about it. *)
 (* end hide *)
-(** チャレンジ問題: 上述の形式化を修正して、ガベージコレクションを考慮したものにしなさい。
+(** **** 練習問題: ★★★★★, standard, optional (garabage_collector)
+ 
+    チャレンジ問題: 上述の形式化を修正して、ガベージコレクションを考慮したものにしなさい。
     そして、それについて、自分が証明すべきと思う何らかの良い性質を持つことを証明しなさい。 *)
 
 (** [] *)
@@ -2756,4 +2765,5 @@ Qed.
 End RefsAndNontermination.
 End STLCRef.
 
-(** $Date$ *)
+
+(* Thu Feb 7 20:09:25 EST 2019 *)

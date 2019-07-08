@@ -34,8 +34,8 @@
     この章はオプションです。
     先に「論理の基礎」（「ソフトウェアの基礎」の第一巻）の[ProofObjects]の章を読んだ方がいいかもしれません。 *)
 
-Require Import Imp.
-Require Import Hoare.
+From PLF Require Import Imp.
+From PLF Require Import Hoare.
 
 (* ################################################################# *)
 (* begin hide *)
@@ -53,7 +53,7 @@ Inductive hoare_proof : Assertion -> com -> Assertion -> Type :=
   | H_If : forall P Q b c1 c2,
     hoare_proof (fun st => P st /\ bassn b st) c1 Q ->
     hoare_proof (fun st => P st /\ ~(bassn b st)) c2 Q ->
-    hoare_proof P (IFB b THEN c1 ELSE c2 FI) Q
+    hoare_proof P (TEST b THEN c1 ELSE c2 FI) Q
   | H_While : forall P b c,
     hoare_proof (fun st => P st /\ bassn b st) c P ->
     hoare_proof P (WHILE b DO c END) (fun st => P st /\ ~ (bassn b st))
@@ -64,7 +64,7 @@ Inductive hoare_proof : Assertion -> com -> Assertion -> Type :=
     hoare_proof P c Q.
 
 (** We don't need to include axioms corresponding to
-    [hoare_consequence_pre] or [hoare_consequence_post], because 
+    [hoare_consequence_pre] or [hoare_consequence_post], because
     these can be proven easily from [H_Consequence]. *)
 
 Lemma H_Consequence_pre : forall (P Q P': Assertion) c,
@@ -88,7 +88,7 @@ Proof.
     derivation for the hoare triple
 
       {{(X=3) [X |-> X + 2] [X |-> X + 1]}}
-      X::=X+1 ;; X::=X+2 
+      X::=X+1 ;; X::=X+2
       {{X=3}}.
 
     We can use Coq's tactics to help us construct the proof object. *)
@@ -97,7 +97,7 @@ Proof.
 [[
       {{(X=3) [X |-> X + 2] [X |-> X + 1]}} 
       X::=X+1 ;; X::=X+2  
-      {{X=3}}. 
+      {{X=3}} 
 ]]
     の導出を表現する証明オブジェクトを構成しましょう。
     証明オブジェクトを構成するのに Coq のタクティックを使うことができます。*)
@@ -118,7 +118,7 @@ Print sample_proof.
   H_Seq
   (((fun st : state => st X = 3) [X |-> X + 2]) [X |-> X + 1])
   (X ::= X + 1)
-  ((fun st : state => st X = 3) [X |-> X + 2]) 
+  ((fun st : state => st X = 3) [X |-> X + 2])
   (X ::= X + 2)
   (fun st : state => st X = 3)
   (H_Asgn
@@ -136,13 +136,13 @@ Print sample_proof.
 (** * 性質 *)
 
 (* begin hide *)
-(** **** Exercise: 2 stars (hoare_proof_sound)  *)
+(** **** Exercise: 2 stars, standard (hoare_proof_sound)  
+
+    Prove that such proof objects represent true claims. *)
 (* end hide *)
-(** **** 練習問題: ★★ *)
-(* begin hide *)
-(** Prove that such proof objects represent true claims. *)
-(* end hide *)
-(** これらの証明オブジェクトが真の主張を表現することを証明しなさい。*)
+(** **** 練習問題: ★★, standard (hoare_proof_sound)
+ 
+    これらの証明オブジェクトが真の主張を表現することを証明しなさい。*)
 
 Theorem hoare_proof_sound : forall P c Q,
   hoare_proof P c Q -> {{P}} c {{Q}}.
@@ -192,7 +192,7 @@ Proof.
     apply (IHc1 (fun _ => True)).
     apply IHc2.
     intros. apply I.
-  - (* IFB *)
+  - (* TEST *)
     apply H_Consequence_pre with (fun _ => True).
     apply H_If.
     apply IHc1.
@@ -231,7 +231,7 @@ Proof.
   - (* SKIP *) pre_false_helper H_Skip.
   - (* ::= *) pre_false_helper H_Asgn.
   - (* ;; *) pre_false_helper H_Seq. apply IHc1. apply IHc2.
-  - (* IFB *)
+  - (* TEST *)
     apply H_If; eapply H_Consequence_pre.
     apply IHc1. intro. eapply False_and_P_imp.
     apply IHc2. intro. eapply False_and_P_imp.
@@ -261,16 +261,16 @@ Qed.
     more directly define this as follows: *)
 
 Definition wp (c:com) (Q:Assertion) : Assertion :=
-  fun s => forall s', c / s \\ s' -> Q s'.
+  fun s => forall s', s =[ c ]=> s' -> Q s'.
 
-(** **** Exercise: 1 star (wp_is_precondition)  *)
+(** **** Exercise: 1 star, standard (wp_is_precondition)  *)
 
 Lemma wp_is_precondition: forall c Q,
   {{wp c Q}} c {{Q}}.
 (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** **** Exercise: 1 star (wp_is_weakest)  *)
+(** **** Exercise: 1 star, standard (wp_is_weakest)  *)
 
 Lemma wp_is_weakest: forall c Q P',
    {{P'}} c {{Q}} -> forall st, P' st -> wp c Q st.
@@ -286,8 +286,9 @@ Proof.
 Qed.
 (** [] *)
 
-(** **** Exercise: 5 stars (hoare_proof_complete)  *)
-(** Complete the proof of the theorem. *)
+(** **** Exercise: 5 stars, standard (hoare_proof_complete)  
+
+    Complete the proof of the theorem. *)
 
 Theorem hoare_proof_complete: forall P c Q,
   {{P}} c {{Q}} -> hoare_proof P c Q.
@@ -325,10 +326,10 @@ Proof.
     could determine validity of arbitrary triples could solve the
     Halting Problem.
 
-    Similarly, the triple [{{True} SKIP {{P}}] is valid if and only if
+    Similarly, the triple [{{True}} SKIP {{P}}] is valid if and only if
     [forall s, P s] is valid, where [P] is an arbitrary assertion of
     Coq's logic. But it is known that there can be no decision
-    procedure for this logic. 
+    procedure for this logic.
 
     Overall, this axiomatic style of presentation gives a clearer
     picture of what it means to "give a proof in Hoare logic."
@@ -353,3 +354,4 @@ Proof.
     かなりくどいのです。
     [Hoare2]の修飾付きプログラムの形式化の節が、より良い方法を示してくれます。*)
 
+(* Thu Feb 7 20:09:23 EST 2019 *)

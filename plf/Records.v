@@ -4,10 +4,11 @@
 (* end hide *)
 
 Set Warnings "-notation-overridden,-parsing".
-Require Import Maps.
-Require Import Imp.
-Require Import Smallstep.
-Require Import Stlc.
+From Coq Require Import Strings.String.
+From PLF Require Import Maps.
+From PLF Require Import Imp.
+From PLF Require Import Smallstep.
+From PLF Require Import Stlc.
 
 (* ################################################################# *)
 (* begin hide *)
@@ -143,8 +144,8 @@ Module FirstTry.
 Definition alist (X : Type) := list (string * X).
 
 Inductive ty : Type :=
-  | TBase     : string -> ty
-  | TArrow    : ty -> ty -> ty
+  | Base     : string -> ty
+  | Arrow    : ty -> ty -> ty
   | TRcd      : (alist ty) -> ty.
 
 (* begin hide *)
@@ -163,9 +164,9 @@ Inductive ty : Type :=
    ====>
     ty_ind :
       forall P : ty -> Prop,
-        (forall i : id, P (TBase i)) ->
+        (forall i : id, P (Base i)) ->
         (forall t : ty, P t -> forall t0 : ty, P t0 
-                            -> P (TArrow t t0)) ->
+                            -> P (Arrow t t0)) ->
         (forall a : alist ty, P (TRcd a)) ->    (* ??? *)
         forall t : ty, P t
 *)
@@ -174,9 +175,9 @@ Inductive ty : Type :=
    ====> 
     ty_ind : 
       forall P : ty -> Prop, 
-        (forall i : id, P (TBase i)) -> 
+        (forall i : id, P (Base i)) -> 
         (forall t : ty, P t -> forall t0 : ty, P t0  
-                            -> P (TArrow t t0)) -> 
+                            -> P (Arrow t t0)) -> 
         (forall a : alist ty, P (TRcd a)) ->    (* ??? *) 
         forall t : ty, P t 
 *) 
@@ -203,29 +204,26 @@ End FirstTry.
     Coq 標準の[list]型の代わりに、型の構文にリストのコンストラクタ（"nil"と"cons"）を本質的に含めてしまうという方法です。*)
 
 Inductive ty : Type :=
-  | TBase : string -> ty
-  | TArrow : ty -> ty -> ty
-  | TRNil : ty
-  | TRCons : string -> ty -> ty -> ty.
+  | Base : string -> ty
+  | Arrow : ty -> ty -> ty
+  | RNil : ty
+  | RCons : string -> ty -> ty -> ty.
 
 (* begin hide *)
 (** Similarly, at the level of terms, we have constructors [trnil],
-    for the empty record, and [trcons], which adds a single field to
+    for the empty record, and [rcons], which adds a single field to
     the front of a list of fields. *)
 (* end hide *)
-(** 同様に、項のレベルで、空レコードに対応するコンストラクタ[trnil]と、フィールドのリストの前に1つのフィールドを追加するコンストラクタ[trcons]を用意します。 *)
+(** 同様に、項のレベルで、空レコードに対応するコンストラクタ[trnil]と、フィールドのリストの前に1つのフィールドを追加するコンストラクタ[rcons]を用意します。 *)
 
 Inductive tm : Type :=
-  | tvar : string -> tm
-  | tapp : tm -> tm -> tm
-  | tabs : string -> ty -> tm -> tm
+  | var : string -> tm
+  | app : tm -> tm -> tm
+  | abs : string -> ty -> tm -> tm
   (* records *)
-  (** <<
-  (* レコード *)
->> *)
-  | tproj : tm -> string -> tm
+  | rproj : tm -> string -> tm
   | trnil :  tm
-  | trcons : string -> tm -> tm -> tm.
+  | rcons : string -> tm -> tm -> tm.
 
 (* begin hide *)
 (** Some examples... *)
@@ -237,27 +235,20 @@ Notation a := "a".
 Notation f := "f".
 Notation g := "g".
 Notation l := "l".
-Notation A := (TBase "A").
-Notation B := (TBase "B").
+Notation A := (Base "A").
+Notation B := (Base "B").
 Notation k := "k".
 Notation i1 := "i1".
 Notation i2 := "i2".
 
 (** [{ i1:A }] *)
 
-(* Check (TRCons i1 A TRNil). *)
-(** <<
-(* Check (TRCons i1 A TRNil). *) 
->> *)
+(* Check (RCons i1 A RNil). *)
 
 (** [{ i1:A->B, i2:A }] *)
 
-(* Check (TRCons i1 (TArrow A B)
-           (TRCons i2 A TRNil)). *)
-(** <<
-(* Check (TRCons i1 (TArrow A B)
-           (TRCons i2 A TRNil)). *) 
->> *)
+(* Check (RCons i1 (Arrow A B)
+           (RCons i2 A RNil)). *)
 
 (* ----------------------------------------------------------------- *)
 (* begin hide *)
@@ -272,7 +263,7 @@ Notation i2 := "i2".
 (* end hide *)
 (** レコードの抽象構文をリストから nil/cons 構成に一般化したことで、次のような奇妙な型を書くことがができるという問題が発生します。 *)
 
-Definition weird_type := TRCons X A B.
+Definition weird_type := RCons X A B.
 
 (* begin hide *)
 (** where the "tail" of a record type is not actually a record type! *)
@@ -291,34 +282,34 @@ Definition weird_type := TRCons X A B.
     およびill-formedの型を排除するための[well_formed_ty]を定義します。*)
 
 (* begin hide *)
-(** First, a type is a record type if it is built with just [TRNil]
-    and [TRCons] at the outermost level. *)
+(** First, a type is a record type if it is built with just [RNil]
+    and [RCons] at the outermost level. *)
 (* end hide *)
 (** 最初に、型がレコード型なのは、
-    それの一番外側のレベルが[TRNil]と[TRCons]だけを使って構築されたもののときです。*)
+    それの一番外側のレベルが[RNil]と[RCons]だけを使って構築されたもののときです。*)
 
 Inductive record_ty : ty -> Prop :=
   | RTnil :
-        record_ty TRNil
+        record_ty RNil
   | RTcons : forall i T1 T2,
-        record_ty (TRCons i T1 T2).
+        record_ty (RCons i T1 T2).
 
 (** With this, we can define well-formed types. *)
 
 Inductive well_formed_ty : ty -> Prop :=
-  | wfTBase : forall i,
-        well_formed_ty (TBase i)
-  | wfTArrow : forall T1 T2,
+  | wfBase : forall i,
+        well_formed_ty (Base i)
+  | wfArrow : forall T1 T2,
         well_formed_ty T1 ->
         well_formed_ty T2 ->
-        well_formed_ty (TArrow T1 T2)
-  | wfTRNil :
-        well_formed_ty TRNil
-  | wfTRCons : forall i T1 T2,
+        well_formed_ty (Arrow T1 T2)
+  | wfRNil :
+        well_formed_ty RNil
+  | wfRCons : forall i T1 T2,
         well_formed_ty T1 ->
         well_formed_ty T2 ->
         record_ty T2 ->
-        well_formed_ty (TRCons i T1 T2).
+        well_formed_ty (RCons i T1 T2).
 
 Hint Constructors record_ty well_formed_ty.
 
@@ -327,30 +318,30 @@ Hint Constructors record_ty well_formed_ty.
     outermost constructor.  The [well_formed_ty] property, on the
     other hand, verifies that the whole type is well formed in the
     sense that the tail of every record (the second argument to
-    [TRCons]) is a record.
+    [RCons]) is a record.
 
     Of course, we should also be concerned about ill-formed terms, not
-    just types; but typechecking can rules those out without the help
+    just types; but typechecking can rule those out without the help
     of an extra [well_formed_tm] definition because it already
     examines the structure of terms.  All we need is an analog of
     [record_ty] saying that a term is a record term if it is built
-    with [trnil] and [trcons]. *)
+    with [trnil] and [rcons]. *)
 (* end hide *)
 (** [record_ty]が再帰的ではないことに注意します。
     これは一番外側のコンストラクタだけをチェックします。
     一方[well_formed_ty]は型全体がwell-formedか(正しい形をしているか)、
-    つまり、レコードのすべての後部（[TRCons]の第2引数）がレコードであるか、を検証します。
+    つまり、レコードのすべての後部（[RCons]の第2引数）がレコードであるか、を検証します。
  
     もちろん、型だけでなく項についても、ill-formedの可能性を考慮しなければなりません。
     しかし、別途[well_formed_tm]を用意しなくても、ill-formed項は型チェックが排除します。
     なぜなら、型チェックが既に項の構成を調べているからです。
-    必要なものは[record_ty]相当のもので、項の外側が[trnil]と[trcons]で作られていればレコード項だという保証をするだけです。 *)
+    必要なものは[record_ty]相当のもので、項の外側が[trnil]と[rcons]で作られていればレコード項だという保証をするだけです。 *)
 
 Inductive record_tm : tm -> Prop :=
   | rtnil :
         record_tm trnil
   | rtcons : forall i t1 t2,
-        record_tm (trcons i t1 t2).
+        record_tm (rcons i t1 t2).
 
 Hint Constructors record_tm.
 
@@ -364,13 +355,13 @@ Hint Constructors record_tm.
 
 Fixpoint subst (x:string) (s:tm) (t:tm) : tm :=
   match t with
-  | tvar y => if beq_string x y then s else t
-  | tabs y T t1 => tabs y T
-                     (if beq_string x y then t1 else (subst x s t1))
-  | tapp t1 t2 => tapp (subst x s t1) (subst x s t2)
-  | tproj t1 i => tproj (subst x s t1) i
+  | var y => if eqb_string x y then s else t
+  | abs y T t1 => abs y T
+                     (if eqb_string x y then t1 else (subst x s t1))
+  | app t1 t2 => app (subst x s t1) (subst x s t2)
+  | rproj t1 i => rproj (subst x s t1) i
   | trnil => trnil
-  | trcons i t1 tr1 => trcons i (subst x s t1) (subst x s tr1)
+  | rcons i t1 tr1 => rcons i (subst x s t1) (subst x s tr1)
   end.
 
 Notation "'[' x ':=' s ']' t" := (subst x s t) (at level 20).
@@ -388,12 +379,12 @@ Notation "'[' x ':=' s ']' t" := (subst x s t) (at level 20).
 
 Inductive value : tm -> Prop :=
   | v_abs : forall x T11 t12,
-      value (tabs x T11 t12)
+      value (abs x T11 t12)
   | v_rnil : value trnil
   | v_rcons : forall i v1 vr,
       value v1 ->
       value vr ->
-      value (trcons i v1 vr).
+      value (rcons i v1 vr).
 
 Hint Constructors value.
 
@@ -405,7 +396,7 @@ Hint Constructors value.
 
 Fixpoint tlookup (i:string) (tr:tm) : option tm :=
   match tr with
-  | trcons i' t tr' => if beq_string i i' then Some t else tlookup i tr'
+  | rcons i' t tr' => if eqb_string i i' then Some t else tlookup i tr'
   | _ => None
   end.
 
@@ -415,38 +406,38 @@ Fixpoint tlookup (i:string) (tr:tm) : option tm :=
 (* end hide *)
 (** [step]関数は、射影規則において、この項レベルのlookup関数を使います。 *)
 
-Reserved Notation "t1 '==>' t2" (at level 40).
+Reserved Notation "t1 '-->' t2" (at level 40).
 
 Inductive step : tm -> tm -> Prop :=
   | ST_AppAbs : forall x T11 t12 v2,
          value v2 ->
-         (tapp (tabs x T11 t12) v2) ==> ([x:=v2]t12)
+         (app (abs x T11 t12) v2) --> ([x:=v2]t12)
   | ST_App1 : forall t1 t1' t2,
-         t1 ==> t1' ->
-         (tapp t1 t2) ==> (tapp t1' t2)
+         t1 --> t1' ->
+         (app t1 t2) --> (app t1' t2)
   | ST_App2 : forall v1 t2 t2',
          value v1 ->
-         t2 ==> t2' ->
-         (tapp v1 t2) ==> (tapp v1 t2')
+         t2 --> t2' ->
+         (app v1 t2) --> (app v1 t2')
   | ST_Proj1 : forall t1 t1' i,
-        t1 ==> t1' ->
-        (tproj t1 i) ==> (tproj t1' i)
+        t1 --> t1' ->
+        (rproj t1 i) --> (rproj t1' i)
   | ST_ProjRcd : forall tr i vi,
         value tr ->
         tlookup i tr = Some vi ->
-        (tproj tr i) ==> vi
+        (rproj tr i) --> vi
   | ST_Rcd_Head : forall i t1 t1' tr2,
-        t1 ==> t1' ->
-        (trcons i t1 tr2) ==> (trcons i t1' tr2)
+        t1 --> t1' ->
+        (rcons i t1 tr2) --> (rcons i t1' tr2)
   | ST_Rcd_Tail : forall i v1 tr2 tr2',
         value v1 ->
-        tr2 ==> tr2' ->
-        (trcons i v1 tr2) ==> (trcons i v1 tr2')
+        tr2 --> tr2' ->
+        (rcons i v1 tr2) --> (rcons i v1 tr2')
 
-where "t1 '==>' t2" := (step t1 t2).
+where "t1 '-->' t2" := (step t1 t2).
 
 Notation multistep := (multi step).
-Notation "t1 '==>*' t2" := (multistep t1 t2) (at level 40).
+Notation "t1 '-->*' t2" := (multistep t1 t2) (at level 40).
 
 Hint Constructors step.
 
@@ -495,8 +486,8 @@ Hint Constructors step.
 
 Fixpoint Tlookup (i:string) (Tr:ty) : option ty :=
   match Tr with
-  | TRCons i' T Tr' =>
-      if beq_string i i' then Some T else Tlookup i Tr'
+  | RCons i' T Tr' =>
+      if eqb_string i i' then Some T else Tlookup i Tr'
   | _ => None
   end.
 
@@ -508,28 +499,28 @@ Inductive has_type : context -> tm -> ty -> Prop :=
   | T_Var : forall Gamma x T,
       Gamma x = Some T ->
       well_formed_ty T ->
-      Gamma |- (tvar x) \in T
+      Gamma |- (var x) \in T
   | T_Abs : forall Gamma x T11 T12 t12,
       well_formed_ty T11 ->
       (update Gamma x T11) |- t12 \in T12 ->
-      Gamma |- (tabs x T11 t12) \in (TArrow T11 T12)
+      Gamma |- (abs x T11 t12) \in (Arrow T11 T12)
   | T_App : forall T1 T2 Gamma t1 t2,
-      Gamma |- t1 \in (TArrow T1 T2) ->
+      Gamma |- t1 \in (Arrow T1 T2) ->
       Gamma |- t2 \in T1 ->
-      Gamma |- (tapp t1 t2) \in T2
+      Gamma |- (app t1 t2) \in T2
   (* records: *)
   | T_Proj : forall Gamma i t Ti Tr,
       Gamma |- t \in Tr ->
       Tlookup i Tr = Some Ti ->
-      Gamma |- (tproj t i) \in Ti
+      Gamma |- (rproj t i) \in Ti
   | T_RNil : forall Gamma,
-      Gamma |- trnil \in TRNil
+      Gamma |- trnil \in RNil
   | T_RCons : forall Gamma i t T tr Tr,
       Gamma |- t \in T ->
       Gamma |- tr \in Tr ->
       record_ty Tr ->
       record_tm tr ->
-      Gamma |- (trcons i t tr) \in (TRCons i T Tr)
+      Gamma |- (rcons i t tr) \in (RCons i T Tr)
 
 where "Gamma '|-' t '\in' T" := (has_type Gamma t T).
 
@@ -542,43 +533,41 @@ Hint Constructors has_type.
 (** ** 例 *)
 
 (* begin hide *)
-(** **** Exercise: 2 stars (examples)  *)
-(* end hide *)
-(** **** 練習問題: ★★ (examples)  *)
-(* begin hide *)
-(** Finish the proofs below.  Feel free to use Coq's automation
+(** **** Exercise: 2 stars, standard (examples)  
+
+    Finish the proofs below.  Feel free to use Coq's automation
     features in this proof.  However, if you are not confident about
     how the type system works, you may want to carry out the proofs
     first using the basic features ([apply] instead of [eapply], in
     particular) and then perhaps compress it using automation.  Before
     starting to prove anything, make sure you understand what it is
-    saying.*)
+    saying. *)
 (* end hide *)
-(** 証明を完成させなさい。
+(** **** 練習問題: ★★ (examples), standard
+ 
+    証明を完成させなさい。
     証明の中ではCoq の自動化機能を自由に使って構いません。
     しかし、もし型システムがどのように動作するか確信できていないなら、最初に基本機能（特に[eapply]ではなく[apply]）を使った証明を行い、次に自動化を使ってその証明を圧縮するのがよいかもしれません。
     証明を始める前に、主張が何かを確かめなさい。 *)
 
-(* GRADE_THEOREM 0.5: typing_example_2 *)
 Lemma typing_example_2 :
   empty |-
-    (tapp (tabs a (TRCons i1 (TArrow A A)
-                      (TRCons i2 (TArrow B B)
-                       TRNil))
-              (tproj (tvar a) i2))
-            (trcons i1 (tabs a A (tvar a))
-            (trcons i2 (tabs a B (tvar a))
+    (app (abs a (RCons i1 (Arrow A A)
+                      (RCons i2 (Arrow B B)
+                       RNil))
+              (rproj (var a) i2))
+            (rcons i1 (abs a A (var a))
+            (rcons i2 (abs a B (var a))
              trnil))) \in
-    (TArrow B B).
+    (Arrow B B).
 Proof.
   (* FILL IN HERE *) Admitted.
 
-(* GRADE_THEOREM 0.5: typing_nonexample *)
 Example typing_nonexample :
   ~ exists T,
-      (update empty a (TRCons i2 (TArrow A A)
-                                TRNil)) |-
-               (trcons i1 (tabs a B (tvar a)) (tvar a)) \in
+      (update empty a (RCons i2 (Arrow A A)
+                                RNil)) |-
+               (rcons i1 (abs a B (var a)) (var a)) \in
                T.
 Proof.
   (* FILL IN HERE *) Admitted.
@@ -586,9 +575,9 @@ Proof.
 Example typing_nonexample_2 : forall y,
   ~ exists T,
     (update empty y A) |-
-           (tapp (tabs a (TRCons i1 A TRNil)
-                     (tproj (tvar a) i1))
-                   (trcons i1 (tvar y) (trcons i2 (tvar y) trnil))) \in
+           (app (abs a (RCons i1 A RNil)
+                     (rproj (var a) i1))
+                   (rcons i1 (var y) (rcons i2 (var y) trnil))) \in
            T.
 Proof.
   (* FILL IN HERE *) Admitted.
@@ -617,14 +606,14 @@ Lemma wf_rcd_lookup : forall i T Ti,
 Proof with eauto.
   intros i T.
   induction T; intros; try solve_by_invert.
-  - (* TRCons *)
+  - (* RCons *)
     inversion H. subst. unfold Tlookup in H0.
-    destruct (beq_string i s)...
+    destruct (eqb_string i s)...
     inversion H0. subst...  Qed.
 
 Lemma step_preserves_record_tm : forall tr tr',
   record_tm tr ->
-  tr ==> tr' ->
+  tr --> tr' ->
   record_tm tr'.
 Proof.
   intros tr tr' Hrt Hstp.
@@ -659,13 +648,13 @@ Qed.
       leaving only the [T_RCons] case.
 
       If the last step in the typing derivation is by [T_RCons], then
-      [t = trcons i0 t tr] and [T = TRCons i0 T Tr] for some [i0],
+      [t = rcons i0 t tr] and [T = RCons i0 T Tr] for some [i0],
       [t], [tr], [T] and [Tr].
 
       This leaves two possiblities to consider - either [i0 = i] or
       not.
 
-      - If [i = i0], then since [Tlookup i (TRCons i0 T Tr) = Some
+      - If [i = i0], then since [Tlookup i (RCons i0 T Tr) = Some
         Ti] we have [T = Ti].  It follows that [t] itself satisfies
         the theorem.
 
@@ -682,23 +671,23 @@ Qed.
     Here is the formal statement:
 *)
 (* end hide *)
-(** 補題: もし [empty |- v : T] で、かつ [ty_lookup i T] が [Some Ti] を返すならば,
-     [tm_lookup i v] はある項 [ti] について [Some ti] を返す。
+(** 補題: もし [empty |- v : T] で、かつ [Tlookup i T] が [Some Ti] を返すならば,
+     [tlookup i v] はある項 [ti] について [Some ti] を返す。
      ただし、[empty |- ti \in Ti] となる。
  
     証明: 型の導出[Htyp]についての帰納法で証明する。
-      [ty_lookup i T = Some Ti] であることから、
+      [Tlookup i T = Some Ti] であることから、
       [T] はレコード型でなければならない。
       このことと[v]が値であることから、ほとんどの場合は精査で除去でき、
       [T_RCons]の場合だけが残る。
  
       型導出の最後のステップが[T_RCons]によるものであるとき、
       ある[i0]、[t]、[tr]、[T]、[Tr]について
-      [t = trcons i0 t tr] かつ [T = TRCons i0 T Tr] である。
+      [t = rcons i0 t tr] かつ [T = TRCons i0 T Tr] である。
  
       このとき2つの可能性が残る。[i0 = i] か、そうでないかである。
  
-      - [i = i0] のとき、[Tlookup i (TRCons i0 T Tr) = Some Ti] から
+      - [i = i0] のとき、[Tlookup i (RCons i0 T Tr) = Some Ti] から
         [T = Ti] となる。これから [t]自身が定理を満たすことが言える。
  
       - 一方、[i <> i0] とする。すると
@@ -724,7 +713,7 @@ Proof with eauto.
   remember (@empty ty) as Gamma.
   induction Htyp; subst; try solve_by_invert...
   - (* T_RCons *)
-    simpl in Hget. simpl. destruct (beq_string i i0).
+    simpl in Hget. simpl. destruct (eqb_string i i0).
     + (* i is first *)
       simpl. inversion Hget. subst.
       exists t...
@@ -740,15 +729,15 @@ Proof with eauto.
 
 Theorem progress : forall t T,
      empty |- t \in T ->
-     value t \/ exists t', t ==> t'.
+     value t \/ exists t', t --> t'.
 Proof with eauto.
   (* Theorem: Suppose empty |- t : T.  Then either
        1. t is a value, or
-       2. t ==> t' for some t'.
+       2. t --> t' for some t'.
      Proof: By induction on the given typing derivation. *)
   (* 定理: empty |- t : T と仮定する。すると
        1. t は値である、または
-       2. ある t' について t ==> t'
+       2. ある t' について t --> t'
      のいずれかが成立する。
      証明: 与えられた型の導出についての帰納法による。 *)
   intros t T Ht.
@@ -764,8 +753,8 @@ Proof with eauto.
     inversion H.
   - (* T_Abs *)
     (* If the [T_Abs] rule was the last used, then 
-       [t = tabs x T11 t12], which is a value. *)
-    (* もし[T_Abs]規則が最後に使われたものならば、[t = tabs x T11 t12] となる。
+       [t = abs x T11 t12], which is a value. *)
+    (* もし[T_Abs]規則が最後に使われたものならば、[t = abs x T11 t12] となる。
        これは値である。 *)
     left...
   - (* T_App *)
@@ -787,60 +776,60 @@ Proof with eauto.
       destruct IHHt2; subst...
       * (* t2 is a value *)
       (* If both [t1] and [t2] are values, then we know that
-         [t1 = tabs x T11 t12], since abstractions are the only 
+         [t1 = abs x T11 t12], since abstractions are the only 
          values that can have an arrow type.  But
-         [(tabs x T11 t12) t2 ==> [x:=t2]t12] by [ST_AppAbs]. *)
-      (* もし[t1]と[t2]が共に値ならば、[t1 = tabs x T11 t12] となる。
+         [(abs x T11 t12) t2 --> [x:=t2]t12] by [ST_AppAbs]. *)
+      (* もし[t1]と[t2]が共に値ならば、[t1 = abs x T11 t12] となる。
          なぜなら関数型の値は関数抽象だけだからである。
-         しかし[ST_AppAbs]より [(tabs x T11 t12) t2 ==> [x:=t2]t12] となる。 *)
+         しかし[ST_AppAbs]より [(abs x T11 t12) t2 --> [x:=t2]t12] となる。 *)
         inversion H; subst; try solve_by_invert.
         exists ([x:=t2]t12)...
       * (* t2 steps *)
-        (* If [t1] is a value and [t2 ==> t2'], then 
-           [t1 t2 ==> t1 t2'] by [ST_App2]. *)
-        (* もし [t1] が値で [t2 ==> t2'] ならば、[ST_App2] より [t1 t2 ==> t1 t2'] となる。 *)
-        destruct H0 as [t2' Hstp]. exists (tapp t1 t2')...
+        (* If [t1] is a value and [t2 --> t2'], then
+           [t1 t2 --> t1 t2'] by [ST_App2]. *)
+        (* もし [t1] が値で [t2 --> t2'] ならば、[ST_App2] より [t1 t2 --> t1 t2'] となる。 *)
+        destruct H0 as [t2' Hstp]. exists (app t1 t2')...
     + (* t1 steps *)
-      (* Finally, If [t1 ==> t1'], then [t1 t2 ==> t1' t2] 
+      (* Finally, If [t1 --> t1'], then [t1 t2 --> t1' t2]
          by [ST_App1]. *)
-      (* 最後に、もし [t1 ==> t1'] ならば[ST_App1]より [t1 t2 ==> t1' t2] である。 *)
-      destruct H as [t1' Hstp]. exists (tapp t1' t2)...
+      (* 最後に、もし [t1 --> t1'] ならば[ST_App1]より [t1 t2 --> t1' t2] である。 *)
+      destruct H as [t1' Hstp]. exists (app t1' t2)...
   - (* T_Proj *)
     (* If the last rule in the given derivation is [T_Proj], then
-       [t = tproj t i] and
+       [t = rproj t i] and
            [empty |- t : (TRcd Tr)]
        By the IH, [t] either is a value or takes a step. *)
     (* もし与えられた導出の最後の規則が[T_Proj]ならば、
-       [t = tproj t i] かつ [empty |- t : (TRcd Tr)] である。
+       [t = rproj t i] かつ [empty |- t : (TRcd Tr)] である。
        帰納仮定より、[t] は値であるかステップを進むことができる。 *)
     right. destruct IHHt...
     + (* rcd is value *)
       (* If [t] is a value, then we may use lemma
          [lookup_field_in_value] to show [tlookup i t = Some ti] 
-         for some [ti] which gives us [tproj i t ==> ti] by 
+         for some [ti] which gives us [rproj i t --> ti] by
          [ST_ProjRcd]. *)
       (* もし [t] が値ならば、補題[lookup_field_in_value]を使うと、ある[ti]について[tlookup i t = Some ti]が言える。
-         このとき[ST_ProjRcd]より [tproj i t ==> ti] となる。 *)
+         このとき[ST_ProjRcd]より [rproj i t --> ti] となる。 *)
       destruct (lookup_field_in_value _ _ _ _ H0 Ht H)
         as [ti [Hlkup _]].
       exists ti...
     + (* rcd_steps *)
-      (* On the other hand, if [t ==> t'], then 
-         [tproj t i ==> tproj t' i] by [ST_Proj1]. *)
-      (* 一方、もし [t ==> t'] ならば、[ST_Proj1]により [tproj t i ==> tproj t' i] となる。 *)
-      destruct H0 as [t' Hstp]. exists (tproj t' i)...
+      (* On the other hand, if [t --> t'], then
+         [rproj t i --> rproj t' i] by [ST_Proj1]. *)
+      (* 一方、もし [t --> t'] ならば、[ST_Proj1]により [rproj t i --> rproj t' i] となる。 *)
+      destruct H0 as [t' Hstp]. exists (rproj t' i)...
   - (* T_RNil *)
     (* If the last rule in the given derivation is [T_RNil], 
        then [t = trnil], which is a value. *)
     (* もし与えられた導出の最後の規則が[T_RNil]ならば、 [t = trnil] となり、これは値である。 *)
     left...
   - (* T_RCons *)
-    (* If the last rule is [T_RCons], then [t = trcons i t tr] and
+    (* If the last rule is [T_RCons], then [t = rcons i t tr] and
          [empty |- t : T]
          [empty |- tr : Tr]
        By the IH, each of [t] and [tr] either is a value or can 
        take a step. *)
-    (* もし最後の規則が[T_RCons]ならば、[t = trcons i t tr] かつ
+    (* もし最後の規則が[T_RCons]ならば、[t = rcons i t tr] かつ
          [empty |- t : T] 
          [empty |- tr : Tr] 
        となる。帰納仮定から、[t]と[tr]はそれぞれ値であるか、1ステップ進めることができる。 *)
@@ -848,26 +837,26 @@ Proof with eauto.
     + (* head is a value *)
       destruct IHHt2; try reflexivity.
       * (* tail is a value *)
-      (* If [t] and [tr] are both values, then [trcons i t tr]
+      (* If [t] and [tr] are both values, then [rcons i t tr]
          is a value as well. *)
-      (* もし[t]と[tr]が両者とも値ならば、[trcons i t tr] も値である。*)
+      (* もし[t]と[tr]が両者とも値ならば、[rcons i t tr] も値である。*)
         left...
       * (* tail steps *)
-        (* If [t] is a value and [tr ==> tr'], then
-           [trcons i t tr ==> trcons i t tr'] by
+        (* If [t] is a value and [tr --> tr'], then
+           [rcons i t tr --> rcons i t tr'] by
            [ST_Rcd_Tail]. *)
-        (* もし [t] が値で [tr ==> tr'] ならば、[ST_Rcd_Tail]より
-           [trcons i t tr ==> trcons i t tr'] となる。 *)
+        (* もし [t] が値で [tr --> tr'] ならば、[ST_Rcd_Tail]より
+           [rcons i t tr --> rcons i t tr'] となる。 *)
         right. destruct H2 as [tr' Hstp].
-        exists (trcons i t tr')...
+        exists (rcons i t tr')...
     + (* head steps *)
-      (* If [t ==> t'], then
-         [trcons i t tr ==> trcons i t' tr]
+      (* If [t --> t'], then
+         [rcons i t tr --> rcons i t' tr]
          by [ST_Rcd_Head]. *)
-      (* もし [t ==> t'] ならば、[ST_Rcd_Head]より
-         [trcons i t tr ==> trcons i t' tr] となる。 *)
+      (* もし [t --> t'] ならば、[ST_Rcd_Head]より
+         [rcons i t tr --> rcons i t' tr] となる。 *)
       right. destruct H1 as [t' Hstp].
-      exists (trcons i t' tr)...  Qed.
+      exists (rcons i t' tr)...  Qed.
 
 (* ----------------------------------------------------------------- *)
 (* begin hide *)
@@ -877,24 +866,24 @@ Proof with eauto.
 
 Inductive appears_free_in : string -> tm -> Prop :=
   | afi_var : forall x,
-      appears_free_in x (tvar x)
+      appears_free_in x (var x)
   | afi_app1 : forall x t1 t2,
-      appears_free_in x t1 -> appears_free_in x (tapp t1 t2)
+      appears_free_in x t1 -> appears_free_in x (app t1 t2)
   | afi_app2 : forall x t1 t2,
-      appears_free_in x t2 -> appears_free_in x (tapp t1 t2)
+      appears_free_in x t2 -> appears_free_in x (app t1 t2)
   | afi_abs : forall x y T11 t12,
         y <> x  ->
         appears_free_in x t12 ->
-        appears_free_in x (tabs y T11 t12)
+        appears_free_in x (abs y T11 t12)
   | afi_proj : forall x t i,
      appears_free_in x t ->
-     appears_free_in x (tproj t i)
+     appears_free_in x (rproj t i)
   | afi_rhead : forall x i ti tr,
       appears_free_in x ti ->
-      appears_free_in x (trcons i ti tr)
+      appears_free_in x (rcons i ti tr)
   | afi_rtail : forall x i ti tr,
       appears_free_in x tr ->
-      appears_free_in x (trcons i ti tr).
+      appears_free_in x (rcons i ti tr).
 
 Hint Constructors appears_free_in.
 
@@ -910,7 +899,7 @@ Proof with eauto.
     apply T_Var... rewrite <- Heqv...
   - (* T_Abs *)
     apply T_Abs... apply IHhas_type. intros y Hafi.
-    unfold update, t_update. destruct (beq_stringP x y)...
+    unfold update, t_update. destruct (eqb_stringP x y)...
   - (* T_App *)
     apply T_App with T1...
   - (* T_RCons *)
@@ -926,7 +915,7 @@ Proof with eauto.
   - (* T_Abs *)
     destruct IHHtyp as [T' Hctx]... exists T'.
     unfold update, t_update in Hctx.
-    rewrite false_beq_string in Hctx...
+    rewrite false_eqb_string in Hctx...
 Qed.
 
 (* ----------------------------------------------------------------- *)
@@ -940,44 +929,44 @@ Lemma substitution_preserves_typing : forall Gamma x U v t S,
      empty |- v \in U   ->
      Gamma |- ([x:=v]t) \in S.
 Proof with eauto.
-  (* Theorem: If Gamma,x:U |- t : S and empty |- v : U, then
+  (* Theorem: If x|->U;Gamma |- t : S and empty |- v : U, then
      Gamma |- ([x:=v]t) S. *)
-  (* 定理: もし Gamma,x:U |- t : S かつ empty |- v : U ならば
+  (* 定理: もし x|->U;Gamma |- t : S かつ empty |- v : U ならば
      Gamma |- ([x:=v]t) S. である。 *)
   intros Gamma x U v t S Htypt Htypv.
   generalize dependent Gamma. generalize dependent S.
   (* Proof: By induction on the term t.  Most cases follow 
-     directly from the IH, with the exception of tvar, 
-     tabs, trcons. The former aren't automatic because we 
+     directly from the IH, with the exception of var, 
+     abs, rcons. The former aren't automatic because we 
      must reason about how the variables interact. In the 
-     case of trcons, we must do a little extra work to show 
+     case of rcons, we must do a little extra work to show 
      that substituting into a term doesn't change whether 
      it is a record term. *)
   (* 証明: 項tについての帰納法で証明する。
      ほとんどの場合は帰納仮定から直接得られる。
-     そうでないのは tvar、tabs、trcons だけである。
+     そうでないのは var、abs、rcons だけである。
      最初の2つの場合は、変数の相互作用について推論する必要があるため自動化できない。
-     trconsの場合は、置換によってレコード項であることが変化しないことを示すという作業が必要である。 *)
+     rconsの場合は、置換によってレコード項であることが変化しないことを示すという作業が必要である。 *)
   induction t;
     intros S Gamma Htypt; simpl; inversion Htypt; subst...
-  - (* tvar *)
+  - (* var *)
     simpl. rename s into y.
     (* If t = y, we know that
          [empty |- v : U] and
-         [Gamma,x:U |- y : S]
+         [x|->U; Gamma |- y : S]
        and, by inversion, [update Gamma x U y = Some S].  
        We want to show that [Gamma |- [x:=v]y : S].
 
        There are two cases to consider: either [x=y] or [x<>y]. *)
     (* もし t = y ならば
          [empty |- v : U] かつ
-         [Gamma,x:U |- y : S] となる。
+         [x|->U; Gamma |- y : S] となる。
        inversion より [update Gamma x U y = Some S] が得られる。
        示したいことは [Gamma |- [x:=v]y : S] である。
  
        2つの場合に分けて考える: [x=y] の場合と [x<>y] の場合である。 *)
     unfold update, t_update in H0.
-    destruct (beq_stringP x y) as [Hxy|Hxy].
+    destruct (eqb_stringP x y) as [Hxy|Hxy].
     + (* x=y *)
     (* If [x = y], then we know that [U = S], and that 
        [[x:=v]y = v]. So what we really must show is that 
@@ -1003,73 +992,75 @@ Proof with eauto.
     (* もし [x <> y] ならば、[Gamma y = Some S] であり置換は何も影響しない。
        [T_Var]から[Gamma |- y : S]を示すことができる。 *)
       apply T_Var...
-  - (* tabs *)
+  - (* abs *)
     rename s into y. rename t into T11.
-    (* If [t = tabs y T11 t0], then we know that
-         [Gamma,x:U |- tabs y T11 t0 : T11->T12]
-         [Gamma,x:U,y:T11 |- t0 : T12]
+    (* If [t = abs y T11 t0], then we know that
+         [x|->U; Gamma |- abs y T11 t0 : T11->T12]
+         [x|->U; y|->T11; Gamma |- t0 : T12]
          [empty |- v : U]
        As our IH, we know that forall S Gamma,
-         [Gamma,x:U |- t0 : S -> Gamma |- [x:=v]t0 S].
+         [x|->U; Gamma |- t0 : S -> Gamma |- [x:=v]t0 S].
 
        We can calculate that
-       [ [x:=v]t = tabs y T11 (if beq_string x y then t0 else [x:=v]t0) ],
+       [ [x:=v]t = abs y T11 (if eqb_string x y then t0 else [x:=v]t0) ],
        and we must show that [Gamma |- [x:=v]t : T11->T12].  We know
        we will do so using [T_Abs], so it remains to be shown that:
-         [Gamma,y:T11 |- if beq_string x y then t0 else [x:=v]t0 : T12]
+         [y|->T11; Gamma |- if eqb_string x y then t0 else [x:=v]t0 : T12]
        We consider two cases: [x = y] and [x <> y]. *)
-    (* もし [t = tabs y T11 t0] ならば、
-         [Gamma,x:U |- tabs y T11 t0 : T11->T12] 
-         [Gamma,x:U,y:T11 |- t0 : T12] 
+    (* もし [t = abs y T11 t0] ならば、
+         [x|->U; Gamma |- abs y T11 t0 : T11->T12] 
+         [x|->U; y|->T11; Gamma |- t0 : T12] 
          [empty |- v : U] 
        である。帰納仮定から、すべての S Gamma について
-         [Gamma,x:U |- t0 : S -> Gamma |- [x:=v]t0 S] となる。
+         [x|->U; Gamma |- t0 : S -> Gamma |- [x:=v]t0 S] 
+       となる。
  
        次のように計算ができる:
-       [ [x:=v]t = tabs y T11 (if beq_string x y then t0 else [x:=v]t0) ] 
+       [ [x:=v]t = abs y T11 (if eqb_string x y then t0 else [x:=v]t0) ] 
        示さなければならないのは [Gamma |- [x:=v]t : T11->T12] である。
        [T_Abs]を使うので、残っているのは次を示すことである:
-         [Gamma,y:T11 |- if beq_string x y then t0 else [x:=v]t0 : T12] 
+         [y|->T11; Gamma |- if eqb_string x y then t0 else [x:=v]t0 : T12] 
        2つの場合に分けて考える: [x = y] の場合と [x <> y] の場合である。 *)
     apply T_Abs...
-    destruct (beq_stringP x y) as [Hxy|Hxy].
+    destruct (eqb_stringP x y) as [Hxy|Hxy].
     + (* x=y *)
       (* If [x = y], then the substitution has no effect.  Context
-         invariance shows that [Gamma,y:U,y:T11] and [Gamma,y:T11] are
+         invariance shows that [y:U,y:T11] and [Gamma,y:T11] are
          equivalent.  Since [t0 : T12] under the former context, 
          this is also the case under the latter. *)
-    (* [x = y] の場合、置換は影響しない。
-       コンテキスト不変性により [Gamma,y:U,y:T11] と [Gamma,y:T11] が同値であることが示される。
-       前者のコンテキストから [t0 : T12] が言えるので、後者でも同様になる。 *)
+      (* [x = y] の場合、置換は影響しない。
+         コンテキスト不変性により [Gamma,y:U,y:T11] と [Gamma,y:T11] が同値であることが示される。
+         （TODO：修正により前者が[y:U,y:Tll]になっていたが、本当か？実行しないと見えない。）
+         前者のコンテキストから [t0 : T12] が言えるので、後者でも同様になる。 *)
       eapply context_invariance...
       subst.
       intros x Hafi. unfold update, t_update.
-      destruct (beq_string y x)...
+      destruct (eqb_string y x)...
     + (* x<>y *)
       (* If [x <> y], then the IH and context invariance allow 
          us to show that
-           [Gamma,x:U,y:T11 |- t0 : T12]       =>
-           [Gamma,y:T11,x:U |- t0 : T12]       =>
-           [Gamma,y:T11 |- [x:=v]t0 : T12] *)
+           [x|->U; y|->T11; Gamma |- t0 : T12]       =>
+           [y|->T11; x|->U; Gamma |- t0 : T12]       =>
+           [y|->T11; Gamma |- [x:=v]t0 : T12] *)
       (* [x <> y] の場合、帰納仮定とコンテキスト不変性から
-           [Gamma,x:U,y:T11 |- t0 : T12]       => 
-           [Gamma,y:T11,x:U |- t0 : T12]       => 
-           [Gamma,y:T11 |- [x:=v]t0 : T12] となる。 *)
+           [x|->U; y|->T11; Gamma |- t0 : T12]       => 
+           [y|->T11; x|->U; Gamma |- t0 : T12]       => 
+           [y|->T11; Gamma |- [x:=v]t0 : T12] となる。 *)
       apply IHt. eapply context_invariance...
       intros z Hafi. unfold update, t_update.
-      destruct (beq_stringP y z)...
-      subst. rewrite false_beq_string...
-  - (* trcons *)
+      destruct (eqb_stringP y z)...
+      subst. rewrite false_eqb_string...
+  - (* rcons *)
     apply T_RCons... inversion H7; subst; simpl...
 Qed.
 
 Theorem preservation : forall t t' T,
      empty |- t \in T  ->
-     t ==> t'  ->
+     t --> t'  ->
      empty |- t' \in T.
 Proof with eauto.
   intros t t' T HT.
-  (* Theorem: If [empty |- t : T] and [t ==> t'], then 
+  (* Theorem: If [empty |- t : T] and [t --> t'], then
      [empty |- t' : T]. *)
   (* 定理: [empty |- t : T] かつ [t ==> t'] ならば [empty |- t' : T] である。 *)
   remember (@empty ty) as Gamma. generalize dependent HeqGamma.
@@ -1085,32 +1076,32 @@ Proof with eauto.
     intros t' HeqGamma HE; subst; inversion HE; subst...
   - (* T_App *)
     (* If the last rule used was [T_App], then [t = t1 t2], 
-       and three rules could have been used to show [t ==> t']: 
+       and three rules could have been used to show [t --> t']:
        [ST_App1], [ST_App2], and [ST_AppAbs]. In the first two 
        cases, the result follows directly from the IH. *)
     (* 最後に使われた規則が[T_App]の場合、[t = t1 t2] である。
-       このとき [t ==> t'] を示すのに使われた可能性がある規則は3つ、[ST_App1]、[ST_App2]、[ST_AppAbs] である。
+       このとき [t --> t'] を示すのに使われた可能性がある規則は3つ、[ST_App1]、[ST_App2]、[ST_AppAbs] である。
        最初の2つについては、帰納仮定から直接結果が得られる。 *)
     inversion HE; subst...
     + (* ST_AppAbs *)
       (* For the third case, suppose
-           [t1 = tabs x T11 t12]
+           [t1 = abs x T11 t12]
          and
            [t2 = v2].  We must show that [empty |- [x:=v2]t12 : T2].
          We know by assumption that
-             [empty |- tabs x T11 t12 : T1->T2]
+             [empty |- abs x T11 t12 : T1->T2]
          and by inversion
              [x:T1 |- t12 : T2]
          We have already proven that substitution_preserves_typing and
              [empty |- v2 : T1]
          by assumption, so we are done. *)
       (* 3つ目の規則の場合、次を仮定する:
-           [t1 = tabs x T11 t12] 
+           [t1 = abs x T11 t12] 
          かつ
            [t2 = v2]。
          示すべきことは [empty |- [x:=v2]t12 : T2] である。
          仮定から
-             [empty |- tabs x T11 t12 : T1->T2] 
+             [empty |- abs x T11 t12 : T1->T2] 
          であり、inversion から
              [x:T1 |- t12 : T2] 
          である。
@@ -1118,8 +1109,8 @@ Proof with eauto.
       apply substitution_preserves_typing with T1...
       inversion HT1...
   - (* T_Proj *)
-    (* If the last rule was [T_Proj], then [t = tproj t1 i].  
-       Two rules could have caused [t ==> t']: [T_Proj1] and 
+    (* If the last rule was [T_Proj], then [t = rproj t1 i].  
+       Two rules could have caused [t --> t']: [T_Proj1] and
        [T_ProjRcd].  The typing of [t'] follows from the IH 
        in the former case, so we only consider [T_ProjRcd].
 
@@ -1128,8 +1119,8 @@ Proof with eauto.
        [Tlookup i Tr = Some Ti] for some [i] and [Tr].  
        We may therefore apply lemma [lookup_field_in_value] 
        to find the record element this projection steps to. *)
-    (* 最後の規則が[T_Proj]のとき、[t = tproj t1 i] である。
-       [t ==> t'] のために2つの規則が使われた可能性がある。
+    (* 最後の規則が[T_Proj]のとき、[t = rproj t1 i] である。
+       [t --> t'] のために2つの規則が使われた可能性がある。
        [T_Proj1] または [T_ProjRcd] である。
        前者の場合、帰納仮定から[t']の型付けが得られる。
        そのため、[T_ProjRcd]の場合だけを考える。
@@ -1141,21 +1132,20 @@ Proof with eauto.
       as [vi [Hget Htyp]].
     rewrite H4 in Hget. inversion Hget. subst...
   - (* T_RCons *)
-    (* If the last rule was [T_RCons], then [t = trcons i t tr] 
+    (* If the last rule was [T_RCons], then [t = rcons i t tr] 
        for some [i], [t] and [tr] such that [record_tm tr].  If 
        the step is by [ST_Rcd_Head], the result is immediate by 
-       the IH.  If the step is by [ST_Rcd_Tail], [tr ==> tr2'] 
+       the IH.  If the step is by [ST_Rcd_Tail], [tr --> tr2']
        for some [tr2'] and we must also use lemma [step_preserves_record_tm] 
        to show [record_tm tr2']. *)
-    (* 最後の規則が[T_RCons]の場合、ある[i]、[t]、[tr]について [t = trcons i t tr] で、また[record_tm tr]である。
+    (* 最後の規則が[T_RCons]の場合、ある[i]、[t]、[tr]について [t = rcons i t tr] で、また[record_tm tr]である。
        ステップが[ST_Rcd_Head]によるものである場合、帰納仮定から直接結果が得られる。
-       ステップが[ST_Rcd_Tail]によるものである場合、ある[tr2']について [tr ==> tr2'] である。
-       [record_tm tr2'] を示すために、同様に補題[step_preserves_record_tm]を使う。*)
+       ステップが[ST_Rcd_Tail]によるものである場合、ある[tr2']について [tr --> tr2'] である。
+       [record_tm tr2'] を示すために、同様に補題[step_preserves_record_tm]を使う。 *)
     apply T_RCons... eapply step_preserves_record_tm...
 Qed.
 (** [] *)
 
 End STLCExtendedRecords.
 
-(** $Date$ *)
-
+(* Thu Feb 7 20:09:25 EST 2019 *)

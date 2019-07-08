@@ -12,7 +12,7 @@ Require Extraction.
     chapter, we'll take a deeper look. *)
 
 Set Warnings "-extraction-inside-module".  (* turn off a warning message *)
-Require Import Perm.
+From VFA Require Import Perm.
 
 Module Sort1.
 Fixpoint insert (i:nat) (l: list nat) := 
@@ -387,7 +387,7 @@ Insert and lookup 20000 consecutive integers in 0.374 seconds.
    So instead, we'll use the SearchTree module, 
    where everything runs inside Coq. *)
 
-Require SearchTree.
+From VFA Require SearchTree.
 Module Experiments.
 Open Scope nat_scope.
 Definition empty_tree := SearchTree.empty_tree nat.

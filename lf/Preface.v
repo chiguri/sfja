@@ -56,7 +56,6 @@
  
     この本「論理の基礎(_Logical Foundations_)」は 、シリーズの他の本の基盤であり、関数型プログラミング(functional programming)や構成的論理(constructive logic)、証明支援系 Coq に関する導入となっています。 *)
 
-
 (* ################################################################# *)
 (* begin hide *)
 (** * Overview *)
@@ -134,7 +133,7 @@
     Effectiveness of Logic in Computer Science_ catalogs scores of
     ways in which logic offers critical tools and insights.  Indeed,
     they observe that, "As a matter of fact, logic has turned out to
-    be significiantly more effective in computer science than it has
+    be significantly more effective in computer science than it has
     been in mathematics.  This is quite remarkable, especially since
     much of the impetus for the development of logic during the past
     one hundred years came from mathematics."
@@ -389,7 +388,6 @@
     Coqは小さく、しかし表現力豊かな関数型言語と、論理的表明を記述、証明するツールの組み合わせと言えます。
     加えて、より詳細を見ていくと、その二つの側面が同一の機構、つまり「証明はプログラムである」というものであることがわかります。 *)
 
-
 (* ================================================================= *)
 (* begin hide *)
 (** ** Further Reading *)
@@ -431,45 +429,59 @@
 (* begin hide *)
 (** Coq runs on Windows, Linux, and macOS.  You will need:
 
-       - A current installation of Coq, available from the Coq home
-         page.  These files have been tested with Coq 8.7.1.
+    - A current installation of Coq, available from the Coq home page.
+      These files have been tested with Coq 8.8.1.
 
-       - An IDE for interacting with Coq.  Currently, there are two
-         choices:
+    - An IDE for interacting with Coq.  Currently, there are two
+      choices:
 
-           - Proof General is an Emacs-based IDE.  It tends to be
-             preferred by users who are already comfortable with
-             Emacs.  It requires a separate installation (google
-             "Proof General").
+        - Proof General is an Emacs-based IDE.  It tends to be
+          preferred by users who are already comfortable with Emacs.
+          It requires a separate installation (google "Proof
+          General").
 
-             Adventurous users of Coq within Emacs may also want to
-             check out extensions such as [company-coq] and
-             [control-lock].
+          Adventurous users of Coq within Emacs may also want to check
+          out extensions such as [company-coq] and [control-lock].
 
-           - CoqIDE is a simpler stand-alone IDE.  It is distributed
-             with Coq, so it should be available once you have Coq
-             installed.  It can also be compiled from scratch, but on
-             some platforms this may involve installing additional
-             packages for GUI libraries and such. *)
+        - CoqIDE is a simpler stand-alone IDE.  It is distributed with
+          Coq, so it should be available once you have Coq installed.
+          It can also be compiled from scratch, but on some platforms
+          this may involve installing additional packages for GUI
+          libraries and such.
+
+          Users who like CoqIDE should consider running it with the
+          "asynchronous" and "error resilience" modes disabled:
+
+  coqide -async-proofs off -async-proofs-command-error-resilience off Foo.v &
+*)
 (* end hide *)
-(** Coqは、Windowsと多くのUNIX変種（LinuxやMacOSを含む）で動きます。具体的には
+(** Coqは、WindowsやLinux、macOSで動きます。
+    以下のソフトを用意しましょう。
  
-       - Coqホームページにある最新版のCoq。
-         全てのサンプルソースはバージョン8.7.1でコンパイルできることが確認されています。
-         （訳注：翻訳チームは8.6.1から8.8まででコンパイルできることを確認しています）
+    - Coqホームページにある最新版のCoq。
+      全てのサンプルソースはバージョン8.8.1でコンパイルできることが確認されています。
+      （訳注：翻訳チームは8.8.2でコンパイルできることを確認していますが、QuickChickの章は8.9や8.9.1でコンパイルできないことを確認しています。）
  
-       - Coqを対話的に操作するIDE。現在、以下の二つから選択できます。
+    - Coqを対話的に操作するIDE。
+      現在、以下の二つから選択できます。
  
-           - ProofGeneralは、Emacs上に作られたIDEです。
-             すでにEmacsに慣れている人向けのものです。
-             Coqとは別にインストールする必要があります。
-             （詳しくはgoogleで"ProofGeneral"を検索してください）
+        - ProofGeneralは、Emacs上に作られたIDEです。
+          すでにEmacsに慣れている人向けのものです。
+          Coqとは別にインストールする必要があります。
+          （詳しくはgoogleで"ProofGeneral"を検索してください）
  
-             冒険心のある人向けに、Coq用のEmacs拡張として [company-coq] や [control-lock] というものもあります。
+          冒険心のある人向けに、Coq用のEmacs拡張として [company-coq] や [control-lock] というものもあります。
  
-           - CoqIDEは、スタンドアロンで動作するシンプルなIDEです。
-             Coqと一緒に配布されているので、Coqをインストールすれば使えるはずです。
-             1からビルドし直すこともできますが、環境によってはGUIライブラリなどの追加パッケージをインストールする必要があります。 *)
+        - CoqIDEは、スタンドアロンで動作するシンプルなIDEです。
+          Coqと一緒に配布されているので、Coqをインストールすれば使えるはずです。
+          1からビルドし直すこともできますが、環境によってはGUIライブラリなどの追加パッケージをインストールする必要があります。
+ 
+          CoqIDEを選ぶ場合は、「非同期(asynchronous)モード」や「エラー復元(error resilience)モードを無効にした方がいいでしょう。
+          その場合は以下のように起動します。
+<<
+          coqide -async-proofs off -async-proofs-command-error-resilience off Foo.v & 
+>>
+ *)
 
 (* ================================================================= *)
 (* begin hide *)
@@ -537,7 +549,6 @@
     講義の視点では、解答に安易に接することができるのは有効ではありませんし、またこれらの問題は単位認定に関わる課題となります。
     これらの解答を、検索エンジンによって見つけられる場所に置いたりしないでください！
  *)
-(* 訳注：注意書きを大きく見せたかったので、Basics.vを参考に表記を変えている。日本語だと強調表示できずに埋もれてしまうため。 *)
 
 (* ================================================================= *)
 (* begin hide *)
@@ -548,15 +559,30 @@
 (* begin hide *)
 (** A tar file containing the full sources for the "release version"
     of this book (as a collection of Coq scripts and HTML files) is
-    available at http://www.cis.upenn.edu/~bcpierce/sf.
+    available at http://softwarefoundations.cis.upenn.edu.
 
-    (If you are using the book as part of a class, your professor may
-    give you access to a locally modified version of the files, which
-    you should use instead of the release version.) *)
+    If you are using the book as part of a class, your professor may
+    give you access to a locally modified version of the files; you
+    should use this one instead of the public release version, so that
+    you get any local updates during the semester. *)
 (* end hide *)
-(** この教材のリリース版のソース（CoqスクリプトとHTMLファイル）をtarで固めたものが、 http://www.cis.upenn.edu/~bcpierce/sf から取得できます。
+(** この教材のリリース版のソース（CoqスクリプトとHTMLファイル）をtarで固めたものが、 http://softwarefoundations.cis.upenn.edu から取得できます。
  
-    （講義でこの本の一部だけを使用している場合、講師からリリース版の代わりに使う変更版について説明されると思います。） *)
+    講義でこの本の一部だけを使用している場合、講師からリリース版の代わりに使う変更版について説明されると思います。
+    学期の途中で変更される可能性があるでしょうし、公開されている版ではなく、その変更版を利用してください。 *)
+
+(* ################################################################# *)
+(** * Resources *)
+
+(* ================================================================= *)
+(** ** Sample Exams *)
+
+(** A large compendium of exams from many offerings of
+    CIS500 ("Software Foundations") at the University of Pennsylvania
+    can be found at
+    https://www.seas.upenn.edu/~cis500/current/exams/index.html.
+    There has been some drift of notations over the years, but most of
+    the problems are still relevant to the current text. *)
 
 (* ================================================================= *)
 (* begin hide *)
@@ -565,14 +591,15 @@
 (** ** 講義ビデオ *)
 
 (* begin hide *)
-(** Lectures for an intensive summer course based on _Logical
-    Foundations_ (part of the DeepSpec summer school in 2017) can be
-    found at https://deepspec.org/event/dsss17/coq_intensive.html.
-    The video quality is poor at the beginning but gets better in the
+(** Lectures for two intensive summer courses based on _Logical
+    Foundations_ (part of the DeepSpec summer school series) can be
+    found at https://deepspec.org/event/dsss17 and
+    https://deepspec.org/event/dsss18/.  The video quality in the
+    2017 lectures is poor at the beginning but gets better in the
     later lectures. *)
 (* end hide *)
-(** 「論理の基礎」を元にした集中講義（2017年のDeepSpec summer schoolの一部）の様子が https://deepspec.org/event/dsss17/coq_intensive.html から見られます。
-    最初の方は画質が悪いのですが、後の講義になるに従って徐々に良くなっていきます。 *)
+(** 「論理の基礎」を元にした集中講義（DeepSpec summer schoolの一部）の様子が https://deepspec.org/event/dsss17/ と https://deepspec.org/event/dsss18/ から見られます。
+    2017年版の最初の方は画質が悪いのですが、後の講義になるに従って徐々に良くなっていきます。 *)
 
 (* ################################################################# *)
 (* begin hide *)
@@ -585,12 +612,12 @@
     undoubtedly find things you'd like to change, improve, or add.
     Your contributions are welcome!
 
-    In order to keep the legalities simple and to have a single
-    point of responsibility in case the need should ever arise to
-    adjust the license terms, sublicense, etc., we ask all
-    contributors (i.e., everyone with access to the developers'
-    repository) to assign copyright in their contributions to the
-    appropriate "author of record," as follows:
+    In order to keep the legalities simple and to have a single point
+    of responsibility in case the need should ever arise to adjust the
+    license terms, sublicense, etc., we ask all contributors (i.e.,
+    everyone with access to the developers' repository) to assign
+    copyright in their contributions to the appropriate "author of
+    record," as follows:
 
       - I hereby assign copyright in my past and future contributions
         to the Software Foundations project to the Author of Record of
@@ -599,22 +626,22 @@
         present, the Authors of Record are as follows: For Volumes 1
         and 2, known until 2016 as "Software Foundations" and from
         2016 as (respectively) "Logical Foundations" and "Programming
-        Foundations," the Author of Record is Benjamin Pierce.  For
-        Volume 3, "Verified Functional Algorithms", the Author of
+        Foundations," and for Volume 4, "QuickChick: Property-Based
+        Testing in Coq," the Author of Record is Benjamin C. Pierce.
+        For Volume 3, "Verified Functional Algorithms", the Author of
         Record is Andrew W. Appel. For components outside of
-        designated Volumes (e.g., typesetting and grading tools and
+        designated volumes (e.g., typesetting and grading tools and
         other software infrastructure), the Author of Record is
         Benjamin Pierce.
 
-    To get started, please send an email to Benjamin Pierce, describing
-    yourself and how you plan to use the materials and including
-       (1) the above copyright transfer text and
-       (2) the result of doing "htpasswd -s -n NAME"
-    where NAME is your preferred user name.
+    To get started, please send an email to Benjamin Pierce,
+    describing yourself and how you plan to use the materials and
+    including (1) the above copyright transfer text and (2) your
+    github username.
 
-    We'll set you up with access to the subversion repository and
-    developers' mailing lists.  In the repository you'll find a
-    file [INSTRUCTORS] with further instructions. *)
+    We'll set you up with access to the git repository and developers'
+    mailing lists.  In the repository you'll find a file [INSTRUCTORS]
+    with further instructions. *)
 (* end hide *)
 (** この資料を自分のコースで使おうと思った場合、ほぼまちがいなく書き直しや追加したいところが出てくるでしょう。
     そういった貢献は大歓迎です。
@@ -629,10 +656,11 @@
         present, the Authors of Record are as follows: For Volumes 1 
         and 2, known until 2016 as "Software Foundations" and from 
         2016 as (respectively) "Logical Foundations" and "Programming 
-        Foundations," the Author of Record is Benjamin Pierce.  For 
-        Volume 3, "Verified Functional Algorithms", the Author of 
+        Foundations," and for Volume 4, "QuickChick: Property-Based 
+        Testing in Coq," the Author of Record is Benjamin C. Pierce. 
+        For Volume 3, "Verified Functional Algorithms", the Author of 
         Record is Andrew W. Appel. For components outside of 
-        designated Volumes (e.g., typesetting and grading tools and 
+        designated volumes (e.g., typesetting and grading tools and 
         other software infrastructure), the Author of Record is 
         Benjamin Pierce. 
  
@@ -642,16 +670,13 @@
  
         私は今後、Software Foundationsプロジェクトに対するこれまでとこれからの貢献について、著作権をそれぞれの分冊または一部のAuthor of Recordに譲渡します。
         私は現在のAuthor of Recordが次の通りであることを理解しています。
-        ボリューム1と2、2016年までは"Software Foundations"（ソフトウェアの基礎）、2016年からはそれぞれ"Logical Foundnations"（論理の基礎）と"Programming Foundations"（プログラミングの基礎）と呼ばれるものについて、Author of RecordはBenjamin Pierceです。
+        ボリューム1と2、2016年までは"Software Foundations"（ソフトウェアの基礎）、2016年からはそれぞれ"Logical Foundnations"（論理の基礎）と"Programming Foundations"（プログラミングの基礎）と呼ばれるもの、そしてボリューム4 "QuickChick: Property-Based Testing in Coq"（Coqにおけるプロパティベーステスト）について、Author of RecordはBenjamin Pierceです。
         ボリューム3 "Verified Functional Algorithms"については、Author of RecordはAndrew W. Appelです。
         これらのボリューム以外の要素（例：組版、評価用ツール、その他のソフトウェア基盤）についてのAuthor of RecordはBenjamin Pierceです。
  
-    貢献するには、自己紹介、どのように利用するかと共に、以下の二つをBenjamin Pierceまでemailで送ってください。
-       (1) 上の著作権譲渡文（訳注：必ず原文です）
-       (2) "htpasswd -s -n NAME" の結果
-    NAMEは希望するユーザ名です。
+    貢献するには、自己紹介、どのように利用するかと共に、(1) 上の著作権譲渡文（訳注：必ず原文です）、(2) githubのユーザ名、の二つをBenjamin Pierceまでemailで送ってください。
  
-    そうすれば、subversionのリポジトリとメーリングリストへのアクセス権を設定します。
+    そうすれば、gitのリポジトリとメーリングリストへのアクセス権を設定します。
     リポジトリには、[INSTRUCTORS]ファイルがありますので、次にどうすべきかはそれを参照してください。 *)
 
 (* ################################################################# *)
@@ -677,3 +702,4 @@
     NSF Expeditions grant 1521523, _The Science of Deep
     Specification_. *)
 
+(* Wed Jan 9 12:02:43 EST 2019 *)

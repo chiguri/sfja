@@ -17,7 +17,7 @@
     Foundations_...
 
    - _Functional programming_:
-          - "declarative" programming style (recursion over persistent
+          - "declarative" programming style (recursion over immutable
             data structures, rather than looping over mutable arrays
             or pointer structures)
           - higher-order functions
@@ -27,7 +27,7 @@
     「論理の基礎」から始まった軌跡を振り返ってみましょう。
  
     - 関数プログラミング
-          - 「宣言的」プログラミング（変更可能な配列やポインタなどによるループではなく、永続データ構造上の再帰）
+          - 「宣言的」プログラミング（変更可能な配列やポインタなどによるループではなく、不変データ構造上の再帰）
           - 高階関数
           - 多相性 *)
 
@@ -38,7 +38,6 @@
                logic                        calculus
         --------------------   ~   ----------------------------
         software engineering       mechanical/civil engineering
-
 
           - inductively defined sets and relations
           - inductive proofs
@@ -51,7 +50,6 @@
         --------------------   ~   ---------------------------- 
             ソフトウェア工学               機械/土木工学
 >>
- 
           - 帰納的に定義された集合と関係
           - 帰納的証明
           - 証明オブジェクト *)
@@ -125,8 +123,9 @@
     today... *)
 
 (* ----------------------------------------------------------------- *)
-(** *** CompCert *)
-(** _CompCert_ is a fully verified optimizing compiler for almost all
+(** *** CompCert 
+
+    _CompCert_ is a fully verified optimizing compiler for almost all
     of the ISO C90 / ANSI C language, generating code for x86, ARM,
     and PowerPC processors.  The whole of CompCert is is written in
     Gallina and extracted to an efficient OCaml program using Coq's
@@ -159,8 +158,9 @@
     http://compcert.inria.fr *)
 
 (* ----------------------------------------------------------------- *)
-(** *** seL4 *)
-(** _seL4_ is a fully verified microkernel, considered to be the
+(** *** seL4 
+
+    _seL4_ is a fully verified microkernel, considered to be the
     world's first OS kernel with an end-to-end proof of implementation
     correctness and security enforcement.  It is implemented in C and
     ARM assembly and specified and verified using Isabelle.  The code
@@ -179,8 +179,9 @@
     https://sel4.systems. *)
 
 (* ----------------------------------------------------------------- *)
-(** *** CertiKOS *)
-(** _CertiKOS_ is a clean-slate, fully verified hypervisor, written in
+(** *** CertiKOS 
+
+    _CertiKOS_ is a clean-slate, fully verified hypervisor, written in
     CompCert C and verified in Coq.
 
     "The CertiKOS project aims to develop a novel and practical
@@ -198,8 +199,9 @@
     http://flint.cs.yale.edu/certikos/ *)
 
 (* ----------------------------------------------------------------- *)
-(** *** Ironclad *)
-(** _Ironclad Apps_ is a collection of fully verified web
+(** *** Ironclad 
+
+    _Ironclad Apps_ is a collection of fully verified web
     applications, including a "notary" for securely signing
     statements, a password hasher, a multi-user trusted counter, and a
     differentially-private database.
@@ -222,8 +224,9 @@
     https://github.com/Microsoft/Ironclad/tree/master/ironclad-apps *)
 
 (* ----------------------------------------------------------------- *)
-(** *** Verdi *)
-(** _Verdi_ is a framework for implementing and formally verifying
+(** *** Verdi 
+
+    _Verdi_ is a framework for implementing and formally verifying
     distributed systems.
 
     "Verdi supports several different fault models ranging from
@@ -240,8 +243,9 @@
     http://verdi.uwplse.org *)
 
 (* ----------------------------------------------------------------- *)
-(** *** DeepSpec *)
-(** _The Science of Deep Specification_ is an NSF "Expedition"
+(** *** DeepSpec 
+
+    _The Science of Deep Specification_ is an NSF "Expedition"
     project (running from 2016 to 2020) that focuses on the
     specification and verification of full functional correctness of
     both software and hardware.  It also sponsors workshops and summer
@@ -252,8 +256,9 @@
           - https://www.youtube.com/watch?v=IPNdsnRWBkk *)
 
 (* ----------------------------------------------------------------- *)
-(** *** REMS *)
-(** _REMS_ is a european project on Rigorous Engineering of Mainstream
+(** *** REMS 
+
+    _REMS_ is a european project on Rigorous Engineering of Mainstream
     Systems.  It has produced detailed formal specifications of a wide
     range of critical real-world interfaces, protocols, and APIs,
     including 
@@ -310,19 +315,19 @@
 
        - More on Hoare logic and program verification
             - The Formal Semantics of Programming Languages: An
-              Introduction, by Glynn Winskel [Winskel 1993].
+              Introduction, by Glynn Winskel [Winskel 1993] (in Bib.v).
             - Many practical verification tools, e.g. Microsoft's
               Boogie system, Java Extended Static Checking, etc.
 
        - More on the foundations of programming languages:
             - Concrete Semantics with Isabelle/HOL, by Tobias Nipkow
-              and Gerwin Klein [Nipkow 2014]
+              and Gerwin Klein [Nipkow 2014] (in Bib.v)
             - Types and Programming Languages, by Benjamin C. Pierce
-              [Pierce 2002].
+              [Pierce 2002] (in Bib.v).
             - Practical Foundations for Programming Languages, by
-              Robert Harper [Harper 2016].
+              Robert Harper [Harper 2016] (in Bib.v).
             - Foundations for Programming Languages, by John
-              C. Mitchell [Mitchell 1996].
+              C. Mitchell [Mitchell 1996] (in Bib.v).
 
         - Iron Lambda (http://iron.ouroborus.net/) is a collection
           of ​Coq formalisations for functional languages of
@@ -352,15 +357,15 @@
          目次と依存関係のページを眺めてみてください。
  
        - ホーア論理とプログラム検証について:
-            - The Formal Semantics of Programming Languages: An Introduction, by Glynn Winskel [Winskel 1993]
+            - The Formal Semantics of Programming Languages: An Introduction, by Glynn Winskel [Winskel 1993] （Bib.v内）
             - 実践的な形式検証ツール、例えばMicrosoftのBoogie system、Java Extended Static Checking、など
  
        - プログラミング言語の基礎について:
-            - Concrete Semantics with Isabelle/HOL, by Tobias Nipkow and Gerwin Klein [Nipkow 2014]
-            - Types and Programming Languages, by Benjamin C. Pierce [Pierce 2002]
+            - Concrete Semantics with Isabelle/HOL, by Tobias Nipkow and Gerwin Klein [Nipkow 2014] （Bib.v内）
+            - Types and Programming Languages, by Benjamin C. Pierce [Pierce 2002] （Bib.v内）
               （和訳：型システム入門 -プログラミング言語と型の理論-）
-            - Practical Foundations for Programming Languages, by Robert Harper [Harper 2016]
-            - Foundations for Programming Languages, by John C. Mitchell [Mitchell 1996]
+            - Practical Foundations for Programming Languages, by Robert Harper [Harper 2016] （Bib.v内）
+            - Foundations for Programming Languages, by John C. Mitchell [Mitchell 1996] （Bib.v内）
  
         - Iron Lambda (http://iron.ouroborus.net/) は、段階的に複雑さが変わる複数の関数型言語のCoqによる定式化です。
           ソフトウェアの基礎と、最近の研究論文で起こっていることのギャップを埋めてくれます。
@@ -380,3 +385,4 @@
 
 (** $Date$ *)
 
+(* Thu Feb 7 20:09:27 EST 2019 *)

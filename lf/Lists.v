@@ -3,7 +3,7 @@
 (** * Lists: Working with Structured Data *)
 (* end hide *)
 
-Require Export Induction.
+From LF Require Export Induction.
 Module NatList.
 
 (* ################################################################# *)
@@ -15,13 +15,13 @@ Module NatList.
 (* begin hide *)
 (** In an [Inductive] type definition, each constructor can take
     any number of arguments -- none (as with [true] and [O]), one (as
-    with [S]), or more than one, as here: *)
+    with [S]), or more than one (as with [nybble], and here): *)
 (* end hide *)
 (** [Inductive] による型定義では、各構成子は任意の個数の引数を取ることができました。
-    [true] や [O] のように引数のないもの、 [S] のようにひとつのもの、また、ふたつ以上の取るものも以下のように定義することができます。 *)
+    [true] や [O] のように引数のないもの、 [S] のようにひとつのもの、また、ふたつ以上取るものも [nybble] や以下のように定義することができます。 *)
 
 Inductive natprod : Type :=
-| pair : nat -> nat -> natprod.
+| pair (n1 n2 : nat).
 
 (* begin hide *)
 (** This declaration can be read: "There is just one way to
@@ -34,12 +34,10 @@ Inductive natprod : Type :=
 Check (pair 3 5).
 
 (* begin hide *)
-(** Here are two simple functions for extracting the first and
-    second components of a pair.  The definitions also illustrate how
-    to do pattern matching on two-argument constructors. *)
+(** Here are simple functions for extracting the first and
+    second components of a pair. *)
 (* end hide *)
-(** ペアの第一要素と第二要素を取り出す関数を定義します。
-    この定義では、2引数の構築子に対するパターンマッチを使っています。 *)
+(** ペアの第一要素と第二要素を取り出す関数を定義します。 *)
 
 Definition fst (p : natprod) : nat :=
   match p with
@@ -55,26 +53,21 @@ Compute (fst (pair 3 5)).
 (* ===> 3 *)
 
 (* begin hide *)
-(** Since pairs are used quite a bit, it is nice to be able to
+(** Since pairs will be used heavily, it is nice to be able to
     write them with the standard mathematical notation [(x,y)] instead
     of [pair x y].  We can tell Coq to allow this with a [Notation]
     declaration. *)
 (* end hide *)
-(** ペアはよく使うものなので、 [pair x y] ではなく、数学の標準的な記法で [(x, y)] と書けるとよいでしょう。
+(** ペアはよく使うので、 [pair x y] ではなく、数学の標準的な記法で [(x, y)] と書けるとよいでしょう。
     このような記法を使うためには [Notation] 宣言を使います。 *)
 
 Notation "( x , y )" := (pair x y).
 
 (* begin hide *)
 (** The new pair notation can be used both in expressions and in
-    pattern matches (indeed, we've actually seen this already in the
-    [Basics] chapter, in the definition of the [minus] function --
-    this works because the pair notation is also provided as part of
-    the standard library): *)
+    pattern matches. *)
 (* end hide *)
-(** こうして定義したペアの新しい記法（notation）は、式だけでなくパターンマッチに使うこともできます。
-   （実際には、パターンマッチで使っている様子は既に[Basics1]章の[minus]関数を定義する際に見ています。
-   この時点で動いていたのは、同じペアの記法が標準ライブラリの一部として提供されているからです。） *)
+(** こうして定義したペアの新しい記法（notation）は、式だけでなくパターンマッチに使うこともできます。 *)
 
 Compute (fst (3,5)).
 
@@ -93,16 +86,50 @@ Definition swap_pair (p : natprod) : natprod :=
   | (x,y) => (y,x)
   end.
 
+(** Note that pattern-matching on a pair (with parentheses: [(x, y)])
+    is not to be confused with the "multiple pattern" syntax
+    (with no parentheses: [x, y]) that we have seen previously.
+
+    The above examples illustrate pattern matching on a pair with
+    elements [x] and [y], whereas [minus] below (taken from
+    [Basics]) performs pattern matching on the values [n]
+    and [m].
+
+       Fixpoint minus (n m : nat) : nat :=
+         match n, m with
+         | O   , _    => O
+         | S _ , O    => n
+         | S n', S m' => minus n' m'
+         end.
+
+    The distinction is minor, but it is worth knowing that they
+    are not the same. For instance, the following definitions are
+    ill-formed:
+
+        (* Can't match on a pair with multiple patterns: *)
+        Definition bad_fst (p : natprod) : nat :=
+          match p with
+          | x, y => x
+          end.
+
+        (* Can't match on multiple values with pair patterns: *)
+        Definition bad_minus (n m : nat) : nat :=
+          match n, m with
+          | (O   , _   ) => O
+          | (S _ , O   ) => n
+          | (S n', S m') => bad_minus n' m'
+          end.
+*)
+
 (* begin hide *)
 (** Let's try to prove a few simple facts about pairs.
 
-    If we state things in a particular (and slightly peculiar) way, we
-    can complete proofs with just reflexivity (and its built-in
-    simplification): *)
+    If we state things in a slightly peculiar way, we can complete
+    proofs with just reflexivity (and its built-in simplification): *)
 (* end hide *)
 (** それでは、数のペアに関する簡単な事実をいくつか証明してみましょう。
  
-    一定の（一種独特な）形式で書いておくと、単に reflexivity（と組み込みの簡約）だけで証明できます。 *)
+    一定の形式で書いておくと、単に reflexivity（と組み込みの簡約）だけで証明できます。 *)
 
 Theorem surjective_pairing' : forall (n m : nat),
   (n,m) = (fst (n,m), snd (n,m)).
@@ -136,17 +163,18 @@ Proof.
   intros p.  destruct p as [n m].  simpl.  reflexivity.  Qed.
 
 (* begin hide *)
-(** Notice that, unlike its behavior with [nat]s, [destruct]
-    generates just one subgoal here.  That's because [natprod]s can
-    only be constructed in one way. *)
+(** Notice that, unlike its behavior with [nat]s, where it
+    generates two subgoals, [destruct] generates just one subgoal
+    here.  That's because [natprod]s can only be constructed in one
+    way. *)
 (* end hide *)
-(** [nat] の場合と異なり、 [destruct] でサブゴールが増えることはありません。
+(** 2つのサブゴールを生成していた [nat] の場合と異なり、 [destruct] でサブゴールが増えることはありません。
     これは、 [natprod] の構成法がひとつしかないからです。 *)
 
 (* begin hide *)
-(** **** Exercise: 1 star (snd_fst_is_swap)  *)
+(** **** Exercise: 1 star, standard (snd_fst_is_swap)  *)
 (* end hide *)
-(** **** 練習問題: ★ (snd_fst_is_swap) *)
+(** **** 練習問題: ★, standard (snd_fst_is_swap) *)
 Theorem snd_fst_is_swap : forall (p : natprod),
   (snd p, fst p) = swap_pair p.
 Proof.
@@ -154,9 +182,9 @@ Proof.
 (** [] *)
 
 (* begin hide *)
-(** **** Exercise: 1 star, optional (fst_swap_is_snd)  *)
+(** **** Exercise: 1 star, standard, optional (fst_swap_is_snd)  *)
 (* end hide *)
-(** **** 練習問題: ★ (fst_swap_is_snd) *)
+(** **** 練習問題: ★, standard, optional (fst_swap_is_snd) *)
 Theorem fst_swap_is_snd : forall (p : natprod),
   fst (swap_pair p) = snd p.
 Proof.
@@ -178,8 +206,8 @@ Proof.
     「リストは、空のリストであるか、または数と他のリストをペアにしたものである。」 *)
 
 Inductive natlist : Type :=
-  | nil  : natlist
-  | cons : nat -> natlist -> natlist.
+  | nil
+  | cons (n : nat) (l : natlist).
 
 (* begin hide *)
 (** For example, here is a three-element list: *)
@@ -204,11 +232,11 @@ Notation "[ x ; .. ; y ]" := (cons x .. (cons y nil) ..).
 
 (* begin hide *)
 (** It is not necessary to understand the details of these
-    declarations, but in case you are interested, here is roughly
-    what's going on.  The [right associativity] annotation tells Coq
-    how to parenthesize expressions involving several uses of [::] so
-    that, for example, the next three declarations mean exactly the
-    same thing: *)
+    declarations, but here is roughly what's going on in case you are
+    interested.  The [right associativity] annotation tells Coq how to
+    parenthesize expressions involving multiple uses of [::] so that,
+    for example, the next three declarations mean exactly the same
+    thing: *)
 (* end hide *)
 (** この宣言を詳細まで理解する必要はありませんが、興味のある読者のために簡単に説明しておきます。
     [right associativity] アノテーションは複数の [::] を使った式にどのように括弧を付けるか指示するものです。
@@ -228,8 +256,8 @@ Definition mylist3 := [1;2;3].
                       (at level 50, left associativity).
 
     the [+] operator will bind tighter than [::], so [1 + 2 :: [3]]
-    will be parsed, as we'd expect, as [(1 + 2) :: [3]] rather than [1
-    + (2 :: [3])].
+    will be parsed, as we'd expect, as [(1 + 2) :: [3]] rather than
+    [1 + (2 :: [3])].
 
     (Expressions like "[1 + 2 :: [3]]" can be a little confusing when
     you read them in a [.v] file.  The inner brackets, around 3, indicate
@@ -305,8 +333,8 @@ Fixpoint app (l1 l2 : natlist) : natlist :=
   end.
 
 (* begin hide *)
-(** Actually, [app] will be used a lot in some parts of what
-    follows, so it is convenient to have an infix operator for it. *)
+(** Since [app] will be used extensively in what follows, it is
+    again convenient to have an infix operator for it. *)
 (* end hide *)
 (** [app] はこの後でよく使うので、中置演算子を用意しておくと便利でしょう。 *)
 
@@ -322,17 +350,16 @@ Proof. reflexivity.  Qed.
 
 (* ----------------------------------------------------------------- *)
 (* begin hide *)
-(** *** Head (with default) and Tail *)
+(** *** Head (With Default) and Tail *)
 (* end hide *)
 (** *** 先頭（デフォルト値付き）と後ろ *)
 
 (* begin hide *)
 (** Here are two smaller examples of programming with lists.
     The [hd] function returns the first element (the "head") of the
-    list, while [tl] returns everything but the first
-    element (the "tail").
-    Of course, the empty list has no first element, so we
-    must pass a default value to be returned in that case.  *)
+    list, while [tl] returns everything but the first element (the
+    "tail").  Since the empty list has no first element, we must pass
+    a default value to be returned in that case.  *)
 (* end hide *)
 (** もうふたつリストを使った例を見てみましょう。
     [hd] 関数はリストの最初の要素（先頭—— head）を返し、 [tl] は最初の要素を除いたもの（後ろ―― tail）を返します。
@@ -357,7 +384,6 @@ Proof. reflexivity.  Qed.
 Example test_tl:              tl [1;2;3] = [2;3].
 Proof. reflexivity.  Qed.
 
-
 (* ----------------------------------------------------------------- *)
 (* begin hide *)
 (** *** Exercises *)
@@ -365,15 +391,15 @@ Proof. reflexivity.  Qed.
 (** *** 練習問題 *)
 
 (* begin hide *)
-(** **** Exercise: 2 stars, recommended (list_funs)  *)
-(* end hide *)
-(** **** 練習問題: ★★, recommended (list_funs) *)
-(* begin hide *)
-(** Complete the definitions of [nonzeros], [oddmembers] and
+(** **** Exercise: 2 stars, standard, recommended (list_funs)  
+
+    Complete the definitions of [nonzeros], [oddmembers], and
     [countoddmembers] below. Have a look at the tests to understand
     what these functions should do. *)
 (* end hide *)
-(** 以下の [nonzeros]、 [oddmembers]、 [countoddmembers] の定義を完成させなさい。
+(** **** 練習問題: ★★, standard, recommended (list_funs)
+ 
+    以下の [nonzeros]、 [oddmembers]、 [countoddmembers] の定義を完成させなさい。
     どのように動くかは続くテストから考えてください。 *)
 
 Fixpoint nonzeros (l:natlist) : natlist
@@ -382,7 +408,6 @@ Fixpoint nonzeros (l:natlist) : natlist
 Example test_nonzeros:
   nonzeros [0;1;0;2;3;0;0] = [1;2;3].
   (* FILL IN HERE *) Admitted.
-(* GRADE_THEOREM 0.5: NatList.test_nonzeros *)
 
 Fixpoint oddmembers (l:natlist) : natlist
   (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
@@ -390,7 +415,6 @@ Fixpoint oddmembers (l:natlist) : natlist
 Example test_oddmembers:
   oddmembers [0;1;0;2;3;0;0] = [1;3].
   (* FILL IN HERE *) Admitted.
-(* GRADE_THEOREM 0.5: NatList.test_oddmembers *)
 
 Definition countoddmembers (l:natlist) : nat
   (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
@@ -409,29 +433,29 @@ Example test_countoddmembers3:
 (** [] *)
 
 (* begin hide *)
-(** **** Exercise: 3 stars, advanced (alternate)  *)
-(* end hide *)
-(** **** 練習問題: ★★★, advanced (alternate) *)
-(* begin hide *)
-(** Complete the definition of [alternate], which "zips up" two lists
-    into one, alternating between elements taken from the first list
-    and elements from the second.  See the tests below for more
+(** **** Exercise: 3 stars, advanced (alternate)  
+
+    Complete the definition of [alternate], which interleaves two
+    lists into one, alternating between elements taken from the first
+    list and elements from the second.  See the tests below for more
     specific examples.
 
-    Note: one natural and elegant way of writing [alternate] will fail
-    to satisfy Coq's requirement that all [Fixpoint] definitions be
-    "obviously terminating."  If you find yourself in this rut, look
-    for a slightly more verbose solution that considers elements of
-    both lists at the same time.  (One possible solution requires
+    (Note: one natural and elegant way of writing [alternate] will
+    fail to satisfy Coq's requirement that all [Fixpoint] definitions
+    be "obviously terminating."  If you find yourself in this rut,
+    look for a slightly more verbose solution that considers elements
+    of both lists at the same time.  One possible solution involves
     defining a new kind of pairs, but this is not the only way.)  *)
 (* end hide *)
-(** [alternate] の定義を完成させなさい。
-    この関数は、ふたつのリストから交互に要素を取り出しひとつに「綴じ合わせる」関数です。
+(** **** 練習問題: ★★★, advanced (alternate)
+ 
+    [alternate] の定義を完成させなさい。
+    この関数は、ふたつのリストから交互に要素を取り出しひとつにまとめる関数です。
     具体的な例は下のテストを見てください。
  
-    注意: [alternate] の自然な定義のひとつは、 Coq の要求する「[Fixpoint] による定義は『明らかに停止する』ものでなければならない」という性質を満たすことができません。
+    （注意: [alternate] の自然な定義のひとつは、 Coq の要求する「[Fixpoint] による定義は『明らかに停止する』ものでなければならない」という性質を満たすことができません。
     このパターンにはまってしまったようであれば、両方のリストの要素を同時に見ていくような少し冗長な方法を探してみてください。
-    （新しい対の定義を必要とする解法もありますが、それ以外にもあります。） *)
+    新しい対を定義する必要のある解法もありますが、それ以外にもあります。） *)
 
 Fixpoint alternate (l1 l2 : natlist) : natlist
   (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
@@ -462,22 +486,22 @@ Example test_alternate4:
 (* begin hide *)
 (** A [bag] (or [multiset]) is like a set, except that each element
     can appear multiple times rather than just once.  One possible
-    implementation is to represent a bag of numbers as a list. *)
+    representation for a bag of numbers is as a list. *)
 (* end hide *)
 (** バッグ（[bag]、または多重集合—— [multiset]）は集合のようなものですが、それぞれの要素が一度きりではなく複数回現れることのできるようなものを言います。
-    バッグの実装としてありうるのは数のバッグをリストで表現するというものでしょう。 *)
+    数のバッグの表現としては数のリストがありえます。 *)
 
 Definition bag := natlist.
 
 (* begin hide *)
-(** **** Exercise: 3 stars, recommended (bag_functions)  *)
-(* end hide *)
-(** **** 練習問題: ★★★, recommended (bag_functions) *)
-(* begin hide *)
-(** Complete the following definitions for the functions
+(** **** Exercise: 3 stars, standard, recommended (bag_functions)  
+
+    Complete the following definitions for the functions
     [count], [sum], [add], and [member] for bags. *)
 (* end hide *)
-(** バッグに対する [count]、 [sum]、 [add]、 [member] 関数の定義を完成させなさい。 *)
+(** **** 練習問題: ★★★, standard, recommended (bag_functions)
+ 
+    バッグに対する [count]、 [sum]、 [add]、 [member] 関数の定義を完成させなさい。 *)
 
 Fixpoint count (v:nat) (s:bag) : nat
   (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
@@ -491,7 +515,6 @@ Example test_count1:              count 1 [1;2;3;1;4;1] = 3.
  (* FILL IN HERE *) Admitted.
 Example test_count2:              count 6 [1;2;3;1;4;1] = 0.
  (* FILL IN HERE *) Admitted.
-(* GRADE_THEOREM 0.5: NatList.test_count2 *)
 
 (* begin hide *)
 (** Multiset [sum] is similar to set [union]: [sum a b] contains all
@@ -520,7 +543,6 @@ Definition sum : bag -> bag -> bag
 
 Example test_sum1:              count 1 (sum [1;2;3] [1;4;1]) = 3.
  (* FILL IN HERE *) Admitted.
-(* GRADE_THEOREM 0.5: NatList.test_sum1 *)
 
 Definition add (v:nat) (s:bag) : bag
   (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
@@ -529,35 +551,35 @@ Example test_add1:                count 1 (add 1 [1;4;1]) = 3.
  (* FILL IN HERE *) Admitted.
 Example test_add2:                count 5 (add 1 [1;4;1]) = 0.
  (* FILL IN HERE *) Admitted.
-(* GRADE_THEOREM 0.5: NatList.test_add1 *)
-(* GRADE_THEOREM 0.5: NatList.test_add2 *)
 
 Definition member (v:nat) (s:bag) : bool
   (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
 
 Example test_member1:             member 1 [1;4;1] = true.
  (* FILL IN HERE *) Admitted.
-(* GRADE_THEOREM 0.5: NatList.test_member1 *)
-(* GRADE_THEOREM 0.5: NatList.test_member2 *)
 
 Example test_member2:             member 2 [1;4;1] = false.
 (* FILL IN HERE *) Admitted.
 (** [] *)
 
 (* begin hide *)
-(** **** Exercise: 3 stars, optional (bag_more_functions)  *)
+(** **** Exercise: 3 stars, standard, optional (bag_more_functions)  
+
+    Here are some more [bag] functions for you to practice with. *)
 (* end hide *)
-(** **** 練習問題: ★★★, optional (bag_more_functions) *)
-(* begin hide *)
-(** Here are some more [bag] functions for you to practice with. *)
-(* end hide *)
-(** 練習として、さらに以下の[bag]用の関数を作成しなさい。 *)
+(** **** 練習問題: ★★★, standard, optional (bag_more_functions)
+ 
+    練習として、さらに以下の[bag]用の関数を作成しなさい。 *)
 
 (* begin hide *)
-(** When [remove_one] is applied to a bag without the number to remove,
-   it should return the same bag unchanged. *)
+(** When [remove_one] is applied to a bag without the number to
+    remove, it should return the same bag unchanged.  (This exercise
+    is optional, but students following the advanced track will need
+    to fill in the definition of [remove_one] for a later
+    exercise.) *)
 (* end hide *)
-(** [remove_one] を削除しようとしている数のないバッグに適用した場合は、同じバッグを変更せずに返す。 *)
+(** [remove_one] を削除しようとしている数の入っていないバッグに適用した場合は、同じバッグを変更せずに返す。
+    （この練習問題はオプション問題ですが、後ろの発展問題で [remove_one] の定義を必要とするものがあります。） *)
 
 Fixpoint remove_one (v:nat) (s:bag) : bag
   (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
@@ -600,18 +622,18 @@ Example test_subset2:              subset [1;2;2] [2;1;4;1] = false.
 (** [] *)
 
 (* begin hide *)
-(** **** Exercise: 3 stars, recommended (bag_theorem)  *)
-(* end hide *)
-(** **** 練習問題: ★★★, recommended (bag_theorem) *)
-(* begin hide *)
-(** Write down an interesting theorem [bag_theorem] about bags
+(** **** Exercise: 2 stars, standard, recommended (bag_theorem)  
+
+    Write down an interesting theorem [bag_theorem] about bags
     involving the functions [count] and [add], and prove it.  Note
     that, since this problem is somewhat open-ended, it's possible
     that you may come up with a theorem which is true, but whose proof
     requires techniques you haven't learned yet.  Feel free to ask for
     help if you get stuck! *)
 (* end hide *)
-(** [count] や [add] を使ったバッグに関する面白い定理を書き、それを証明しなさい。
+(** **** 練習問題: ★★★, standard, recommended (bag_theorem)
+ 
+    [count] や [add] を使ったバッグに関する面白い定理を書き、それを証明しなさい。
     この問題はいわゆる自由課題で、真であっても、証明にまだ習っていない技法を使わなければならない定理を思いついてしまうかもしれません。
     証明に行き詰まってしまったら気軽に質問してください。 *)
 
@@ -622,7 +644,13 @@ Proof.
 Qed.
 *)
 
-(** [] *)
+(* Do not modify the following line: *)
+Definition manual_grade_for_bag_theorem : option (nat*string) := None.
+(* Note to instructors: For silly technical reasons, in this
+   file (only) you will need to write [Some (Datatypes.pair 3 ""%string)]
+   rather than [Some (3,""%string)] to enter your grade and comments. 
+
+    [] *)
 
 (* ################################################################# *)
 (* begin hide *)
@@ -631,10 +659,10 @@ Qed.
 (** * リストに関する推論 *)
 
 (* begin hide *)
-(** As with numbers, simple facts about list-processing
-    functions can sometimes be proved entirely by simplification.  For
-    example, the simplification performed by [reflexivity] is enough
-    for this theorem... *)
+(** As for numbers, simple facts about list-processing functions
+    can sometimes be proved entirely by simplification.  For example,
+    the simplification performed by [reflexivity] is enough for this
+    theorem... *)
 (* end hide *)
 (** 数の場合と同じく、リスト処理関数についての簡単な事実はもっぱら簡約のみで証明できることがあります。
     たとえば、次の定理は [reflexivity] で行われる簡約だけで証明できます。 *)
@@ -649,7 +677,7 @@ Proof. reflexivity. Qed.
     the match) in the definition of [app], allowing the match itself
     to be simplified. *)
 (* end hide *)
-(** これは、 [[]] が [app] の定義における「被検査体(scrutinee)」（パターンマッチでその値が「検査(scrutinize)」される式 / 訳注：matchの直後に書いた式）に代入され、パターンマッチが簡約できるようになるからです。 *)
+(** これは、 [[]] が [app] の定義における「被検査体(scrutinee)」（パターンマッチでその値が「検査(scrutinize)」される式 / 訳注：[match]と[with]の間に書いた式）に代入され、パターンマッチが簡約できるようになるからです。 *)
 (* 訳注：scrutineeはあまり見ない語だが、Scalaでは使っているようだ。 *)
 
 (* begin hide *)
@@ -692,17 +720,16 @@ Proof.
 (** *** お小言 *)
 
 (* begin hide *)
-(** Simply reading example proof scripts will not get you very far!
-    It is important to work through the details of each one, using Coq
-    and thinking about what each step achieves.  Otherwise it is more
-    or less guaranteed that the exercises will make no sense when you
-    get to them.  'Nuff said. *)
+(** Simply _reading_ proof scripts will not get you very far!  It is
+    important to step through the details of each one using Coq and
+    think about what each step achieves.  Otherwise it is more or less
+    guaranteed that the exercises will make no sense when you get to
+    them.  'Nuff said. *)
 (* end hide *)
-(** 単に例題の証明を読んでいるだけでは大きな進歩は望めません！
-    各証明を実際に Coq で動かし、各ステップがその証明にどのようにかかわっているか考え、道筋をていねいになぞっていくことが大切です。
+(** 単にスクリプトを「読んでいる」だけでは大きな進歩は望めません！
+    各スクリプトを実際に Coq で一歩一歩進め、各ステップがその証明にどのようにかかわっているか考えることが大切です。
     そうしなければ、演習に取り組んでも何の意味もありません。
-    お小言終わり。 *)
-(* 訳注：'Nuff said = Enough said もう十分だ、これ以上言うな、などの意味だが自分で言ってるからよくわからない。 *)
+    もうおわかりですよね？ *)
 
 (* ================================================================= *)
 (* begin hide *)
@@ -773,8 +800,8 @@ Proof.
     [as...] clause provided to the [induction] tactic gives a name to
     the induction hypothesis corresponding to the smaller list [l1']
     in the [cons] case. Once again, this Coq proof is not especially
-    illuminating as a static written document -- it is easy to see
-    what's going on if you are reading the proof in an interactive Coq
+    illuminating as a static document -- it is easy to see what's
+    going on if you are reading the proof in an interactive Coq
     session and you can see the current goal and context at each
     point, but this state is not visible in the written-down parts of
     the Coq proof.  So a natural-language proof -- one written for
@@ -879,13 +906,12 @@ Proof. reflexivity.  Qed.
 (** *** [rev] の性質 *)
 
 (* begin hide *)
-(** Now let's prove some theorems about our newly defined [rev].
-    For something a bit more challenging than what we've seen, let's
-    prove that reversing a list does not change its length.  Our first
-    attempt gets stuck in the successor case... *)
+(** Now, for something a bit more challenging than the proofs
+    we've seen so far, let's prove that reversing a list does not
+    change its length.  Our first attempt gets stuck in the successor
+    case... *)
 (* end hide *)
-(** 新しく定義した [rev] に関する定理を証明してみましょう。
-    ここまで見てきたものよりも難易度の高いものですが、リストを反転しても長さの変わらないことを証明します。
+(** ここまで見てきたものよりも難易度の高いものですが、リストを反転しても長さの変わらないことを証明します。
     下の方法では、ふたつめの場合分けで行き詰まってしまいます。 *)
 
 Theorem rev_length_firsttry : forall l : natlist,
@@ -913,11 +939,11 @@ Abort.
 
 (* begin hide *)
 (** So let's take the equation relating [++] and [length] that
-    would have enabled us to make progress and prove it as a separate
+    would have enabled us to make progress and state it as a separate
     lemma. *)
 (* end hide *)
-(** この [++] と [length] に関する等式が成り立つことを示せれば証明が先に進むはずです。
-    この式を取り出して別個の補題として証明してみましょう。 *)
+(** [++] と [length] に関する等式が成り立つことを示せれば証明が先に進むはずです。
+    この等式を別個の補題として記述してみましょう。 *)
 
 Theorem app_length : forall l1 l2 : natlist,
   length (l1 ++ l2) = (length l1) + (length l2).
@@ -1066,7 +1092,7 @@ Proof.
 (* begin hide *)
 (** The style of these proofs is rather longwinded and pedantic.
     After the first few, we might find it easier to follow proofs that
-    give fewer details (which can easily work out in our own minds or
+    give fewer details (which we can easily work out in our own minds or
     on scratch paper if necessary) and just highlight the non-obvious
     steps.  In this more compressed style, the above proof might look
     like this: *)
@@ -1101,8 +1127,6 @@ Proof.
 (** どちらのスタイルの方が好ましいかは、読み手の証明への馴れや、彼らが今まで触れてきた証明がどちらに近いかに依ります。
     本書の目的としては冗長なスタイルの方が無難でしょう。 *)
 
-
-
 (* ================================================================= *)
 (** ** [Search] *)
 
@@ -1113,10 +1137,11 @@ Proof.
     to remember what theorems have been proven, much less what they
     are called.
 
-    Coq's [Search] command is quite helpful with this.  Typing
-    [Search foo] will cause Coq to display a list of all theorems
-    involving [foo].  For example, try uncommenting the following line
-    to see a list of theorems that we have proved about [rev]: *)
+    Coq's [Search] command is quite helpful with this.  Typing [Search
+    foo] into your .v file and evaluating this line will cause Coq to
+    display a list of all theorems involving [foo].  For example, try
+    uncommenting the following line to see a list of theorems that we
+    have proved about [rev]: *)
 (* end hide *)
 (** これまで見てきたように、定理を証明するには既に証明した定理を、例えば[rewrite]を通じて、使うことができます。
     しかし、定理を使うためにはその名前を知らなければなりません！
@@ -1124,7 +1149,7 @@ Proof.
     今まで証明した定理を覚えておくだけでも大変なのに、その名前となったら尚更です。
  
     Coq の [Search] コマンドはこのような場合にとても便利です。
-    [Search foo] とすると、 [foo] に関する証明がすべて表示されます。
+    スクリプトファイルに [Search foo] と書いて評価させると、 [foo] に関する証明がすべて表示されます。
     例えば、次の部分のコメントを外せば、これまで [rev] に関して証明した定理が表示されます。 *)
 
 (*  Search rev. *)
@@ -1133,8 +1158,8 @@ Proof.
 (** Keep [Search] in mind as you do the following exercises and
     throughout the rest of the book; it can save you a lot of time!
 
-    If you are using ProofGeneral, you can run [Search] with [C-c
-    C-a C-a]. Pasting its response into your buffer can be
+    If you are using ProofGeneral, you can run [Search] with
+    [C-c C-a C-a]. Pasting its response into your buffer can be
     accomplished with [C-c C-;]. *)
 (* end hide *)
 (** 続く練習問題に取り組む際や読み進める際には、常に [Search] コマンドのことを頭の隅に置いておくといいでしょう。
@@ -1150,31 +1175,28 @@ Proof.
 (** ** リストについての練習問題 (1) *)
 
 (* begin hide *)
-(** **** Exercise: 3 stars (list_exercises)  *)
+(** **** Exercise: 3 stars, standard (list_exercises)  
+
+    More practice with lists: *)
 (* end hide *)
-(** **** 練習問題: ★★★ (list_exercises) *)
-(* begin hide *)
-(** More practice with lists: *)
-(* end hide *)
-(** リストについてさらに練習しましょう。 *)
+(** **** 練習問題: ★★★, standard (list_exercises)
+ 
+    リストについてさらに練習しましょう。 *)
 
 Theorem app_nil_r : forall l : natlist,
   l ++ [] = l.
 Proof.
   (* FILL IN HERE *) Admitted.
-(* GRADE_THEOREM 0.5: NatList.app_nil_r *)
 
 Theorem rev_app_distr: forall l1 l2 : natlist,
   rev (l1 ++ l2) = rev l2 ++ rev l1.
 Proof.
   (* FILL IN HERE *) Admitted.
-(* GRADE_THEOREM 0.5: NatList.rev_app_distr *)
 
 Theorem rev_involutive : forall l : natlist,
   rev (rev l) = l.
 Proof.
   (* FILL IN HERE *) Admitted.
-(* GRADE_THEOREM 0.5: NatList.rev_involutive *)
 
 (* begin hide *)
 (** There is a short solution to the next one.  If you find yourself
@@ -1188,7 +1210,6 @@ Theorem app_assoc4 : forall l1 l2 l3 l4 : natlist,
   l1 ++ (l2 ++ (l3 ++ l4)) = ((l1 ++ l2) ++ l3) ++ l4.
 Proof.
   (* FILL IN HERE *) Admitted.
-(* GRADE_THEOREM 0.5: NatList.app_assoc4 *)
 
 (* begin hide *)
 (** An exercise about your implementation of [nonzeros]: *)
@@ -1202,35 +1223,35 @@ Proof.
 (** [] *)
 
 (* begin hide *)
-(** **** Exercise: 2 stars (beq_natlist)  *)
-(* end hide *)
-(** **** 練習問題: ★★ (beq_natlist) *)
-(* begin hide *)
-(** Fill in the definition of [beq_natlist], which compares
-    lists of numbers for equality.  Prove that [beq_natlist l l]
+(** **** Exercise: 2 stars, standard (eqblist)  
+
+    Fill in the definition of [eqblist], which compares
+    lists of numbers for equality.  Prove that [eqblist l l]
     yields [true] for every list [l]. *)
 (* end hide *)
-(** 次の[beq_natlist]は数のリストの等しさを計算するものです。
+(** **** 練習問題: ★★, standard (eqblist)
+ 
+    次の[eqblist]は数のリストの等しさを計算するものです。
     定義を埋めなさい。
-    また、どんなリスト[l]に対しても[beq_natlist l l]が[true]を返すことを示しなさい。 *)
+    また、どんなリスト[l]に対しても[eqblist l l]が[true]を返すことを示しなさい。 *)
 
-Fixpoint beq_natlist (l1 l2 : natlist) : bool
+Fixpoint eqblist (l1 l2 : natlist) : bool
   (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
 
-Example test_beq_natlist1 :
-  (beq_natlist nil nil = true).
+Example test_eqblist1 :
+  (eqblist nil nil = true).
  (* FILL IN HERE *) Admitted.
 
-Example test_beq_natlist2 :
-  beq_natlist [1;2;3] [1;2;3] = true.
+Example test_eqblist2 :
+  eqblist [1;2;3] [1;2;3] = true.
 (* FILL IN HERE *) Admitted.
 
-Example test_beq_natlist3 :
-  beq_natlist [1;2;3] [1;2;4] = false.
+Example test_eqblist3 :
+  eqblist [1;2;3] [1;2;4] = false.
  (* FILL IN HERE *) Admitted.
 
-Theorem beq_natlist_refl : forall l:natlist,
-  true = beq_natlist l l.
+Theorem eqblist_refl : forall l:natlist,
+  true = eqblist l l.
 Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
@@ -1248,11 +1269,11 @@ Proof.
 (** 上で見たバッグについて、いくつかの定理を証明します。 *)
 
 (* begin hide *)
-(** **** Exercise: 1 star (count_member_nonzero)  *)
+(** **** Exercise: 1 star, standard (count_member_nonzero)  *)
 (* end hide *)
-(** **** 練習問題: ★ (count_member_nonzero) *)
+(** **** 練習問題: ★, standard (count_member_nonzero) *)
 Theorem count_member_nonzero : forall (s : bag),
-  leb 1 (count 1 (1 :: s)) = true.
+  1 <=? (count 1 (1 :: s)) = true.
 Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
@@ -1262,8 +1283,8 @@ Proof.
 (* end hide *)
 (** 以下の [leb] に関する補題は、この次の課題に使えるかもしれません。 *)
 
-Theorem ble_n_Sn : forall n,
-  leb n (S n) = true.
+Theorem leb_n_Sn : forall n,
+  n <=? (S n) = true.
 Proof.
   intros n. induction n as [| n' IHn'].
   - (* 0 *)
@@ -1272,50 +1293,56 @@ Proof.
     simpl.  rewrite IHn'.  reflexivity.  Qed.
 
 (* begin hide *)
-(** **** Exercise: 3 stars, advanced (remove_decreases_count)  *)
+(** Before doing the next exercise, make sure you've filled in the
+   definition of [remove_one] above. *)
+(** **** Exercise: 3 stars, advanced (remove_does_not_increase_count)  *)
 (* end hide *)
-(** **** 練習問題: ★★★, advanced (remove_decreases_count) *)
-Theorem remove_decreases_count: forall (s : bag),
-  leb (count 0 (remove_one 0 s)) (count 0 s) = true.
+(** 次の練習問題を解く前に、[remove_one] の定義ができあがっていることを確認してください。 *)
+(** **** 練習問題: ★★★, advanced (remove_does_not_increase_count) *)
+Theorem remove_does_not_increase_count: forall (s : bag),
+  (count 0 (remove_one 0 s)) <=? (count 0 s) = true.
 Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
 (* begin hide *)
-(** **** Exercise: 3 stars, optional (bag_count_sum)  *)
-(* end hide *)
-(** **** 練習問題: ★★★, optional (bag_count_sum) *)
-(* begin hide *)
-(** Write down an interesting theorem [bag_count_sum] about bags
+(** **** Exercise: 3 stars, standard, optional (bag_count_sum)  
+
+    Write down an interesting theorem [bag_count_sum] about bags
     involving the functions [count] and [sum], and prove it using
     Coq.  (You may find that the difficulty of the proof depends on
     how you defined [count]!) *)
 (* end hide *)
-(** バッグについて [count] と [sum] を使った定理 [bag_count_sum] を考え、それをCoqを使って証明しなさい。
+(** **** 練習問題: ★★★, optional (bag_count_sum)
+ 
+    バッグについて [count] と [sum] を使った定理 [bag_count_sum] を考え、それをCoqを使って証明しなさい。
     （[count]の定義によって証明の難易度が変わるかもしれません。） *)
-(* FILL IN HERE *)
-(** [] *)
+(* FILL IN HERE 
+
+    [] *)
 
 (* begin hide *)
-(** **** Exercise: 4 stars, advanced (rev_injective)  *)
-(* end hide *)
-(** **** 練習問題: ★★★★, advanced (rev_injective) *)
-(* begin hide *)
-(** Prove that the [rev] function is injective -- that is,
+(** **** Exercise: 4 stars, advanced (rev_injective)  
+
+    Prove that the [rev] function is injective -- that is,
 
     forall (l1 l2 : natlist), rev l1 = rev l2 -> l1 = l2.
 
     (There is a hard way and an easy way to do this.) *)
 (* end hide *)
-(** [rev] 関数が単射である、すなわち
+(** **** 練習問題: ★★★★, advanced (rev_injective)
+ 
+    [rev] 関数が単射である、すなわち
 [[
     forall (l1 l2 : natlist), rev l1 = rev l2 -> l1 = l2 
 ]]
     であることを証明しなさい。
- 
     （この練習問題には簡単な解法と難しい解法があります。） *)
 
 (* FILL IN HERE *)
+
+(* Do not modify the following line: *)
+Definition manual_grade_for_rev_injective : option (nat*string) := None.
 (** [] *)
 
 (* ################################################################# *)
@@ -1336,7 +1363,7 @@ Proof.
 Fixpoint nth_bad (l:natlist) (n:nat) : nat :=
   match l with
   | nil => 42  (* arbitrary! *)
-  | a :: l' => match beq_nat n O with
+  | a :: l' => match n =? O with
                | true => a
                | false => nth_bad l' (pred n)
                end
@@ -1355,8 +1382,8 @@ Fixpoint nth_bad (l:natlist) (n:nat) : nat :=
     この型を[natoption]と呼ぶことにします。 *)
 
 Inductive natoption : Type :=
-  | Some : nat -> natoption
-  | None : natoption.
+  | Some (n : nat)
+  | None.
 
 (** We can then change the above definition of [nth_bad] to
     return [None] when the list is too short and [Some a] when the
@@ -1367,7 +1394,7 @@ Inductive natoption : Type :=
 Fixpoint nth_error (l:natlist) (n:nat) : natoption :=
   match l with
   | nil => None
-  | a :: l' => match beq_nat n O with
+  | a :: l' => match n =? O with
                | true => Some a
                | false => nth_error l' (pred n)
                end
@@ -1393,11 +1420,10 @@ Proof. reflexivity. Qed.
  
     この機会に、 Coq のプログラミング言語としての機能として、条件式を紹介しておきましょう。 *)
 
-
 Fixpoint nth_error' (l:natlist) (n:nat) : natoption :=
   match l with
   | nil => None
-  | a :: l' => if beq_nat n O then Some a
+  | a :: l' => if n =? O then Some a
                else nth_error' l' (pred n)
   end.
 
@@ -1427,14 +1453,14 @@ Definition option_elim (d : nat) (o : natoption) : nat :=
   end.
 
 (* begin hide *)
-(** **** Exercise: 2 stars (hd_error)  *)
-(* end hide *)
-(** **** 練習問題: ★★ (hd_error)  *)
-(* begin hide *)
-(** Using the same idea, fix the [hd] function from earlier so we don't
+(** **** Exercise: 2 stars, standard (hd_error)  
+
+    Using the same idea, fix the [hd] function from earlier so we don't
     have to pass a default element for the [nil] case.  *)
 (* end hide *)
-(** 同じ考え方を使って、以前定義した [hd] 関数を修正し、 [nil] の場合に返す値を渡さなくて済むようにしなさい。 *)
+(** **** 練習問題: ★★, standard (hd_error)
+ 
+    同じ考え方で、以前定義した [hd] 関数を修正し、 [nil] の場合に返す値を渡さなくて済むようにしなさい。 *)
 
 Definition hd_error (l : natlist) : natoption
   (* REPLACE THIS LINE WITH ":= _your_definition_ ." *). Admitted.
@@ -1449,14 +1475,13 @@ Example test_hd_error3 : hd_error [5;6] = Some 5.
  (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(* begin hide *)
-(** **** Exercise: 1 star, optional (option_elim_hd)  *)
+(** **** Exercise: 1 star, standard, optional (option_elim_hd)  
+
+    This exercise relates your new [hd_error] to the old [hd]. *)
 (* end hide *)
-(** **** 練習問題: ★, optional (option_elim_hd) *)
-(* begin hide *)
-(** This exercise relates your new [hd_error] to the old [hd]. *)
-(* end hide *)
-(** 新しい [hd_error] と古い [hd] の関係についての練習問題です。 *)
+(** **** 練習問題: ★, standard, optional (option_elim_hd)
+ 
+    新しい [hd_error] と古い [hd] の関係についての練習問題です。 *)
 
 Theorem option_elim_hd : forall (l:natlist) (default:nat),
   hd default l = option_elim default (hd_error l).
@@ -1478,7 +1503,7 @@ End NatList.
     "keys" of our partial maps. *)
 
 Inductive id : Type :=
-  | Id : nat -> id.
+  | Id (n : nat).
 
 (** Internally, an [id] is just a number.  Introducing a separate type
     by wrapping each nat with the tag [Id] makes definitions more
@@ -1487,13 +1512,13 @@ Inductive id : Type :=
 
 (** We'll also need an equality test for [id]s: *)
 
-Definition beq_id (x1 x2 : id) :=
+Definition eqb_id (x1 x2 : id) :=
   match x1, x2 with
-  | Id n1, Id n2 => beq_nat n1 n2
+  | Id n1, Id n2 => n1 =? n2
   end.
 
-(** **** Exercise: 1 star (beq_id_refl)  *)
-Theorem beq_id_refl : forall x, true = beq_id x x.
+(** **** Exercise: 1 star, standard (eqb_id_refl)  *)
+Theorem eqb_id_refl : forall x, true = eqb_id x x.
 Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
@@ -1504,8 +1529,8 @@ Module PartialMap.
 Export NatList.
   
 Inductive partial_map : Type :=
-  | empty  : partial_map
-  | record : id -> nat -> partial_map -> partial_map.
+  | empty
+  | record (i : id) (v : nat) (m : partial_map).
 
 (* begin hide *)
 (** This declaration can be read: "There are two ways to construct a
@@ -1519,8 +1544,8 @@ Inductive partial_map : Type :=
       構成子 [empty] で空の部分写像を表現するか、構成子 [record] をキーと値と既存の [partial_map] に適用してキーと値の対応を追加した [partial_map] を構成するかのいずれかである。」 *)
 
 (** The [update] function overrides the entry for a given key in a
-    partial map (or adds a new entry if the given key is not already
-    present). *)
+    partial map by shadowing it with a new one (or simply adds a new
+    entry if the given key is not already present). *)
 
 Definition update (d : partial_map)
                   (x : id) (value : nat)
@@ -1541,13 +1566,12 @@ Definition update (d : partial_map)
 Fixpoint find (x : id) (d : partial_map) : natoption :=
   match d with
   | empty         => None
-  | record y v d' => if beq_id x y
+  | record y v d' => if eqb_id x y
                      then Some v
                      else find x d'
   end.
 
-
-(** **** Exercise: 1 star (update_eq)  *)
+(** **** Exercise: 1 star, standard (update_eq)  *)
 Theorem update_eq :
   forall (d : partial_map) (x : id) (v: nat),
     find x (update d x v) = Some v.
@@ -1555,26 +1579,30 @@ Proof.
  (* FILL IN HERE *) Admitted.
 (** [] *)
 
-(** **** Exercise: 1 star (update_neq)  *)
+(** **** Exercise: 1 star, standard (update_neq)  *)
 Theorem update_neq :
   forall (d : partial_map) (x y : id) (o: nat),
-    beq_id x y = false -> find x (update d y o) = find x d.
+    eqb_id x y = false -> find x (update d y o) = find x d.
 Proof.
  (* FILL IN HERE *) Admitted.
 (** [] *)
 End PartialMap.
 
-(** **** Exercise: 2 stars (baz_num_elts)  *)
-(** Consider the following inductive definition: *)
+(** **** Exercise: 2 stars, standard (baz_num_elts)  
+
+    Consider the following inductive definition: *)
 
 Inductive baz : Type :=
-  | Baz1 : baz -> baz
-  | Baz2 : baz -> bool -> baz.
+  | Baz1 (x : baz)
+  | Baz2 (y : baz) (b : bool).
 
-(** How _many_ elements does the type [baz] have?
-    (Explain your answer in words, preferrably English.) *)
+(** How _many_ elements does the type [baz] have? (Explain in words,
+    in a comment.) *)
 
 (* FILL IN HERE *)
+
+(* Do not modify the following line: *)
+Definition manual_grade_for_baz_num_elts : option (nat*string) := None.
 (** [] *)
 
-
+(* Wed Jan 9 12:02:44 EST 2019 *)

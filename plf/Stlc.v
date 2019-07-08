@@ -13,8 +13,8 @@
     when formalizing this calculus (syntax, small-step semantics,
     typing rules) and its main properties (progress and preservation).
     The new technical challenges arise from the mechanisms of
-    _variable binding_ and _substitution_.  It which will take some
-    work to deal with these. *)
+    _variable binding_ and _substitution_.  It will take some work to
+    deal with these. *)
 (* end hide *)
 (** 単純型付きラムダ計算(Simply Typed Lambda-Calculus, STLC)は、
     関数抽象(_functional abstraction_)を具現する、小さな、核となる計算体系です。
@@ -28,9 +28,9 @@
     これらを扱うには少し作業がいります。 *)
 
 Set Warnings "-notation-overridden,-parsing".
-Require Import Maps.
-Require Import Smallstep.
-Require Import Types.
+From Coq Require Import Strings.String.
+From PLF Require Import Maps.
+From PLF Require Import Smallstep.
 
 (* ################################################################# *)
 (* begin hide *)
@@ -39,7 +39,7 @@ Require Import Types.
 (** ** 概観 *)
 
 (* begin hide *)
-(** The STLC is built on some collection of _base types_: 
+(** The STLC is built on some collection of _base types_:
     booleans, numbers, strings, etc.  The exact choice of base types
     doesn't matter much -- the construction of the language and its
     theoretical properties work out the same no matter what we
@@ -57,7 +57,15 @@ Require Import Types.
 
     This gives us the following collection of abstract syntax
     constructors (written out first in informal BNF notation -- we'll
-    formalize it below). *)
+    formalize it below). 
+
+       t ::= x                         variable
+           | \x:T1.t2                  abstraction
+           | t1 t2                     application
+           | tru                       constant true
+           | fls                       constant false
+           | test t1 then t2 else t3   conditional
+*)
 (* end hide *)
 (** STLC は基本型(_base types_)の何らかの集まりの上に構成されます。
     基本型はブール型、数値、文字列などです。
@@ -74,39 +82,28 @@ Require Import Types.
         - (関数)適用
  
     これから、以下の抽象構文コンストラクタが出てきます。
-    （まずは非形式的BNF記法で書き出します。後に形式化します。） *)
-(* begin hide *)
-(**
-
-       t ::= x                       variable
-           | \x:T1.t2                abstraction
-           | t1 t2                   application
-           | true                    constant true
-           | false                   constant false
-           | if t1 then t2 else t3   conditional
-*)
-(* end hide *)
-(** 
+    （まずは非形式的BNF記法で書き出します。後に形式化します。）
 [[
-       t ::= x                       変数
-           | \x:T1.t2                関数抽象
-           | t1 t2                   関数適用
-           | true                    定数 true
-           | false                   定数 false
-           | if t1 then t2 else t3   条件式
+       t ::= x                         variable 
+           | \x:T1.t2                  abstraction 
+           | t1 t2                     application 
+           | tru                       constant true 
+           | fls                       constant false 
+           | test t1 then t2 else t3   conditional 
 ]]
  *)
 
 (* begin hide *)
-(** The [\] symbol in a function abstraction [\x:T1.t2] is generally
+(** The [\] symbol in a function abstraction [\x:T.t] is generally
     written as a Greek letter "lambda" (hence the name of the
     calculus).  The variable [x] is called the _parameter_ to the
-    function; the term [t2] is its _body_.  The annotation [:T1]
+    function; the term [t] is its _body_.  The annotation [:T1]
     specifies the type of arguments that the function can be applied
     to. *)
+(* 訳注：[:T1]は[:T]のミス？ *)
 (* end hide *)
-(** 関数抽象 [\x:T1.t2] の [\]記号はよくギリシャ文字のラムダ(λ)で記述されます（これがラムダ計算の名前の由来です）（訳注：日本語環境では円マークに見えることがあります）。
-    変数[x]は関数のパラメータ(_parameter_)、項[t2]は関数の本体(_body_)と呼ばれます。
+(** 関数抽象 [\x:T.t] の [\]記号はよくギリシャ文字のラムダ(λ)で記述されます（これがラムダ計算の名前の由来です）（訳注：日本語環境では円マークに見えることがあります）。
+    変数[x]は関数のパラメータ(_parameter_)、項[t]は関数の本体(_body_)と呼ばれます。
     付記された [:T] は関数が適用される引数の型を定めます。 *)
 
 (* begin hide *)
@@ -116,38 +113,18 @@ Require Import Types.
 
         The identity function for booleans.
 
-      - [(\x:Bool. x) true]
+      - [(\x:Bool. x) tru]
 
-        The identity function for booleans, applied to the boolean [true].
+        The identity function for booleans, applied to the boolean [tru].
 
-      - [\x:Bool. if x then false else true]
+      - [\x:Bool. test x then fls else tru]
 
         The boolean "not" function.
 
-      - [\x:Bool. true]
+      - [\x:Bool. tru]
 
         The constant function that takes every (boolean) argument to
-        [true]. *)
-(* end hide *)
-(** 例をいくつか:
- 
-      - [\x:Bool. x] 
- 
-        ブール値の恒等関数。
- 
-      - [(\x:Bool. x) true] 
- 
-        ブール値[true]に適用された、ブール値の恒等関数。
- 
-      - [\x:Bool. if x then false else true] 
- 
-        ブール値の否定(not)関数。
- 
-      - [\x:Bool. true] 
- 
-        すべての(ブール値の)引数に対して[true]を返す定数関数。 *)
-(* begin hide *)
-(**
+        [tru]. 
       - [\x:Bool. \y:Bool. x]
 
         A two-argument function that takes two booleans and returns
@@ -155,47 +132,64 @@ Require Import Types.
         a one-argument function whose body is also a one-argument
         function.)
 
-      - [(\x:Bool. \y:Bool. x) false true]
+      - [(\x:Bool. \y:Bool. x) fls tru]
 
         A two-argument function that takes two booleans and returns
-        the first one, applied to the booleans [false] and [true].
+        the first one, applied to the booleans [fls] and [tru].
 
         As in Coq, application associates to the left -- i.e., this
-        expression is parsed as [((\x:Bool. \y:Bool. x) false) true].
+        expression is parsed as [((\x:Bool. \y:Bool. x) fls) tru].
 
-      - [\f:Bool->Bool. f (f true)]
+      - [\f:Bool->Bool. f (f tru)]
 
         A higher-order function that takes a _function_ [f] (from
-        booleans to booleans) as an argument, applies [f] to [true],
+        booleans to booleans) as an argument, applies [f] to [tru],
         and applies [f] again to the result.
 
-      - [(\f:Bool->Bool. f (f true)) (\x:Bool. false)]
+      - [(\f:Bool->Bool. f (f tru)) (\x:Bool. fls)]
 
         The same higher-order function, applied to the constantly
-        [false] function. *)
+        [fls] function. *)
 (* end hide *)
-(** 
+(** 例をいくつか:
+ 
+      - [\x:Bool. x] 
+ 
+        ブール値の恒等関数。
+ 
+      - [(\x:Bool. x) tru] 
+ 
+        ブール値[tru]に適用された、ブール値の恒等関数。
+ 
+      - [\x:Bool. test x then fls else tru] 
+ 
+        ブール値の否定(not)関数。
+ 
+      - [\x:Bool. tru] 
+ 
+        すべての(ブール値の)引数に対して[tru]を返す定数関数。
+ 
       - [\x:Bool. \y:Bool. x] 
  
         2つのブール値をとり、最初のものを返す2引数関数。
         （Coqと同様、2引数関数は、実際には本体が1引数関数である1引数関数です。）
  
-      - [(\x:Bool. \y:Bool. x) false true] 
+      - [(\x:Bool. \y:Bool. x) fls tru] 
  
-        2つのブール値をとり、最初のものを返す2引数関数を、ブール値[false]と[true]
+        2つのブール値をとり、最初のものを返す2引数関数を、ブール値[fls]と[tru]
         に適用したもの。
  
         Coqと同様、関数適用は左結合です。つまり、この式は
-        [((\x:Bool. \y:Bool. x) false) true] と構文解析されます。
+        [((\x:Bool. \y:Bool. x) fls) tru] と構文解析されます。
  
-      - [\f:Bool->Bool. f (f true)] 
+      - [\f:Bool->Bool. f (f tru)] 
  
         （ブール値からブール値への）「関数」[f]を引数にとる高階関数。
-        この高階関数は、[f]を[true]に適用し、その結果にさらに[f]を適用します。
+        この高階関数は、[f]を[tru]に適用し、その結果にさらに[f]を適用します。
  
-      - [(\f:Bool->Bool. f (f true)) (\x:Bool. false)] 
+      - [(\f:Bool->Bool. f (f tru)) (\x:Bool. fls)] 
  
-        上記高階関数を、常に[false]を返す定数関数に適用したもの。 *)
+        上記高階関数を、常に[fls]を返す定数関数に適用したもの。 *)
 
 (* begin hide *)
 (** As the last several examples show, the STLC is a language of
@@ -210,9 +204,27 @@ Require Import Types.
     exactly the same.
 
     The _types_ of the STLC include [Bool], which classifies the
-    boolean constants [true] and [false] as well as more complex
+    boolean constants [tru] and [fls] as well as more complex
     computations that yield booleans, plus _arrow types_ that classify
-    functions. *)
+    functions. 
+
+      T ::= Bool
+          | T -> T
+
+    For example:
+
+      - [\x:Bool. fls] has type [Bool->Bool]
+
+      - [\x:Bool. x] has type [Bool->Bool]
+
+      - [(\x:Bool. x) tru] has type [Bool]
+
+      - [\x:Bool. \y:Bool. x] has type [Bool->Bool->Bool]
+                              (i.e., [Bool -> (Bool->Bool)])
+
+      - [(\x:Bool. \y:Bool. x) fls] has type [Bool->Bool]
+
+      - [(\x:Bool. \y:Bool. x) fls tru] has type [Bool] *)
 (* end hide *)
 (** 最後のいくつかの例で示されたように、STLCは高階(_higher-order_)関数の言語です。
     他の関数を引数として取る関数や、結果として他の関数を返す関数を書き下すことができます。
@@ -223,49 +235,26 @@ Require Import Types.
     実のところ、基本的な命名と束縛の機構はまったく同じです。
  
     STLCの型には[Bool]が含まれます。
-    この型はブール定数[true]と[false]、および結果がブール値になるより複雑な計算の型です。
-    その他に、関数の型である「関数型」(_arrow types_)があります。 *)
-(* begin hide *)
-(**
-
-      T ::= Bool
-          | T1 -> T2
-
-    For example:
-
-      - [\x:Bool. false] has type [Bool->Bool]
-
-      - [\x:Bool. x] has type [Bool->Bool]
-
-      - [(\x:Bool. x) true] has type [Bool]
-
-      - [\x:Bool. \y:Bool. x] has type [Bool->Bool->Bool] 
-                              (i.e., [Bool -> (Bool->Bool)])
-
-      - [(\x:Bool. \y:Bool. x) false] has type [Bool->Bool]
-
-      - [(\x:Bool. \y:Bool. x) false true] has type [Bool] *)
-(* end hide *)
-(**
+    この型はブール定数[tru]と[fls]、および結果がブール値になるより複雑な計算の型です。
+    その他に、関数の型である「関数型」(_arrow types_)があります。
 [[
       T ::= Bool 
-          | T1 -> T2 
+          | T -> T 
 ]]
     例えば:
  
-      - [\x:Bool. false] は型 [Bool->Bool] を持ちます。
+      - [\x:Bool. fls] は型 [Bool->Bool] を持ちます。
  
       - [\x:Bool. x] は型 [Bool->Bool] を持ちます。
  
-      - [(\x:Bool. x) true] は型 [Bool] を持ちます。
+      - [(\x:Bool. x) tru] は型 [Bool] を持ちます。
  
-      - [\x:Bool. \y:Bool. x] は型 [Bool->Bool->Bool] 
+      - [\x:Bool. \y:Bool. x] は型 [Bool->Bool->Bool]
         （つまり [Bool -> (Bool->Bool)]）を持ちます。
  
-      - [(\x:Bool. \y:Bool. x) false] は型 [Bool->Bool] を持ちます。
+      - [(\x:Bool. \y:Bool. x) fls] は型 [Bool->Bool] を持ちます。
  
-      - [(\x:Bool. \y:Bool. x) false true] は型 [Bool] を持ちます。 *)
-
+      - [(\x:Bool. \y:Bool. x) fls tru] は型 [Bool] を持ちます。 *)
 
 (* ################################################################# *)
 (* begin hide *)
@@ -284,8 +273,8 @@ Module STLC.
 (** ** 型 *)
 
 Inductive ty : Type :=
-  | TBool  : ty
-  | TArrow : ty -> ty -> ty.
+  | Bool  : ty
+  | Arrow : ty -> ty -> ty.
 
 (* ================================================================= *)
 (* begin hide *)
@@ -294,30 +283,30 @@ Inductive ty : Type :=
 (** ** 項 *)
 
 Inductive tm : Type :=
-  | tvar : string -> tm
-  | tapp : tm -> tm -> tm
-  | tabs : string -> ty -> tm -> tm
-  | ttrue : tm
-  | tfalse : tm
-  | tif : tm -> tm -> tm -> tm.
+  | var : string -> tm
+  | app : tm -> tm -> tm
+  | abs : string -> ty -> tm -> tm
+  | tru : tm
+  | fls : tm
+  | test : tm -> tm -> tm -> tm.
 
 (* begin hide *)
-(** Note that an abstraction [\x:T.t] (formally, [tabs x T t]) is
+(** Note that an abstraction [\x:T.t] (formally, [abs x T t]) is
     always annotated with the type [T] of its parameter, in contrast
     to Coq (and other functional languages like ML, Haskell, etc.),
     which use type inference to fill in missing annotations.  We're
     not considering type inference here. *)
 (* end hide *)
-(** この中では、関数抽象 [\x:T.t] （形式的には [tabs x T t]）には常にパラメータの型[T]が付記されます。
+(** この中では、関数抽象 [\x:T.t] （形式的には [abs x T t]）には常にパラメータの型[T]が付記されます。
     これは Coq（あるいは他のML、Haskellといった関数型言語）のように、型推論(type inference)によって補うものと対照的です。
     ここでは型推論は考えません。 *)
 
-Open Scope string_scope.
-     
 (* begin hide *)
 (** Some examples... *)
 (* end hide *)
 (** いくつかの例... *)
+
+Open Scope string_scope.
 
 Definition x := "x".
 Definition y := "y".
@@ -330,33 +319,33 @@ Hint Unfold z.
 (** [idB = \x:Bool. x] *)
 
 Notation idB :=
-  (tabs x TBool (tvar x)).
+  (abs x Bool (var x)).
 
 (** [idBB = \x:Bool->Bool. x] *)
 
 Notation idBB :=
-  (tabs x (TArrow TBool TBool) (tvar x)).
+  (abs x (Arrow Bool Bool) (var x)).
 
 (** [idBBBB = \x:(Bool->Bool) -> (Bool->Bool). x] *)
 
 Notation idBBBB :=
-  (tabs x (TArrow (TArrow TBool TBool)
-                      (TArrow TBool TBool))
-    (tvar x)).
+  (abs x (Arrow (Arrow Bool Bool)
+                      (Arrow Bool Bool))
+    (var x)).
 
 (** [k = \x:Bool. \y:Bool. x] *)
 
-Notation k := (tabs x TBool (tabs y TBool (tvar x))).
+Notation k := (abs x Bool (abs y Bool (var x))).
 
-(** [notB = \x:Bool. if x then false else true] *)
+(** [notB = \x:Bool. test x then fls else tru] *)
 
-Notation notB := (tabs x TBool (tif (tvar x) tfalse ttrue)).
+Notation notB := (abs x Bool (test (var x) fls tru)).
 
 (* begin hide *)
 (** (We write these as [Notation]s rather than [Definition]s to make
     things easier for [auto].) *)
 (* end hide *)
-(** (これらを[Definition]ではなく[Notation]とすることで、[auto]に扱いやすくしています。) *)
+(** （これらを[Definition]ではなく[Notation]とすることで、[auto]に扱いやすくしています。） *)
 
 (* ################################################################# *)
 (* begin hide *)
@@ -386,33 +375,33 @@ Notation notB := (tabs x TBool (tif (tvar x) tfalse ttrue)).
 (** To define the values of the STLC, we have a few cases to consider.
 
     First, for the boolean part of the language, the situation is
-    clear: [true] and [false] are the only values.  An [if]
-    expression is never a value. *)
+    clear: [tru] and [fls] are the only values.  A [test] expression
+    is never a value. *)
 (* end hide *)
 (** STLCの値を定義するために、いくつかの場合を考えなければなりません。
  
     最初に、言語のブール値については、状況は明確です:
-    [true]と[false]だけが値です。[if]式は決して値ではありません。 *)
+    [tru]と[fls]だけが値です。[test]式は決して値ではありません。 *)
 
 (* begin hide *)
-(** Second, an application is clearly not a value: It represents a
-    function being invoked on some argument, which clearly still has
-    work left to do. *)
+(** Second, an application is not a value: it represents a function
+    being invoked on some argument, which clearly still has work left
+    to do. *)
 (* end hide *)
-(** 二番目に、関数適用は明らかに値ではありません。
+(** 二番目に、関数適用は値ではありません。
     関数適用は関数が何らかの引数に対して呼ばれたことを表しているのですから、
     明らかにこれからやることが残っています。 *)
 
 (* begin hide *)
 (** Third, for abstractions, we have a choice:
 
-      - We can say that [\x:T. t1] is a value only when [t1] is a
+      - We can say that [\x:T. t] is a value only when [t] is a
         value -- i.e., only if the function's body has been
         reduced (as much as it can be without knowing what argument it
         is going to be applied to).
 
-      - Or we can say that [\x:T. t1] is always a value, no matter
-        whether [t1] is one or not -- in other words, we can say that
+      - Or we can say that [\x:T. t] is always a value, no matter
+        whether [t] is one or not -- in other words, we can say that
         reduction stops at abstractions.
 
     Our usual way of evaluating expressions in Coq makes the first
@@ -420,7 +409,9 @@ Notation notB := (tabs x TBool (tif (tvar x) tfalse ttrue)).
 
          Compute (fun x:bool => 3 + 4)
 
-    yields [fun x:bool => 7].
+    yields:
+
+          fun x:bool => 7
 
     Most real-world functional programming languages make the second
     choice -- reduction of a function's body only begins when the
@@ -429,18 +420,22 @@ Notation notB := (tabs x TBool (tif (tvar x) tfalse ttrue)).
 (* end hide *)
 (** 三番目に、関数抽象については選択肢があります:
  
-      - [\x:T.t1] が値であるのは、[t1]が値であるときのみである、とすることができます。
+      - [\x:T.t] が値であるのは、[t]が値であるときのみである、とすることができます。
         つまり、関数の本体が(どのような引数に適用されるかわからない状態で可能な限り)簡約済みであるときのみ、ということです。
  
-      - あるいは、[\x:T.t1] は常に値である、とすることもできます。
-        [t1]が値であるかどうかに関係なく、です。
+      - あるいは、[\x:T.t] は常に値である、とすることもできます。
+        [t]が値であるかどうかに関係なく、です。
         言いかえると、簡約は関数抽象で止まる、とすることです。
  
     ここで使っている Coq での式の評価は最初の選択肢を取っています。例えば、
 [[
          Compute (fun x:bool => 3 + 4) 
 ]]
-    は [fun x:bool => 7] となります。
+    は
+[[
+          fun x:bool => 7
+]]
+    となります。
  
     よく使われる関数型プログラミング言語のほとんどは、第二の選択肢を取っています。
     つまり、関数の本体の簡約は、関数が実際に引数に適用されたときにのみ開始されます。
@@ -448,11 +443,11 @@ Notation notB := (tabs x TBool (tif (tvar x) tfalse ttrue)).
 
 Inductive value : tm -> Prop :=
   | v_abs : forall x T t,
-      value (tabs x T t)
-  | v_true :
-      value ttrue
-  | v_false :
-      value tfalse.
+      value (abs x T t)
+  | v_tru :
+      value tru
+  | v_fls :
+      value fls.
 
 Hint Constructors value.
 
@@ -464,22 +459,23 @@ Hint Constructors value.
     in a STLC term.  A complete program is _closed_ -- that is, it
     contains no free variables.
 
-    (Conversely, a term with free variables is often called an _open 
-    term_.) 
-
-    Having made the choice not to reduce under abstractions, we don't
-    need to worry about whether variables are values, since we'll
-    always be reducing programs "from the outside in," and that means
-    the [step] relation will always be working with closed terms.  *)
+    (Conversely, a term with free variables is often called an _open
+    term_.) *)
 (* end hide *)
 (** 最後に、「完全な(_complete_)」プログラムの性質について考えます。
  
     直観的には、「完全なプログラム」は未定義の変数を参照しないでしょう。
     すぐにSTLC項について「自由(_free_)」変数の定義を見ますが、完全なプログラムは「閉じた(_closed_)」もの、つまり自由変数を含まないものです。
  
-    （逆に、自由変数を含む項は「開いた項(_open term_)」と呼ばれることもあります。）
- 
-    関数抽象の中を簡約することを選択しなかったため、変数が値であるかをどうかを心配する必要はなくなります。
+    （逆に、自由変数を含む項は「開いた項(_open term_)」と呼ばれることもあります。） *)
+
+(* begin hide *)
+(** Having made the choice not to reduce under abstractions, we don't
+    need to worry about whether variables are values, since we'll
+    always be reducing programs "from the outside in," and that means
+    the [step] relation will always be working with closed terms.  *)
+(* end hide *)
+(** 関数抽象の中を簡約することを選択しなかったため、変数が値であるかをどうかを心配する必要はなくなります。
     なぜなら、プログラムの簡約は常に「外側から内側に」行われ、[step]関係は常に閉じた項だけを対象とするからです。 *)
 
 (* ================================================================= *)
@@ -496,32 +492,32 @@ Hint Constructors value.
     argument term for the function parameter in the function's body.
     For example, we reduce
 
-       (\x:Bool. if x then true else x) false
+       (\x:Bool. test x then tru else x) fls
 
     to
 
-       if false then true else false
+       test fls then tru else fls
 
-    by substituting [false] for the parameter [x] in the body of the
+    by substituting [fls] for the parameter [x] in the body of the
     function.
 
     In general, we need to be able to substitute some given term [s]
     for occurrences of some variable [x] in another term [t].  In
     informal discussions, this is usually written [ [x:=s]t ] and
-    pronounced "substitute [x] with [s] in [t]." *)
+    pronounced "substitute [s] for [x] in [t]." *)
 (* end hide *)
 (** これから問題の核心に入ります: 項の変数を別の項で置換する操作です。
     この操作は後で関数適用の操作的意味論を定義するために使います。
     関数適用では、関数本体の中の関数パラメータを引数項で置換することが必要になります。
     例えば、
 [[
-       (\x:Bool. if x then true else x) false
+       (\x:Bool. test x then tru else x) fls 
 ]]
     を
 [[
-       if false then true else false
+       test fls then tru else fls 
 ]]
-    に簡約するには、関数の本体のパラメータ[x]を[false]で置換することでできます。
+    に簡約するには、関数の本体のパラメータ[x]を[fls]で置換することでできます。
  
     一般に、ある項[t]の変数[x]の出現を、与えらえた項[s]で置換できることが必要です。
     非形式的な議論では、通常これを [ [x:=s]t ] と書き、「[t]の[x]を[s]で置換する」と読みます。 *)
@@ -529,55 +525,55 @@ Hint Constructors value.
 (* begin hide *)
 (** Here are some examples:
 
-      - [[x:=true] (if x then x else false)] 
-           yields [if true then true else false]
+      - [[x:=tru] (test x then x else fls)]
+           yields [test tru then tru else fls]
 
-      - [[x:=true] x] yields [true]
+      - [[x:=tru] x] yields [tru]
 
-      - [[x:=true] (if x then x else y)] yields [if true then true else y]
+      - [[x:=tru] (test x then x else y)] yields [test tru then tru else y]
 
-      - [[x:=true] y] yields [y]
+      - [[x:=tru] y] yields [y]
 
-      - [[x:=true] false] yields [false] (vacuous substitution)
+      - [[x:=tru] fls] yields [fls] (vacuous substitution)
 
-      - [[x:=true] (\y:Bool. if y then x else false)] 
-           yields [\y:Bool. if y then true else false]
+      - [[x:=tru] (\y:Bool. test y then x else fls)]
+           yields [\y:Bool. test y then tru else fls]
 
-      - [[x:=true] (\y:Bool. x)] yields [\y:Bool. true]
+      - [[x:=tru] (\y:Bool. x)] yields [\y:Bool. tru]
 
-      - [[x:=true] (\y:Bool. y)] yields [\y:Bool. y]
+      - [[x:=tru] (\y:Bool. y)] yields [\y:Bool. y]
 
-      - [[x:=true] (\x:Bool. x)] yields [\x:Bool. x]
+      - [[x:=tru] (\x:Bool. x)] yields [\x:Bool. x]
 
-    The last example is very important: substituting [x] with [true] in
-    [\x:Bool. x] does _not_ yield [\x:Bool. true]!  The reason for
+    The last example is very important: substituting [x] with [tru] in
+    [\x:Bool. x] does _not_ yield [\x:Bool. tru]!  The reason for
     this is that the [x] in the body of [\x:Bool. x] is _bound_ by the
     abstraction: it is a new, local name that just happens to be
     spelled the same as some global name [x]. *)
 (* end hide *)
 (** いくつかの例を示します:
  
-      - [[x:=true] (if x then x else false)] は [if true then true else false] となります。
+      - [[x:=tru] (test x then x else fls)] は [test tru then tru else fls] となります。
  
-      - [[x:=true] x] は [true] となります。
+      - [[x:=tru] x] は [tru] となります。
  
-      - [[x:=true] (if x then x else y)] は [if true then true else y] となります。
+      - [[x:=tru] (test x then x else y)] は [test tru then tru else y] となります。
  
-      - [[x:=true] y] は [y] となります。
+      - [[x:=tru] y] は [y] となります。
  
-      - [[x:=true] false] は [false] となります(何もしない置換です)。
+      - [[x:=tru] fls] は [fls] となります(何もしない置換です)。
  
-      - [[x:=true] (\y:Bool. if y then x else false)] は
-        [\y:Bool. if y then true else false] となります。
+      - [[x:=tru] (\y:Bool. test y then x else fls)] は
+        [\y:Bool. test y then tru else fls] となります。
  
-      - [[x:=true] (\y:Bool. x)] は [\y:Bool. true] となります。
+      - [[x:=tru] (\y:Bool. x)] は [\y:Bool. tru] となります。
  
-      - [[x:=true] (\y:Bool. y)] は [\y:Bool. y] となります。
+      - [[x:=tru] (\y:Bool. y)] は [\y:Bool. y] となります。
  
-      - [[x:=true] (\x:Bool. x)] は [\x:Bool. x] となります。
+      - [[x:=tru] (\x:Bool. x)] は [\x:Bool. x] となります。
  
     最後の例はとても重要です。
-    [\x:Bool. x] の [x] を [true] で置換したものは、[\x:Bool. true] に「なりません」! 
+    [\x:Bool. x] の [x] を [tru] で置換したものは、[\x:Bool. tru] に「なりません」! 
     理由は、[\x:Bool. x] の本体の [x] は関数抽象で束縛されている(_bound_)からです。
     この[x]は新しいローカルな名前で、たまたまグローバルな名前[x]と同じ綴りであったものです。 *)
 
@@ -585,27 +581,27 @@ Hint Constructors value.
 (** Here is the definition, informally...
 
        [x:=s]x               = s
-       [x:=s]y               = y                      if x <> y
+       [x:=s]y               = y                     if x <> y
        [x:=s](\x:T11. t12)   = \x:T11. t12
-       [x:=s](\y:T11. t12)   = \y:T11. [x:=s]t12      if x <> y
+       [x:=s](\y:T11. t12)   = \y:T11. [x:=s]t12     if x <> y
        [x:=s](t1 t2)         = ([x:=s]t1) ([x:=s]t2)
-       [x:=s]true            = true
-       [x:=s]false           = false
-       [x:=s](if t1 then t2 else t3) =
-                       if [x:=s]t1 then [x:=s]t2 else [x:=s]t3
+       [x:=s]tru             = tru
+       [x:=s]fls             = fls
+       [x:=s](test t1 then t2 else t3) =
+              test [x:=s]t1 then [x:=s]t2 else [x:=s]t3
 *)
 (* end hide *)
 (** 以下が、非形式的な定義です...
 [[
        [x:=s]x               = s 
-       [x:=s]y               = y                      if x <> y 
+       [x:=s]y               = y                     if x <> y 
        [x:=s](\x:T11. t12)   = \x:T11. t12 
-       [x:=s](\y:T11. t12)   = \y:T11. [x:=s]t12      if x <> y 
+       [x:=s](\y:T11. t12)   = \y:T11. [x:=s]t12     if x <> y 
        [x:=s](t1 t2)         = ([x:=s]t1) ([x:=s]t2) 
-       [x:=s]true            = true 
-       [x:=s]false           = false 
-       [x:=s](if t1 then t2 else t3) = 
-                       if [x:=s]t1 then [x:=s]t2 else [x:=s]t3 
+       [x:=s]tru             = tru 
+       [x:=s]fls             = fls 
+       [x:=s](test t1 then t2 else t3) = 
+              test [x:=s]t1 then [x:=s]t2 else [x:=s]t3 
 ]]
  *)
 
@@ -616,20 +612,20 @@ Hint Constructors value.
 
 Reserved Notation "'[' x ':=' s ']' t" (at level 20).
 
-Fixpoint subst (x:string) (s:tm) (t:tm) : tm :=
+Fixpoint subst (x : string) (s : tm) (t : tm) : tm :=
   match t with
-  | tvar x' =>
-      if beq_string x x' then s else t
-  | tabs x' T t1 =>
-      tabs x' T (if beq_string x x' then t1 else ([x:=s] t1))
-  | tapp t1 t2 =>
-      tapp ([x:=s] t1) ([x:=s] t2)
-  | ttrue =>
-      ttrue
-  | tfalse =>
-      tfalse
-  | tif t1 t2 t3 =>
-      tif ([x:=s] t1) ([x:=s] t2) ([x:=s] t3)
+  | var x' =>
+      if eqb_string x x' then s else t
+  | abs x' T t1 =>
+      abs x' T (if eqb_string x x' then t1 else ([x:=s] t1))
+  | app t1 t2 =>
+      app ([x:=s] t1) ([x:=s] t2)
+  | tru =>
+      tru
+  | fls =>
+      fls
+  | test t1 t2 t3 =>
+      test ([x:=s] t1) ([x:=s] t2) ([x:=s] t3)
   end
 
 where "'[' x ':=' s ']' t" := (subst x s t).
@@ -640,8 +636,8 @@ where "'[' x ':=' s ']' t" := (subst x s t).
     variable in some other term, may itself contain free variables.
     Since we are only interested here in defining the [step] relation
     on _closed_ terms (i.e., terms like [\x:Bool. x] that include
-    binders for all of the variables they mention), we can avoid this
-    extra complexity here, but it must be dealt with when formalizing
+    binders for all of the variables they mention), we can sidestep this
+    extra complexity, but it must be dealt with when formalizing
     richer languages. *)
 (* end hide *)
 (** 技術的注釈: 置換は、もし[s]、つまり他の項の変数を置換する項が、それ自身に自由変数を含むときを考えると、定義がよりトリッキーなものになります。
@@ -662,11 +658,12 @@ where "'[' x ':=' s ']' t" := (subst x s t).
     same as [[x:=s]t = \r:Bool. \x:Bool. r].  That is, renaming a
     bound variable changes how [t] behaves under substitution. *)
 
-(** See, for example, [Aydemir 2008] for further discussion
+(** See, for example, [Aydemir 2008] (in Bib.v) for further discussion
     of this issue. *)
 
-(** **** Exercise: 3 stars (substi_correct)  *)
-(** The definition that we gave above uses Coq's [Fixpoint] facility
+(** **** Exercise: 3 stars, standard (substi_correct)  
+
+    The definition that we gave above uses Coq's [Fixpoint] facility
     to define substitution as a _function_.  Suppose, instead, we
     wanted to define substitution as an inductive _relation_ [substi].
     We've begun the definition by providing the [Inductive] header and
@@ -674,9 +671,9 @@ where "'[' x ':=' s ']' t" := (subst x s t).
     constructors and prove that the relation you've defined coincides
     with the function given above. *)
 
-Inductive substi (s:tm) (x:string) : tm -> tm -> Prop :=
+Inductive substi (s : tm) (x : string) : tm -> tm -> Prop :=
   | s_var1 :
-      substi s x (tvar x) s
+      substi s x (var x) s
   (* FILL IN HERE *)
 .
 
@@ -704,9 +701,9 @@ Proof.
     variable in the body of the abstraction.  This last rule, written
     informally as
 
-      (\x:T.t12) v2 ==> [x:=v2]t12
+      (\x:T.t12) v2 --> [x:=v2]t12
 
-    is traditionally called "beta-reduction". *)
+    is traditionally called _beta-reduction_. *)
 (* end hide *)
 (** STLCのスモールステップ簡約関係は、これまで見てきたものと同じパターンに従います。
     直観的には、関数適用を簡約するため、最初に左側（関数）を関数値になるまで簡約します。
@@ -714,99 +711,96 @@ Proof.
     そして最後に関数の本体の束縛変数を引数で置換します。
     この最後の規則は、非形式的には次のように書きます:
 [[
-      (\x:T.t12) v2 ==> [x:=v2]t12
+      (\x:T.t12) v2 --> [x:=v2]t12
 ]]
-    これは伝統的にベータ簡約("beta-reduction")と呼ばれます。 *)
+    これは伝統的にベータ簡約(_beta-reduction_)と呼ばれます。 *)
 
 (* begin hide *)
 (** 
                                value v2
                      ----------------------------                   (ST_AppAbs)
-                     (\x:T.t12) v2 ==> [x:=v2]t12
+                     (\x:T.t12) v2 --> [x:=v2]t12
 
-                              t1 ==> t1'
+                              t1 --> t1'
                            ----------------                           (ST_App1)
-                           t1 t2 ==> t1' t2
+                           t1 t2 --> t1' t2
 
                               value v1
-                              t2 ==> t2'
+                              t2 --> t2'
                            ----------------                           (ST_App2)
-                           v1 t2 ==> v1 t2'
+                           v1 t2 --> v1 t2'
+
+    ... plus the usual rules for conditionals:
+
+                    --------------------------------               (ST_TestTru)
+                    (test tru then t1 else t2) --> t1
+
+                    ---------------------------------              (ST_TestFls)
+                    (test fls then t1 else t2) --> t2
+
+                             t1 --> t1'
+      --------------------------------------------------------     (ST_Test)
+      (test t1 then t2 else t3) --> (test t1' then t2 else t3)
 *)
 (* end hide *)
 (**
 <<
                                value v2 
                      ----------------------------                   (ST_AppAbs) 
-                     (\x:T.t12) v2 ==> [x:=v2]t12 
+                     (\x:T.t12) v2 --> [x:=v2]t12 
  
-                              t1 ==> t1' 
+                              t1 --> t1' 
                            ----------------                           (ST_App1) 
-                           t1 t2 ==> t1' t2 
+                           t1 t2 --> t1' t2 
  
                               value v1 
-                              t2 ==> t2' 
+                              t2 --> t2' 
                            ----------------                           (ST_App2) 
-                           v1 t2 ==> v1 t2' 
+                           v1 t2 --> v1 t2' 
 >>
- *)
-(* begin hide *)
-(** ... plus the usual rules for conditionals:
-
-                    --------------------------------                (ST_IfTrue)
-                    (if true then t1 else t2) ==> t1
-
-                    ---------------------------------              (ST_IfFalse)
-                    (if false then t1 else t2) ==> t2
-
-                              t1 ==> t1'
-         ----------------------------------------------------           (ST_If)
-         (if t1 then t2 else t3) ==> (if t1' then t2 else t3)
-*)
-(* end hide *)
-(** ...以上に加えて、通常の条件文に関する規則:
+    ...以上に加えて、通常の条件文に関する規則:
 <<
-                    --------------------------------                (ST_IfTrue) 
-                    (if true then t1 else t2) ==> t1 
+                    --------------------------------               (ST_TestTru) 
+                    (test tru then t1 else t2) --> t1 
  
-                    ---------------------------------              (ST_IfFalse) 
-                    (if false then t1 else t2) ==> t2 
+                    ---------------------------------              (ST_TestFls) 
+                    (test fls then t1 else t2) --> t2 
  
-                              t1 ==> t1' 
-         ----------------------------------------------------           (ST_If) 
-         (if t1 then t2 else t3) ==> (if t1' then t2 else t3) 
+                             t1 --> t1' 
+      --------------------------------------------------------     (ST_Test) 
+      (test t1 then t2 else t3) --> (test t1' then t2 else t3) 
 >>
 *)
 
 (** Formally: *)
 
-Reserved Notation "t1 '==>' t2" (at level 40).
+Reserved Notation "t1 '-->' t2" (at level 40).
 
 Inductive step : tm -> tm -> Prop :=
   | ST_AppAbs : forall x T t12 v2,
          value v2 ->
-         (tapp (tabs x T t12) v2) ==> [x:=v2]t12
+         (app (abs x T t12) v2) --> [x:=v2]t12
   | ST_App1 : forall t1 t1' t2,
-         t1 ==> t1' ->
-         tapp t1 t2 ==> tapp t1' t2
+         t1 --> t1' ->
+         app t1 t2 --> app t1' t2
   | ST_App2 : forall v1 t2 t2',
          value v1 ->
-         t2 ==> t2' ->
-         tapp v1 t2 ==> tapp v1  t2'
-  | ST_IfTrue : forall t1 t2,
-      (tif ttrue t1 t2) ==> t1
-  | ST_IfFalse : forall t1 t2,
-      (tif tfalse t1 t2) ==> t2
-  | ST_If : forall t1 t1' t2 t3,
-      t1 ==> t1' ->
-      (tif t1 t2 t3) ==> (tif t1' t2 t3)
+         t2 --> t2' ->
+         app v1 t2 --> app v1  t2'
+  | ST_TestTru : forall t1 t2,
+      (test tru t1 t2) --> t1
+  | ST_TestFls : forall t1 t2,
+      (test fls t1 t2) --> t2
+  | ST_Test : forall t1 t1' t2 t3,
+      t1 --> t1' ->
+      (test t1 t2 t3) --> (test t1' t2 t3)
 
-where "t1 '==>' t2" := (step t1 t2).
+where "t1 '-->' t2" := (step t1 t2).
 
 Hint Constructors step.
 
 Notation multistep := (multi step).
-Notation "t1 '==>*' t2" := (multistep t1 t2) (at level 40).
+Notation "t1 '-->*' t2" := (multistep t1 t2) (at level 40).
 
 (* ================================================================= *)
 (* begin hide *)
@@ -816,15 +810,15 @@ Notation "t1 '==>*' t2" := (multistep t1 t2) (at level 40).
 
 (** Example:
 
-      (\x:Bool->Bool. x) (\x:Bool. x) ==>* \x:Bool. x
+      (\x:Bool->Bool. x) (\x:Bool. x) -->* \x:Bool. x
 
     i.e.,
 
-      idBB idB ==>* idB
+      idBB idB -->* idB
 *)
 
 Lemma step_example1 :
-  (tapp idBB idB) ==>* idB.
+  (app idBB idB) -->* idB.
 Proof.
   eapply multi_step.
     apply ST_AppAbs.
@@ -835,15 +829,15 @@ Proof.
 (** Example:
 
       (\x:Bool->Bool. x) ((\x:Bool->Bool. x) (\x:Bool. x))
-            ==>* \x:Bool. x
+            -->* \x:Bool. x
 
     i.e.,
 
-      (idBB (idBB idB)) ==>* idB.
+      (idBB (idBB idB)) -->* idB.
 *)
 
 Lemma step_example2 :
-  (tapp idBB (tapp idBB idB)) ==>* idB.
+  (app idBB (app idBB idB)) -->* idB.
 Proof.
   eapply multi_step.
     apply ST_App2. auto.
@@ -854,93 +848,93 @@ Proof.
 
 (** Example:
 
-      (\x:Bool->Bool. x) 
-         (\x:Bool. if x then false else true) 
-         true
-            ==>* false
+      (\x:Bool->Bool. x)
+         (\x:Bool. test x then fls else tru)
+         tru
+            -->* fls
 
     i.e.,
 
-       (idBB notB) ttrue ==>* tfalse.
+       (idBB notB) tru -->* fls.
 *)
 
 Lemma step_example3 :
-  tapp (tapp idBB notB) ttrue ==>* tfalse.
+  app (app idBB notB) tru -->* fls.
 Proof.
   eapply multi_step.
     apply ST_App1. apply ST_AppAbs. auto. simpl.
   eapply multi_step.
     apply ST_AppAbs. auto. simpl.
   eapply multi_step.
-    apply ST_IfTrue. apply multi_refl.  Qed.
+    apply ST_TestTru. apply multi_refl.  Qed.
 
 (** Example:
 
-      (\x:Bool -> Bool. x) 
-         ((\x:Bool. if x then false else true) true)
-            ==>* false
+      (\x:Bool -> Bool. x)
+         ((\x:Bool. test x then fls else tru) tru)
+            -->* fls
 
     i.e.,
 
-      idBB (notB ttrue) ==>* tfalse.
+      idBB (notB tru) -->* fls.
 
     (Note that this term doesn't actually typecheck; even so, we can
     ask how it reduces.)
 *)
 
 Lemma step_example4 :
-  tapp idBB (tapp notB ttrue) ==>* tfalse.
+  app idBB (app notB tru) -->* fls.
 Proof.
   eapply multi_step.
     apply ST_App2. auto.
     apply ST_AppAbs. auto. simpl.
   eapply multi_step.
     apply ST_App2. auto.
-    apply ST_IfTrue.
+    apply ST_TestTru.
   eapply multi_step.
     apply ST_AppAbs. auto. simpl.
   apply multi_refl.  Qed.
 
 (* begin hide *)
-(** We can use the [normalize] tactic defined in the [Types] chapter
+(** We can use the [normalize] tactic defined in the [Smallstep] chapter
     to simplify these proofs. *)
 (* end hide *)
-(** [Types]章で定義した[normalize]タクティックを使って、証明を簡単にすることができます。*)
+(** [Smallstep]章で定義した[normalize]タクティックを使って、証明を簡単にすることができます。*)
 
 Lemma step_example1' :
-  (tapp idBB idB) ==>* idB.
+  app idBB idB -->* idB.
 Proof. normalize.  Qed.
 
 Lemma step_example2' :
-  (tapp idBB (tapp idBB idB)) ==>* idB.
+  app idBB (app idBB idB) -->* idB.
 Proof. normalize. Qed.
 
 Lemma step_example3' :
-  tapp (tapp idBB notB) ttrue ==>* tfalse.
+  app (app idBB notB) tru -->* fls.
 Proof. normalize.  Qed.
 
 Lemma step_example4' :
-  tapp idBB (tapp notB ttrue) ==>* tfalse.
+  app idBB (app notB tru) -->* fls.
 Proof. normalize.  Qed.
 
 (* begin hide *)
-(** **** Exercise: 2 stars (step_example5)  *)
+(** **** Exercise: 2 stars, standard (step_example5)  
+
+    Try to do this one both with and without [normalize]. *)
 (* end hide *)
-(** **** 練習問題: ★★ (step_example5)  *)
-(* begin hide *)
-(** Try to do this one both with and without [normalize]. *)
-(* end hide *)
-(** 次の証明を[normalize]を使う方法と使わない方法の両方で行いなさい。*)
+(** **** 練習問題: ★★, standard (step_example5)
+ 
+    次の証明を[normalize]を使う方法と使わない方法の両方で行いなさい。*)
 
 Lemma step_example5 :
-       tapp (tapp idBBBB idBB) idB
-  ==>* idB.
+       app (app idBBBB idBB) idB
+  -->* idB.
 Proof.
   (* FILL IN HERE *) Admitted.
 
 Lemma step_example5_with_normalize :
-       tapp (tapp idBBBB idBB) idB
-  ==>* idB.
+       app (app idBBBB idBB) idB
+  -->* idB.
 Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
@@ -982,9 +976,9 @@ Proof.
     これを非形式的には [Gamma |- t \in T] と記述します。
     ここで [Gamma] は「型付けコンテキスト」("typing context")、つまり、変数から型への写像です。 *)
 
-(** Following the usual notation for partial maps, we could write [Gamma
-    & {{x:T}}] for "update the partial function [Gamma] to also map
-    [x] to [T]." *)
+(** Following the usual notation for partial maps, we write [(X |->
+    T11, Gamma)] for "update the partial function [Gamma] so that it
+    maps [x] to [T]." *)
 
 Definition context := partial_map ty.
 
@@ -996,59 +990,57 @@ Definition context := partial_map ty.
 
 (* begin hide *)
 (** 
-                             Gamma x = T
-                            --------------                              (T_Var)
+                              Gamma x = T
+                            ----------------                            (T_Var)
                             Gamma |- x \in T
 
-                   Gamma & {{ x --> T11 }} |- t12 \in T12
-                   --------------------------------------               (T_Abs)
-                     Gamma |- \x:T11.t12 \in T11->T12
+                   (x |-> T11 ; Gamma) |- t12 \in T12
+                   ----------------------------------                   (T_Abs)
+                    Gamma |- \x:T11.t12 \in T11->T12
 
                         Gamma |- t1 \in T11->T12
                           Gamma |- t2 \in T11
-                        ----------------------                          (T_App)
+                         ----------------------                         (T_App)
                          Gamma |- t1 t2 \in T12
 
-                         --------------------                          (T_True)
-                         Gamma |- true \in Bool
+                         ---------------------                          (T_Tru)
+                         Gamma |- tru \in Bool
 
-                        ---------------------                         (T_False)
-                        Gamma |- false \in Bool
+                         ---------------------                          (T_Fls)
+                         Gamma |- fls \in Bool
 
        Gamma |- t1 \in Bool    Gamma |- t2 \in T    Gamma |- t3 \in T
-       --------------------------------------------------------          (T_If)
-                  Gamma |- if t1 then t2 else t3 \in T
-
+       --------------------------------------------------------------   (T_Test)
+                  Gamma |- test t1 then t2 else t3 \in T
 
     We can read the three-place relation [Gamma |- t \in T] as:
     "under the assumptions in Gamma, the term [t] has the type [T]." *)
 (* end hide *)
 (**
 <<
-                             Gamma x = T 
-                            --------------                              (T_Var) 
+                              Gamma x = T 
+                            ----------------                            (T_Var) 
                             Gamma |- x \in T 
  
-                   Gamma & {{ x --> T11 }} |- t12 \in T12 
-                   --------------------------------------               (T_Abs) 
-                     Gamma |- \x:T11.t12 \in T11->T12 
+                   (x |-> T11 ; Gamma) |- t12 \in T12 
+                   ----------------------------------                   (T_Abs) 
+                    Gamma |- \x:T11.t12 \in T11->T12 
  
                         Gamma |- t1 \in T11->T12 
                           Gamma |- t2 \in T11 
-                        ----------------------                          (T_App) 
+                         ----------------------                         (T_App) 
                          Gamma |- t1 t2 \in T12 
  
-                         --------------------                          (T_True) 
-                         Gamma |- true \in Bool 
+                         ---------------------                          (T_Tru) 
+                         Gamma |- tru \in Bool 
  
-                        ---------------------                         (T_False) 
-                        Gamma |- false \in Bool 
+                         ---------------------                          (T_Fls) 
+                         Gamma |- fls \in Bool 
  
        Gamma |- t1 \in Bool    Gamma |- t2 \in T    Gamma |- t3 \in T 
-       --------------------------------------------------------          (T_If) 
-                  Gamma |- if t1 then t2 else t3 \in T 
+       --------------------------------------------------------------   (T_Test) 
+                  Gamma |- test t1 then t2 else t3 \in T 
 >> 
- 
     三項関係 [Gamma |- t \in T] は次のような意味があります:
     「[Gamma] による仮定の下では、項 [t] には型 [T] が割り当てられる。」 *)
 
@@ -1057,23 +1049,23 @@ Reserved Notation "Gamma '|-' t '\in' T" (at level 40).
 Inductive has_type : context -> tm -> ty -> Prop :=
   | T_Var : forall Gamma x T,
       Gamma x = Some T ->
-      Gamma |- tvar x \in T
+      Gamma |- var x \in T
   | T_Abs : forall Gamma x T11 T12 t12,
-      Gamma & {{x --> T11}} |- t12 \in T12 ->
-      Gamma |- tabs x T11 t12 \in TArrow T11 T12
+      (x |-> T11 ; Gamma) |- t12 \in T12 ->
+      Gamma |- abs x T11 t12 \in Arrow T11 T12
   | T_App : forall T11 T12 Gamma t1 t2,
-      Gamma |- t1 \in TArrow T11 T12 ->
+      Gamma |- t1 \in Arrow T11 T12 ->
       Gamma |- t2 \in T11 ->
-      Gamma |- tapp t1 t2 \in T12
-  | T_True : forall Gamma,
-       Gamma |- ttrue \in TBool
-  | T_False : forall Gamma,
-       Gamma |- tfalse \in TBool
-  | T_If : forall t1 t2 t3 T Gamma,
-       Gamma |- t1 \in TBool ->
+      Gamma |- app t1 t2 \in T12
+  | T_Tru : forall Gamma,
+       Gamma |- tru \in Bool
+  | T_Fls : forall Gamma,
+       Gamma |- fls \in Bool
+  | T_Test : forall t1 t2 t3 T Gamma,
+       Gamma |- t1 \in Bool ->
        Gamma |- t2 \in T ->
        Gamma |- t3 \in T ->
-       Gamma |- tif t1 t2 t3 \in T
+       Gamma |- test t1 t2 t3 \in T
 
 where "Gamma '|-' t '\in' T" := (has_type Gamma t T).
 
@@ -1086,23 +1078,23 @@ Hint Constructors has_type.
 (** ** 例 *)
 
 Example typing_example_1 :
-  empty |- tabs x TBool (tvar x) \in TArrow TBool TBool.
+  empty |- abs x Bool (var x) \in Arrow Bool Bool.
 Proof.
   apply T_Abs. apply T_Var. reflexivity.  Qed.
 
 (* begin hide *)
-(** Note that since we added the [has_type] constructors to the hints
-    database, auto can actually solve this one immediately. *)
+(** Note that, since we added the [has_type] constructors to the hints
+    database, [auto] can actually solve this one immediately. *)
 (* end hide *)
 (** なお、[has_type]のコンストラクタをヒントデータベースに追加したことから、
-    auto でこれを直接解けます。*)
+    [auto] でこれを直接解けます。*)
 
 Example typing_example_1' :
-  empty |- tabs x TBool (tvar x) \in TArrow TBool TBool.
+  empty |- abs x Bool (var x) \in Arrow Bool Bool.
 Proof. auto.  Qed.
 
 (* begin hide *)
-(** Another example:
+(** More examples:
 
        empty |- \x:A. \y:A->A. y (y x)
              \in A -> (A->A) -> A.
@@ -1111,16 +1103,16 @@ Proof. auto.  Qed.
 (** 他の例:
 [[
        empty |- \x:A. \y:A->A. y (y x) 
-             \in A -> (A->A) -> A 
+             \in A -> (A->A) -> A. 
 ]]
  *)
 
 Example typing_example_2 :
   empty |-
-    (tabs x TBool
-       (tabs y (TArrow TBool TBool)
-          (tapp (tvar y) (tapp (tvar y) (tvar x))))) \in
-    (TArrow TBool (TArrow (TArrow TBool TBool) TBool)).
+    (abs x Bool
+       (abs y (Arrow Bool Bool)
+          (app (var y) (app (var y) (var x))))) \in
+    (Arrow Bool (Arrow (Arrow Bool Bool) Bool)).
 Proof with auto using update_eq.
   apply T_Abs.
   apply T_Abs.
@@ -1130,84 +1122,82 @@ Proof with auto using update_eq.
 Qed.
 
 (* begin hide *)
-(** **** Exercise: 2 stars, optional (typing_example_2_full)  *)
-(* end hide *)
-(** **** 練習問題: ★★, optional (typing_example_2_full)  *)
-(* begin hide *)
-(** Prove the same result without using [auto], [eauto], or
+(** **** Exercise: 2 stars, standard, optional (typing_example_2_full)  
+
+    Prove the same result without using [auto], [eauto], or
     [eapply] (or [...]). *)
 (* end hide *)
-(** [auto]、[eauto]、[eapply] （またはタクティックの後ろに付ける[...]）を使わずに同じ結果を証明しなさい。 *)
+(** **** 練習問題: ★★, standard, optional (typing_example_2_full)
+ 
+    [auto]、[eauto]、[eapply] （またはタクティックの後ろに付ける[...]）を使わずに同じ結果を証明しなさい。 *)
 
 Example typing_example_2_full :
   empty |-
-    (tabs x TBool
-       (tabs y (TArrow TBool TBool)
-          (tapp (tvar y) (tapp (tvar y) (tvar x))))) \in
-    (TArrow TBool (TArrow (TArrow TBool TBool) TBool)).
+    (abs x Bool
+       (abs y (Arrow Bool Bool)
+          (app (var y) (app (var y) (var x))))) \in
+    (Arrow Bool (Arrow (Arrow Bool Bool) Bool)).
 Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
 (* begin hide *)
-(** **** Exercise: 2 stars (typing_example_3)  *)
-(* end hide *)
-(** **** 練習問題: ★★ (typing_example_3)  *)
-(* begin hide *)
-(** Formally prove the following typing derivation holds: *)
-(* end hide *)
-(** 次の型付けが成立することを形式的に証明しなさい: *)
-(* begin hide *)
-(** 
+(** **** Exercise: 2 stars, standard (typing_example_3)  
+
+    Formally prove the following typing derivation holds: 
+
+    
        empty |- \x:Bool->B. \y:Bool->Bool. \z:Bool.
                    y (x z)
              \in T.
 *)
 (* end hide *)
-(**  
+(** **** 練習問題: ★★, standard (typing_example_3)
+ 
+    次の型付けが成立することを形式的に証明しなさい:
+ 
 [[
        empty |- \x:Bool->B. \y:Bool->Bool. \z:Bool. 
                    y (x z) 
-             \in T 
+             \in T. 
 ]]
  *)
 
 Example typing_example_3 :
   exists T,
     empty |-
-      (tabs x (TArrow TBool TBool)
-         (tabs y (TArrow TBool TBool)
-            (tabs z TBool
-               (tapp (tvar y) (tapp (tvar x) (tvar z)))))) \in
+      (abs x (Arrow Bool Bool)
+         (abs y (Arrow Bool Bool)
+            (abs z Bool
+               (app (var y) (app (var x) (var z)))))) \in
       T.
 Proof with auto.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
 (* begin hide *)
-(** We can also show that terms are _not_ typable.  For example, let's
-    formally check that there is no typing derivation assigning a type
+(** We can also show that some terms are _not_ typable.  For example, 
+    let's check that there is no typing derivation assigning a type
     to the term [\x:Bool. \y:Bool, x y] -- i.e.,
 
     ~ exists T,
         empty |- \x:Bool. \y:Bool, x y \in T.
 *)
 (* end hide *)
-(** 項が「型付けできない」ことを証明することもできます。
+(** ある項が「型付けできない」ことを証明することもできます。
     例えば [\x:Bool. \y:Bool, x y] に型をつける型付けが存在しないこと、つまり、
 [[
     ~ exists T, 
         empty |- \x:Bool. \y:Bool, x y \in T 
 ]]
-    を形式的にチェックしましょう。
- *)
+    を形式的にチェックしましょう。 *)
 
 Example typing_nonexample_1 :
   ~ exists T,
       empty |-
-        (tabs x TBool
-            (tabs y TBool
-               (tapp (tvar x) (tvar y)))) \in
+        (abs x Bool
+            (abs y Bool
+               (app (var x) (var y)))) \in
         T.
 Proof.
   intros Hc. inversion Hc.
@@ -1221,17 +1211,17 @@ Proof.
   inversion H1.  Qed.
 
 (* begin hide *)
-(** **** Exercise: 3 stars, optional (typing_nonexample_3)  *)
-(* end hide *)
-(** **** 練習問題: ★★★, optional (typing_nonexample_3)  *)
-(* begin hide *)
-(** Another nonexample:
+(** **** Exercise: 3 stars, standard, optional (typing_nonexample_3)  
 
-    ~ (exists S, exists T,
+    Another nonexample:
+
+    ~ (exists S T,
           empty |- \x:S. x x \in T).
 *)
 (* end hide *)
-(** 別の、型を持たない例:
+(** **** 練習問題: ★★★, standard, optional (typing_nonexample_3)
+ 
+    別の、型を持たない例:
 [[
     ~ (exists S, exists T, 
           empty |- \x:S. x x \in T) 
@@ -1239,10 +1229,10 @@ Proof.
  *)
 
 Example typing_nonexample_3 :
-  ~ (exists S, exists T,
+  ~ (exists S T,
         empty |-
-          (tabs x S
-             (tapp (tvar x) (tvar x))) \in
+          (abs x S
+             (app (var x) (var x))) \in
           T).
 Proof.
   (* FILL IN HERE *) Admitted.
@@ -1250,5 +1240,4 @@ Proof.
 
 End STLC.
 
-(** $Date$ *)
-
+(* Thu Feb 7 20:09:24 EST 2019 *)

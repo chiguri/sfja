@@ -7,7 +7,7 @@
 (** This short (and optional) chapter develops some basic definitions
     and a few theorems about binary relations in Coq.  The key
     definitions are repeated where they are actually used (in the
-    \CHAPV2{Smallstep} chapter of _Programming Language Foundations_),
+    [Smallstep] chapter of _Programming Language Foundations_),
     so readers who are already comfortable with these ideas can safely
     skim or skip this chapter.  However, relations are also a good
     source of exercises for developing facility with Coq's basic
@@ -20,7 +20,7 @@
     しかし、Coqの基本的推論機構を使う良い練習問題ともなるので、[IndProp]章の直後に見ておくとよいかもしれません。 *)
 
 Set Warnings "-notation-overridden,-parsing".
-Require Export IndProp.
+From LF Require Export IndProp.
 
 (* ################################################################# *)
 (* begin hide *)
@@ -151,33 +151,35 @@ Proof.
     apply Hc with (x := 0).
     - apply le_n.
     - apply le_S. apply le_n. }
-  inversion Nonsense.   Qed.
+  discriminate Nonsense.   Qed.
 
 (* begin hide *)
-(** **** Exercise: 2 stars, optional (total_relation_not_partial)  *)
-(* end hide *)
-(** **** 練習問題:★★, optional (total_relation_not_partial)  *)
-(* begin hide *)
-(** Show that the [total_relation] defined in earlier is not a partial
-    function. *)
-(* end hide *)
-(** 前に定義した [total_relation] が部分関数ではないことを示しなさい。 *)
+(** **** Exercise: 2 stars, standard, optional (total_relation_not_partial)  
 
-(* FILL IN HERE *)
-(** [] *)
+    Show that the [total_relation] defined in (an exercise in)
+    [IndProp] is not a partial function. *)
+(* end hide *)
+(** **** 練習問題:★★, optional (total_relation_not_partial)
+ 
+    [IndProp]章（の課題）で定義した [total_relation] が部分関数ではないことを示しなさい。 *)
+
+(* FILL IN HERE 
+
+    [] *)
 
 (* begin hide *)
-(** **** Exercise: 2 stars, optional (empty_relation_partial)  *)
-(* end hide *)
-(** **** 練習問題:★★, optional (empty_relation_partial)  *)
-(* begin hide *)
-(** Show that the [empty_relation] that we defined earlier is a
-    partial function. *)
-(* end hide *)
-(** 前に定義した [empty_relation] が部分関数であることを示しなさい。 *)
+(** **** Exercise: 2 stars, standard, optional (empty_relation_partial)  
 
-(* FILL IN HERE *)
-(** [] *)
+    Show that the [empty_relation] defined in (an exercise in)
+    [IndProp] is a partial function. *)
+(* end hide *)
+(** **** 練習問題:★★, optional (empty_relation_partial)
+ 
+    [IndProp]章（の課題）で定義した [empty_relation] が部分関数であることを示しなさい。 *)
+
+(* FILL IN HERE 
+
+    [] *)
 
 (* ----------------------------------------------------------------- *)
 (* begin hide *)
@@ -233,14 +235,14 @@ Proof.
   apply Hmo. Qed.
 
 (* begin hide *)
-(** **** Exercise: 2 stars, optional (le_trans_hard_way)  *)
+(** **** Exercise: 2 stars, standard, optional (le_trans_hard_way)  
+
+    We can also prove [lt_trans] more laboriously by induction,
+    without using [le_trans].  Do this. *)
 (* end hide *)
-(** **** 練習問題:★★, optional (le_trans_hard_way)  *)
-(* begin hide *)
-(** We can also prove [lt_trans] more laboriously by induction,
-    without using [le_trans].  Do this.*)
-(* end hide *)
-(** [lt_trans] は、帰納法を使って手間をかければ、[le_trans] を使わずに証明することができます。
+(** **** 練習問題:★★, standard, optional (le_trans_hard_way)
+ 
+    [lt_trans] は、帰納法を使って手間をかければ、[le_trans] を使わずに証明することができます。
     これをやってみなさい。*)
 
 Theorem lt_trans' :
@@ -255,13 +257,13 @@ Proof.
 (** [] *)
 
 (* begin hide *)
-(** **** Exercise: 2 stars, optional (lt_trans'')  *)
+(** **** Exercise: 2 stars, standard, optional (lt_trans'')  
+
+    Prove the same thing again by induction on [o]. *)
 (* end hide *)
-(** **** 練習問題:★★, optional (lt_trans'')  *)
-(* begin hide *)
-(** Prove the same thing again by induction on [o]. *)
-(* end hide *)
-(** 同じことを、[o]についての帰納法で証明しなさい。*)
+(** **** 練習問題:★★, standard, optional (lt_trans'')
+ 
+    同じことを、[o]についての帰納法で証明しなさい。*)
 
 Theorem lt_trans'' :
   transitive lt.
@@ -288,9 +290,9 @@ Proof.
 Qed.
 
 (* begin hide *)
-(** **** Exercise: 1 star, optional (le_S_n)  *)
+(** **** Exercise: 1 star, standard, optional (le_S_n)  *)
 (* end hide *)
-(** **** 練習問題:★, optional (le_S_n)  *)
+(** **** 練習問題:★, standard, optional (le_S_n)  *)
 Theorem le_S_n : forall n m,
   (S n <= S m) -> (n <= m).
 Proof.
@@ -298,11 +300,9 @@ Proof.
 (** [] *)
 
 (* begin hide *)
-(** **** Exercise: 2 stars, optional (le_Sn_n_inf)  *)
-(* end hide *)
-(** **** 練習問題:★★, optional (le_Sn_n_inf)  *)
-(* begin hide *)
-(** Provide an informal proof of the following theorem:
+(** **** Exercise: 2 stars, standard, optional (le_Sn_n_inf)  
+
+    Provide an informal proof of the following theorem:
 
     Theorem: For every [n], [~ (S n <= n)]
 
@@ -311,7 +311,9 @@ Proof.
 
     Proof: *)
 (* end hide *)
-(** 以下の定理の非形式的な証明を示しなさい。
+(** **** 練習問題:★★, optional (le_Sn_n_inf)
+ 
+    以下の定理の非形式的な証明を示しなさい。
  
     定理: すべての[n]について、[~(S n <= n)]
  
@@ -319,13 +321,14 @@ Proof.
     ここでは、形式的な証明を行わずに、まず非形式的な証明を示しなさい。 
  
     証明: *)
-    (* FILL IN HERE *)
-(** [] *)
+    (* FILL IN HERE 
+
+    [] *)
 
 (* begin hide *)
-(** **** Exercise: 1 star, optional (le_Sn_n)  *)
+(** **** Exercise: 1 star, standard, optional (le_Sn_n)  *)
 (* end hide *)
-(** **** 練習問題:★, optional (le_Sn_n)  *)
+(** **** 練習問題:★, standard, optional (le_Sn_n)  *)
 Theorem le_Sn_n : forall n,
   ~ (S n <= n).
 Proof.
@@ -355,9 +358,9 @@ Definition symmetric {X: Type} (R: relation X) :=
   forall a b : X, (R a b) -> (R b a).
 
 (* begin hide *)
-(** **** Exercise: 2 stars, optional (le_not_symmetric)  *)
+(** **** Exercise: 2 stars, standard, optional (le_not_symmetric)  *)
 (* end hide *)
-(** **** 練習問題:★★, optional (le_not_symmetric)  *)
+(** **** 練習問題:★★, standard, optional (le_not_symmetric)  *)
 Theorem le_not_symmetric :
   ~ (symmetric le).
 Proof.
@@ -376,9 +379,9 @@ Definition antisymmetric {X: Type} (R: relation X) :=
   forall a b : X, (R a b) -> (R b a) -> a = b.
 
 (* begin hide *)
-(** **** Exercise: 2 stars, optional (le_antisymmetric)  *)
+(** **** Exercise: 2 stars, standard, optional (le_antisymmetric)  *)
 (* end hide *)
-(** **** 練習問題:★★, optional (le_antisymmetric)  *)
+(** **** 練習問題:★★, standard, optional (le_antisymmetric)  *)
 Theorem le_antisymmetric :
   antisymmetric le.
 Proof.
@@ -386,9 +389,9 @@ Proof.
 (** [] *)
 
 (* begin hide *)
-(** **** Exercise: 2 stars, optional (le_step)  *)
+(** **** Exercise: 2 stars, standard, optional (le_step)  *)
 (* end hide *)
-(** **** 練習問題:★★, optional (le_step)  *)
+(** **** 練習問題:★★, standard, optional (le_step)  *)
 Theorem le_step : forall n m p,
   n < m ->
   m <= S p ->
@@ -463,11 +466,11 @@ Proof.
     形式的には、Coq標準ライブラリのRelationモジュールで、以下のように定義されます。*)
 
 Inductive clos_refl_trans {A: Type} (R: relation A) : relation A :=
-    | rt_step : forall x y, R x y -> clos_refl_trans R x y
-    | rt_refl : forall x, clos_refl_trans R x x
-    | rt_trans : forall x y z,
-          clos_refl_trans R x y ->
-          clos_refl_trans R y z ->
+    | rt_step x y (H : R x y) : clos_refl_trans R x y
+    | rt_refl x : clos_refl_trans R x x
+    | rt_trans x y z
+          (Hxy : clos_refl_trans R x y)
+          (Hyz : clos_refl_trans R y z) :
           clos_refl_trans R x z.
 
 (* begin hide *)
@@ -514,8 +517,8 @@ Inductive clos_refl_trans_1n {A : Type}
                              (R : relation A) (x : A)
                              : A -> Prop :=
   | rt1n_refl : clos_refl_trans_1n R x x
-  | rt1n_trans (y z : A) :
-      R x y -> clos_refl_trans_1n R y z ->
+  | rt1n_trans (y z : A)
+      (Hxy : R x y) (Hrest : clos_refl_trans_1n R y z) :
       clos_refl_trans_1n R x z.
 
 (* begin hide *)
@@ -546,9 +549,9 @@ Proof.
   apply rt1n_trans with y. apply H. apply rt1n_refl.   Qed.
 
 (* begin hide *)
-(** **** Exercise: 2 stars, optional (rsc_trans)  *)
+(** **** Exercise: 2 stars, standard, optional (rsc_trans)  *)
 (* end hide *)
-(** **** 練習問題:★★, optional(rsc_trans)  *)
+(** **** 練習問題:★★, standard, optional(rsc_trans)  *)
 Lemma rsc_trans :
   forall (X:Type) (R: relation X) (x y z : X),
       clos_refl_trans_1n R x y  ->
@@ -567,9 +570,9 @@ Proof.
     上記の事実を使います。*)
 
 (* begin hide *)
-(** **** Exercise: 3 stars, optional (rtc_rsc_coincide)  *)
+(** **** Exercise: 3 stars, standard, optional (rtc_rsc_coincide)  *)
 (* end hide *)
-(** **** 練習問題:★★★, optional (rtc_rsc_coincide)  *)
+(** **** 練習問題:★★★, standard, optional (rtc_rsc_coincide)  *)
 Theorem rtc_rsc_coincide :
          forall (X:Type) (R: relation X) (x y : X),
   clos_refl_trans R x y <-> clos_refl_trans_1n R x y.
@@ -577,3 +580,4 @@ Proof.
   (* FILL IN HERE *) Admitted.
 (** [] *)
 
+(* Wed Jan 9 12:02:46 EST 2019 *)
