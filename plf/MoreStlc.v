@@ -1280,7 +1280,6 @@ From Coq Require Import Strings.String.
     (* FILL IN HERE *)
 
     [] *)
-*)
 (* end hide *)
 (** **** 練習問題: ★, optional (fact_steps)
  

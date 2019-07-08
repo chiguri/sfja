@@ -345,11 +345,7 @@ Notation "'>>' v1 v2 v3 v4 v5 v6 v7 v8 v9 v10 v11 v12 v13" :=
    v12 at level 0, v13 at level 0)
   : ltac_scope.
 
-<<<<<<< HEAD
-
 (* begin hide *)
-=======
->>>>>>> sf_orig
 (** The tactic [list_boxer_of] inputs a term [E] and returns a term
     of type "list boxer", according to the following rules:
     - if [E] is already of type "list Boxer", then it returns [E];
