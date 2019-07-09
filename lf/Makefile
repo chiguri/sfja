@@ -164,9 +164,17 @@ checkproofs:
 gallina: $(GFILES)
 
 html: $(GLOBFILES) $(VFILES) _CoqProject footer.html header.html README LICENSE impdriver.ml
-	$(COQDOC) --interpolate --html --with-header header.html --with-footer footer.html --no-lib-name --lib-subtitles -toc --toc-depth 2 --index coqindex -d html -parse-comments $(VFILES)
+# save original glob files / remove "LF." from identifiers
+	for glob in $(VFILES:.v=.glob); do mv $$glob $${glob}.glob && sed -e 's/LF.//g' $${glob}.glob > $$glob ; done
+	$(COQDOC) --interpolate --html --with-header header.html --with-footer footer.html --no-lib-name --lib-subtitles -toc --toc-depth 2 --index coqindex -d html $(VFILES)
+# restore original globs
+	rm -f $(VFILES:.v=.glob)
+	for glob in $(VFILES:.v=.glob); do mv $${glob}.glob $$glob ; done
 	rm -f html/coqdoc.css
 	tar zcvf html/lf.tgz $(VFILES) _CoqProject footer.html header.html Makefile README LICENSE impdriver.ml $(VFILES:%.v=html/%.html) html/deps.gif html/deps.html html/deps.map html/index.html html/coqindex.html html/toc.html html/common
+#	$(COQDOC) --interpolate --html --with-header header.html --with-footer footer.html --no-lib-name --lib-subtitles -toc --toc-depth 2 --index coqindex -d html -parse-comments $(VFILES)
+#	rm -f html/coqdoc.css
+#	tar zcvf html/lf.tgz $(VFILES) _CoqProject footer.html header.html Makefile README LICENSE impdriver.ml $(VFILES:%.v=html/%.html) html/deps.gif html/deps.html html/deps.map html/index.html html/coqindex.html html/toc.html html/common
 
 html-normal: $(GLOBFILES) $(VFILES)
 	- mkdir -p html
