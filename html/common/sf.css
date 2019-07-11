@@ -158,7 +158,8 @@ h3.section {
     padding-left: 0px;
     /* padding-top: 7px;  */
     padding-top: 0px; 
-    padding-bottom: 0px; 
+    /* padding-bottom: 0px; */
+    padding-bottom: 0.5em; 
     /* margin-top: 9px; */
     margin-top: 4px;
     font-size : 115%;
@@ -268,7 +269,8 @@ h1 .inlinecode .id, h1.section span.inlinecode {
 } 
 
 .show::before {
-    content: "more";
+    /* content: "more"; */
+    content: "+";
 }
 
 .show { 
@@ -367,7 +369,7 @@ h1 .inlinecode .id, h1.section span.inlinecode {
 .code-space {
     max-width: 50em;
     margin-top: 0em;
-    margin-bottom: -.5em;
+    /* margin-bottom: -.5em; */
     margin-left: auto;
     margin-right: auto;
 }
@@ -375,7 +377,7 @@ h1 .inlinecode .id, h1.section span.inlinecode {
 .code-tight {
     max-width: 50em;
     margin-top: .6em;
-    margin-bottom: -.7em;
+    /* margin-bottom: -.7em; */
     margin-left: auto;
     margin-right: auto;
 }
@@ -400,8 +402,8 @@ code.br {
 table.infrule {
     border: 0px;
     margin-left: 50px;
-    margin-top: 10px;
-    margin-bottom: 10px;
+    margin-top: .5em;
+    margin-bottom: 1.2em;
 }
 
 td.infrule {
@@ -487,6 +489,9 @@ tr.infrulemiddle hr {
     color: rgb(0%,0%,0%);
 }
 
+.nowrap {
+    white-space: nowrap;
+}
 
 /* TOC */
 
@@ -755,14 +760,18 @@ table.logical {
     background-color: rgba(144, 160, 209, 0.5);  }
     
     
-table.logical tbody tr td.tab { background-color: #91a1d1; 
-                              }
+table.logical tbody tr td.tab { background-color: #91a1d1; }
 table.language_found { background-color: rgba(178, 88, 88, 0.5);  }
 table.language_found  tbody tr td.tab { background-color: #b25959; }
 
-table.algo {  background-color: rgba(194, 194, 108, 0.5);}
+table.algo {  background-color: rgba(194, 194, 108, 0.5); }
 table.algo  tbody tr td.tab { background-color: #c2c26c; }
 
+table.qc {  background-color: rgba(185, 170, 185, 0.5); }
+table.qc tbody tr td.tab { background-color: #8b7d95; }
+
+/* Suggested background color for next volume */
+#     #c07d62
 
 .ui-draggable, .ui-droppable {
     background-position: top;
@@ -912,10 +921,10 @@ table.algo  tbody tr td.tab { background-color: #c2c26c; }
 
 /* A few specific things for the top-level SF landing page */
 
-body.sf_home {background-color: #ededed; background-image: url(core_mem_bg.jpg); }       
+body.sf_home {background-color: #ededed; background-image: url(../media/image/core_mem_bg.jpg); }       
 
 body.sf_home #header {
-    background-image: url(core_mem_hdr_bg.jpg);  
+    background-image: url(../media/image/core_mem_hdr_bg.jpg);  
     padding-bottom: 20px;
 }
 
