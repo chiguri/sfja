@@ -59,11 +59,11 @@ vo_to_obj = $(addsuffix .o,\
 
 # Removed (original does similar)
 COQLIBS?=\
-  -Q "." VFA
+  -Q "." $(VOLUME)
 COQCHKLIBS?=\
-  -Q "." VFA
+  -Q "." $(VOLUME)
 #COQDOCLIBS?=\
-#  -R "." VFA
+#  -R "." $(VOLUME)
 
 ##########################
 #                        #
