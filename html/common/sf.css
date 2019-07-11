@@ -506,7 +506,7 @@ tr.infrulemiddle hr {
        background-color: rgb(60%,60%,100%); */
 }
 
-#toc h2 .select { background-image: url('media/image/arrow_down.jpg'); }
+#toc h2 .select { background-image: url('arrow_down.jpg'); }
 div#sec1.hide { display: none; }
 
 #toc ul {
@@ -921,10 +921,10 @@ table.qc tbody tr td.tab { background-color: #8b7d95; }
 
 /* A few specific things for the top-level SF landing page */
 
-body.sf_home {background-color: #ededed; background-image: url(../media/image/core_mem_bg.jpg); }       
+body.sf_home {background-color: #ededed; background-image: url(core_mem_bg.jpg); }       
 
 body.sf_home #header {
-    background-image: url(../media/image/core_mem_hdr_bg.jpg);  
+    background-image: url(core_mem_hdr_bg.jpg);  
     padding-bottom: 20px;
 }
 

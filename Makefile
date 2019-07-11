@@ -1,4 +1,4 @@
-VOLUMES:=lf plf vfa
+VOLUMES:=lf plf vfa qc
 
 .PHONY: all clean html
 
