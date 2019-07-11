@@ -1,0 +1,10 @@
+-Q . QC
+Bib.v
+Introduction.v
+PostScript.v
+Preface.v
+QC.v
+QuickChickInterface.v
+QuickChickTool.v
+TImp.v
+Typeclasses.v
